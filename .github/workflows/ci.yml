@@ -20,4 +20,3 @@ jobs:
       - name: Test
         working-directory: ./tests
         run: npm run ci
-
