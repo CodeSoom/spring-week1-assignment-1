@@ -1,0 +1,26 @@
+# Ignore Gradle project-specific cache directory
+.gradle
+**/build/
+!src/**/build/
+caches
+daemon
+native
+notifications
+
+# Ignore Gradle build output directory
+build
+
+# VS Code
+.vscode
+
+# Intellij IDEA
+.idea
+
+# macOS
+.DS_Store
+
+# Windows thumbnail cache files
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
