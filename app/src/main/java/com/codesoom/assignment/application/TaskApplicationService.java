@@ -23,10 +23,10 @@ public class TaskApplicationService {
     }
 
     public Task findTask(Long taskId) throws NotFoundTask {
-        if (taskMap.containsKey(taskId)) {
-            return taskMap.get(taskId);
+        if (!taskMap.containsKey(taskId)) {
+            throw new NotFoundTask();
         }
-        throw new NotFoundTask();
+        return taskMap.get(taskId);
     }
 
     private Long getNextId() {
