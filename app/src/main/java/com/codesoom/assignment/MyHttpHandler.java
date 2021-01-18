@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 public class MyHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
     private ObjectMapper objectMapper = new ObjectMapper();
+    private Long count = 0L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -29,6 +30,7 @@ public class MyHttpHandler implements HttpHandler {
         System.out.println(method + " " + path);
         if (!body.isBlank()) {
             Task task = toTask(body);
+            task.setId(IdGenerator.generate());
             tasks.add(task);
         }
 
@@ -39,7 +41,7 @@ public class MyHttpHandler implements HttpHandler {
         }
 
         if (method.equals("POST") && path.equals("/tasks")) {
-            content = "create task";
+            content = "create a new task";
         }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
