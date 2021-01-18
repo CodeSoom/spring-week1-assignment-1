@@ -30,13 +30,24 @@ public class MyHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         System.out.println(method + " " + path);
-
-
         String content = "Hello, world";
 
         if (method.equals("GET") && path.equals("/tasks")) {
             content = tasksToJSON();
             exchange.sendResponseHeaders(200, content.getBytes().length);
+        }
+
+        if (method.equals("GET") && pattern.matcher(path).matches()) {
+            Long pathVariable = extractPathVariable(path);
+
+            Optional<Task> foundTask = findTask(pathVariable);
+            if (foundTask.isPresent()) {
+                content = taskToJson(foundTask.get());
+                exchange.sendResponseHeaders(200, content.getBytes().length);
+            } else {
+                System.out.println("not found task" + foundTask);
+                exchange.sendResponseHeaders(400, 0);
+            }
         }
 
         if (method.equals("POST") && path.equals("/tasks")) {
@@ -51,31 +62,35 @@ public class MyHttpHandler implements HttpHandler {
 
         if (method.equals("PUT") && pattern.matcher(path).matches()) {
             content = "update a task";
-            String[] paths = path.split("/");
-            Long finalPathVariable = Long.parseUnsignedLong(paths[2]);
+            Long pathVariable = extractPathVariable(path);
 
             if (!body.isBlank()) {
-                System.out.println("found Body");
-                Optional<Task> foundTask = tasks.stream()
-                        .filter(t -> t.getId() == finalPathVariable)
-                        .findFirst();
+                Optional<Task> foundTask = findTask(pathVariable);
                 if (foundTask.isPresent()) {
                     foundTask.get().setTitle(extractValue(body));
                     exchange.sendResponseHeaders(200, content.getBytes().length);
                 } else {
-                    System.out.println("not found task" + foundTask);
                     exchange.sendResponseHeaders(400, 0);
                 }
             }
         }
 
-
         OutputStream outputStream = exchange.getResponseBody();
-
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
 
+    }
+
+    private Long extractPathVariable(String path) {
+        String[] paths = path.split("/");
+        return Long.parseUnsignedLong(paths[2]);
+    }
+
+    private Optional<Task> findTask(Long pathVariable) {
+        return tasks.stream()
+                .filter(t -> t.getId() == pathVariable)
+                .findFirst();
     }
 
     private String extractValue(String content) throws JsonProcessingException {
@@ -87,9 +102,13 @@ public class MyHttpHandler implements HttpHandler {
         return objectMapper.readValue(content, Task.class);
     }
 
+    private String taskToJson(Task task) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, task);
+        return outputStream.toString();
+    }
 
     private String tasksToJSON() throws IOException {
-
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
         return outputStream.toString();

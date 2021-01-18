@@ -13,6 +13,11 @@ Content-Type: application/json
 
 ###
 
+
+GET {{host}}/tasks
+
+###
+
 GET {{host}}/tasks/1
 
 ###
