@@ -1,7 +1,9 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.web.MyHandler;
+import com.codesoom.assignment.web.MyHttpServer;
+import com.codesoom.assignment.service.TaskService;
 import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
 
@@ -12,8 +14,9 @@ public class App {
 
     public static void main(String[] args) throws IOException {
         MyHttpServer httpServer = new MyHttpServer(8000);
-        HttpHandler handler = new MyHandler();
-        httpServer.addHandler("/", handler);
+        TaskService taskService = new TaskService();
+        HttpHandler handler = new MyHandler(taskService);
+        httpServer.addHandler("/tasks", handler);
         httpServer.start();
     }
 }
