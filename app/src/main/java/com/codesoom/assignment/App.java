@@ -16,7 +16,7 @@ public class App {
         HttpHandler handler = new DemoHttpHandler();
 
         httpServer.createContext("/", handler);
-        System.out.printf("Server on http://localhost:%d", port);
+        System.out.printf("Server on http://localhost:%d\n", port);
         httpServer.start();
     }
 }
