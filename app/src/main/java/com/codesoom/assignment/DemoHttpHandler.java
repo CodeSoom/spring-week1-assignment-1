@@ -14,10 +14,14 @@ public class DemoHttpHandler implements HttpHandler {
 
     private Long extractID(String path) {
         String[] split = path.split("/");
-        if (split.length != 2) {
-            return null;
-        }
-        return Long.parseLong(split[1]);
+        return split.length < 3
+                ? null
+                : Long.parseLong(split[2]);
+    }
+
+    private String get(String path) {
+        Long id = extractID(path);
+        return id != null ? id.toString() : "ALL";
     }
 
     @Override
@@ -32,7 +36,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         if (isValidPath(path)) {
             switch (method) {
-                case "GET" -> content = "GET";
+                case "GET" -> content = get(path);
                 case "POST" -> content = "POST";
                 case "PUT" -> content = "PUT";
                 case "PATCH" -> content = "PATCH";
