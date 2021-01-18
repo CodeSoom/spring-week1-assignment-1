@@ -12,6 +12,8 @@ public class App {
 
     public static void main(String[] args) throws IOException {
         MyHttpServer httpServer = new MyHttpServer(8000);
+        HttpHandler handler = new MyHandler();
+        httpServer.addHandler("/", handler);
         httpServer.start();
     }
 }
