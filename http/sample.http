@@ -1,0 +1,31 @@
+###
+
+GET {{host}}/tasks
+
+###
+
+POST {{host}}/tasks
+Content-Type: application/json
+
+{
+ "title": "homework"
+}
+
+###
+
+GET {{host}}/tasks/1
+
+###
+
+PUT {{host}}/tasks/1
+Content-Type: application/json
+
+{
+  "title": "rest"
+}
+
+###
+
+GET {{host}}/tasks
+
+###
