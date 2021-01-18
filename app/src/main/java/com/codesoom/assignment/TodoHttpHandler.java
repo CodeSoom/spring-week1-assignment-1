@@ -49,7 +49,17 @@ public class TodoHttpHandler implements HttpHandler {
             Task task = jsonToTask(body);
             tasks.add(task);
             content = taskToJson(task.getId() - 1);
-        } 
+        } else if (method.equals("PUT")) {
+            if (hasNumberParameter(path)) {
+                tasks.remove(idx-1);
+                Task task = jsonToTask(body);
+                task.setId((long) idx);
+                tasks.add(idx-1,task);
+                content = taskToJson(idx - 1);
+            }
+            else
+                content = "Cannot be modified";
+        }
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
