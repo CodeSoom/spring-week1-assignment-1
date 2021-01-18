@@ -7,6 +7,13 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class MyHandler implements HttpHandler {
+
+    private TaskService taskService;
+
+    public MyHandler(TaskService taskService) {
+        this.taskService = taskService;
+    }
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         RequestInfo requestInfo = new RequestInfo(exchange);
