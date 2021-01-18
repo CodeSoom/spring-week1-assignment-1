@@ -15,6 +15,7 @@ public class TodoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
     private ObjectMapper mapper = new ObjectMapper();
     private int idx;
+
     public TodoHttpHandler() {
         Task task = new Task();
         task.setId(1L);
@@ -43,22 +44,26 @@ public class TodoHttpHandler implements HttpHandler {
         if (method.equals("GET")) {
             if (hasNumberParameter(path))
                 content = taskToJson(idx - 1);
-             else
+            else
                 content = taskToJson();
         } else if (method.equals("POST") && path.equals("/tasks")) {
             Task task = jsonToTask(body);
             tasks.add(task);
             content = taskToJson(task.getId() - 1);
-        } else if (method.equals("PUT")) {
+        } else if (method.equals("PUT") || method.equals("PATCH")) {
             if (hasNumberParameter(path)) {
-                tasks.remove(idx-1);
+                tasks.remove(idx - 1);
                 Task task = jsonToTask(body);
                 task.setId((long) idx);
-                tasks.add(idx-1,task);
+                tasks.add(idx - 1, task);
                 content = taskToJson(idx - 1);
-            }
-            else
+            } else
                 content = "Cannot be modified";
+        } else if (method.equals("DELETE")) {
+            if (hasNumberParameter(path))
+                tasks.remove(idx - 1);
+            else
+                content = "Cannot be deleted";
         }
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
@@ -67,11 +72,12 @@ public class TodoHttpHandler implements HttpHandler {
         outputStream.flush();
         outputStream.close();
     }
-    private boolean hasNumberParameter(String path){
-        if(path.startsWith("/tasks/")){
+
+    private boolean hasNumberParameter(String path) {
+        if (path.startsWith("/tasks/")) {
             String[] split = path.split("/");
             if (split.length == 3) {
-                idx=Integer.parseInt(split[2]);
+                idx = Integer.parseInt(split[2]);
                 return true;
             }
         }
