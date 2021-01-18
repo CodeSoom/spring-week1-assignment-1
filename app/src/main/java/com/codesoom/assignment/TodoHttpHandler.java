@@ -45,7 +45,11 @@ public class TodoHttpHandler implements HttpHandler {
                 content = taskToJson(idx - 1);
              else
                 content = taskToJson();
-        }
+        } else if (method.equals("POST") && path.equals("/tasks")) {
+            Task task = jsonToTask(body);
+            tasks.add(task);
+            content = taskToJson(task.getId() - 1);
+        } 
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
@@ -62,6 +66,12 @@ public class TodoHttpHandler implements HttpHandler {
             }
         }
         return false;
+    }
+
+    private Task jsonToTask(String content) throws JsonProcessingException {
+        Task task = mapper.readValue(content, Task.class);
+        task.setId((long) (tasks.size() + 1));
+        return task;
     }
 
     private String taskToJson() throws IOException {
