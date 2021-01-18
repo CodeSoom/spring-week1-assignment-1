@@ -1,4 +1,4 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.service;
 
 import com.codesoom.assignment.models.Task;
 
@@ -17,10 +17,11 @@ public class TaskService {
         return this.tasks;
     }
 
-    public void createNewTask(String title) {
+    public Task createNewTask(String title) {
         Task task = new Task(generateTaskId(), title);
         tasks.add(task);
         System.out.println("Completed to create task - " + task.toString());
+        return task;
     }
 
     public void updateTask(long id, String newTitle) {
@@ -40,7 +41,7 @@ public class TaskService {
     }
 
     private long generateTaskId() {
-        long id = 0;
+        long id = 1;
 
         if (!tasks.isEmpty()) {
             id = tasks.stream().mapToLong(Task::getId).max().getAsLong() + 1;
