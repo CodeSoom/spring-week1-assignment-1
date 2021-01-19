@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.ByteArrayOutputStream;
@@ -8,11 +9,14 @@ import java.io.OutputStream;
 
 public class JSONParser {
     static String taskToJSON(Task task) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, task);
-
+        new ObjectMapper().writeValue(outputStream, task);
         return outputStream.toString();
+    }
+
+    static Task toTask(String content, Long id) throws JsonProcessingException {
+        Task task = new ObjectMapper().readValue(content, Task.class);
+        task.setId(id);
+        return task;
     }
 }
