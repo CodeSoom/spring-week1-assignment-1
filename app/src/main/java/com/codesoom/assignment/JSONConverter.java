@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
+/*
+ ** JSON 데이터 처리와 관련된 메서드를 관리하기 위한 클래스
+ */
 public class JSONConverter {
 
     private ObjectMapper objectMapper = new ObjectMapper();
