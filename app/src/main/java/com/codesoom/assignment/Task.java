@@ -2,19 +2,25 @@ package com.codesoom.assignment;
 
 public class Task {
 
-    public Task(Long id, String title) {
+    private Long id;
+    private String title;
 
+    public Task(Long id, String title) {
+        this.id = id;
+        this.title = title;
     }
 
     public Long getId() {
-        return 1L;
-    }
-
-    public void updateTitle(String newTitle) {
-
+        return id;
     }
 
     public String getTitle() {
-        return null;
+        return title;
     }
+
+    public void updateTitle(String newTitle) {
+        this.title = newTitle;
+    }
+
+    
 }
