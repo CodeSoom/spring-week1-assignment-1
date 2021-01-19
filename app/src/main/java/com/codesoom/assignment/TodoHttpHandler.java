@@ -14,7 +14,8 @@ import java.util.stream.Collectors;
 public class TodoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
     private ObjectMapper mapper = new ObjectMapper();
-    private int idx, code = 200;
+    private int index;
+    private int statusCode = 200;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -29,55 +30,55 @@ public class TodoHttpHandler implements HttpHandler {
 
         if (method.equals("GET")) {
             if (hasNumberParameter(path)) {
-                if(hasIdx(idx-1)){
-                    code=200;
-                    content = taskToJson(idx - 1);
-                }else
-                    code=404;
+                if (hasIndex(index - 1)) {
+                    statusCode = 200;
+                    content = taskToJson(index - 1);
+                } else
+                    statusCode = 404;
             } else {
-                code=200;
+                statusCode = 200;
                 content = taskToJson();
             }
         } else if (method.equals("POST") && path.equals("/tasks")) {
             Task task = jsonToTask(body);
             tasks.add(task);
-            code = 201;
+            statusCode = 201;
             content = taskToJson(task.getId() - 1);
         } else if (method.equals("PUT") || method.equals("PATCH")) {
             if (hasNumberParameter(path)) {
-                if(hasIdx(idx-1)){
-                    tasks.remove(idx - 1);
+                if (hasIndex(index - 1)) {
+                    tasks.remove(index - 1);
                     Task task = jsonToTask(body);
-                    task.setId((long) idx);
-                    tasks.add(idx - 1, task);
-                    code=200;
-                    content = taskToJson(idx - 1);
-                }else
-                    code=404;
+                    task.setId((long) index);
+                    tasks.add(index - 1, task);
+                    statusCode = 200;
+                    content = taskToJson(index - 1);
+                } else
+                    statusCode = 404;
 
             } else {
-                code=404;
+                statusCode = 404;
             }
         } else if (method.equals("DELETE")) {
             if (hasNumberParameter(path)) {
-                if(hasIdx(idx-1)){
-                    code = 204;
-                    tasks.remove(idx - 1);
-                }else
-                    code=404;
-            }else {
-                code = 404;
+                if (hasIndex(index - 1)) {
+                    statusCode = 204;
+                    tasks.remove(index - 1);
+                } else
+                    statusCode = 404;
+            } else {
+                statusCode = 404;
             }
         }
-        exchange.sendResponseHeaders(code, content.getBytes().length);
+        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
     }
 
-    private boolean hasIdx(int idx) {
-        if(idx<0||tasks.size()<=idx) {
+    private boolean hasIndex(int index) {
+        if (index < 0 || tasks.size() <= index) {
             return false;
         }
         return true;
@@ -87,8 +88,7 @@ public class TodoHttpHandler implements HttpHandler {
         if (path.startsWith("/tasks/")) {
             String[] split = path.split("/");
             if (split.length == 3) {
-                idx = Integer.parseInt(split[2]);
-                System.out.println("있음"+idx);
+                index = Integer.parseInt(split[2]);
                 return true;
             }
         }
@@ -107,9 +107,9 @@ public class TodoHttpHandler implements HttpHandler {
         return outputstream.toString();
     }
 
-    private String taskToJson(long idx) throws IOException {
+    private String taskToJson(long index) throws IOException {
         OutputStream outputstream = new ByteArrayOutputStream();
-        mapper.writeValue(outputstream, tasks.get((int) idx));
+        mapper.writeValue(outputstream, tasks.get((int) index));
         return outputstream.toString();
     }
 }
