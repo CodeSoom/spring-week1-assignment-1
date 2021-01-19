@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -45,6 +46,17 @@ public class MyHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
+
+        if (!body.isBlank()){
+            System.out.println("body : " + body);
+
+            // JSON 데이터를 task로 변환
+            Task task = jsonToTask(body);
+            System.out.println("task : " + task);
+
+            tasks.add(task);
+        }
+
         // connectionError가 발생하지 않도록 HTTP 상태코드 처리
         // content : 성공적으로 응답 했을 경우, 확인을 위해 화면에 띄워줄 메세지
         String content = "Hello, world!";
@@ -73,6 +85,12 @@ public class MyHttpHandler implements HttpHandler {
 
         // String 형식의 content 변수에 담기 위해 String으로 변환하여 return
         return outputStream.toString();
+    }
+
+    private Task jsonToTask(String content) throws JsonProcessingException {
+
+        // content(내용)를 가지고와서 task의 클래스로 변환
+        return objectMapper.readValue(content, Task.class);
     }
 
 }
