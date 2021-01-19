@@ -22,10 +22,11 @@ public class TaskService {
         return task;
     }
 
-    public void updateTask(long id, String newTitle) {
+    public Task updateTask(long id, String newTitle) {
         Task task = findTaskById(id);
         task.setTitle(newTitle);
         System.out.println("Completed to update task - " + task.toString());
+        return task;
     }
 
     public void deleteTask(long id) {

@@ -13,7 +13,7 @@ import java.io.OutputStream;
 
 public class MyHandler implements HttpHandler {
 
-    private final TaskService taskService;
+    private TaskService taskService;
 
     public MyHandler(TaskService taskService) {
         this.taskService = taskService;
@@ -46,7 +46,8 @@ public class MyHandler implements HttpHandler {
                     processPost(requestInfo, exchange);
                     break;
                 case "PUT":
-                case "PATH":
+                case "PATCH":
+                    processPut(requestInfo, exchange);
                     break;
                 case "DELETE":
                     processDelete(requestInfo, exchange);
@@ -82,8 +83,12 @@ public class MyHandler implements HttpHandler {
         sendResponse(responseJson, 201, exchange);
     }
 
-    private void processPut(RequestInfo requestInfo) {
-
+    private void processPut(RequestInfo requestInfo, HttpExchange exchange) throws IOException {
+        long id = parseIdFromPath(requestInfo.getPath());
+        Task task = JsonUtil.toTask(requestInfo.getBody());
+        Task updatedTask = taskService.updateTask(id, task.getTitle());
+        String responseJson = JsonUtil.toJson(updatedTask);
+        sendResponse(responseJson, 200, exchange);
     }
 
     private void processDelete(RequestInfo requestInfo, HttpExchange exchange) throws IOException {
