@@ -3,6 +3,9 @@ package com.codesoom.assignment.application;
 import com.codesoom.assignment.domain.Task;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TaskJsonTransferTest {
@@ -34,10 +37,13 @@ public class TaskJsonTransferTest {
     @Test
     void transferTaskListToJsonArray() {
         String expectJsonString = "[{\"id\":1,\"title\":\"Play Game\"}]";
+
+        List<Task> taskList = new ArrayList<>();
         Task task = new Task(1L, "Play Game");
+        taskList.add(task);
 
         assertDoesNotThrow(() -> {
-            String json = transfer.taskListToJson(task);
+            String json = transfer.taskListToJson(taskList);
 
             assertEquals(expectJsonString, json);
         });
