@@ -9,4 +9,12 @@ public class Task {
     public Long getId() {
         return 1L;
     }
+
+    public void updateTitle(String newTitle) {
+
+    }
+
+    public String getTitle() {
+        return null;
+    }
 }

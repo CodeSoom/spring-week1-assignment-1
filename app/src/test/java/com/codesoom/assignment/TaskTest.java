@@ -18,7 +18,14 @@ public class TaskTest {
         assertEquals(task.getId(), 1L);
     }
 
-    
+    @Test
+    void testUpdateTitle(){
+        Task task = new Task(1L, "title");
+        task.updateTitle("newTitle");
+        assertEquals(task.getTitle(), "newTitle");
+    }
+
+
 
 
 
