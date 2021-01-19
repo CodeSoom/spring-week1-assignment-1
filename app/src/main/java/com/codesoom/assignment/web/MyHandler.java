@@ -4,6 +4,7 @@ import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.service.TaskService;
 import com.codesoom.assignment.util.JsonUtil;
 import com.codesoom.assignment.web.models.RequestInfo;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -31,18 +32,15 @@ public class MyHandler implements HttpHandler {
         processRequest(requestInfo, exchange);
     }
 
+    private boolean isInvalidPath(String path) {
+        return !path.startsWith("/tasks");
+    }
+
     private void processRequest(RequestInfo requestInfo, HttpExchange exchange) throws IOException {
         try {
             switch (requestInfo.getMethod()) {
                 case "GET":
-                    if (requestInfo.getPath().equals("/tasks")) {
-                        String responseJson = JsonUtil.toJson(taskService.getTasks());
-                        sendResponse(responseJson, 200, exchange);
-                    } else {
-                        long id = Long.parseLong(requestInfo.getPath().substring("/tasks/".length()));
-                        String responseJson = JsonUtil.toJson(taskService.getTask(id));
-                        sendResponse(responseJson, 200, exchange);
-                    }
+                    processGet(requestInfo, exchange);
                     break;
                 case "POST":
                     Task task = JsonUtil.toTask(requestInfo.getBody());
@@ -59,18 +57,28 @@ public class MyHandler implements HttpHandler {
                     sendResponse("Method Not Allowed", 405, exchange);
                     break;
             }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            sendResponse("Invalid Parameter", 400, exchange);
         } catch (Exception e) {
             e.printStackTrace();
             sendResponse("Internal Server Error", 500, exchange);
         }
     }
 
-    private void processGet(RequestInfo requestInfo) {
-
+    private void processGet(RequestInfo requestInfo, HttpExchange exchange) throws IOException {
+        if (requestInfo.getPath().equals("/tasks") || requestInfo.getPath().equals("/tasks/")) {
+            String responseJson = JsonUtil.toJson(taskService.getTasks());
+            sendResponse(responseJson, 200, exchange);
+        } else {
+            long id = parseIdFromPath(requestInfo.getPath());
+            String responseJson = JsonUtil.toJson(taskService.getTask(id));
+            sendResponse(responseJson, 200, exchange);
+        }
     }
 
     private void processPost(RequestInfo requestInfo) {
-
+        
     }
 
     private void processPut(RequestInfo requestInfo) {
@@ -81,9 +89,13 @@ public class MyHandler implements HttpHandler {
 
     }
 
-    private boolean isInvalidPath(String path) {
-        return path.startsWith("/tasks");
+    private long parseIdFromPath(String path) throws NumberFormatException {
+        //path 마지막에 '/'이 붙어 있을 것을 대비
+        String idString = path.substring("/tasks/".length()).replace("/", "");
+        return Long.parseLong(idString);
     }
+
+
 
     private void sendResponse(String content, int responseCode, HttpExchange exchange) throws IOException {
         exchange.sendResponseHeaders(responseCode, content.getBytes().length);
