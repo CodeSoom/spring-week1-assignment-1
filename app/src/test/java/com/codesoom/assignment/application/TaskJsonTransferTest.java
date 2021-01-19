@@ -18,4 +18,16 @@ public class TaskJsonTransferTest {
             assertEquals("Play Game", task.getTitle());
         });
     }
+
+    @Test
+    void transferTaskToJson(){
+        String expectJsonString = "{\"id\": 1, \"title\": \"Play Game\"}";
+        Task task = new Task(1L, "Play Game");
+
+        assertDoesNotThrow(()-> {
+            String json = transfer.taskToJson(task);
+
+            assertEquals(expectJsonString, json);
+        });
+    }
 }
