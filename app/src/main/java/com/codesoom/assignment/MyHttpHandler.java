@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MyHttpHandler implements HttpHandler {
-    private List<Task> tasks = new ArrayList<>();
+    private Tasks tasks = new Tasks();
     private ObjectMapper objectMapper = new ObjectMapper();
     private Pattern pattern = Pattern.compile("/tasks/([^/]+)");
 
@@ -40,13 +40,13 @@ public class MyHttpHandler implements HttpHandler {
         if (method.equals("GET") && pattern.matcher(path).matches()) {
             Long pathVariable = extractPathVariable(path);
 
-            Optional<Task> foundTask = findTask(pathVariable);
+            Optional<Task> foundTask = tasks.findTask(pathVariable);
             if (foundTask.isPresent()) {
                 content = taskToJson(foundTask.get());
                 exchange.sendResponseHeaders(200, content.getBytes().length);
             } else {
                 System.out.println("not found task" + foundTask);
-                exchange.sendResponseHeaders(400, 0);
+                exchange.sendResponseHeaders(404, 0);
             }
         }
 
@@ -55,7 +55,7 @@ public class MyHttpHandler implements HttpHandler {
             if (!body.isBlank()) {
                 Task task = toTask(body);
                 task.setId(IdGenerator.generate());
-                tasks.add(task);
+                tasks.addTask(task);
                 exchange.sendResponseHeaders(201, content.getBytes().length);
             }
         }
@@ -65,12 +65,12 @@ public class MyHttpHandler implements HttpHandler {
             Long pathVariable = extractPathVariable(path);
 
             if (!body.isBlank()) {
-                Optional<Task> foundTask = findTask(pathVariable);
+                Optional<Task> foundTask = tasks.findTask(pathVariable);
                 if (foundTask.isPresent()) {
                     foundTask.get().setTitle(extractValue(body));
                     exchange.sendResponseHeaders(200, content.getBytes().length);
                 } else {
-                    exchange.sendResponseHeaders(400, 0);
+                    exchange.sendResponseHeaders(404, 0);
                 }
             }
         }
@@ -79,22 +79,19 @@ public class MyHttpHandler implements HttpHandler {
             content = "delete a task";
             Long pathVariable = extractPathVariable(path);
 
-            Optional<Task> foundTask = findTask(pathVariable);
+            Optional<Task> foundTask = tasks.findTask(pathVariable);
             if (foundTask.isPresent()) {
                 tasks.remove(foundTask.get());
-                exchange.sendResponseHeaders(200, content.getBytes().length);
+                exchange.sendResponseHeaders(204, content.getBytes().length);
             } else {
                 exchange.sendResponseHeaders(404, 0);
             }
-
         }
-
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
-
     }
 
     private Long extractPathVariable(String path) {
@@ -102,11 +99,6 @@ public class MyHttpHandler implements HttpHandler {
         return Long.parseUnsignedLong(paths[2]);
     }
 
-    private Optional<Task> findTask(Long pathVariable) {
-        return tasks.stream()
-                .filter(t -> t.getId() == pathVariable)
-                .findFirst();
-    }
 
     private String extractValue(String content) throws JsonProcessingException {
         Task task = objectMapper.readValue(content, Task.class);
