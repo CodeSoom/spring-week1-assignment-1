@@ -54,8 +54,18 @@ public class TaskHttpHandler implements HttpHandler {
             if (segments.length == 2) {
                 content = taskToJSON();
             }
+
             if (segments.length == 3) {
-                if (id <= 0 || id > tasks.size()) {
+                boolean isthere = false;
+                for (Task task : tasks) {
+                    if(task.getId() == id) {
+                        isthere = true;
+                        content = taskToJSON(id);
+                        break;
+                    }
+                }
+
+                if (isthere == false) {
                     // 404 NotFound Exception
                     System.out.println("[GET] 404 NotFound Exception");
                     exchange.sendResponseHeaders(404, 0);
@@ -64,8 +74,6 @@ public class TaskHttpHandler implements HttpHandler {
                     outputStream.close();
                     return;
                 }
-
-                content = taskToJSON(id);
             }
         }
 
@@ -74,7 +82,7 @@ public class TaskHttpHandler implements HttpHandler {
                 Task task = toTask(body);
 
                 if (tasks.isEmpty()) {
-                    task.setId(1L);
+                    if(task.getId() == null) task.setId(1L);
                 }
                 else {
                     int size = tasks.size();
