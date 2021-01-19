@@ -43,10 +43,7 @@ public class MyHandler implements HttpHandler {
                     processGet(requestInfo, exchange);
                     break;
                 case "POST":
-                    Task task = JsonUtil.toTask(requestInfo.getBody());
-                    Task createdTask = taskService.createNewTask(task.getTitle());
-                    String responseJson = JsonUtil.toJson(createdTask);
-                    sendResponse(responseJson, 201, exchange);
+                    processPost(requestInfo, exchange);
                     break;
                 case "PUT":
                 case "PATH":
@@ -77,8 +74,11 @@ public class MyHandler implements HttpHandler {
         }
     }
 
-    private void processPost(RequestInfo requestInfo) {
-        
+    private void processPost(RequestInfo requestInfo, HttpExchange exchange) throws IOException {
+        Task task = JsonUtil.toTask(requestInfo.getBody());
+        Task createdTask = taskService.createNewTask(task.getTitle());
+        String responseJson = JsonUtil.toJson(createdTask);
+        sendResponse(responseJson, 201, exchange);
     }
 
     private void processPut(RequestInfo requestInfo) {
