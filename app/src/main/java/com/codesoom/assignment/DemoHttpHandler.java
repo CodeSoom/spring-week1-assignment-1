@@ -1,71 +1,115 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.models.HttpRequest;
+import com.codesoom.assignment.models.HttpRequestMethod;
+import com.codesoom.assignment.models.HttpResponse;
 import com.codesoom.assignment.service.TaskService;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.*;
-import java.net.URI;
-import java.util.stream.Collectors;
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class DemoHttpHandler implements HttpHandler {
 
     private TaskService taskService = new TaskService();
-
-    private static final int HTTP_STATUS_CODE_OK = 200;
-    private static final int HTTP_STATUS_CODE_CREATED = 201;
-    private static final int HTTP_STATUS_CODE_NO_CONTENT = 204;
-    private static final int HTTP_STATUS_CODE_NOT_FOUND= 404;
+    private static final String TASKS = "/tasks";
+    private static final String TASKS_PATTERN = TASKS + "/*[0-9]*";
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
-        URI uri = exchange.getRequestURI();
-        String path = uri.getPath();
+        HttpRequest httpRequest = new HttpRequest(exchange.getRequestMethod(), exchange.getRequestURI(), exchange.getRequestBody());
 
-        InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
-
-        OutputStream outputStream = exchange.getResponseBody();
-
-        String content = "";
-        int httpStatusCode = HTTP_STATUS_CODE_NOT_FOUND;
-        if (method.equals("GET") && path.equals("/tasks")) {
-            content = taskService.getTasks();
-            httpStatusCode = HTTP_STATUS_CODE_OK;
-        } else if (method.equals("GET") && path.startsWith("/tasks")) {
-            Long id = getId(path);
-            content = taskService.getTask(id);
-            if (!content.equals("")) {
-                httpStatusCode = HTTP_STATUS_CODE_OK;
-            }
-        } else if (method.equals("POST")) {
-            content = taskService.addTask(body);
-            httpStatusCode = HTTP_STATUS_CODE_CREATED;
-        } else if (method.equals("PUT")) {
-            Long id = getId(path);
-            content = taskService.updateTask(id, body);
-            if (!content.equals("")) {
-                httpStatusCode = HTTP_STATUS_CODE_OK;
-            }
-        } else if (method.equals("DELETE")) {
-            Long id = getId(path);
-            boolean isDeleted = taskService.deleteTask(id);
-            if (isDeleted) {
-                httpStatusCode = HTTP_STATUS_CODE_NO_CONTENT;
-            }
+        if(!isValidRequest(httpRequest)) {
+            sendResponse(exchange, createWrongRequestResponse());
+            return;
         }
-        exchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
-        outputStream.write(content.getBytes());
+
+        sendResponse(exchange, getHttpResponse(httpRequest));
+    }
+
+    private HttpResponse getHttpResponse(HttpRequest httpRequest) {
+        return switch (httpRequest.getMethod()) {
+            case GET -> createGetResponse(httpRequest.getPath());
+            case POST -> createPostResponse(httpRequest.getBody());
+            case PATCH, PUT -> createPatchOrPutResponse(httpRequest.getPath(), httpRequest.getBody());
+            case DELETE -> createDeleteResponse(httpRequest.getPath());
+            default -> createWrongMethodResponse();
+        };
+    }
+
+    private HttpResponse createGetResponse(String path) {
+        if (path.equals(TASKS)) {
+            return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_OK, taskService.getTasks());
+        }
+
+        Long id = getIdFromPath(path);
+        String content = taskService.getTask(id);
+
+        if (content.isBlank()) {
+            return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_NOT_FOUND);
+        }
+
+        return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_OK, content);
+    }
+
+    private HttpResponse createPostResponse(String body) {
+        return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_CREATED, taskService.addTask(body));
+    }
+
+    private HttpResponse createPatchOrPutResponse(String path, String body) {
+        Long id = getIdFromPath(path);
+        String content = taskService.updateTask(id, body);
+
+        if (content.isEmpty()) {
+            return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_NOT_FOUND);
+        }
+
+        return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_OK, content);
+    }
+
+    private HttpResponse createDeleteResponse(String path) {
+        Long id = getIdFromPath(path);
+        boolean isDeleted = taskService.deleteTask(id);
+
+        if (isDeleted) {
+            return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_NO_CONTENT);
+        }
+
+        return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_NOT_FOUND);
+    }
+
+    private HttpResponse createWrongMethodResponse() {
+        return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_METHOD_NOT_ALLOWED);
+    }
+
+    private HttpResponse createWrongRequestResponse() {
+        return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_NOT_FOUND);
+    }
+
+    private void sendResponse(HttpExchange exchange, HttpResponse httpResponse) throws IOException {
+        OutputStream outputStream = exchange.getResponseBody();
+        exchange.sendResponseHeaders(httpResponse.getHttpStatusCode(), httpResponse.getContent().getBytes().length);
+        outputStream.write(httpResponse.getContent().getBytes());
         outputStream.flush();
         outputStream.close();
     }
 
-    private Long getId(String path) {
-        String[] identities = path.split("\\/");
-        return Long.valueOf(identities[2]);
+    private boolean isValidRequest(HttpRequest httpRequest) {
+        String path = httpRequest.getPath();
+        HttpRequestMethod method = httpRequest.getMethod();
+
+        return switch (method) {
+            case GET -> path.equals(TASKS) || path.matches(TASKS_PATTERN);
+            case POST -> path.equals(TASKS);
+            case PATCH, PUT, DELETE -> path.matches(TASKS_PATTERN);
+            default -> false;
+        };
+    }
+
+    private Long getIdFromPath(String path) {
+        Long id = Long.valueOf(path.replace(TASKS + "/", ""));
+        return id;
     }
 
 }
