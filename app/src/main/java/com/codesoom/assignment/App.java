@@ -17,10 +17,15 @@ import java.net.InetSocketAddress;
 
 public class App {
 
+    private final static int PORT_NUMBER = 8000;
+
+
     public static void main(String[] args) {
         try {
-            InetSocketAddress address = new InetSocketAddress(8000);
+            InetSocketAddress address = new InetSocketAddress(PORT_NUMBER);
+
             HttpServer server = HttpServer.create(address, 0);
+
             server.createContext("/", new MyHttpHandler());
             server.start();
         } catch (IOException e) {
