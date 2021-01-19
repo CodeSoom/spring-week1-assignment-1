@@ -1,9 +1,11 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
@@ -14,11 +16,11 @@ public class DemoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
 
     public DemoHttpHandler() {
-        Task task = new Task();
-        task.setId(1L);
-        task.setTitle("\"나는 이미 행복한 부자다\"라고 되뇌기");
+        Task task1 = new Task();
+        task1.setId(1L);
+        task1.setTitle("'나는 이미 행복한 부자다' 라고 되뇌기");
 
-        tasks.add(task);
+        tasks.add(task1);
     }
 
     @Override
@@ -34,7 +36,7 @@ public class DemoHttpHandler implements HttpHandler {
         String content = "나는 진정 행복한 부자가 될 것이다.";
 
         if(method.equals("GET") && path.equals("/tasks")) {
-            content = "Here are your tasks";
+            content = tasksToJSON();
         }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
@@ -44,5 +46,14 @@ public class DemoHttpHandler implements HttpHandler {
         responseBody.flush();
         responseBody.close();
 
+    }
+
+    private String tasksToJSON() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, tasks);
+
+        return outputStream.toString();
     }
 }
