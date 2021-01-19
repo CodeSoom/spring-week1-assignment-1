@@ -56,7 +56,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         if (requestMethod.equals("GET") && path.matches(".*[0-9].*\"")) {
             Task task = tasks.get(0);
-            content = tasktoJson(task);
+            content = taskToJson(task);
             this.statusCode = 200;
         }
 
@@ -73,7 +73,7 @@ public class DemoHttpHandler implements HttpHandler {
         if (requestMethod.equals("PUT") && path.equals("/tasks/1")) {
             Task task = tasks.get(0);
             task.setTitle("과제 제출하기");
-            content = tasktoJson(task);
+            content = taskToJson(task);
 
             this.statusCode = 200;
         }
@@ -90,7 +90,16 @@ public class DemoHttpHandler implements HttpHandler {
         responseBody.close();
     }
 
-    private String tasksToJson() throws IOException {
+    private String taskToJson(Task task) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, task);
+
+        return outputStream.toString();
+    }
+
+    private String tasksToJson(List<Task> tasks) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
 
         OutputStream outputStream = new ByteArrayOutputStream();
