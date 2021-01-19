@@ -7,6 +7,7 @@ import java.net.InetSocketAddress;
 
 /**
  * 1. Create HttpServer
+ * 2. Create Handler
  */
 
 
@@ -17,6 +18,7 @@ public class App {
         try {
             InetSocketAddress address = new InetSocketAddress(8000);
             HttpServer server = HttpServer.create(address, 0);
+            server.createContext("/", new MyHttpHandler());
             server.start();
         } catch (IOException e) {
             e.printStackTrace();
