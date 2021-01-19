@@ -7,9 +7,10 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class App {
+    private static final int PORT = 8000;
 
     public static void main(String[] args) {
-        InetSocketAddress address = new InetSocketAddress(8000);
+        InetSocketAddress address = new InetSocketAddress(PORT);
 
         try {
             HttpServer httpServer = HttpServer.create(address, 0);
@@ -21,5 +22,4 @@ public class App {
             e.printStackTrace();
         }
     }
-
 }
