@@ -117,7 +117,7 @@ public class MyHttpHandler implements HttpHandler {
 
     private String tasksToJSON() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
+        objectMapper.writeValue(outputStream, tasks.getTasks());
         return outputStream.toString();
     }
 }

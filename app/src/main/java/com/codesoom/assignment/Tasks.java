@@ -23,10 +23,17 @@ public class Tasks {
         this.tasks.remove(task);
     }
 
-    public Optional findTask(Long id) {
+    public Optional<Task> findTask(Long id) {
         return tasks.stream()
                 .filter(t -> t.getId() == id)
                 .findFirst();
     }
 
+    public List<Task> getTasks() {
+        return new ArrayList<>(tasks);
+    }
+
+    public int size() {
+        return tasks.size();
+    }
 }

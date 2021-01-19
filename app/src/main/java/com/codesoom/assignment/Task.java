@@ -7,6 +7,11 @@ public class Task {
 
     private String title;
 
+    public Task(Long id, String title) {
+        this.id = id;
+        this.title = title;
+    }
+
     public Long getId() {
         return id;
     }
@@ -33,12 +38,11 @@ public class Task {
         if (this == o) return true;
         if (!(o instanceof Task)) return false;
         Task task = (Task) o;
-        return Objects.equals(getId(), task.getId()) &&
-                Objects.equals(getTitle(), task.getTitle());
+        return Objects.equals(getId(), task.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getTitle());
+        return Objects.hash(getId());
     }
 }
