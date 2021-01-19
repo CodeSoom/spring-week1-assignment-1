@@ -9,9 +9,9 @@ public class TaskJsonTransferTest {
     TaskJsonTransfer transfer = new TaskJsonTransfer();
 
     @Test
-    void transferJsonToTask(){
+    void transferJsonToTask() {
         String jsonString = "{\"title\": \"Play Game\"}";
-        assertDoesNotThrow(()-> {
+        assertDoesNotThrow(() -> {
             Task task = transfer.jsonStringToTask(jsonString);
 
             assertNotNull(task);
@@ -20,11 +20,11 @@ public class TaskJsonTransferTest {
     }
 
     @Test
-    void transferTaskToJson(){
+    void transferTaskToJson() {
         String expectJsonString = "{\"id\":1,\"title\":\"Play Game\"}";
         Task task = new Task(1L, "Play Game");
 
-        assertDoesNotThrow(()-> {
+        assertDoesNotThrow(() -> {
             String json = transfer.taskToJson(task);
 
             assertEquals(expectJsonString, json);
