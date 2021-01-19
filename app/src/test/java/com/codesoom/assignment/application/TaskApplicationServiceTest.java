@@ -73,4 +73,17 @@ class TaskApplicationServiceTest {
             assertEquals(newTitle, updatedTask.getTitle());
         });
     }
+
+    @Test
+    void deleteTask() {
+        String title = "Listen Music";
+        Long taskId = applicationService.createTask(title);
+        assertNotNull(taskId);
+
+        assertDoesNotThrow(() -> {
+            applicationService.deleteTask(taskId);
+            assertNotNull(taskId);
+        });
+        assertThrows(NotFoundTask.class, ()-> applicationService.findTask(taskId));
+    }
 }
