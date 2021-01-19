@@ -12,10 +12,10 @@ public class DemoHttpHandler implements HttpHandler {
 
     private TaskService taskService = new TaskService();
 
-    public static final int HTTP_STATUS_CODE_OK = 200;
-    public static final int HTTP_STATUS_CODE_CREATED = 201;
-    public static final int HTTP_STATUS_CODE_NO_CONTENT = 204;
-    public static final int HTTP_STATUS_CODE_NOT_FOUND= 404;
+    private static final int HTTP_STATUS_CODE_OK = 200;
+    private static final int HTTP_STATUS_CODE_CREATED = 201;
+    private static final int HTTP_STATUS_CODE_NO_CONTENT = 204;
+    private static final int HTTP_STATUS_CODE_NOT_FOUND= 404;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
