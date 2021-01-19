@@ -7,6 +7,8 @@ import java.io.*;
 import java.net.URI;
 import java.util.stream.Collectors;
 
+import static com.codesoom.assignment.Status.*;
+
 public class MyHttpHandler implements HttpHandler {
 
     private final static String PATH = "/tasks";
@@ -31,10 +33,11 @@ public class MyHttpHandler implements HttpHandler {
         // method setting
         if (method.equals("GET") && path.equals(PATH)){
             content = "[\"id\" : \"1\", \"title\" : \"one day one pr\"]";
+            httpExchange.sendResponseHeaders(OK.getStatus(), content.getBytes().length);
         }
         else if (method.equals("POST") && path.equals(PATH)){
             System.out.println(body);
-            status = 201;
+            httpExchange.sendResponseHeaders(CREATED.getStatus(), content.getBytes().length);
         }
         else if (method.equals("PUT") && path.equals(PATH)){
 
@@ -46,17 +49,13 @@ public class MyHttpHandler implements HttpHandler {
 
         }
         else{
-            status = 500;
+            httpExchange.sendResponseHeaders(NOT_FOUND.getStatus(), content.getBytes().length);
         }
-
-        //set request header
-        httpExchange.sendResponseHeaders(status, content.getBytes().length);
 
         //set request body
         OutputStream outputStream = httpExchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
-
     }
 }

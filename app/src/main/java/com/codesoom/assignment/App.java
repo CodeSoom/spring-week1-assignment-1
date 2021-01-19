@@ -12,25 +12,18 @@ import java.net.InetSocketAddress;
  * 4. Get Path
  * 5. Code with kind of method : GET, POST, PUT, DELETE
  */
-
-
-
 public class App {
 
     private final static int PORT_NUMBER = 8000;
 
-
     public static void main(String[] args) {
         try {
             InetSocketAddress address = new InetSocketAddress(PORT_NUMBER);
-
             HttpServer server = HttpServer.create(address, 0);
-
             server.createContext("/", new MyHttpHandler());
             server.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 }
