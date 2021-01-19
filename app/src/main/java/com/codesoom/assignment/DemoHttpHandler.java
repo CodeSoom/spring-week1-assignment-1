@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.codesoom.assignment.util.IdGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -21,18 +22,11 @@ import com.codesoom.assignment.models.Task;
 public class DemoHttpHandler implements HttpHandler {
 
     private List<Task> tasks = new ArrayList<>();
+    private IdGenerator idGenerator = new IdGenerator();
+    int statusCode = 404;
 
     public DemoHttpHandler() {
         Task task = new Task();
-        task.setId(1L);
-        task.setTitle("Do nothing....");
-
-        Task task2 = new Task();
-        task2.setId(2L);
-        task2.setTitle("Do something");
-
-        tasks.add(task);
-        tasks.add(task2);
     }
 
     @Override
@@ -53,21 +47,43 @@ public class DemoHttpHandler implements HttpHandler {
 
         System.out.println(requestMethod + " " + path);
 
-        String content = "Hello, World";
+        String content = "";
 
         if (requestMethod.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJson();
+            content = tasksToJson(tasks);
+            this.statusCode = 200;
+        }
+
+        if (requestMethod.equals("GET") && path.matches(".*[0-9].*\"")) {
+            Task task = tasks.get(0);
+            content = tasktoJson(task);
+            this.statusCode = 200;
         }
 
         if (requestMethod.equals("POST") && path.equals("/tasks")) {
             if (!requestBody.isBlank()) {
                 Task task = toTask(requestBody);
+                task.setId(idGenerator.generate());
                 tasks.add(task);
             }
-            content = tasksToJson();
+            content = tasksToJson(tasks);
+            this.statusCode = 201;
         }
 
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+        if (requestMethod.equals("PUT") && path.equals("/tasks/1")) {
+            Task task = tasks.get(0);
+            task.setTitle("과제 제출하기");
+            content = tasktoJson(task);
+
+            this.statusCode = 200;
+        }
+
+        if (requestMethod.equals("DELETE") && path.equals("/tasks/1")) {
+            tasks.remove(0);
+            this.statusCode = 204;
+        }
+
+        exchange.sendResponseHeaders(this.statusCode, content.getBytes().length);
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.write(content.getBytes());
         responseBody.flush();
