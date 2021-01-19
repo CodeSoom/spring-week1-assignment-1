@@ -4,12 +4,11 @@ import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MyHttpHandler implements HttpHandler {
 
@@ -37,6 +36,14 @@ public class MyHttpHandler implements HttpHandler {
 
         System.out.println("method : " + method + ", path : " + path);
 
+        /*
+           JSON 데이터를 받는 부분
+            BufferedReader : 인자로 취한 Reader 스트림에 버퍼링 기능을 추가한 클래스
+         */
+        InputStream inputStream = exchange.getRequestBody();
+        String body = new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
 
         // connectionError가 발생하지 않도록 HTTP 상태코드 처리
         // content : 성공적으로 응답 했을 경우, 확인을 위해 화면에 띄워줄 메세지
