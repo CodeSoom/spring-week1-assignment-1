@@ -49,6 +49,7 @@ public class MyHandler implements HttpHandler {
                 case "PATH":
                     break;
                 case "DELETE":
+                    processDelete(requestInfo, exchange);
                     break;
                 default:
                     sendResponse("Method Not Allowed", 405, exchange);
@@ -85,8 +86,10 @@ public class MyHandler implements HttpHandler {
 
     }
 
-    private void processDelete(RequestInfo requestInfo) {
-
+    private void processDelete(RequestInfo requestInfo, HttpExchange exchange) throws IOException {
+        long id = parseIdFromPath(requestInfo.getPath());
+        taskService.deleteTask(id);
+        sendResponse(200, exchange);
     }
 
     private long parseIdFromPath(String path) throws NumberFormatException {
@@ -95,7 +98,9 @@ public class MyHandler implements HttpHandler {
         return Long.parseLong(idString);
     }
 
-
+    private void sendResponse(int responseCode, HttpExchange exchange) throws IOException {
+        sendResponse("", responseCode, exchange);
+    }
 
     private void sendResponse(String content, int responseCode, HttpExchange exchange) throws IOException {
         exchange.sendResponseHeaders(responseCode, content.getBytes().length);
