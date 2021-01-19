@@ -87,7 +87,7 @@ class TaskApplicationServiceTest {
     }
 
     @Test
-    void deleteWorngTask() {
+    void deleteWrongTask() {
         Long uncreatedId = -1L;
         assertThrows(NotFoundTask.class, () -> applicationService.deleteTask(uncreatedId));
     }
