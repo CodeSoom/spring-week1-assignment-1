@@ -1,10 +1,9 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+
 import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
@@ -12,8 +11,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class MyHttpHandler implements HttpHandler {
-
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     JSONConverter jsonConverter = new JSONConverter();
 
@@ -48,12 +45,11 @@ public class MyHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-
-        if (!body.isBlank()){
+        if (!body.isBlank()) {
             System.out.println("body : " + body);
 
             // JSON 데이터를 task로 변환
-            Task task = jsonConverter.jsonToTask(body);
+            Task task = jsonConverter.JSONToTask(body);
             tasks.add(task);
         }
 
@@ -61,7 +57,7 @@ public class MyHttpHandler implements HttpHandler {
         // content : 성공적으로 응답 했을 경우, 확인을 위해 화면에 띄워줄 메세지
         String content = "Hello, world!";
 
-        if (method.equals("GET") && path.equals("/tasks")){
+        if (method.equals("GET") && path.equals("/tasks")) {
             content = jsonConverter.tasksToJSON(tasks);
         }
 

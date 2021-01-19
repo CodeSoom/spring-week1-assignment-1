@@ -3,6 +3,7 @@ package com.codesoom.assignment;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -23,9 +24,9 @@ public class JSONConverter {
         return outputStream.toString();
     }
 
-    Task jsonToTask(String content) throws JsonProcessingException {
-        // content(내용)를 가지고와서 task의 클래스로 변환
-        return objectMapper.readValue(content, Task.class);
+    Task JSONToTask(String json) throws JsonProcessingException {
+        // json 데이터를 task의 클래스로 변환
+        return objectMapper.readValue(json, Task.class);
     }
 
 }
