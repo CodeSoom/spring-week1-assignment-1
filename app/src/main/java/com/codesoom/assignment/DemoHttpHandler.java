@@ -12,14 +12,17 @@ public class DemoHttpHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         System.out.println("Handler is working");
 
-        exchange.sendResponseHeaders(200, 0);
+        String content = "나는 진정 행복한 부자가 될 것이다.";
+
+        exchange.sendResponseHeaders(200, content.getBytes().length);
 
         String method = exchange.getRequestMethod();
         System.out.println("Handler just requested a " + method + " method");
 
         OutputStream responseBody = exchange.getResponseBody();
+        responseBody.write(content.getBytes());
+        responseBody.flush();
         responseBody.close();
 
-        "pr이 자동으로 업데이트되는지 테스트합니다.";
     }
 }
