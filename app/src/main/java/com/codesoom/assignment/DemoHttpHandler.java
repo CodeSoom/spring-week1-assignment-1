@@ -46,7 +46,7 @@ public class DemoHttpHandler implements HttpHandler {
             System.out.println(body);
 
             Task task = toTask(body);
-            System.out.println(task);
+            tasks.add(task);
         }
 
         String content = "Hello World";
