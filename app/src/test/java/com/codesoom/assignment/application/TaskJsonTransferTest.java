@@ -3,8 +3,7 @@ package com.codesoom.assignment.application;
 import com.codesoom.assignment.domain.Task;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TaskJsonTransferTest {
     TaskJsonTransfer transfer = new TaskJsonTransfer();
@@ -12,9 +11,11 @@ public class TaskJsonTransferTest {
     @Test
     void transferJsonToTask(){
         String jsonString = "{\"title\": \"Play Game\"}";
-        Task task = transfer.jsonStringToTask(jsonString);
+        assertDoesNotThrow(()-> {
+            Task task = transfer.jsonStringToTask(jsonString);
 
-        assertNotNull(task);
-        assertEquals("Play Game", task.getTitle());
+            assertNotNull(task);
+            assertEquals("Play Game", task.getTitle());
+        });
     }
 }
