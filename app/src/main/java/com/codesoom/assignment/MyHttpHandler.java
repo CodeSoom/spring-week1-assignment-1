@@ -46,5 +46,7 @@ public class MyHttpHandler implements HttpHandler {
         outputStream.flush(); // 버퍼에 남아있는 데이터를 모두 출력시키고 버퍼를 비움
         outputStream.close(); // 호출해서 사용했던 시스템 자원을 풀어줌
 
+
+
     }
 }
