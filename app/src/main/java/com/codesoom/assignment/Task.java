@@ -2,11 +2,11 @@ package com.codesoom.assignment;
 
 public class Task {
 
-    private Long id;
+    private static Long id = -1L;
     private String title;
 
-    public Task(Long id, String title) {
-        this.id = id;
+    public Task(String title) {
+        id++;
         this.title = title;
     }
 
@@ -21,6 +21,5 @@ public class Task {
     public void updateTitle(String newTitle) {
         this.title = newTitle;
     }
-
 
 }
