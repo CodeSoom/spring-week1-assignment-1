@@ -12,6 +12,8 @@ public class DemoHttpHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         System.out.println("Handler is working");
 
+        exchange.sendResponseHeaders(200, 0);
+
         String method = exchange.getRequestMethod();
         System.out.println("Handler just requested a " + method + " method");
 
