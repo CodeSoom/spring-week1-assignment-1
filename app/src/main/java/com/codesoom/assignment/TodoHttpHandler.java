@@ -77,7 +77,7 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private boolean hasIdx(int idx) {
-        if(idx<0||tasks.size()<idx) {
+        if(idx<0||tasks.size()<=idx) {
             return false;
         }
         return true;
@@ -88,6 +88,7 @@ public class TodoHttpHandler implements HttpHandler {
             String[] split = path.split("/");
             if (split.length == 3) {
                 idx = Integer.parseInt(split[2]);
+                System.out.println("있음"+idx);
                 return true;
             }
         }
