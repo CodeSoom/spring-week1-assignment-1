@@ -5,6 +5,8 @@ public class Task {
     private long id;
     private String title;
 
+    public Task() {}
+
     public long getId() {
         return id;
     }
@@ -21,5 +23,11 @@ public class Task {
         this.title = title;
     }
 
-    public Task() {}
+    @Override
+    public String toString() {
+        return "Task{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                '}';
+    }
 }

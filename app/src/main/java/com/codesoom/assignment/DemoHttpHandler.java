@@ -1,30 +1,22 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
 
     private static final int OK = 200;
     private ObjectMapper mapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
-
-    public DemoHttpHandler() {
-        Task task = new Task();
-        task.setId(1L);
-        task.setTitle("Do nothing");
-
-        tasks.add(task);
-    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -33,12 +25,25 @@ public class DemoHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
-        System.out.println(method + " " + path);
+        InputStream inputStream = exchange.getRequestBody();
+        String body = new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
 
-        String content = "Hello, world";
+        if (!body.isBlank()) {
+            Task task = toTask(body);
+            tasks.add(task);
+        }
+
+        System.out.println(method + " " + path);
+        String content = "";
 
         if (method.equals("GET") && path.equals("/tasks")) {
             content = tasksToJSON();
+        }
+
+        if (method.equals("POST") && path.equals("/tasks")) {
+            content = "Create a new task!";
         }
 
         exchange.sendResponseHeaders(OK, content.getBytes().length);
@@ -48,6 +53,10 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private Task toTask(String content) throws JsonProcessingException {
+        return mapper.readValue(content, Task.class);
     }
 
     private String tasksToJSON() throws IOException {
