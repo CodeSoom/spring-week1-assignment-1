@@ -1,21 +1,17 @@
 package com.codesoom.assignment;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MyHttpHandler implements HttpHandler {
     private Tasks tasks = new Tasks();
-    private ObjectMapper objectMapper = new ObjectMapper();
+
     private Pattern pattern = Pattern.compile("/tasks/([^/]+)");
 
     @Override
@@ -33,7 +29,7 @@ public class MyHttpHandler implements HttpHandler {
         String content = "Hello, world";
 
         if (method.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJSON();
+            content = JsonConverter.tasksToJSON(tasks);
             exchange.sendResponseHeaders(200, content.getBytes().length);
         }
 
@@ -42,7 +38,7 @@ public class MyHttpHandler implements HttpHandler {
 
             Optional<Task> foundTask = tasks.findTask(pathVariable);
             if (foundTask.isPresent()) {
-                content = taskToJson(foundTask.get());
+                content = JsonConverter.taskToJson(foundTask.get());
                 exchange.sendResponseHeaders(200, content.getBytes().length);
             } else {
                 System.out.println("not found task" + foundTask);
@@ -53,7 +49,7 @@ public class MyHttpHandler implements HttpHandler {
         if (method.equals("POST") && path.equals("/tasks")) {
             content = "create a new task";
             if (!body.isBlank()) {
-                Task task = toTask(body);
+                Task task = JsonConverter.toTask(body);
                 task.setId(IdGenerator.generate());
                 tasks.addTask(task);
                 exchange.sendResponseHeaders(201, content.getBytes().length);
@@ -67,7 +63,7 @@ public class MyHttpHandler implements HttpHandler {
             if (!body.isBlank()) {
                 Optional<Task> foundTask = tasks.findTask(pathVariable);
                 if (foundTask.isPresent()) {
-                    foundTask.get().setTitle(extractValue(body));
+                    foundTask.get().setTitle(JsonConverter.extractValue(body));
                     exchange.sendResponseHeaders(200, content.getBytes().length);
                 } else {
                     exchange.sendResponseHeaders(404, 0);
@@ -97,27 +93,5 @@ public class MyHttpHandler implements HttpHandler {
     private Long extractPathVariable(String path) {
         String[] paths = path.split("/");
         return Long.parseUnsignedLong(paths[2]);
-    }
-
-
-    private String extractValue(String content) throws JsonProcessingException {
-        Task task = objectMapper.readValue(content, Task.class);
-        return task.getTitle();
-    }
-
-    private Task toTask(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
-    }
-
-    private String taskToJson(Task task) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, task);
-        return outputStream.toString();
-    }
-
-    private String tasksToJSON() throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks.getTasks());
-        return outputStream.toString();
     }
 }
