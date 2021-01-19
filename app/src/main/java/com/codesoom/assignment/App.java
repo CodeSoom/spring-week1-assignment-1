@@ -14,7 +14,7 @@ public class App {
         MyHttpServer httpServer = new MyHttpServer(port);
         TaskService taskService = new TaskService();
         HttpHandler handler = new MyHandler(taskService);
-        httpServer.addHandler("/tasks", handler);
+        httpServer.addHandler("/", handler);
         httpServer.start();
     }
 }
