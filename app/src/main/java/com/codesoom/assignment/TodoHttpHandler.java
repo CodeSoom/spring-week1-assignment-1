@@ -85,12 +85,10 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private boolean hasNumberParameter(String path) {
-        if (path.startsWith("/tasks/")) {
-            String[] split = path.split("/");
-            if (split.length == 3) {
-                index = Integer.parseInt(split[2]);
-                return true;
-            }
+        String[] split = path.split("/tasks/");
+        if (split.length == 2) {
+            index = Integer.parseInt(split[1]);
+            return true;
         }
         return false;
     }
