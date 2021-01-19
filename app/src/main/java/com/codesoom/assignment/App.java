@@ -10,6 +10,7 @@ import java.net.InetSocketAddress;
  * 2. Create Handler
  * 3. Response 200
  * 4. Get Path
+ * 5. Code with kind of method : GET, POST, PUT, DELETE
  */
 
 
