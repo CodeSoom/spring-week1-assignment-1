@@ -40,6 +40,16 @@ public class TaskManager {
         tasks.replace(task.id(), task);
     }
 
+    public static Task modify(long id, String title) throws Exception {
+        if (tasks.get(id) == null) {
+            throw new Exception("not exist task id");
+        }
+        Task task = new Task(id, title);
+
+        tasks.replace(task.id(), task);
+        return task;
+    }
+
     public static void delete(long id) throws Exception {
         if (tasks.get(id) == null) {
             throw new Exception("not exist task id");

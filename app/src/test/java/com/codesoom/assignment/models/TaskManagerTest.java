@@ -43,6 +43,9 @@ public class TaskManagerTest {
         Task task1 = TaskManager.find(1);
         assertEquals("sample1", task1.title());
 
+        Task modifiedTask1 = TaskManager.modify(1, "modified sample1");
+        assertEquals("modified sample1", modifiedTask1.title());
+
         try {
             TaskManager.delete(100);
             throw new Exception("failed test");
