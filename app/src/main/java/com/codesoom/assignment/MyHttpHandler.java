@@ -48,14 +48,11 @@ public class MyHttpHandler implements HttpHandler {
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
-
         // response 처리
         OutputStream outputStream = exchange.getResponseBody(); // getResponseBody() : Response를 byte 배열로 반환
         outputStream.write(content.getBytes());  // 매개값으로 주어진 바이트 배열의 모든 바이트를 출력 스트림으로 보냄
         outputStream.flush(); // 버퍼에 남아있는 데이터를 모두 출력시키고 버퍼를 비움
         outputStream.close(); // 호출해서 사용했던 시스템 자원을 풀어줌
-
-
 
     }
 
@@ -70,4 +67,5 @@ public class MyHttpHandler implements HttpHandler {
         // String 형식의 content 변수에 담기 위해 String으로 변환하여 return
         return outputStream.toString();
     }
+
 }

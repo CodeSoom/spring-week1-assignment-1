@@ -14,7 +14,7 @@ public class App {
 
         try {
 
-            InetSocketAddress serverAddress = new InetSocketAddress(8000);
+            InetSocketAddress serverAddress = new InetSocketAddress(8282);
             HttpServer httpServer = HttpServer.create(serverAddress,0);
 
             HttpHandler handler = new MyHttpHandler();
