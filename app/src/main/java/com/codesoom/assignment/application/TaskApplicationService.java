@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 public class TaskApplicationService {
-    Map<Long, Task> taskMap = new HashMap<>();
-    Long lastId = 1L;
+    private final Map<Long, Task> taskMap = new HashMap<>();
+    private Long lastId = 1L;
 
     public List<Task> getAllTasks() {
         return new ArrayList<>(taskMap.values());
