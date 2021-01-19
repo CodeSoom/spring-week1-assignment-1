@@ -30,4 +30,11 @@ public class TaskRepository {
         return taskMap.get(id);
     }
 
+    public Task update(Long id, Task newTask) {
+        newTask.setId(id);
+        taskMap.put(id, newTask);
+
+        return newTask;
+    }
+
 }
