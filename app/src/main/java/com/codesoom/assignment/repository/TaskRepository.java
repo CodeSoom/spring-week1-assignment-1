@@ -37,4 +37,7 @@ public class TaskRepository {
         return newTask;
     }
 
+    public void delete(Long id) {
+        taskMap.remove(id);
+    }
 }

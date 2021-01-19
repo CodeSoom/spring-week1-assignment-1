@@ -48,7 +48,13 @@ public class DemoHttpHandler implements HttpHandler {
             exchange.sendResponseHeaders(200, content.getBytes().length);
         }
 
-
+        if (method.equals("DELETE") && path.startsWith("/tasks")) {
+            String[] identities = path.split("\\/");
+            Long id = Long.valueOf(identities[2]);
+            taskRepository.delete(id);
+            content = "";
+            exchange.sendResponseHeaders(200, content.getBytes().length);
+        }
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
