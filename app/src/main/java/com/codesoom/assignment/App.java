@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class App {
-    public static void main(String[] args) throws IOException {
-        int port = 8000;
+    private static final int port = 8000;
 
+    public static void main(String[] args) throws IOException {
         InetSocketAddress address = new InetSocketAddress(port);
 
         HttpServer httpServer = HttpServer.create(address, 0);
