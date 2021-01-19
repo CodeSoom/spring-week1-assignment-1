@@ -89,4 +89,17 @@ class TaskApplicationServiceTest {
         Long uncreatedId = -1L;
         assertThrows(NotFoundTask.class, () -> applicationService.deleteTask(uncreatedId));
     }
+    
+    @Test
+    void createTaskAfterDeleteTask() {
+        String title = "Listen Music";
+        Long taskId = applicationService.createTask(title);
+        assertNotNull(taskId);
+
+        assertDoesNotThrow(() -> {
+            applicationService.deleteTask(taskId);
+            Long newTaskId = applicationService.createTask(title);
+            assertNotEquals(taskId, newTaskId);
+        });
+    }
 }
