@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 
 public class MyHttpHandler implements HttpHandler {
 
@@ -13,6 +14,9 @@ public class MyHttpHandler implements HttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
 
         String content = "Hello! Codesoom!";
+
+        URI uri = httpExchange.getRequestURI();
+        String path = uri.getPath();
 
 
         //header
