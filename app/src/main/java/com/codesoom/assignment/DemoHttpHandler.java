@@ -19,5 +19,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.close();
+
+        "pr이 자동으로 업데이트되는지 테스트합니다.";
     }
 }
