@@ -11,4 +11,9 @@ public class TaskJsonTransfer {
         JsonTask task = objectMapper.readValue(jsonString, JsonTask.class);
         return new Task(-1L, task.title);
     }
+
+    public String taskToJson(Task task) throws JsonProcessingException {
+        JsonTask jsonTask = new JsonTask(task.getId(), task.getTitle());
+        return objectMapper.writeValueAsString(jsonTask);
+    }
 }

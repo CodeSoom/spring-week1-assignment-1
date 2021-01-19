@@ -21,7 +21,7 @@ public class TaskJsonTransferTest {
 
     @Test
     void transferTaskToJson(){
-        String expectJsonString = "{\"id\": 1, \"title\": \"Play Game\"}";
+        String expectJsonString = "{\"id\":1,\"title\":\"Play Game\"}";
         Task task = new Task(1L, "Play Game");
 
         assertDoesNotThrow(()-> {
