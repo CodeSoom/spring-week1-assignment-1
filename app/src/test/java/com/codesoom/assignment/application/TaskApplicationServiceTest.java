@@ -82,8 +82,13 @@ class TaskApplicationServiceTest {
 
         assertDoesNotThrow(() -> {
             applicationService.deleteTask(taskId);
-            assertNotNull(taskId);
         });
-        assertThrows(NotFoundTask.class, ()-> applicationService.findTask(taskId));
+        assertThrows(NotFoundTask.class, () -> applicationService.findTask(taskId));
+    }
+
+    @Test
+    void deleteWorngTask() {
+        Long uncreatedId = -1L;
+        assertThrows(NotFoundTask.class, () -> applicationService.deleteTask(uncreatedId));
     }
 }
