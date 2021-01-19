@@ -60,7 +60,7 @@ public class TaskHttpHandler implements HttpHandler {
                 for (Task task : tasks) {
                     if(task.getId() == id) {
                         isthere = true;
-                        content = taskToJSON(id);
+                        content = taskToJSON(task);
                         break;
                     }
                 }
@@ -142,9 +142,9 @@ public class TaskHttpHandler implements HttpHandler {
         return objectMapper.readValue(content, Task.class);
     }
 
-    private String taskToJSON(int id) throws IOException {
+    private String taskToJSON(Task task) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks.get(id - 1));
+        objectMapper.writeValue(outputStream, task);
 
         return outputStream.toString();
     }
