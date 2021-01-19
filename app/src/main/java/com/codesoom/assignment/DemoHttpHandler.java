@@ -1,9 +1,6 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.models.Task;
-import com.codesoom.assignment.repository.TaskRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.codesoom.assignment.service.TaskService;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -13,8 +10,7 @@ import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
 
-    private ObjectMapper objectMapper = new ObjectMapper();
-    private TaskRepository taskRepository = new TaskRepository();
+    TaskService taskService = new TaskService();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -27,56 +23,50 @@ public class DemoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        String content = "[]";
-        if (method.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJSON();
-            exchange.sendResponseHeaders(200, content.getBytes().length);
-        } else if (method.equals("POST") && path.equals("/tasks")) {
-            Task task = taskRepository.save(toTask(body));
-            content = taskToJSON(task);
-            exchange.sendResponseHeaders(201, content.getBytes().length);
-        } else if (method.equals("GET") && path.startsWith("/tasks")) {
-            String[] identities = path.split("\\/");
-            Long id = Long.valueOf(identities[2]);
-            Task task = taskRepository.findOne(id);
-            content = taskToJSON(task);
-            exchange.sendResponseHeaders(200, content.getBytes().length);
-        } else if (method.equals("PUT") && path.startsWith("/tasks")) {
-            String[] identities = path.split("\\/");
-            Long id = Long.valueOf(identities[2]);
-            Task task = taskRepository.update(id, toTask(body));
-            content = taskToJSON(task);
-            exchange.sendResponseHeaders(200, content.getBytes().length);
-        } else if (method.equals("DELETE") && path.startsWith("/tasks")) {
-            String[] identities = path.split("\\/");
-            Long id = Long.valueOf(identities[2]);
-            taskRepository.delete(id);
-            content = "";
-            exchange.sendResponseHeaders(200, content.getBytes().length);
-        }
-
         OutputStream outputStream = exchange.getResponseBody();
+
+        String content = "";
+        int returnCode = 404;
+        if (method.equals("GET") && path.equals("/tasks")) {
+            content = taskService.getTasks();
+            returnCode = 200;
+        } else if (method.equals("GET") && path.startsWith("/tasks")) {
+            Long id = getId(path);
+            content = taskService.getTask(id);
+            if (content.equals("")) {
+                returnCode = 404;
+            } else {
+                returnCode = 200;
+            }
+        } else if (method.equals("POST")) {
+            content = taskService.addTask(body);
+            returnCode = 201;
+        } else if (method.equals("PUT")) {
+            Long id = getId(path);
+            content = taskService.updateTask(id, body);
+            if (content.equals("")) {
+                returnCode = 404;
+            } else {
+                returnCode = 200;
+            }
+        } else if (method.equals("DELETE")) {
+            Long id = getId(path);
+            boolean isDeleted = taskService.deleteTask(id);
+            if (!isDeleted) {
+                returnCode = 404;
+            } else {
+                returnCode = 204;
+            }
+        }
+        exchange.sendResponseHeaders(returnCode, content.getBytes().length);
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
     }
 
-    private Task toTask(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
-    }
-
-    private String taskToJSON(Task task) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, task);
-
-        return outputStream.toString();
-    }
-
-    private String tasksToJSON() throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, taskRepository.findAll());
-
-        return outputStream.toString();
+    private Long getId(String path) {
+        String[] identities = path.split("\\/");
+        return Long.valueOf(identities[2]);
     }
 
 }

@@ -18,6 +18,10 @@ public class TaskRepository {
         return tasks;
     }
 
+    public int size() {
+        return taskMap.size();
+    }
+
     public Task save(Task task) {
         Long id = idGenerator.getId();
         task.setId(id);
@@ -40,4 +44,5 @@ public class TaskRepository {
     public void delete(Long id) {
         taskMap.remove(id);
     }
+
 }
