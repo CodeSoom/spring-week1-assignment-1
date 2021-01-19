@@ -17,6 +17,14 @@ public class DemoHttpHandler implements HttpHandler {
 
         String content = "Hello World";
 
+        if(method.equals("GET") && path.equals("/tasks")) {
+            content = "No Tasks";
+        }
+
+        if(method.equals("POST") && path.equals("/task")) {
+            content = "Create Just One Task";
+        }
+
         exchange.sendResponseHeaders(200,content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
