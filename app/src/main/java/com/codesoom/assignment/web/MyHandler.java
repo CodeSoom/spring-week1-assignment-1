@@ -23,6 +23,11 @@ public class MyHandler implements HttpHandler {
         RequestInfo requestInfo = new RequestInfo(exchange);
         printRequestInfo(requestInfo);
 
+        if (isInvalidPath(requestInfo.getPath())) {
+            sendResponse("Not Found", 404, exchange);
+            return;
+        }
+
         try {
             switch (requestInfo.getMethod()) {
                 case "GET":
@@ -46,11 +51,18 @@ public class MyHandler implements HttpHandler {
                     break;
                 case "DELETE":
                     break;
+                default:
+                    sendResponse("Method Not Allowed", 405, exchange);
+                    break;
             }
         } catch (Exception e) {
             e.printStackTrace();
             sendResponse("Internal Server Error", 500, exchange);
         }
+    }
+    
+    private boolean isInvalidPath(String path) {
+        return path.startsWith("/tasks");
     }
 
     private void sendResponse(String content, int responseCode, HttpExchange exchange) throws IOException {
