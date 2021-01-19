@@ -11,7 +11,9 @@ public class DemoHttpHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
-        System.out.println(method);
+        URI uri = exchange.getRequestURI();
+        String path = uri.getPath();
+        System.out.println(method+" "+path);
 
         String content = "Hello World";
 
@@ -19,6 +21,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
+        outputStream.flush();
         outputStream.close();
     }
 }
