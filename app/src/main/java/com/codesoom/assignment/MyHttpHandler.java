@@ -31,6 +31,7 @@ public class MyHttpHandler implements HttpHandler {
 
         // method setting
         if (method.equals("GET") ){
+            processGet(httpExchange);
             httpExchange.sendResponseHeaders(OK.getStatus(), content.getBytes().length);
         }
 
@@ -56,6 +57,10 @@ public class MyHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private void processGet(HttpExchange httpExchange) {
+
     }
 
 }
