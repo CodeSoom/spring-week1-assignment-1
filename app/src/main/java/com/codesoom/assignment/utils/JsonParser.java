@@ -18,7 +18,7 @@ public class JsonParser {
         try {
             task = objectMapper.readValue(content, Task.class);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new RuntimeException();
         }
 
         return task;
@@ -30,7 +30,7 @@ public class JsonParser {
         try {
             objectMapper.writeValue(outputStream, object);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException();
         }
 
         return outputStream.toString();

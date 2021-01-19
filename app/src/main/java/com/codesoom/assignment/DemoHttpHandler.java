@@ -46,7 +46,7 @@ public class DemoHttpHandler implements HttpHandler {
         Long id = getIdFromPath(path);
         String content = taskService.getTask(id);
 
-        if (content.isBlank()) {
+        if (content.isEmpty()) {
             return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_NOT_FOUND);
         }
 
