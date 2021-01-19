@@ -14,27 +14,13 @@ import java.util.stream.Collectors;
 public class TodoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
     private ObjectMapper mapper = new ObjectMapper();
-    private int idx;
-
-    public TodoHttpHandler() {
-        Task task = new Task();
-        task.setId(1L);
-        task.setTitle("hello");
-        tasks.add(task);
-        Task task2 = new Task();
-        task2.setId(2L);
-        task2.setTitle("world");
-        tasks.add(task2);
-    }
+    private int idx, code = 200;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-
         String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().getPath();
         String content = "";
-
-        System.out.println(method + " " + path);
 
         InputStream inputStream = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(inputStream))
@@ -42,35 +28,59 @@ public class TodoHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         if (method.equals("GET")) {
-            if (hasNumberParameter(path))
-                content = taskToJson(idx - 1);
-            else
+            if (hasNumberParameter(path)) {
+                if(hasIdx(idx-1)){
+                    code=200;
+                    content = taskToJson(idx - 1);
+                }else
+                    code=404;
+            } else {
+                code=200;
                 content = taskToJson();
+            }
         } else if (method.equals("POST") && path.equals("/tasks")) {
             Task task = jsonToTask(body);
             tasks.add(task);
+            code = 201;
             content = taskToJson(task.getId() - 1);
         } else if (method.equals("PUT") || method.equals("PATCH")) {
             if (hasNumberParameter(path)) {
-                tasks.remove(idx - 1);
-                Task task = jsonToTask(body);
-                task.setId((long) idx);
-                tasks.add(idx - 1, task);
-                content = taskToJson(idx - 1);
-            } else
-                content = "Cannot be modified";
-        } else if (method.equals("DELETE")) {
-            if (hasNumberParameter(path))
-                tasks.remove(idx - 1);
-            else
-                content = "Cannot be deleted";
-        }
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+                if(hasIdx(idx-1)){
+                    tasks.remove(idx - 1);
+                    Task task = jsonToTask(body);
+                    task.setId((long) idx);
+                    tasks.add(idx - 1, task);
+                    code=200;
+                    content = taskToJson(idx - 1);
+                }else
+                    code=404;
 
+            } else {
+                code=404;
+            }
+        } else if (method.equals("DELETE")) {
+            if (hasNumberParameter(path)) {
+                if(hasIdx(idx-1)){
+                    code = 204;
+                    tasks.remove(idx - 1);
+                }else
+                    code=404;
+            }else {
+                code = 404;
+            }
+        }
+        exchange.sendResponseHeaders(code, content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private boolean hasIdx(int idx) {
+        if(idx<0||tasks.size()<idx) {
+            return false;
+        }
+        return true;
     }
 
     private boolean hasNumberParameter(String path) {
