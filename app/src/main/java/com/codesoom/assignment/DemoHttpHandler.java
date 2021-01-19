@@ -10,7 +10,12 @@ import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
 
-    TaskService taskService = new TaskService();
+    private TaskService taskService = new TaskService();
+
+    public static final int HTTP_STATUS_CODE_OK = 200;
+    public static final int HTTP_STATUS_CODE_CREATED = 201;
+    public static final int HTTP_STATUS_CODE_NO_CONTENT = 204;
+    public static final int HTTP_STATUS_CODE_NOT_FOUND= 404;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -26,39 +31,33 @@ public class DemoHttpHandler implements HttpHandler {
         OutputStream outputStream = exchange.getResponseBody();
 
         String content = "";
-        int returnCode = 404;
+        int httpStatusCode = HTTP_STATUS_CODE_NOT_FOUND;
         if (method.equals("GET") && path.equals("/tasks")) {
             content = taskService.getTasks();
-            returnCode = 200;
+            httpStatusCode = HTTP_STATUS_CODE_OK;
         } else if (method.equals("GET") && path.startsWith("/tasks")) {
             Long id = getId(path);
             content = taskService.getTask(id);
-            if (content.equals("")) {
-                returnCode = 404;
-            } else {
-                returnCode = 200;
+            if (!content.equals("")) {
+                httpStatusCode = HTTP_STATUS_CODE_OK;
             }
         } else if (method.equals("POST")) {
             content = taskService.addTask(body);
-            returnCode = 201;
+            httpStatusCode = HTTP_STATUS_CODE_CREATED;
         } else if (method.equals("PUT")) {
             Long id = getId(path);
             content = taskService.updateTask(id, body);
-            if (content.equals("")) {
-                returnCode = 404;
-            } else {
-                returnCode = 200;
+            if (!content.equals("")) {
+                httpStatusCode = HTTP_STATUS_CODE_OK;
             }
         } else if (method.equals("DELETE")) {
             Long id = getId(path);
             boolean isDeleted = taskService.deleteTask(id);
-            if (!isDeleted) {
-                returnCode = 404;
-            } else {
-                returnCode = 204;
+            if (isDeleted) {
+                httpStatusCode = HTTP_STATUS_CODE_NO_CONTENT;
             }
         }
-        exchange.sendResponseHeaders(returnCode, content.getBytes().length);
+        exchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
