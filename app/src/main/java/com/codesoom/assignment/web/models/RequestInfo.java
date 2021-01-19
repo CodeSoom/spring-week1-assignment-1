@@ -8,9 +8,9 @@ import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
 public class RequestInfo {
-    private String method;
-    private String path;
-    private String body;
+    private final String method;
+    private final String path;
+    private final String body;
 
     public RequestInfo(HttpExchange exchange) {
         this.method = exchange.getRequestMethod();

@@ -13,7 +13,7 @@ import java.io.OutputStream;
 
 public class MyHandler implements HttpHandler {
 
-    private TaskService taskService;
+    private final TaskService taskService;
 
     public MyHandler(TaskService taskService) {
         this.taskService = taskService;
