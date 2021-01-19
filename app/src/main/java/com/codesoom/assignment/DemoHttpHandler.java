@@ -20,6 +20,10 @@ public class DemoHttpHandler implements HttpHandler {
 
         String content = "나는 진정 행복한 부자가 될 것이다.";
 
+        if(method.equals("GET") && path.equals("/tasks")) {
+            content = "Here are your tasks";
+        }
+
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
         OutputStream responseBody = exchange.getResponseBody();
