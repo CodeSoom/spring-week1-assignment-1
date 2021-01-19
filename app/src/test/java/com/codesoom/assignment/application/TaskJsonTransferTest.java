@@ -30,4 +30,17 @@ public class TaskJsonTransferTest {
             assertEquals(expectJsonString, json);
         });
     }
+
+    @Test
+    void transferTaskListToJsonArray() {
+        String expectJsonString = "[{\"id\":1,\"title\":\"Play Game\"}]";
+        Task task = new Task(1L, "Play Game");
+
+        assertDoesNotThrow(() -> {
+            String json = transfer.taskListToJson(task);
+
+            assertEquals(expectJsonString, json);
+        });
+
+    }
 }
