@@ -34,3 +34,9 @@ Content-Type: application/json
 GET {{host}}/tasks
 
 ###
+
+DELETE  {{host}}/tasks/1
+
+###
+
+GET {{host}}/tasks

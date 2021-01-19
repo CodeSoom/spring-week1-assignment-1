@@ -75,6 +75,21 @@ public class MyHttpHandler implements HttpHandler {
             }
         }
 
+        if (method.equals("DELETE") && pattern.matcher(path).matches()) {
+            content = "delete a task";
+            Long pathVariable = extractPathVariable(path);
+
+            Optional<Task> foundTask = findTask(pathVariable);
+            if (foundTask.isPresent()) {
+                tasks.remove(foundTask.get());
+                exchange.sendResponseHeaders(200, content.getBytes().length);
+            } else {
+                exchange.sendResponseHeaders(404, 0);
+            }
+
+        }
+
+
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
