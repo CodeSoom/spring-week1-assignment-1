@@ -9,7 +9,6 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
@@ -32,23 +31,23 @@ public class DemoHttpHandler implements HttpHandler {
         if (method.equals("GET") && path.equals("/tasks")) {
             content = tasksToJSON();
             exchange.sendResponseHeaders(200, content.getBytes().length);
-        }
-
-        if (method.equals("POST") && path.equals("/tasks")) {
+        } else if (method.equals("POST") && path.equals("/tasks")) {
             Task task = taskRepository.save(toTask(body));
             content = taskToJSON(task);
             exchange.sendResponseHeaders(201, content.getBytes().length);
-        }
-
-        if (method.equals("PUT") && path.startsWith("/tasks")) {
+        } else if (method.equals("GET") && path.startsWith("/tasks")) {
+            String[] identities = path.split("\\/");
+            Long id = Long.valueOf(identities[2]);
+            Task task = taskRepository.findOne(id);
+            content = taskToJSON(task);
+            exchange.sendResponseHeaders(200, content.getBytes().length);
+        } else if (method.equals("PUT") && path.startsWith("/tasks")) {
             String[] identities = path.split("\\/");
             Long id = Long.valueOf(identities[2]);
             Task task = taskRepository.update(id, toTask(body));
             content = taskToJSON(task);
             exchange.sendResponseHeaders(200, content.getBytes().length);
-        }
-
-        if (method.equals("DELETE") && path.startsWith("/tasks")) {
+        } else if (method.equals("DELETE") && path.startsWith("/tasks")) {
             String[] identities = path.split("\\/");
             Long id = Long.valueOf(identities[2]);
             taskRepository.delete(id);
