@@ -4,17 +4,20 @@ import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.repository.TaskRepository;
 import com.codesoom.assignment.utils.JsonParser;
 
+import java.util.List;
+
 public class TaskService {
 
     private JsonParser jsonParser = new JsonParser();
     private TaskRepository taskRepository = new TaskRepository();
 
     public String getTasks() {
-        if(taskRepository.size() == 0) {
+        List<Task> tasks = taskRepository.findAll();
+        if(tasks.size() == 0) {
             return "[]";
         }
 
-        String content = jsonParser.toJSON(taskRepository.findAll());
+        String content = jsonParser.toJSON(tasks);
 
         return content;
     }
