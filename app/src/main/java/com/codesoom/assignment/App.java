@@ -8,12 +8,10 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 
 public class App {
-    public String getGreeting() {
-        return "Hello World!";
-    }
+    private static final int port = 8000;
 
     public static void main(String[] args) throws IOException {
-        MyHttpServer httpServer = new MyHttpServer(8000);
+        MyHttpServer httpServer = new MyHttpServer(port);
         TaskService taskService = new TaskService();
         HttpHandler handler = new MyHandler(taskService);
         httpServer.addHandler("/tasks", handler);
