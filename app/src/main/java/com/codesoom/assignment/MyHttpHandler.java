@@ -12,7 +12,14 @@ import java.util.List;
 public class MyHttpHandler implements HttpHandler {
 
     private List<Task> tasks = new ArrayList<>();
-    
+
+    public MyHttpHandler() {
+        Task task = new Task();
+        task.setId(1L);
+        task.setTitle("Task1");
+
+        tasks.add(task);
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
