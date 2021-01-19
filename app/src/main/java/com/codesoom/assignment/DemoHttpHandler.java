@@ -8,6 +8,7 @@ import java.io.IOException;
 public class DemoHttpHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        System.out.println("Request something..");
+        String method = exchange.getRequestMethod();
+        System.out.println(method);
     }
 }
