@@ -22,5 +22,5 @@ public class Task {
         this.title = newTitle;
     }
 
-    
+
 }
