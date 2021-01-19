@@ -10,16 +10,18 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class TaskManagerTest {
     @Test
     void taskManagerTest() throws Exception {
-        TaskManager.insert("sample");
-        Task task = TaskManager.find(1);
+        Task task = TaskManager.insert("sample");
         assertEquals("sample", task.title());
 
-        TaskManager.insert("sample2");
+        TaskManager.insert(new Task(2, "sample2"));
         List<Task> tasks = TaskManager.find();
         assertEquals(2, tasks.size());
 
         Task task2 = TaskManager.find(2);
         assertEquals("sample2", task2.title());
+
+        Task task3 = TaskManager.insert("sample3");
+        assertEquals(3, task3.id());
 
         try {
             TaskManager.insert(new Task(1, "sample"));
@@ -29,12 +31,12 @@ public class TaskManagerTest {
         }
 
         try {
-            TaskManager.modify(new Task(3, "not exist"));
+            TaskManager.modify(new Task(100, "not exist"));
             throw new Exception("failed test");
         } catch (Exception e) {
             assertEquals("not exist task id", e.getMessage());
         }
-        Task notExistTask = TaskManager.find(3);
+        Task notExistTask = TaskManager.find(100);
         assertNull(notExistTask);
 
         TaskManager.modify(new Task(1, "sample1"));
@@ -42,7 +44,7 @@ public class TaskManagerTest {
         assertEquals("sample1", task1.title());
 
         try {
-            TaskManager.delete(3);
+            TaskManager.delete(100);
             throw new Exception("failed test");
         } catch (Exception e) {
             assertEquals("not exist task id", e.getMessage());
@@ -53,6 +55,6 @@ public class TaskManagerTest {
         assertNull(deletedTask);
 
         List<Task> finalTasks = TaskManager.find();
-        assertEquals(1, finalTasks.size());
+        assertEquals(2, finalTasks.size());
     }
 }

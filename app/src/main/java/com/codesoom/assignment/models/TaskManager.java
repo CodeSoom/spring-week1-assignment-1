@@ -23,13 +23,14 @@ public class TaskManager {
         tasks.put(task.id(), task);
     }
 
-    public static void insert(String title) {
+    public static Task insert(String title) {
         index += 1;
         if (tasks.get(index) == null) {
-            tasks.put(index, new Task(index, title));
-            return;
+            Task task = new Task(index, title);
+            tasks.put(index, task);
+            return task;
         }
-        insert(title);
+        return insert(title);
     }
 
     public static void modify(Task task) throws Exception {
