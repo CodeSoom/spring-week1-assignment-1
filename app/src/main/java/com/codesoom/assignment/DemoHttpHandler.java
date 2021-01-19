@@ -18,11 +18,6 @@ public class DemoHttpHandler implements HttpHandler {
     private Long id = 1L;
 
     public DemoHttpHandler() {
-//        Task task = new Task();
-//        task.setId(1L);
-//        task.setTitle("Do nothing...");
-
-//        tasks.add(task);
     }
 
     @Override
@@ -41,20 +36,12 @@ public class DemoHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
-        // body {"title": "ttt"}
         InputStream inputStream = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
 
         System.out.println(method + " " + path);
-
-        if (!body.isBlank()) {
-            Task task = toTask(body);
-            task.setId(id++);
-            System.out.println(task.toString());
-            tasks.add(task);
-        }
 
         String content = "Hello World!";
         int statusCode = 200;
@@ -63,10 +50,23 @@ public class DemoHttpHandler implements HttpHandler {
             content = tasksToJSON();
         }
 
-        if (method.equals("POST") && path.equals("/tasks")) {
+        if (method.equals("POST") && path.equals("/tasks") && !body.isBlank()) {
+            Task task = toTask(body);
+            task.setId(id++);
+            System.out.println(task.toString());
+            tasks.add(task);
             statusCode = 201;
             content = "Create a new task.";
         }
+
+        if (method.equals("PUT") && !body.isBlank()) {
+            String[] str = path.split("/");
+            if (str[1].equals("tasks") && Integer.valueOf(str[str.length -1]) instanceof Integer) {
+
+            }
+        }
+
+
 
         exchange.sendResponseHeaders(statusCode, content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
