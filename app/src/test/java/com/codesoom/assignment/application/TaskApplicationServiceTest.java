@@ -80,9 +80,7 @@ class TaskApplicationServiceTest {
         Long taskId = applicationService.createTask(title);
         assertNotNull(taskId);
 
-        assertDoesNotThrow(() -> {
-            applicationService.deleteTask(taskId);
-        });
+        assertDoesNotThrow(() -> applicationService.deleteTask(taskId));
         assertThrows(NotFoundTask.class, () -> applicationService.findTask(taskId));
     }
 
