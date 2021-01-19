@@ -37,7 +37,8 @@ public class TaskApplicationService {
         taskMap.put(taskId, findTask(taskId).updateTaskTitle(newTitle));
     }
 
-    public void deleteTask(Long taskId) {
-        taskMap.remove(taskId);
+    public void deleteTask(Long taskId) throws NotFoundTask {
+        Task task = findTask(taskId);
+        taskMap.remove(task.getId());
     }
 }
