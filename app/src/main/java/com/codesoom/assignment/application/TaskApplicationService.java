@@ -10,6 +10,7 @@ import java.util.Map;
 
 public class TaskApplicationService {
     Map<Long, Task> taskMap = new HashMap<>();
+    Long lastId = 1L;
 
     public List<Task> getAllTasks() {
         return new ArrayList<>(taskMap.values());
@@ -30,7 +31,7 @@ public class TaskApplicationService {
     }
 
     private Long getNextId() {
-        return (long) taskMap.size();
+        return lastId++;
     }
 
     public void updateTaskTitle(Long taskId, String newTitle) throws NotFoundTask {
