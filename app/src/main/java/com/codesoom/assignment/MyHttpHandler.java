@@ -11,18 +11,17 @@ import static com.codesoom.assignment.Status.*;
 
 public class MyHttpHandler implements HttpHandler {
 
-    private final static String PATH = "/tasks";
-
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
 
         String content ="";
-        int status = 200;
 
         //path setting
         URI uri = httpExchange.getRequestURI();
         String path = uri.getPath();
         String method = httpExchange.getRequestMethod();
+
+        System.out.println(path);
 
         // process request body data
         InputStream inputStream = httpExchange.getRequestBody();
@@ -31,21 +30,21 @@ public class MyHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         // method setting
-        if (method.equals("GET") && path.equals(PATH)){
-            content = "[\"id\" : \"1\", \"title\" : \"one day one pr\"]";
+        if (method.equals("GET") ){
             httpExchange.sendResponseHeaders(OK.getStatus(), content.getBytes().length);
         }
-        else if (method.equals("POST") && path.equals(PATH)){
+
+        else if (method.equals("POST")){
             System.out.println(body);
             httpExchange.sendResponseHeaders(CREATED.getStatus(), content.getBytes().length);
         }
-        else if (method.equals("PUT") && path.equals(PATH)){
+        else if (method.equals("PUT") ){
 
         }
-        else if (method.equals("PATCH") && path.equals(PATH)){
+        else if (method.equals("PATCH") ){
 
         }
-        else if (method.equals("DELETE") && path.equals(PATH)){
+        else if (method.equals("DELETE") ){
 
         }
         else{
@@ -58,4 +57,5 @@ public class MyHttpHandler implements HttpHandler {
         outputStream.flush();
         outputStream.close();
     }
+
 }
