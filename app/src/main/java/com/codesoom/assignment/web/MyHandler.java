@@ -28,6 +28,10 @@ public class MyHandler implements HttpHandler {
             return;
         }
 
+        processRequest(requestInfo, exchange);
+    }
+
+    private void processRequest(RequestInfo requestInfo, HttpExchange exchange) throws IOException {
         try {
             switch (requestInfo.getMethod()) {
                 case "GET":
@@ -60,7 +64,23 @@ public class MyHandler implements HttpHandler {
             sendResponse("Internal Server Error", 500, exchange);
         }
     }
-    
+
+    private void processGet(RequestInfo requestInfo) {
+
+    }
+
+    private void processPost(RequestInfo requestInfo) {
+
+    }
+
+    private void processPut(RequestInfo requestInfo) {
+
+    }
+
+    private void processDelete(RequestInfo requestInfo) {
+
+    }
+
     private boolean isInvalidPath(String path) {
         return path.startsWith("/tasks");
     }
