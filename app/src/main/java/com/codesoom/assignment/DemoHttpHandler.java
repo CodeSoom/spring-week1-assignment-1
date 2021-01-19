@@ -43,6 +43,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         System.out.println(method + " " + path);
 
+        String[] str = path.split("/");
         String content = "Hello World!";
         int statusCode = 200;
 
@@ -59,11 +60,12 @@ public class DemoHttpHandler implements HttpHandler {
             content = "Create a new task.";
         }
 
-        if (method.equals("PUT") && !body.isBlank()) {
-            String[] str = path.split("/");
-            if (str[1].equals("tasks") && Integer.valueOf(str[str.length -1]) instanceof Integer) {
-
+        if (method.equals("PUT") && str[1].equals("tasks") && !body.isBlank()) {
+            int lastId = Integer.parseInt(str[str.length - 1]);
+            System.out.println(tasks.size());
+            if (!(tasks.size() == 0)){
             }
+
         }
 
 
