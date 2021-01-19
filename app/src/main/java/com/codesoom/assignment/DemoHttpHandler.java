@@ -3,10 +3,19 @@ package com.codesoom.assignment;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
 
+/**
+ * 자바 HTTP 서버를 만들어보기 위한 데모 핸들러입니다.
+ *
+ * [GET]     /tasks       : 전체 태스크를 반환합니다.
+ * [GET]     /tasks/{id}  : 해당 id의 태스크를 반환합니다.
+ * [POST]    /tasks       : 입력받은 태스크를 저장합니다.
+ * [PUT]     /tasks/{id}  : 해당 id의 태스크를 수정합니다. (전체를 받아야 함)
+ * [PATCH]   /tasks/{id}  : 해당 id의 태스크를 수정합니다. (부분만 받아도 반영해줌)
+ * [DELETE]  /tasks/{id}  : 해당 id의 태스크를 삭제합니다.
+ */
 public class DemoHttpHandler implements HttpHandler {
     private boolean isValidPath(String path) {
         return path.startsWith("/tasks");
