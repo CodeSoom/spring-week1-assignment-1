@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 public class DemoHttpHandler implements HttpHandler {
 
     private static final int OK = 200;
-    private ObjectMapper mapper = new ObjectMapper();
-    private List<Task> tasks = new ArrayList<>();
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final List<Task> tasks = new ArrayList<>();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -32,6 +32,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         if (!body.isBlank()) {
             Task task = toTask(body);
+            task.generateId(tasks.size());
             tasks.add(task);
         }
 

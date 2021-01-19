@@ -5,8 +5,6 @@ public class Task {
     private Long id;
     private String title;
 
-    public Task() {}
-
     public long getId() {
         return id;
     }
@@ -29,5 +27,9 @@ public class Task {
                 "id=" + id +
                 ", title='" + title + '\'' +
                 '}';
+    }
+
+    public void generateId(int size) {
+        id = (long) (size + 1);
     }
 }
