@@ -38,23 +38,14 @@ public class TaskService {
     }
 
     public String updateTask(Long id, String body) {
-        if(taskRepository.findOne(id) == null) {
-            return "";
-        }
-
         Task task = taskRepository.update(id, jsonParser.toTask(body));
         String content = jsonParser.toJSON(task);
 
         return content;
     }
 
-    public boolean deleteTask(Long id) {
-        if(taskRepository.findOne(id) == null) {
-            return false;
-        }
-
+    public void deleteTask(Long id) {
         taskRepository.delete(id);
-        return true;
     }
 
 }

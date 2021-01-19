@@ -59,24 +59,24 @@ public class DemoHttpHandler implements HttpHandler {
 
     private HttpResponse createPatchOrPutResponse(String path, String body) {
         Long id = getIdFromPath(path);
-        String content = taskService.updateTask(id, body);
 
-        if (content.isEmpty()) {
+        if(taskService.getTask(id).isEmpty()) {
             return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_NOT_FOUND);
         }
 
+        String content = taskService.updateTask(id, body);
         return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_OK, content);
     }
 
     private HttpResponse createDeleteResponse(String path) {
         Long id = getIdFromPath(path);
-        boolean isDeleted = taskService.deleteTask(id);
 
-        if (isDeleted) {
-            return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_NO_CONTENT);
+        if(taskService.getTask(id).isEmpty()) {
+            return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_NOT_FOUND);
         }
 
-        return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_NOT_FOUND);
+        taskService.deleteTask(id);
+        return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_NO_CONTENT);
     }
 
     private HttpResponse createWrongMethodResponse() {
@@ -89,7 +89,9 @@ public class DemoHttpHandler implements HttpHandler {
 
     private void sendResponse(HttpExchange exchange, HttpResponse httpResponse) throws IOException {
         OutputStream outputStream = exchange.getResponseBody();
+
         exchange.sendResponseHeaders(httpResponse.getHttpStatusCode(), httpResponse.getContent().getBytes().length);
+
         outputStream.write(httpResponse.getContent().getBytes());
         outputStream.flush();
         outputStream.close();
