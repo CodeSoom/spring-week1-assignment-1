@@ -15,51 +15,57 @@ import java.util.stream.Collectors;
 public class DemoHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
-
-    public DemoHttpHandler() {
-        Task task = new Task();
-        task.setId(1L);
-        task.setTitle("Do nothing...");
-
-        tasks.add(task);
-
-        Task task2 = new Task();
-        task2.setId(2L);
-        task2.setTitle("Second");
-
-        tasks.add(task2);
-    }
+    private Long id=1L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
+        System.out.println(method+" "+path);
+
         InputStream inputStream = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        System.out.println(method+" "+path);
-
         if(!body.isBlank()) {
             System.out.println(body);
-
-            Task task = toTask(body);
-            tasks.add(task);
+//            Task task = toTask(body);
+//            task.setId(id++);
+//            tasks.add(task);
         }
 
         String content = "Hello World";
 
         if(method.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJson();
+            content = (tasks == null ) ? "[]" : tasksToJson();
+            exchange.sendResponseHeaders(200,content.getBytes().length);
         }
 
-        if(method.equals("POST") && path.equals("/task")) {
-            content = "Create Just One Task";
+        else if(method.equals("GET") && path.startsWith("/tasks")) {
+            Task findTask = null;
+            Long idValue = Long.parseLong(path.substring(7));
+            System.out.println(idValue);
+            for(Task task : tasks){
+                if(task.getId() == idValue){
+                    findTask = task;
+                    break;
+                }
+            }
+
+            content = taskToJson(findTask);
+            exchange.sendResponseHeaders(200,content.getBytes().length);
         }
 
-        exchange.sendResponseHeaders(200,content.getBytes().length);
+        else if(method.equals("POST") && path.equals("/tasks")) {
+            Task task = toTask(body);
+            task.setId(id++);
+            tasks.add(task);
+
+            content = taskToJson(task);
+            exchange.sendResponseHeaders(201,content.getBytes().length);
+        }
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
@@ -74,6 +80,12 @@ public class DemoHttpHandler implements HttpHandler {
     private String tasksToJson() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
+        return outputStream.toString();
+    }
+
+    private String taskToJson(Task task) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, task);
         return outputStream.toString();
     }
 }
