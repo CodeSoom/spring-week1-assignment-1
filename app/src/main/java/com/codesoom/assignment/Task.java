@@ -5,6 +5,10 @@ public class Task {
     private static Long id = -1L;
     private String title;
 
+    public Task(){
+
+    }
+
     public Task(String title) {
         id++;
         this.title = title;

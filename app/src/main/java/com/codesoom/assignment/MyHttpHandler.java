@@ -15,8 +15,6 @@ public class MyHttpHandler implements HttpHandler {
 
         String method = httpExchange.getRequestMethod();
 
-
-
         if (method.equals("GET") ) controller.getController(httpExchange);
 
         if (method.equals("POST")) controller.postController(httpExchange);
@@ -27,10 +25,6 @@ public class MyHttpHandler implements HttpHandler {
 
         if (method.equals("DELETE")) controller.deleteController(httpExchange);
 
-        //set request body
-        OutputStream outputStream = httpExchange.getResponseBody();
-        outputStream.flush();
-        outputStream.close();
     }
 
 
