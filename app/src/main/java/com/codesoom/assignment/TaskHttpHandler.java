@@ -12,37 +12,46 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+class HttpStatusCode {
+    public static final int OK = 200;
+    public static final int BadRequest = 400;
+    public static final int NotFound = 404;
+}
+
 public class TaskHttpHandler implements HttpHandler {
-    ObjectMapper objectMapper = new ObjectMapper();
+    private static final String MAIN_PATH = "tasks";
     private List<Task> tasks = new ArrayList<>();
+    ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String content = "OK";
-
         String method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
-
         System.out.println(method + " " + path);
 
-        // "/tasks/1" is split into { "", "tasks", "1" }
-        String[] segments = path.split("/");
+        String content = "OK";
+        int code = HttpStatusCode.OK;
 
-        if (segments.length < 2 || segments.length > 3 || !segments[0].isBlank() || !segments[1].equals("tasks")) {
-            // 404 NotFound Exception
-            System.out.println("[Invalid URI] 404 NotFound Exception");
-            exchange.sendResponseHeaders(404, 0);
-            OutputStream outputStream = exchange.getResponseBody();
-            outputStream.flush();
-            outputStream.close();
-            return;
+        if (path == null) {
+            System.out.println("[Undefined Path] 404 NotFound Exception");
+            content = "Undefined path";
+            code = HttpStatusCode.NotFound;
+        }
+
+        // "/tasks/1" is split into { "", "tasks", "1" }
+        String[] pathItems = path.split("/");
+
+        if (!isValidPath(pathItems)) {
+            System.out.println("[Invalid PATH] 404 NotFound Exception");
+            content = "Invalid path";
+            code = HttpStatusCode.NotFound;
         }
 
         int id = 0;
-        if (segments.length == 3) {
+        if (pathItems.length == 3) {
             // if segments[2] is not integer, 400 BadRequest - NumberFormatException thrown
-            id = Integer.parseInt(segments[2]);
+            id = Integer.parseInt(pathItems[2]);
         }
 
         InputStream inputStream = exchange.getRequestBody();
@@ -50,35 +59,41 @@ public class TaskHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        if (method.equals("GET") ) {
-            if (segments.length == 2) {
-                content = taskToJSON();
-            }
+        if (code != HttpStatusCode.OK) {
+            exchange.sendResponseHeaders(code, content.getBytes().length);
+            OutputStream outputStream = exchange.getResponseBody();
+            outputStream.write(content.getBytes());
+            outputStream.flush();
+            outputStream.close();
+            return;
+        }
 
-            if (segments.length == 3) {
-                boolean isthere = false;
-                for (Task task : tasks) {
-                    if(task.getId() == id) {
-                        isthere = true;
-                        content = taskToJSON(task);
-                        break;
-                    }
-                }
+        // GET all tasks
+        if (method.equals("GET") && (pathItems.length == 2)) {
+            content = taskToJSON();
+        }
 
-                if (isthere == false) {
-                    // 404 NotFound Exception
-                    System.out.println("[GET] 404 NotFound Exception");
-                    exchange.sendResponseHeaders(404, 0);
-                    OutputStream outputStream = exchange.getResponseBody();
-                    outputStream.flush();
-                    outputStream.close();
-                    return;
-                }
+        // GET one task
+        if (method.equals("GET") && (pathItems.length == 3)) {
+            Task task = getTask(id);
+            content = taskToJSON(task);
+
+            if (task == null) {
+                System.out.println("[GET] 404 NotFound Exception");
+                content = "Task #" + id +" doesn't exist";
+                code = HttpStatusCode.NotFound;
             }
         }
 
+        // POST
         if (method.equals("POST")) {
-            if (!body.isBlank() && (segments.length == 2)) {
+            if (body.isBlank() || (pathItems.length != 2)) {
+                // 400 BadRequest Exception
+                System.out.println("[POST] 400 BadRequest Exception");
+                content = "POST failed";
+                code = HttpStatusCode.BadRequest;
+            }
+            else {
                 Task task = toTask(body);
 
                 if (tasks.isEmpty()) {
@@ -107,15 +122,6 @@ public class TaskHttpHandler implements HttpHandler {
                 tasks.add(task);
                 content = "Task successfully added.";
             }
-            else {
-                // 400 BadRequest Exception
-                System.out.println("[POST] 400 BadRequest Exception");
-                exchange.sendResponseHeaders(400, 0);
-                OutputStream outputStream = exchange.getResponseBody();
-                outputStream.flush();
-                outputStream.close();
-                return;
-            }
         }
 
         if (method.equals("PUT")) {
@@ -130,12 +136,33 @@ public class TaskHttpHandler implements HttpHandler {
 
         }
 
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+        exchange.sendResponseHeaders(code, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private boolean isValidPath(String[] pathItems) {
+        if (pathItems.length < 2) return false;
+        if (pathItems.length > 3) return false;
+        if (!pathItems[0].isBlank()) return false;
+        if (!pathItems[1].equals(MAIN_PATH)) return false;
+
+        return true;
+    }
+
+    private Task getTask(int id) throws IOException {
+        Task foundTask = null;
+
+        for (Task task : tasks) {
+            if(task.getId() == id) {
+                foundTask = task;
+                break;
+            }
+        }
+        return foundTask;
     }
 
     private Task toTask(String content) throws JsonProcessingException {

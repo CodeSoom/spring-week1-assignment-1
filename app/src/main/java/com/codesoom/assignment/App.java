@@ -11,14 +11,17 @@ public class App {
         return "Hello, this is TODO App server...";
     }
 
+    private static final String HOSTNAME = "localhost";
+    private static final int PORT = 8000;
+
     public static void main(String[] args) {
         System.out.println(new App().getGreeting());
 
         try {
-            InetSocketAddress address = new InetSocketAddress("localhost", 8000);
+            InetSocketAddress address = new InetSocketAddress(HOSTNAME, PORT);
             HttpServer httpServer = HttpServer.create(address, 0);
-            HttpHandler handler = new TaskHttpHandler();
-            httpServer.createContext("/tasks", handler);
+            HttpHandler taskHttpHandler = new TaskHttpHandler();
+            httpServer.createContext("/tasks", taskHttpHandler);
             httpServer.start();
         } catch (IOException e) {
             e.printStackTrace();
