@@ -20,8 +20,8 @@ public class App {
         InetSocketAddress address = new InetSocketAddress(8000);
         try {
             HttpServer httpServer = HttpServer.create(address, 0);
-            HttpHandler hnadler = new springHandler();
-            httpServer.createContext("/", hnadler);
+            HttpHandler handler = new springHandler();
+            httpServer.createContext("/", handler);
             httpServer.start();
         } catch (IOException e) {
             e.printStackTrace();
