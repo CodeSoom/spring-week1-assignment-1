@@ -16,7 +16,7 @@ public class TodoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
     private ObjectMapper mapper = new ObjectMapper();
     private int index;
-    private int statusCode = HttpStatus.OK;
+    private int statusCode = HttpStatus.NOT_FOUND;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -24,8 +24,6 @@ public class TodoHttpHandler implements HttpHandler {
         String content = "";
         if (path.equals("/") || path.startsWith("/tasks")) {
             content = processRequest(exchange);
-        } else {
-            statusCode = HttpStatus.NOT_FOUND;
         }
         sendResponse(exchange, content);
     }
@@ -45,6 +43,9 @@ public class TodoHttpHandler implements HttpHandler {
                 break;
             case "DELETE":
                 processDeleteRequest(exchange);
+                break;
+            case "HEAD":
+                statusCode=HttpStatus.OK;
                 break;
         }
         return content;
