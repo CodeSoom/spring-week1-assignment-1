@@ -1,12 +1,8 @@
 package com.codesoom.assignment.application;
 
-import com.codesoom.assignment.domain.NotFoundTask;
 import com.codesoom.assignment.domain.Task;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TaskApplicationService {
     private final Map<Long, Task> taskMap = new HashMap<>();
@@ -23,23 +19,26 @@ public class TaskApplicationService {
         return id;
     }
 
-    public Task findTask(Long taskId) throws NotFoundTask {
+    public Optional<Task> findTask(Long taskId) {
         if (!taskMap.containsKey(taskId)) {
-            throw new NotFoundTask();
+            return Optional.empty();
         }
-        return taskMap.get(taskId);
+        return Optional.ofNullable(taskMap.get(taskId));
     }
 
     private Long getNextId() {
         return lastId++;
     }
 
-    public void updateTaskTitle(Long taskId, String newTitle) throws NotFoundTask {
-        taskMap.put(taskId, findTask(taskId).updateTaskTitle(newTitle));
+    public Optional<Object> updateTaskTitle(Long taskId, String newTitle) {
+        return findTask(taskId).map(
+            it -> it.updateTaskTitle(newTitle)
+        ).map(
+            it -> taskMap.put(taskId, it)
+        );
     }
 
-    public void deleteTask(Long taskId) throws NotFoundTask {
-        Task task = findTask(taskId);
-        taskMap.remove(task.getId());
+    public Optional<Object> deleteTask(Long taskId) {
+        return findTask(taskId).map(it -> taskMap.remove(it.getId()));
     }
 }

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,17 +47,15 @@ class TaskApplicationServiceTest {
         String title = "Listen Music";
         Long taskId = applicationService.createTask(title);
         assertNotNull(taskId);
-        assertDoesNotThrow(() -> {
-            Task task = applicationService.findTask(taskId);
-            assertNotNull(taskId);
-            assertEquals(taskId, task.getId());
-        });
+        Optional<Task> task = applicationService.findTask(taskId);
+        assertNotNull(taskId);
+        assertEquals(taskId, task.orElseThrow().getId());
     }
 
     @Test
     void getUncreatedTask() {
         Long uncreatedId = -1L;
-        assertThrows(NotFoundTask.class, () -> applicationService.findTask(uncreatedId));
+        assertThrows(NotFoundTask.class, () -> applicationService.findTask(uncreatedId).orElseThrow(NotFoundTask::new));
     }
 
     @Test
@@ -66,11 +65,11 @@ class TaskApplicationServiceTest {
         Long taskId = applicationService.createTask(title);
         assertNotNull(taskId);
         assertDoesNotThrow(() -> {
-            applicationService.updateTaskTitle(taskId, newTitle);
+            applicationService.updateTaskTitle(taskId, newTitle).orElseThrow();
 
-            Task updatedTask = applicationService.findTask(taskId);
-            assertEquals(taskId, updatedTask.getId());
-            assertEquals(newTitle, updatedTask.getTitle());
+            Optional<Task> updatedTask = applicationService.findTask(taskId);
+            assertEquals(taskId, updatedTask.orElseThrow().getId());
+            assertEquals(newTitle, updatedTask.orElseThrow().getTitle());
         });
     }
 
@@ -81,13 +80,13 @@ class TaskApplicationServiceTest {
         assertNotNull(taskId);
 
         assertDoesNotThrow(() -> applicationService.deleteTask(taskId));
-        assertThrows(NotFoundTask.class, () -> applicationService.findTask(taskId));
+        assertThrows(NotFoundTask.class, () -> applicationService.findTask(taskId).orElseThrow(NotFoundTask::new));
     }
 
     @Test
     void deleteWrongTask() {
         Long uncreatedId = -1L;
-        assertThrows(NotFoundTask.class, () -> applicationService.deleteTask(uncreatedId));
+        assertThrows(NotFoundTask.class, () -> applicationService.deleteTask(uncreatedId).orElseThrow(NotFoundTask::new));
     }
     
     @Test
@@ -97,7 +96,7 @@ class TaskApplicationServiceTest {
         assertNotNull(taskId);
 
         assertDoesNotThrow(() -> {
-            applicationService.deleteTask(taskId);
+            applicationService.deleteTask(taskId).orElseThrow();
             Long newTaskId = applicationService.createTask(title);
             assertNotEquals(taskId, newTaskId);
         });

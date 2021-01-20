@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class WebHandler implements HttpHandler {
@@ -36,7 +37,7 @@ public class WebHandler implements HttpHandler {
 
             try {
                 Long taskId = taskApplicationService.createTask(requestTask.getTitle());
-                Task createdTask = taskApplicationService.findTask(taskId);
+                Task createdTask = taskApplicationService.findTask(taskId).orElseThrow(NotFoundTask::new);
 
                 String content = transfer.taskToJson(createdTask);
                 setJsonToResponseBody(exchange, content, 201);
