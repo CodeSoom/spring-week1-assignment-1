@@ -2,7 +2,6 @@ package com.codesoom.assignment.web;
 
 import com.codesoom.assignment.application.TaskApplicationService;
 import com.codesoom.assignment.application.TaskJsonTransfer;
-import com.codesoom.assignment.domain.NotFoundTask;
 import com.codesoom.assignment.domain.Task;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -32,16 +31,15 @@ public class WebHandler implements HttpHandler {
                 String content = transfer.taskListToJson(taskApplicationService.getAllTasks());
                 setJsonToResponseBody(exchange, content, 200);
             } else if (path.contains("/task/")) {
-                String resourceId = path.split("/")[2];
-                Long taskId = (long) Integer.parseInt(resourceId);
+                Long taskId = parsePathToTaskId(path);
 
                 Optional<Task> task = taskApplicationService.findTask(taskId);
 
                 if (task.isEmpty()) {
-                    String content = "Not Found";
-                    setJsonToResponseBody(exchange, content, 404);
+                    sendNotFoundError(exchange);
                     return;
                 }
+
                 String content = transfer.taskToJson(task.get());
                 setJsonToResponseBody(exchange, content, 200);
             } else {
@@ -56,18 +54,25 @@ public class WebHandler implements HttpHandler {
                 Task requestTask = transfer.jsonStringToTask(requestBody);
 
                 Long taskId = taskApplicationService.createTask(requestTask.getTitle());
-                Optional<Task> createdTask = taskApplicationService.findTask(taskId);
-
-                if (createdTask.isEmpty()) {
-                    String content = "Not Found";
-                    setJsonToResponseBody(exchange, content, 404);
-                    return;
-                }
-                String content = transfer.taskToJson(createdTask.get());
-                setJsonToResponseBody(exchange, content, 201);
+                sendUpdatedTaskResult(exchange, taskId);
             }
         } else if (method.equals("PUT")) {
-            exchange.sendResponseHeaders(404, 0);
+            if (path.contains("/task")) {
+                Long taskId = parsePathToTaskId(path);
+                String requestBody = new BufferedReader(
+                        new InputStreamReader(exchange.getRequestBody()))
+                        .lines()
+                        .collect(Collectors.joining(""));
+                Task requestTask = transfer.jsonStringToTask(requestBody);
+
+                Optional<Object> result = taskApplicationService.updateTaskTitle(taskId, requestTask.getTitle());
+
+                if (result.isEmpty()) {
+                    sendNotFoundError(exchange);
+                    return;
+                }
+                sendUpdatedTaskResult(exchange, taskId);
+            }
         }
     }
 
@@ -79,5 +84,25 @@ public class WebHandler implements HttpHandler {
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private void sendUpdatedTaskResult(HttpExchange exchange, Long taskId) throws IOException {
+        Optional<Task> task = taskApplicationService.findTask(taskId);
+        if (task.isEmpty()) {
+            sendNotFoundError(exchange);
+            return;
+        }
+        String content = transfer.taskToJson(task.get());
+        setJsonToResponseBody(exchange, content, 201);
+    }
+
+    private Long parsePathToTaskId(String path){
+        String resourceId = path.split("/")[2];
+        return (long) Integer.parseInt(resourceId);
+    }
+
+    private void sendNotFoundError(HttpExchange exchange) throws IOException {
+        String content = "Not Found";
+        setJsonToResponseBody(exchange, content, 404);
     }
 }
