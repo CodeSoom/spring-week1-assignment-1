@@ -71,11 +71,15 @@ public class TodoHttpHandler implements HttpHandler {
                 statusCode = HttpStatus.NOT_FOUND;
             }
         }
+        sendResponse(exchange, content);
+    }
+
+    private void sendResponse(HttpExchange exchange, String content) throws IOException {
         exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-        OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
+        try (OutputStream outputStream = exchange.getResponseBody()) {
+            outputStream.write(content.getBytes());
+            outputStream.flush();
+        }
     }
 
     private boolean hasIndex(int index) {
