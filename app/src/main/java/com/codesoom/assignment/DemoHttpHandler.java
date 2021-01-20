@@ -1,20 +1,15 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.models.Task;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.codesoom.assignment.resources.ResourceFactory;
+import com.codesoom.assignment.resources.TaskResource;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
-    private final ObjectMapper mapper = new ObjectMapper();
-    private final List<Task> tasks = new ArrayList<>();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -28,24 +23,14 @@ public class DemoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        if (!body.isBlank()) {
-            Task task = toTask(body);
-            task.generateId(tasks.size());
-            tasks.add(task);
-        }
-
         System.out.println(method + " " + path);
-        String content = "";
+        String content = handleRequest(method, path, body);
 
-        if (method.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJSON();
+        if (content.equals(HttpStatusCode.BAD_REQUEST.getStatus())) {
+            exchange.sendResponseHeaders(HttpStatusCode.NOT_FOUND.getCode(), content.getBytes().length);
+        } else {
+            exchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), content.getBytes().length);
         }
-
-        if (method.equals("POST") && path.equals("/tasks")) {
-            content = "Create a new task!";
-        }
-
-        exchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
 
@@ -54,15 +39,26 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
-    private Task toTask(String content) throws JsonProcessingException {
-        return mapper.readValue(content, Task.class);
+    private String handleRequest(String method, String path, String body)
+            throws IOException {
+
+        if (isProperMethod(method) && isProperPath(path)) {
+            ResourceFactory factory = new ResourceFactory();
+            TaskResource resource = factory.createResource(method);
+            return resource.handleRequest(path, body);
+        }
+
+        return HttpStatusCode.BAD_REQUEST.getStatus();
     }
 
-    private String tasksToJSON() throws IOException {
+    private boolean isProperMethod(String method) {
+        return method.equals(HttpMethod.GET.name()) ||
+               method.equals(HttpMethod.POST.name()) ||
+               method.equals(HttpMethod.PUT.name()) ||
+               method.equals(HttpMethod.DELETE.name());
+    }
 
-        OutputStream outputStream = new ByteArrayOutputStream();
-        mapper.writeValue(outputStream, tasks);
-
-        return outputStream.toString();
+    private boolean isProperPath(String path) {
+        return path.startsWith(Constants.TASKS);
     }
 }
