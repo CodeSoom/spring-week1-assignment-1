@@ -16,6 +16,7 @@ class HttpStatusCode {
     public static final int OK = 200;
     public static final int BadRequest = 400;
     public static final int NotFound = 404;
+    public static final int NotImplemented = 501;
 }
 
 public class TaskHttpHandler implements HttpHandler {
@@ -68,59 +69,37 @@ public class TaskHttpHandler implements HttpHandler {
             return;
         }
 
+        code = HttpStatusCode.NotImplemented;
+        content = "";
+
         // GET all tasks
         if (method.equals("GET") && (pathItems.length == 2)) {
-            content = taskToJSON();
+            code = HttpStatusCode.OK;
+            content = tasksToJSON();
         }
 
         // GET one task
         if (method.equals("GET") && (pathItems.length == 3)) {
             Task task = getTask(id);
+            code = HttpStatusCode.OK;
             content = taskToJSON(task);
 
             if (task == null) {
                 System.out.println("[GET] 404 NotFound Exception");
-                content = "Task #" + id +" doesn't exist";
                 code = HttpStatusCode.NotFound;
+                content = "Task #" + id +" doesn't exist";
             }
         }
 
         // POST
-        if (method.equals("POST")) {
-            if (body.isBlank() || (pathItems.length != 2)) {
-                // 400 BadRequest Exception
-                System.out.println("[POST] 400 BadRequest Exception");
-                content = "POST failed";
+        if (method.equals("POST") && (pathItems.length == 2)) {
+            boolean isAdded = addTask(body);
+            code = HttpStatusCode.OK;
+            content = "Task successfully added.";
+
+            if (!isAdded) {
                 code = HttpStatusCode.BadRequest;
-            }
-            else {
-                Task task = toTask(body);
-
-                if (tasks.isEmpty()) {
-                    if(task.getId() == null) task.setId(1L);
-                }
-                else {
-                    int size = tasks.size();
-                    Long lastId = tasks.get(size - 1).getId();
-
-                    if (task.getId() == null) {
-                        task.setId(lastId + 1);
-                    }
-                    else {
-                        if (task.getId() <= lastId) {
-                            // 400 BadRequest Exception
-                            System.out.println("[POST] 400 BadRequest Exception");
-                            exchange.sendResponseHeaders(400, 0);
-                            OutputStream outputStream = exchange.getResponseBody();
-                            outputStream.flush();
-                            outputStream.close();
-                            return;
-                        }
-                    }
-                }
-
-                tasks.add(task);
-                content = "Task successfully added.";
+                content = "Cannot Added";
             }
         }
 
@@ -142,6 +121,32 @@ public class TaskHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private boolean addTask(String body) throws JsonProcessingException {
+        if (body == null) return false;
+
+        Task task = toTask(body);
+
+        if (task.getId() == null) {
+            long id = getNextId();
+            task.setId(id);
+        }
+
+        if (task.getId() < getNextId()) return false;
+
+        tasks.add(task);
+        return true;
+    }
+
+    private long getNextId() {
+        if (tasks.isEmpty()) {
+            return 1L;
+        }
+
+        int size = tasks.size();
+        long lastId = tasks.get(size - 1).getId();
+        return lastId + 1;
     }
 
     private boolean isValidPath(String[] pathItems) {
@@ -176,7 +181,7 @@ public class TaskHttpHandler implements HttpHandler {
         return outputStream.toString();
     }
 
-    private String taskToJSON() throws IOException {
+    private String tasksToJSON() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
 
