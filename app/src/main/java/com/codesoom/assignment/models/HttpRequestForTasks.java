@@ -2,6 +2,7 @@ package com.codesoom.assignment.models;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Arrays;
 
 public class HttpRequestForTasks extends HttpRequest {
 
@@ -14,10 +15,7 @@ public class HttpRequestForTasks extends HttpRequest {
 
     @Override
     public boolean isValidMethod() {
-        return switch (getMethod()) {
-            case GET, POST, PUT, PATCH, DELETE -> true;
-            default -> false;
-        };
+        return Arrays.stream(HttpRequestMethod.values()).anyMatch(method -> method == getMethod());
     }
 
     @Override
