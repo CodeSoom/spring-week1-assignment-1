@@ -27,8 +27,13 @@ public class TaskManager {
      * @param id 찾고자 하는 Task id
      * @return 존재 시 Task 반환, 없으면 null 반환
      */
-    public static Task find(long id) {
-        return TASKS.get(id);
+    public static Task find(long id) throws NotExistsIDException {
+        Task task = TASKS.get(id);
+
+        if (task == null) {
+            throw new NotExistsIDException();
+        }
+        return task;
     }
 
     /**
@@ -97,6 +102,11 @@ public class TaskManager {
             throw new NotExistsIDException();
         }
         TASKS.remove(id);
+    }
+
+    public static void clear() {
+        TASKS.clear();
+        index = 0;
     }
 
     /**
