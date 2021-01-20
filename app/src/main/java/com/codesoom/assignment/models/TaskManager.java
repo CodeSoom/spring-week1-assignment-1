@@ -1,5 +1,8 @@
 package com.codesoom.assignment.models;
 
+import com.codesoom.assignment.errors.AlreadyExistsIDException;
+import com.codesoom.assignment.errors.NotExistsIDException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,11 +34,11 @@ public class TaskManager {
     /**
      * Task 를 받아서 insert 합니다. id가 존재시 Exception 을 반환합니다.
      * @param task 입력하고자 하는 Task 를 입력합니다.
-     * @throws Exception 이미 id가 존재 할 경우
+     * @throws AlreadyExistsIDException 이미 id가 존재 할 경우
      */
-    public static void insert(Task task) throws Exception {
+    public static void insert(Task task) throws AlreadyExistsIDException {
         if (isExist(task.id())) {
-            throw new Exception("id " + task.id() + " is already exists");
+            throw new AlreadyExistsIDException();
         }
         TASKS.put(task.id(), task);
     }
@@ -58,11 +61,11 @@ public class TaskManager {
     /**
      * Task 를 입력받아 변경합니다.
      * @param task 변경할 Task 를 입력합니다.
-     * @throws Exception id가 존재하지 않을 시
+     * @throws NotExistsIDException id가 존재하지 않을 시
      */
-    public static void modify(Task task) throws Exception {
+    public static void modify(Task task) throws NotExistsIDException {
         if (!isExist(task.id())) {
-            throw new Exception("not exist task id");
+            throw new NotExistsIDException();
         }
         TASKS.replace(task.id(), task);
     }
@@ -72,11 +75,11 @@ public class TaskManager {
      * @param id 대상 id
      * @param title 변경할 title
      * @return 변경된 Task 를 반환합니다.
-     * @throws Exception id가 존재하지 않을 시
+     * @throws NotExistsIDException id가 존재하지 않을 시
      */
-    public static Task modify(long id, String title) throws Exception {
+    public static Task modify(long id, String title) throws NotExistsIDException {
         if (!isExist(id)) {
-            throw new Exception("not exist task id");
+            throw new NotExistsIDException();
         }
         Task task = new Task(id, title);
 
@@ -87,11 +90,11 @@ public class TaskManager {
     /**
      * Task 를 삭제합니다.
      * @param id 삭제할 Task id
-     * @throws Exception id가 존재하지 않을 시
+     * @throws NotExistsIDException id가 존재하지 않을 시
      */
-    public static void delete(long id) throws Exception {
+    public static void delete(long id) throws NotExistsIDException {
         if (!isExist(id)) {
-            throw new Exception("not exist task id");
+            throw new NotExistsIDException();
         }
         TASKS.remove(id);
     }
