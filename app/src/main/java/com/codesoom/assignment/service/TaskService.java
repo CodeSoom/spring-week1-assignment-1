@@ -5,6 +5,7 @@ import com.codesoom.assignment.models.Task;
 import java.util.*;
 
 public class TaskService {
+    private static final int START_ID = 0;
     private Map<Long, Task> tasks = new HashMap<>();
 
     public Task getTask(long id) {
