@@ -103,4 +103,13 @@ public class WebServerTest {
             assertEquals("{\"id\":1,\"title\":\"Play Game\"}", responseBody);
         });
     }
+
+    @Test
+    void getUnCreatedTask() {
+        HttpUriRequest request = new HttpGet("http://localhost:8000/task/1");
+        assertDoesNotThrow(() -> {
+            HttpResponse httpResponse = HttpClientBuilder.create().build().execute(request);
+            assertEquals(404, httpResponse.getStatusLine().getStatusCode());
+        });
+    }
 }
