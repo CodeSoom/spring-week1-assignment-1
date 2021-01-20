@@ -1,6 +1,6 @@
 package com.codesoom.assignment;
 
-public enum Status {
+public enum HttpStatus {
     OK(200),
     CREATED(201),
     NOT_FOUND(404),
@@ -8,7 +8,7 @@ public enum Status {
 
     private int status;
 
-    Status(int status) {
+    HttpStatus(int status) {
         this.status = status;
     }
 

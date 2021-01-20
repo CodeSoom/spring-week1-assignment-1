@@ -15,15 +15,18 @@ public class TaskHttpHandler implements HttpHandler {
 
         String method = httpExchange.getRequestMethod();
 
-        if (method.equals("GET") ) controller.getController(httpExchange);
-
-        if (method.equals("POST")) controller.postController(httpExchange);
-
-        if (method.equals("PUT") ) controller.putController(httpExchange);
-
-        if (method.equals("PATCH") ) controller.patchController(httpExchange);
-
-        if (method.equals("DELETE")) controller.deleteController(httpExchange);
+        switch (method){
+            case "GET" :
+                controller.getController(httpExchange);
+            case "POST" :
+                controller.postController(httpExchange);
+            case "PUT" :
+                controller.putController(httpExchange);
+            case "PATCH" :
+                controller.patchController(httpExchange);
+            case "DELETE" :
+                controller.deleteController(httpExchange);
+        }
 
     }
 
