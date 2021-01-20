@@ -53,53 +53,6 @@ public class DemoHttpHandler implements HttpHandler {
         }
     }
 
-    private void requestForDelete(String path, HttpExchange exchange) throws IOException {
-        String content = "";
-        if(!path.startsWith("/tasks")) {
-            exchange.sendResponseHeaders(BAD_REQUEST,0);
-            writeContentWithOutputStream(exchange, "");
-            return;
-        }
-
-        Long idValue = Long.parseLong(path.substring(7));
-        Task deleteTask = getTask(idValue);
-
-        if(deleteTask==null) {
-            exchange.sendResponseHeaders(NOT_FOUND, 0);
-            writeContentWithOutputStream(exchange, content);
-            return;
-        }
-
-        deleteTask(deleteTask);
-        content = "";
-        exchange.sendResponseHeaders(OK,0);
-        writeContentWithOutputStream(exchange, content);
-    }
-
-    private void requestForPutOrPatch(String path, String body, HttpExchange exchange) throws IOException {
-        String content = " ";
-        if(!path.startsWith("/tasks")) {
-            exchange.sendResponseHeaders(BAD_REQUEST,0);
-            writeContentWithOutputStream(exchange, "");
-            return;
-        }
-
-        Long idValue = Long.parseLong(path.substring(7));
-        Task updateTask = getTask(idValue);
-
-        if(updateTask == null) {
-            exchange.sendResponseHeaders(NOT_FOUND, 0);
-            writeContentWithOutputStream(exchange, content);
-            return;
-        }
-
-        Task task = jsonToTask(body);
-        updateTask(updateTask, task.getTitle());
-        content = taskToJson(updateTask);
-        exchange.sendResponseHeaders(OK,content.getBytes().length);
-        writeContentWithOutputStream(exchange, content);
-    }
-
     public void requestForGet(String path, HttpExchange exchange) throws IOException {
         String content = "";
         if(!path.startsWith("/tasks")) {
@@ -111,7 +64,7 @@ public class DemoHttpHandler implements HttpHandler {
         if(path.equals("/tasks")) {
             content = (tasks == null ) ? "[]" : tasksToJson();
             exchange.sendResponseHeaders(OK,content.getBytes().length);
-            writeContentWithOutputStream(exchange, "");
+            writeContentWithOutputStream(exchange, content);
             return;
         }
 
@@ -149,6 +102,53 @@ public class DemoHttpHandler implements HttpHandler {
         createTask(task);
         content = taskToJson(task);
         exchange.sendResponseHeaders(CREATED,content.getBytes().length);
+        writeContentWithOutputStream(exchange, content);
+    }
+
+    private void requestForPutOrPatch(String path, String body, HttpExchange exchange) throws IOException {
+        String content = " ";
+        if(!path.startsWith("/tasks")) {
+            exchange.sendResponseHeaders(BAD_REQUEST,0);
+            writeContentWithOutputStream(exchange, "");
+            return;
+        }
+
+        Long idValue = Long.parseLong(path.substring(7));
+        Task updateTask = getTask(idValue);
+
+        if(updateTask == null) {
+            exchange.sendResponseHeaders(NOT_FOUND, 0);
+            writeContentWithOutputStream(exchange, content);
+            return;
+        }
+
+        Task task = jsonToTask(body);
+        updateTask(updateTask, task.getTitle());
+        content = taskToJson(updateTask);
+        exchange.sendResponseHeaders(OK,content.getBytes().length);
+        writeContentWithOutputStream(exchange, content);
+    }
+
+    private void requestForDelete(String path, HttpExchange exchange) throws IOException {
+        String content = "";
+        if(!path.startsWith("/tasks")) {
+            exchange.sendResponseHeaders(BAD_REQUEST,0);
+            writeContentWithOutputStream(exchange, "");
+            return;
+        }
+
+        Long idValue = Long.parseLong(path.substring(7));
+        Task deleteTask = getTask(idValue);
+
+        if(deleteTask==null) {
+            exchange.sendResponseHeaders(NOT_FOUND, 0);
+            writeContentWithOutputStream(exchange, content);
+            return;
+        }
+
+        deleteTask(deleteTask);
+        content = "";
+        exchange.sendResponseHeaders(OK,0);
         writeContentWithOutputStream(exchange, content);
     }
 
