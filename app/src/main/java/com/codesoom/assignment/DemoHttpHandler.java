@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
 import com.codesoom.assignment.util.IdGenerator;
@@ -21,9 +22,9 @@ import com.codesoom.assignment.models.Task;
 
 public class DemoHttpHandler implements HttpHandler {
 
-
     private List<Task> tasks = new ArrayList<>();
     private IdGenerator idGenerator = new IdGenerator();
+    ObjectMapper mapper = new ObjectMapper();
     int statusCode = 404;
 
     public DemoHttpHandler() {
@@ -48,42 +49,57 @@ public class DemoHttpHandler implements HttpHandler {
 
         System.out.println(requestMethod + " " + path);
 
+        StringTokenizer st = new StringTokenizer(path, "/");
+        int tokenSize = st.countTokens();
+
+        String id = "";
+        while(st.hasMoreTokens()) {
+            id = st.nextToken();
+        }
+
         String content = "";
 
-        if (requestMethod.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJson(tasks);
-            this.statusCode = 200;
-        }
-
-        if (requestMethod.equals("GET") && path.matches(".*[0-9].*\"")) {
-            Task task = tasks.get(0);
-            content = taskToJson(task);
-            this.statusCode = 200;
-        }
-
-        if (requestMethod.equals("POST") && path.equals("/tasks")) {
-            if (!requestBody.isBlank()) {
-                Task task = toTask(requestBody);
-                task.setId(idGenerator.generate());
-                tasks.add(task);
+        if (tokenSize <= 1) {
+            if (requestMethod.equals("GET") && path.equals("/tasks")) {
+                content = tasksToJson(tasks);
+                this.statusCode = 200;
             }
-            content = tasksToJson(tasks);
-            this.statusCode = 201;
+
+            if (requestMethod.equals("POST") && path.equals("/tasks")) {
+                if (!requestBody.isBlank()) {
+                    Task task = toTask(requestBody);
+                    task.setId(idGenerator.generate());
+                    tasks.add(task);
+                }
+                content = tasksToJson(tasks);
+                this.statusCode = 201;
+            }
+
+        } else {
+
+            int taskId = Integer.parseInt(id);
+
+            if (requestMethod.equals("GET") && path.equals("/tasks/" + taskId)) {
+                Task task = tasks.get(taskId);
+                content = taskToJson(task);
+                this.statusCode = 200;
+            }
+
+            if (requestMethod.equals("PUT") && path.equals("/tasks/" + taskId)) {
+                if (!requestBody.isBlank()) {
+                    Task task = tasks.get(taskId);
+                    task.setTitle(mapper.readValue(requestBody, Task.class).getTitle());
+                    content = taskToJson(task);
+                }
+                this.statusCode = 200;
+            }
+
+            if (requestMethod.equals("DELETE") && path.equals("/tasks/" + taskId)) {
+                tasks.remove(taskId);
+                this.statusCode = 204;
+            }
+
         }
-
-        if (requestMethod.equals("PUT") && path.equals("/tasks/1")) {
-            Task task = tasks.get(0);
-            task.setTitle("과제 제출하기");
-            content = taskToJson(task);
-
-            this.statusCode = 200;
-        }
-
-        if (requestMethod.equals("DELETE") && path.equals("/tasks/1")) {
-            tasks.remove(0);
-            this.statusCode = 204;
-        }
-
         exchange.sendResponseHeaders(this.statusCode, content.getBytes().length);
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.write(content.getBytes());
