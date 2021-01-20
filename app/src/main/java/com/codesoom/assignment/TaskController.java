@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -90,15 +89,10 @@ public class TaskController {
     public void deleteController(HttpExchange httpExchange) {
     }
 
-
     public String getBody(HttpExchange httpExchange){
         InputStream inputStream = httpExchange.getRequestBody();
         return new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
     }
-
-
-
-
 }
