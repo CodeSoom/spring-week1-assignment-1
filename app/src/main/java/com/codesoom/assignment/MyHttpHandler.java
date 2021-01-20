@@ -4,24 +4,17 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
-import java.net.URI;
 import java.util.stream.Collectors;
 
-import static com.codesoom.assignment.Status.*;
-
 public class MyHttpHandler implements HttpHandler {
+
+
+    private TaskController controller = new TaskController();
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
 
-        String content ="";
-
-        //path setting
-        URI uri = httpExchange.getRequestURI();
-        String path = uri.getPath();
         String method = httpExchange.getRequestMethod();
-
-        System.out.println(path);
 
         // process request body data
         InputStream inputStream = httpExchange.getRequestBody();
@@ -29,38 +22,21 @@ public class MyHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        // method setting
-        if (method.equals("GET") ){
-            processGet(httpExchange);
-            httpExchange.sendResponseHeaders(OK.getStatus(), content.getBytes().length);
-        }
+        if (method.equals("GET") ) controller.getController(httpExchange);
 
-        else if (method.equals("POST")){
-            System.out.println(body);
-            httpExchange.sendResponseHeaders(CREATED.getStatus(), content.getBytes().length);
-        }
-        else if (method.equals("PUT") ){
+        if (method.equals("POST")) controller.postController(httpExchange);
 
-        }
-        else if (method.equals("PATCH") ){
+        if (method.equals("PUT") ) controller.putController(httpExchange);
 
-        }
-        else if (method.equals("DELETE") ){
+        if (method.equals("PATCH") ) controller.patchController(httpExchange);
 
-        }
-        else{
-            httpExchange.sendResponseHeaders(NOT_FOUND.getStatus(), content.getBytes().length);
-        }
+        if (method.equals("DELETE")) controller.deleteController(httpExchange);
 
         //set request body
         OutputStream outputStream = httpExchange.getResponseBody();
-        outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
     }
 
-    private void processGet(HttpExchange httpExchange) {
-
-    }
 
 }
