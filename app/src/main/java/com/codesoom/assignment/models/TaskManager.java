@@ -9,14 +9,14 @@ import java.util.List;
  */
 public class TaskManager {
     private static long index = 0;
-    private static final HashMap<Long, Task> tasks = new HashMap<>();
+    private static final HashMap<Long, Task> TASKS = new HashMap<>();
 
     /**
      * findAll 의 역할을 합니다.
      * @return 전체 Task 를 List 로 반환합니다.
      */
     public static List<Task> find() {
-        return new ArrayList<>(tasks.values());
+        return new ArrayList<>(TASKS.values());
     }
 
     /**
@@ -25,7 +25,7 @@ public class TaskManager {
      * @return 존재 시 Task 반환, 없으면 null 반환
      */
     public static Task find(long id) {
-        return tasks.get(id);
+        return TASKS.get(id);
     }
 
     /**
@@ -37,7 +37,7 @@ public class TaskManager {
         if (isExist(task.id())) {
             throw new Exception("id " + task.id() + " is already exists");
         }
-        tasks.put(task.id(), task);
+        TASKS.put(task.id(), task);
     }
 
     /**
@@ -49,7 +49,7 @@ public class TaskManager {
         index += 1;
         if (!isExist(index)) {
             Task task = new Task(index, title);
-            tasks.put(index, task);
+            TASKS.put(index, task);
             return task;
         }
         return insert(title);
@@ -64,7 +64,7 @@ public class TaskManager {
         if (!isExist(task.id())) {
             throw new Exception("not exist task id");
         }
-        tasks.replace(task.id(), task);
+        TASKS.replace(task.id(), task);
     }
 
     /**
@@ -80,7 +80,7 @@ public class TaskManager {
         }
         Task task = new Task(id, title);
 
-        tasks.replace(task.id(), task);
+        TASKS.replace(task.id(), task);
         return task;
     }
 
@@ -93,7 +93,7 @@ public class TaskManager {
         if (!isExist(id)) {
             throw new Exception("not exist task id");
         }
-        tasks.remove(id);
+        TASKS.remove(id);
     }
 
     /**
@@ -102,6 +102,6 @@ public class TaskManager {
      * @return 존재 여부
      */
     private static boolean isExist(long id) {
-        return tasks.get(id) != null;
+        return TASKS.get(id) != null;
     }
 }
