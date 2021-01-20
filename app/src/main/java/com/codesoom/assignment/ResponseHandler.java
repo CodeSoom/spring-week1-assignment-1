@@ -14,7 +14,7 @@ public class ResponseHandler {
             return "Wrong URI path";
         }
 
-        Integer taskId = extractTaskId(path);
+        Long taskId = extractTaskId(path);
 
         switch (method) {
             case "GET":
@@ -25,7 +25,7 @@ public class ResponseHandler {
                 if (taskId != null) {
                     return String.valueOf(
                             tasks.stream()
-                                    .filter(task -> taskId.intValue() == task.getId())
+                                    .filter(task -> taskId == task.getId())
                                     .findFirst()
                     );
                 }
@@ -44,13 +44,15 @@ public class ResponseHandler {
             default:
                 return "Unknown HTTP method";
         }
+
+        return "Wrong URI path";
     }
 
-    private Integer extractTaskId(String path) {
+    private Long extractTaskId(String path) {
         String[] splitPath = path.split("/");
 
         try {
-            return Integer.getInteger(splitPath[splitPath.length - 1]);
+            return Long.valueOf(splitPath[splitPath.length - 1]);
         } catch (NumberFormatException e) {
             e.printStackTrace();
             return null;
