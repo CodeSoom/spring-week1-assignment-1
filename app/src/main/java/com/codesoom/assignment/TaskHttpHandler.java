@@ -33,8 +33,8 @@ public class TaskHttpHandler implements HttpHandler {
         int httpStatusCode = HttpStatusCode.OK;
 
         if (path == null) {
-            System.out.println("[Undefined Path] 404 NotFound Exception");
-            content = "Undefined path";
+            System.out.println("Undefined path...");
+            content = "";
             httpStatusCode = HttpStatusCode.NotFound;
         }
 
@@ -42,8 +42,8 @@ public class TaskHttpHandler implements HttpHandler {
         String[] pathItems = path.split("/");
 
         if (!isValidPath(pathItems)) {
-            System.out.println("[Invalid PATH] 404 NotFound Exception");
-            content = "Invalid path";
+            System.out.println("Invalid path...");
+            content = "";
             httpStatusCode = HttpStatusCode.NotFound;
         }
 
@@ -74,17 +74,20 @@ public class TaskHttpHandler implements HttpHandler {
         if (method.equals("GET") && (pathItems.length == 2)) {
             content = tasksToJSON();
             httpStatusCode = HttpStatusCode.OK;
+            System.out.println("[GET] Tasks successfully returned.\n" + content);
         }
 
         // GET one task
         if (method.equals("GET") && (pathItems.length == 3)) {
             Task task = getTask(id);
-            httpStatusCode = HttpStatusCode.OK;
-            content = taskToJSON(task);
 
             if (task == null) {
                 httpStatusCode = HttpStatusCode.NotFound;
-                content = "Task #" + id +" doesn't exist";
+                System.out.println("[GET] NotFound Exception thrown...\nTask #" + id + " doesn't exist");
+            } else {
+                content = taskToJSON(task);
+                httpStatusCode = HttpStatusCode.OK;
+                System.out.println("[GET] A Task successfully returned.\n" + content);
             }
         }
 
@@ -97,9 +100,10 @@ public class TaskHttpHandler implements HttpHandler {
             switch (result) {
                 case HttpStatusCode.OK:
                     content = taskToJSON(task);
+                    System.out.println("[POST] Task successfully added.\n" + content);
                     break;
                 case HttpStatusCode.NotFound:
-                    content = "Cannot add a Task";
+                    System.out.println("[POST] NotFound Exception thrown...");
                     break;
                 default:
                     content = "";
@@ -116,6 +120,10 @@ public class TaskHttpHandler implements HttpHandler {
             switch (result) {
                 case HttpStatusCode.OK:
                     content = taskToJSON(newTask);
+                    System.out.println("[PUT] Task successfully updated.\n" + content);
+                    break;
+                case HttpStatusCode.NotFound:
+                    System.out.println("[PUT] NotFound Exception thrown...");
                     break;
                 default:
                     break;
@@ -132,6 +140,10 @@ public class TaskHttpHandler implements HttpHandler {
             switch (result) {
                 case HttpStatusCode.OK:
                     content = taskToJSON(newTask);
+                    System.out.println("[PATCH] Task successfully patched.\n" + content);
+                    break;
+                case HttpStatusCode.NotFound:
+                    System.out.println("[PATCH] NotFound Exception thrown...");
                     break;
                 default:
                     break;
@@ -143,6 +155,17 @@ public class TaskHttpHandler implements HttpHandler {
             Task task = getTask(id);
             int result = deleteTask(task);
             httpStatusCode = result;
+
+            switch (result) {
+                case HttpStatusCode.OK:
+                    System.out.println("[DELETE] Task successfully deleted.");
+                    break;
+                case HttpStatusCode.NotFound:
+                    System.out.println("[DELETE] NotFound Exception thrown...");
+                    break;
+                default:
+                    break;
+            }
         }
 
         exchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
@@ -216,15 +239,15 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private Task getTask(int id) throws IOException {
-        Task foundTask = null;
+        Task retTask = null;
 
         for (Task task : tasks) {
-            if(task.getId() == id) {
-                foundTask = task;
+            if (task.getId() == id) {
+                retTask = task;
                 break;
             }
         }
-        return foundTask;
+        return retTask;
     }
 
     private Task toTask(String content) throws JsonProcessingException {
