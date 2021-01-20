@@ -19,6 +19,7 @@ public class DemoHttpHandler implements HttpHandler {
     static final int NOT_FOUND = 404;
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
+    private OutputStream outputStream;
     private Long id=1L;
 
     @Override
@@ -133,7 +134,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     private Task getTask(Long idValue) {
         Task getTask = null;
-        for(Task task : tasks){
+        for(Task task : tasks) {
             if(task.getId() == idValue){
                 getTask = task;
                 break;
@@ -156,7 +157,7 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private void writeContentWithOutputStream(HttpExchange exchange, String content) throws IOException {
-        OutputStream outputStream = exchange.getResponseBody();
+        outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
