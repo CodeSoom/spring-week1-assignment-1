@@ -8,7 +8,7 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 
 public class App {
-    private static final int port = 8000;
+    private static final int PORT = 8000;
 
     public static void main(String[] args) throws IOException {
         MyHttpServer httpServer = new MyHttpServer(port);
