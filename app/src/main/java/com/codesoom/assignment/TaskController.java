@@ -5,12 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.codesoom.assignment.Status.CREATED;
-import static com.codesoom.assignment.Status.OK;
+import static com.codesoom.assignment.Status.*;
 
 public class TaskController {
 
@@ -19,14 +19,32 @@ public class TaskController {
     private Long count = 0L;
 
     public void getController(HttpExchange httpExchange) throws IOException {
-        String body = tasksToJSON();
 
-        httpExchange.sendResponseHeaders(OK.getStatus(), body.getBytes().length);
+        String uri = String.valueOf(httpExchange.getRequestURI());
+        String body="";
+
+        if (uri.length() <= 7){
+            body = tasksToJSON();
+            httpExchange.sendResponseHeaders(OK.getStatus(), body.getBytes().length);
+        } else{
+            int id = getId(uri);
+            if (tasks.size() <= 0 || id > tasks.size()){
+                httpExchange.sendResponseHeaders(INTERNAL_SERVER_ERROR.getStatus(), 0);
+            }else{
+                body = tasksToJSONById(tasks.get(id-1));
+                httpExchange.sendResponseHeaders(OK.getStatus(), body.getBytes().length);
+            }
+        }
+
         //set request body
         OutputStream outputStream = httpExchange.getResponseBody();
         outputStream.write(body.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private int getId(String uri) {
+        return Integer.parseInt(uri.split("/")[2]);
     }
 
     public void postController(HttpExchange httpExchange) throws IOException {
@@ -50,6 +68,12 @@ public class TaskController {
     private String tasksToJSON() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
+        return outputStream.toString();
+    }
+
+    private String tasksToJSONById(Task task) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, task);
         return outputStream.toString();
     }
 
