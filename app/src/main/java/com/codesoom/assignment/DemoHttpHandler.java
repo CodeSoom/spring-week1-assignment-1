@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 public class DemoHttpHandler implements HttpHandler {
     static final int OK = 200;
     static final int CREATED = 201;
+    static final int BAD_REQUEST = 400;
     static final int NOT_FOUND = 404;
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
@@ -34,73 +35,123 @@ public class DemoHttpHandler implements HttpHandler {
 
         String content = "Hello World";
 
-        if(method.equals("GET") && path.equals("/tasks")) {
-            content = (tasks == null ) ? "[]" : tasksToJson();
-            exchange.sendResponseHeaders(OK,content.getBytes().length);
-        }
+        if(method.equals("GET")) {
+            if(!path.startsWith("/tasks")) {
+                exchange.sendResponseHeaders(BAD_REQUEST,0);
+                writeContentWithOutputStream(exchange, "");
+                return;
+            }
 
-        else if(method.equals("GET") && path.startsWith("/tasks")) {
-            Task getTask = null;
+            if(path.equals("/tasks")) {
+                content = (tasks == null ) ? "[]" : tasksToJson();
+                exchange.sendResponseHeaders(OK,content.getBytes().length);
+                writeContentWithOutputStream(exchange, "");
+                return;
+            }
+
             Long idValue = Long.parseLong(path.substring(7));
-            for(Task task : tasks){
-                if(task.getId() == idValue){
-                    getTask = task;
-                    break;
-                }
+            Task getTask = findTask(idValue);
+
+            if(getTask == null) {
+                exchange.sendResponseHeaders(NOT_FOUND,0);
+                writeContentWithOutputStream(exchange, "");
+                return;
             }
 
             content = taskToJson(getTask);
             exchange.sendResponseHeaders(OK,content.getBytes().length);
+            writeContentWithOutputStream(exchange, content);
         }
 
-        else if(method.equals("POST") && path.equals("/tasks")) {
-            Task task = toTask(body);
-            task.setId(id++);
-            tasks.add(task);
+        else if(method.equals("POST")) {
+            if(!path.startsWith("/tasks")) {
+                exchange.sendResponseHeaders(BAD_REQUEST,0);
+                writeContentWithOutputStream(exchange, "");
+                return;
+            }
 
+            String requestTitle = body.split("\"")[1];
+
+            if(!requestTitle.equals("title")) {
+                exchange.sendResponseHeaders(BAD_REQUEST,0);
+                writeContentWithOutputStream(exchange, "");
+                return;
+            }
+
+            Task task = toTask(body);
+            createTask(task);
             content = taskToJson(task);
             exchange.sendResponseHeaders(CREATED,content.getBytes().length);
+            writeContentWithOutputStream(exchange, content);
         }
 
-        else if((method.equals("PUT") || method.equals("PATCH")) && path.startsWith("/tasks")){
-            Task putTask = null;
-            Long idValue = Long.parseLong(path.substring(7));
-            for(Task task : tasks){
-                if(task.getId() == idValue){
-                    putTask = task;
-                    break;
-                }
+        else if((method.equals("PUT") || method.equals("PATCH"))){
+            if(!path.startsWith("/tasks")) {
+                exchange.sendResponseHeaders(BAD_REQUEST,0);
+                writeContentWithOutputStream(exchange, "");
+                return;
             }
 
-            if(putTask == null)
-                exchange.sendResponseHeaders(NOT_FOUND,0);
+            Long idValue = Long.parseLong(path.substring(7));
+            Task updateTask = findTask(idValue);
+
+            if(updateTask == null) {
+                exchange.sendResponseHeaders(NOT_FOUND, 0);
+                writeContentWithOutputStream(exchange, content);
+                return;
+            }
+
             Task task = toTask(body);
-            putTask.setTitle(task.getTitle());
-            content = taskToJson(putTask);
-            exchange.sendResponseHeaders(OK,0);
+            updateTask.setTitle(task.getTitle());
+            content = taskToJson(updateTask);
+            exchange.sendResponseHeaders(OK,content.getBytes().length);
+            writeContentWithOutputStream(exchange, content);
         }
 
-        else if(method.equals("DELETE") && path.startsWith("/tasks")) {
-            Task deleteTask = null;
-            Long idValue = Long.parseLong(path.substring(7));
-            for(Task task : tasks) {
-                if (task.getId() == idValue) {
-                    deleteTask = task;
-                    break;
-                }
+        else if(method.equals("DELETE")) {
+            if(!path.startsWith("/tasks")) {
+                exchange.sendResponseHeaders(BAD_REQUEST,0);
+                writeContentWithOutputStream(exchange, "");
+                return;
             }
 
-            if(deleteTask==null)
-                exchange.sendResponseHeaders(NOT_FOUND,0);
+            Long idValue = Long.parseLong(path.substring(7));
+            Task deleteTask = findTask(idValue);
+
+            if(deleteTask==null) {
+                exchange.sendResponseHeaders(NOT_FOUND, 0);
+                writeContentWithOutputStream(exchange, content);
+                return;
+            }
+
             tasks.remove(deleteTask);
             content = "";
             exchange.sendResponseHeaders(OK,0);
+            writeContentWithOutputStream(exchange, content);
         }
+    }
 
+    private void createTask(Task task) {
+        task.setId(id++);
+        tasks.add(task);
+    }
+
+    private void writeContentWithOutputStream(HttpExchange exchange, String content) throws IOException {
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private Task findTask(Long idValue) {
+        Task getTask = null;
+        for(Task task : tasks){
+            if(task.getId() == idValue){
+                getTask = task;
+                break;
+            }
+        }
+        return getTask;
     }
 
     private Task toTask(String content) throws JsonProcessingException {
