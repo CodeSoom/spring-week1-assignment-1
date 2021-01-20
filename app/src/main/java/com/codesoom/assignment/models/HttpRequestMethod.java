@@ -35,16 +35,7 @@ public enum HttpRequestMethod {
         String content = taskService.updateTask(id, httpRequest.getBody());
         return new HttpResponse(HttpStatus.OK, content);
     }),
-    PUT((httpRequest, taskService) -> {
-        Long id = getIdFromPath(httpRequest.getPath());
-
-        if (taskService.getTask(id).isEmpty()) {
-            return new HttpResponse(HttpStatus.NOT_FOUND);
-        }
-
-        String content = taskService.updateTask(id, httpRequest.getBody());
-        return new HttpResponse(HttpStatus.OK, content);
-    }),
+    PUT(HttpRequestMethod.PATCH.expression),
     DELETE((httpRequest, taskService) -> {
         Long id = getIdFromPath(httpRequest.getPath());
 
