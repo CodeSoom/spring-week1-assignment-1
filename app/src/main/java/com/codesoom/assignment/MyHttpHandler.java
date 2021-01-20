@@ -26,39 +26,41 @@ public class MyHttpHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
-        HttpRequestInfo httpRequestInfo = new HttpRequestInfo(exchange);
+        HttpRequest httpRequest = new HttpRequest(exchange);
 
-        if (!httpRequestInfo.getBody().isBlank()) {
+        if (!httpRequest.hasBody().isBlank()) {
             // JSON 데이터를 task로 변환
-            Task task = jsonConverter.JSONToTask(httpRequestInfo.getBody());
+            Task task = jsonConverter.JSONToTask(httpRequest.hasBody());
             tasks.add(task);
         }
 
         String content = "Hello, world!";
 
-        if (!httpRequestInfo.getMethod().isEmpty()) {
-            switch (httpRequestInfo.getMethod()) {
+        if (!httpRequest.hasMethod().isEmpty()) {
+            switch (httpRequest.hasMethod()) {
                 case "GET":
-                    System.out.println(httpRequestInfo.toString());
+                    System.out.println(httpRequest.toString());
                     break;
                 case "POST":
-                    System.out.println(httpRequestInfo.toString());
+                    System.out.println(httpRequest.toString());
                     break;
                 case "PUT":
-                    System.out.println(httpRequestInfo.toString());
+                    System.out.println(httpRequest.toString());
                     break;
                 case "PATH":
-                    System.out.println(httpRequestInfo.toString());
+                    System.out.println(httpRequest.toString());
                     break;
                 case "DELETE":
-                    System.out.println(httpRequestInfo.toString());
+                    System.out.println(httpRequest.toString());
                     break;
                 default:
-                    System.out.println(httpRequestInfo.toString());
+                    System.out.println(httpRequest.toString());
                     break;
             }
             exchange.sendResponseHeaders(200, content.length());
-        } else {
+        }
+
+        if (httpRequest.hasMethod().isEmpty()) {
             content = "There isn't Method";
             exchange.sendResponseHeaders(404, content.length());
         }
@@ -69,4 +71,5 @@ public class MyHttpHandler implements HttpHandler {
         outputStream.flush(); // 버퍼에 남아있는 데이터를 모두 출력시키고 버퍼를 비움
         outputStream.close(); // 호출해서 사용했던 시스템 자원을 풀어줌
     }
+
 }
