@@ -1,14 +1,14 @@
 package com.codesoom.assignment.errors;
 
 /**
- * The class {@code AlreadyExistsIDException} using when insert already exists id.
+ * The class {@code NotExistsIDException} using when want to use not exists id.
  */
-public class AlreadyExistsIDException extends Exception {
+public class NotExistsIDException extends Exception {
     /**
      * Constructs a new exception with default message.
      */
-    public AlreadyExistsIDException() {
-        super("Inserted id is already exists.");
+    public NotExistsIDException() {
+        super("Inserted id is not exists.");
     }
 
     /**
@@ -16,7 +16,7 @@ public class AlreadyExistsIDException extends Exception {
      *
      * @param message the detail message
      */
-    public AlreadyExistsIDException(String message) {
+    public NotExistsIDException(String message) {
         super(message);
     }
 }
