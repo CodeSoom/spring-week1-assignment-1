@@ -1,51 +1,33 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MyHttpHandler implements HttpHandler {
 
     JSONConverter jsonConverter = new JSONConverter();
-
-    private List<Task> tasks = new ArrayList<>();
-
-    public MyHttpHandler() {
-        Task task = new Task();
-        task.setId(1L);
-        task.setTitle("Task1");
-
-        tasks.add(task);
-    }
+    TaskRepository taskRepository = new TaskRepository();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
         HttpRequest httpRequest = new HttpRequest(exchange);
 
-        if (!httpRequest.hasBody().isBlank()) {
-            // JSON 데이터를 task로 변환
-            Task task = jsonConverter.JSONToTask(httpRequest.hasBody());
-            tasks.add(task);
-        }
-
         String content = "Hello, world!";
 
         if (!httpRequest.hasMethod().isEmpty()) {
             switch (httpRequest.hasMethod()) {
                 case "GET":
-                    System.out.println(httpRequest.toString());
                     break;
                 case "POST":
-                    System.out.println(httpRequest.toString());
+                    POSTCreateNewTask(exchange, httpRequest);
                     break;
                 case "PUT":
-                    System.out.println(httpRequest.toString());
                     break;
                 case "PATH":
                     System.out.println(httpRequest.toString());
@@ -70,6 +52,14 @@ public class MyHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes());  // 매개값으로 주어진 바이트 배열의 모든 바이트를 출력 스트림으로 보냄
         outputStream.flush(); // 버퍼에 남아있는 데이터를 모두 출력시키고 버퍼를 비움
         outputStream.close(); // 호출해서 사용했던 시스템 자원을 풀어줌
+    }
+
+    private void POSTCreateNewTask(HttpExchange exchange, HttpRequest httpRequest) throws JsonProcessingException {
+        String path = httpRequest.hasPath();
+        if (path.contains("/tasks")) {
+            Task newTask = jsonConverter.JSONToTask(httpRequest.hasBody());
+            taskRepository.createNewTask(newTask);
+        }
     }
 
 }
