@@ -21,11 +21,12 @@ public class TodoHttpHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
-        if (!path.startsWith("/tasks")) {
+        String content = "";
+        if (path.startsWith("/tasks")) {
+            content = processRequest(exchange);
+        }else {
             statusCode = HttpStatus.NOT_FOUND;
-            return;
         }
-        String content = processRequest(exchange);
         sendResponse(exchange, content);
     }
 
