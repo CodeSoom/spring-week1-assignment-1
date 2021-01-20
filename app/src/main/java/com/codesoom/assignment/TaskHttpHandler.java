@@ -29,12 +29,11 @@ public class TaskHttpHandler implements HttpHandler {
         String path = uri.getPath();
         System.out.println(method + " " + path);
 
-        String content = "OK";
+        String content = "";
         int httpStatusCode = HttpStatusCode.OK;
 
         if (path == null) {
             System.out.println("Undefined path...");
-            content = "";
             httpStatusCode = HttpStatusCode.NotFound;
         }
 
@@ -43,7 +42,6 @@ public class TaskHttpHandler implements HttpHandler {
 
         if (!isValidPath(pathItems)) {
             System.out.println("Invalid path...");
-            content = "";
             httpStatusCode = HttpStatusCode.NotFound;
         }
 
@@ -68,7 +66,6 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         httpStatusCode = HttpStatusCode.NotFound;
-        content = "";
 
         // GET all tasks
         if (method.equals("GET") && (pathItems.length == 2)) {
@@ -100,13 +97,14 @@ public class TaskHttpHandler implements HttpHandler {
             switch (result) {
                 case HttpStatusCode.OK:
                     content = taskToJSON(task);
-                    System.out.println("[POST] Task successfully added.\n" + content);
+                    System.out.println("[POST] A Task successfully added.\n" + content);
                     break;
                 case HttpStatusCode.NotFound:
                     System.out.println("[POST] NotFound Exception thrown...");
                     break;
                 default:
-                    content = "";
+                    System.out.println("[POST] Unhandled Exception thrown...");
+                    break;
             }
         }
 
@@ -126,6 +124,7 @@ public class TaskHttpHandler implements HttpHandler {
                     System.out.println("[PUT] NotFound Exception thrown...");
                     break;
                 default:
+                    System.out.println("[PUT] Unhandled Exception thrown...");
                     break;
             }
         }
@@ -140,12 +139,13 @@ public class TaskHttpHandler implements HttpHandler {
             switch (result) {
                 case HttpStatusCode.OK:
                     content = taskToJSON(newTask);
-                    System.out.println("[PATCH] Task successfully patched.\n" + content);
+                    System.out.println("[PATCH] A Task successfully patched.\n" + content);
                     break;
                 case HttpStatusCode.NotFound:
                     System.out.println("[PATCH] NotFound Exception thrown...");
                     break;
                 default:
+                    System.out.println("[PATCH] Unhandled Exception thrown...");
                     break;
             }
         }
@@ -158,12 +158,13 @@ public class TaskHttpHandler implements HttpHandler {
 
             switch (result) {
                 case HttpStatusCode.OK:
-                    System.out.println("[DELETE] Task successfully deleted.");
+                    System.out.println("[DELETE] A Task successfully deleted.");
                     break;
                 case HttpStatusCode.NotFound:
                     System.out.println("[DELETE] NotFound Exception thrown...");
                     break;
                 default:
+                    System.out.println("[DELETE] Unhandled Exception thrown...");
                     break;
             }
         }
