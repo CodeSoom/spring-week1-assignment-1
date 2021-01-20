@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 import static com.codesoom.assignment.JSONParser.*;
@@ -39,7 +40,10 @@ public class ResponseHandler {
                 return "ToDo 제목 수정하기";
 
             case "DELETE":
-                return "ToDo 삭제하기";
+                if (taskId != null) {
+                    tasks.removeIf(task -> taskId == task.getId());
+                    return "";
+                }
 
             default:
                 return "Unknown HTTP method";
