@@ -30,36 +30,34 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private String processRequest(HttpExchange exchange) throws IOException {
-        String content = "";
         switch (exchange.getRequestMethod()) {
             case "GET":
-                content = processGetRequest(exchange);
-                break;
+                return processGetRequest(exchange);
             case "POST":
-                content = processPostRequest(exchange);
-                break;
+                return processPostRequest(exchange);
             case "PUT":
             case "PATCH":
-                content = processPutAndPatchRequest(exchange);
-                break;
+                return processPutAndPatchRequest(exchange);
             case "DELETE":
-                processDeleteRequest(exchange);
-                break;
+                return processDeleteRequest(exchange);
             case "HEAD":
                 statusCode=HttpStatus.OK;
                 break;
+            default:
+                return "";
         }
-        return content;
+        return "";
     }
 
-    private void processDeleteRequest(HttpExchange exchange) {
+    private String processDeleteRequest(HttpExchange exchange) {
         String path = exchange.getRequestURI().getPath();
         if (!hasNumberParameter(path) || !hasIndex(index - 1)) {
             statusCode = HttpStatus.NOT_FOUND;
-            return;
+            return "";
         }
         statusCode = HttpStatus.NO_CONTENT;
         tasks.remove(index - 1);
+        return "";
     }
 
     private String processPutAndPatchRequest(HttpExchange exchange) throws IOException {
