@@ -26,14 +26,8 @@ public class DemoHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         System.out.println(method + " " + path);
-        if (!body.isBlank()) {
-            System.out.println(body);
 
-            Task task = toTask(body, Long.valueOf(tasks.size() + 1));
-            tasks.add(task);
-        }
-
-        String content = new ResponseHandler().handle(method, path, tasks);
+        String content = new ResponseHandler().handle(method, path, tasks, body);
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
