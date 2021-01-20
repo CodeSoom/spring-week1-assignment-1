@@ -11,7 +11,7 @@ public class WebServer {
     public WebServer(int port) throws IOException {
         InetSocketAddress address = new InetSocketAddress("localhost", port);
         httpServer = HttpServer.create(address, 0);
-        httpServer.createContext("/");
+        httpServer.createContext("/", new WebHandler());
     }
 
     public void start() {
