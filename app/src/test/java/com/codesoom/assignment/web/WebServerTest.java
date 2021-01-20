@@ -87,6 +87,7 @@ public class WebServerTest {
         assertDoesNotThrow(() -> {
             StringEntity requestEntity = new StringEntity(requestBody);
             post.setEntity(requestEntity);
+            HttpClientBuilder.create().build().execute(post);
         });
 
         HttpUriRequest request = new HttpGet("http://localhost:8000/task/1");
