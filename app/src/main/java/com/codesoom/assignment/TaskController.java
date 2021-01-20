@@ -15,7 +15,8 @@ import static com.codesoom.assignment.Status.OK;
 public class TaskController {
 
     ObjectMapper objectMapper = new ObjectMapper();
-    private static List<Task> tasks = new ArrayList<>();
+    private List<Task> tasks = new ArrayList<>();
+    private Long count = 0L;
 
     public void getController(HttpExchange httpExchange) throws IOException {
         String body = tasksToJSON();
@@ -31,9 +32,10 @@ public class TaskController {
     public void postController(HttpExchange httpExchange) throws IOException {
         String body = getBody(httpExchange);
         System.out.println(body);
-        Task tempTask = toTask(body);
-        Task task = new Task(tempTask.getTitle());
-        System.out.println(task.getId());
+        Task task = toTask(body);
+        count += 1;
+        task.setId(count);
+        System.out.println(task);
 
         tasks.add(task);
 
