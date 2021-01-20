@@ -118,4 +118,5 @@ public class MyHandler implements HttpHandler {
     private void printRequestInfo(RequestInfo requestInfo) {
         System.out.println("Received new request - " + requestInfo.toString());
     }
+
 }
