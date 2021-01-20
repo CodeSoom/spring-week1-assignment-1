@@ -10,10 +10,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MyHttpHandler implements HttpHandler {
-    private static final int OK = 200;
-    private static final int CREATED = 201;
-    private static final int NOT_FOUND = 404;
-    private static final int NO_CONTENT = 204;
     private Tasks tasks = new Tasks();
 
     private Pattern pattern = Pattern.compile("/tasks/([^/]+)");
@@ -34,7 +30,7 @@ public class MyHttpHandler implements HttpHandler {
 
         if (method.equals("GET") && path.equals("/tasks")) {
             content = JsonConverter.tasksToJSON(tasks);
-            exchange.sendResponseHeaders(OK, content.getBytes().length);
+            exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
         }
 
         if (method.equals("GET") && pattern.matcher(path).matches()) {
@@ -43,10 +39,10 @@ public class MyHttpHandler implements HttpHandler {
             Optional<Task> foundTask = tasks.findTask(pathVariable);
             if (foundTask.isPresent()) {
                 content = JsonConverter.taskToJson(foundTask.get());
-                exchange.sendResponseHeaders(OK, content.getBytes().length);
+                exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
             } else {
                 System.out.println("not found task" + foundTask);
-                exchange.sendResponseHeaders(NOT_FOUND, 0);
+                exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
             }
         }
 
@@ -56,7 +52,7 @@ public class MyHttpHandler implements HttpHandler {
                 Task task = JsonConverter.toTask(body);
                 task.setId(IdGenerator.generate());
                 tasks.addTask(task);
-                exchange.sendResponseHeaders(CREATED, content.getBytes().length);
+                exchange.sendResponseHeaders(HttpStatus.CREATED.getCode(), content.getBytes().length);
             }
         }
 
@@ -68,9 +64,9 @@ public class MyHttpHandler implements HttpHandler {
                 Optional<Task> foundTask = tasks.findTask(pathVariable);
                 if (foundTask.isPresent()) {
                     foundTask.get().setTitle(JsonConverter.extractValue(body));
-                    exchange.sendResponseHeaders(OK, content.getBytes().length);
+                    exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
                 } else {
-                    exchange.sendResponseHeaders(NOT_FOUND, 0);
+                    exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
                 }
             }
         }
@@ -82,9 +78,9 @@ public class MyHttpHandler implements HttpHandler {
             Optional<Task> foundTask = tasks.findTask(pathVariable);
             if (foundTask.isPresent()) {
                 tasks.remove(foundTask.get());
-                exchange.sendResponseHeaders(NO_CONTENT, content.getBytes().length);
+                exchange.sendResponseHeaders(HttpStatus.NO_CONTENT.getCode(), content.getBytes().length);
             } else {
-                exchange.sendResponseHeaders(NOT_FOUND, 0);
+                exchange.sendResponseHeaders(HttpStatus.OK.getCode(), 0);
             }
         }
 
