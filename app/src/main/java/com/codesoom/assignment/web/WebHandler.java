@@ -25,27 +25,33 @@ public class WebHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        if (exchange.getRequestURI().getPath().equals("/tasks")) {
-            String content = transfer.taskListToJson(taskApplicationService.getAllTasks());
-            setJsonToResponseBody(exchange, content, 200);
-        } else if (exchange.getRequestURI().getPath().equals("/task")) {
-            String requestBody = new BufferedReader(
-                    new InputStreamReader(exchange.getRequestBody()))
-                    .lines()
-                    .collect(Collectors.joining(""));
-            Task requestTask = transfer.jsonStringToTask(requestBody);
-
-            Long taskId = taskApplicationService.createTask(requestTask.getTitle());
-            Optional<Task> createdTask = taskApplicationService.findTask(taskId);
-
-            if (createdTask.isEmpty()) {
-                String content = "Not Found";
-                setJsonToResponseBody(exchange, content, 404);
+        String path = exchange.getRequestURI().getPath();
+        String method = exchange.getRequestMethod();
+        if (method.equals("GET")) {
+            if (path.equals("/tasks")) {
+                String content = transfer.taskListToJson(taskApplicationService.getAllTasks());
+                setJsonToResponseBody(exchange, content, 200);
+            } else {
+                exchange.sendResponseHeaders(200, 0);
             }
-            String content = transfer.taskToJson(createdTask.get());
-            setJsonToResponseBody(exchange, content, 201);
-        } else {
-            exchange.sendResponseHeaders(200, 0);
+        } else if (method.equals("POST")) {
+            if (path.equals("/task")) {
+                String requestBody = new BufferedReader(
+                        new InputStreamReader(exchange.getRequestBody()))
+                        .lines()
+                        .collect(Collectors.joining(""));
+                Task requestTask = transfer.jsonStringToTask(requestBody);
+
+                Long taskId = taskApplicationService.createTask(requestTask.getTitle());
+                Optional<Task> createdTask = taskApplicationService.findTask(taskId);
+
+                if (createdTask.isEmpty()) {
+                    String content = "Not Found";
+                    setJsonToResponseBody(exchange, content, 404);
+                }
+                String content = transfer.taskToJson(createdTask.get());
+                setJsonToResponseBody(exchange, content, 201);
+            }
         }
     }
 
