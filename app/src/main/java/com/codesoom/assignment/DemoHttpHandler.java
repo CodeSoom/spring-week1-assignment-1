@@ -21,6 +21,7 @@ import com.codesoom.assignment.models.Task;
 
 public class DemoHttpHandler implements HttpHandler {
 
+
     private List<Task> tasks = new ArrayList<>();
     private IdGenerator idGenerator = new IdGenerator();
     int statusCode = 404;

@@ -8,11 +8,12 @@ import com.sun.net.httpserver.HttpServer;
 
 public class App {
 
+    private static int PORT_NUMBER = 8000;
+    private static int BACKLOG = 0;
     public static void main(String[] args) {
-
         try {
-            InetSocketAddress address = new InetSocketAddress(8001);
-            HttpServer httpserver = HttpServer.create(address, 0);
+            InetSocketAddress address = new InetSocketAddress(PORT_NUMBER);
+            HttpServer httpserver = HttpServer.create(address, BACKLOG);
             HttpHandler handler = new DemoHttpHandler();
             httpserver.createContext("/", handler);
             httpserver.start();
