@@ -118,7 +118,15 @@ public class TaskHttpHandler implements HttpHandler {
 
         // PATCH
         if (method.equals("PATCH") && (pathItems.length == 3)) {
+            Task task = getTask(id);
+            boolean isPatched = patchTask(task, body);
+            code = HttpStatusCode.OK;
+            content = "Task successfully patched.";
 
+            if (!isPatched) {
+                code = HttpStatusCode.BadRequest;
+                content = "Cannot patch a Task";
+            }
         }
 
         // DELETE
@@ -132,6 +140,18 @@ public class TaskHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private boolean patchTask(Task task, String body) throws JsonProcessingException {
+        if (task == null) return false;
+
+        Task newTask = toTask(body);
+
+        if (task.getTitle() != newTask.getTitle()) {
+            task.setTitle(newTask.getTitle());
+        }
+
+        return true;
     }
 
     private boolean updateTask(Task task, String body) throws JsonProcessingException {
