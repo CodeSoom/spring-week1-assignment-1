@@ -99,7 +99,7 @@ public class TaskHttpHandler implements HttpHandler {
 
             if (!isAdded) {
                 code = HttpStatusCode.BadRequest;
-                content = "Cannot Added";
+                content = "Cannot added a Task";
             }
         }
 
@@ -124,7 +124,7 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private boolean addTask(String body) throws JsonProcessingException {
-        if (body == null) return false;
+        if (body.isBlank()) return false;
 
         Task task = toTask(body);
 
