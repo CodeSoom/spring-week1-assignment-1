@@ -6,7 +6,7 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.*;
 import java.util.stream.Collectors;
 
-public class MyHttpHandler implements HttpHandler {
+public class TaskHttpHandler implements HttpHandler {
 
     private TaskController controller = new TaskController();
 

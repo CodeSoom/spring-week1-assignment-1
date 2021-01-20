@@ -40,7 +40,10 @@ public class TaskController {
         tasks.add(task);
 
         httpExchange.sendResponseHeaders(CREATED.getStatus(), 0);
+
         OutputStream outputStream = httpExchange.getResponseBody();
+        outputStream.write(body.getBytes());
+        outputStream.flush();
         outputStream.close();
     }
 
