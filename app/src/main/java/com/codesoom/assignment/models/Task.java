@@ -20,8 +20,12 @@ public class Task {
         this.title = title;
     }
 
+    @Override
     public String toString() {
-        return "id : " + id + " - title : " + title;
+        return "{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                '}';
     }
 
 }

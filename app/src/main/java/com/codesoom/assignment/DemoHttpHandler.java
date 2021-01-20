@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
 
 import java.io.*;
 import java.net.URI;
@@ -16,22 +17,12 @@ public class DemoHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
     private Long id = 1L;
-
-    public DemoHttpHandler() {
-    }
+    private int failStatusCode = 404;
+    private int successStatusCode = 200;
+    private String checkPath = "tasks";
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        // REST - CRUD
-        // 1. Method - GET, POST, PUT/PATCH, DELETE, ...
-        // 2. Path - "/", "/tasks", "/tasks/1", ...
-        // 3. Headers, Body(Content)
-
-        // POST             -> status 201
-        // PATCH(UPDATE)    -> (tasks/1 title=one)
-        // DELETE           -> /tasks/1
-        // GET              -> /tasks/1
-
         String method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
@@ -41,35 +32,94 @@ public class DemoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        System.out.println(method + " " + path);
+        System.out.println("method : " + method + "         path : " + path);
 
-        String[] str = path.split("/");
-        String content = "Hello World!";
-        int statusCode = 200;
+        String[] pathSplit = path.split("/");
 
-        if (method.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJSON();
+        if (method.equals("GET")) {
+            toGet(pathSplit, body, exchange);
+            return;
         }
 
-        if (method.equals("POST") && path.equals("/tasks") && !body.isBlank()) {
-            Task task = toTask(body);
-            task.setId(id++);
-            System.out.println(task.toString());
-            tasks.add(task);
-            statusCode = 201;
-            content = "Create a new task.";
+        if (method.equals("POST")) {
+            toPost(pathSplit, body, exchange);
+            return;
         }
 
-        if (method.equals("PUT") && str[1].equals("tasks") && !body.isBlank()) {
-            int lastId = Integer.parseInt(str[str.length - 1]);
-            System.out.println(tasks.size());
-            if (!(tasks.size() == 0)){
+        if (method.equals("PUT")){
+            toPut(pathSplit, body, exchange);
+            return;
+        }
+
+        if (method.equals("DELETE")){
+            toDelete(pathSplit, body, exchange);
+            return;
+        }
+    }
+
+    private void toGet(String[] path, String body, HttpExchange exchange) throws IOException {
+        if (!path[1].equals(checkPath)) {
+            responseOutput(failStatusCode, "GET Path Error", exchange);
+            return;
+        }
+        if (path.length >= 3) {
+            int getNumber = Integer.parseInt(path[2]);
+            if (!(tasks.size() <= getNumber -1)) {
+                responseOutput(successStatusCode, tasks.get(getNumber -1).toString(), exchange);
+                return;
             }
-
+            responseOutput(failStatusCode, "해당 ID는 존재하지 않습니다.", exchange);
+            return;
         }
+        responseOutput(successStatusCode, tasksToJSON(), exchange);
+    }
 
+    private void toPost(String[] path, String body, HttpExchange exchange) throws IOException {
+        if (!path[1].equals(checkPath)) {
+            responseOutput(failStatusCode, "POST Path Error", exchange);
+            return;
+        }
+        Task task = toTask(body);
+        task.setId(id++);
+        tasks.add(task);
+        responseOutput(201, "Create a new Task.", exchange);
+    }
 
+    private void toPut(String[] path, String body, HttpExchange exchange) throws IOException {
+        if (!path[1].equals(checkPath) || body.isEmpty() || path.length < 3) {
+            responseOutput(failStatusCode, "PUT Path or body Error", exchange);
+            return;
+        }
+        int getNumber = Integer.parseInt(path[2]);
 
+        if (!(tasks.size() <= getNumber -1)) {
+            System.out.println("tasks Size : " + tasks.size() + "  search : " + (getNumber -1));
+            Task task = toTask(body);
+            tasks.get(getNumber -1).setTitle(task.getTitle());
+            responseOutput(successStatusCode, tasks.get(getNumber -1).toString(), exchange);
+            return;
+        }
+        responseOutput(successStatusCode, "id error", exchange);
+    }
+
+    private void toDelete(String[] path, String body, HttpExchange exchange) throws IOException {
+        if (!path[1].equals(checkPath) || !body.isEmpty() || path.length < 3) {
+            responseOutput(failStatusCode, "PUT Path or id Error", exchange);
+            return;
+        }
+        Long getNumber1 = Long.parseLong(path[2]);
+
+        for(Task task : tasks) {
+            if(task.getId() == getNumber1){
+                tasks.remove(task);
+                responseOutput(successStatusCode, "delete success", exchange);
+                return;
+            }
+        }
+        responseOutput(failStatusCode, "해당하는 ID가 없습니다.", exchange);
+    }
+
+    private void responseOutput(int statusCode, String content, HttpExchange exchange) throws IOException {
         exchange.sendResponseHeaders(statusCode, content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
 
