@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
+import java.util.Objects;
 
 /**
  * 자바 HTTP 서버를 만들어보기 위한 데모 핸들러입니다.
@@ -18,7 +19,9 @@ import java.net.URI;
  */
 public class DemoHttpHandler implements HttpHandler {
     private boolean isValidPath(String path) {
-        return path.startsWith("/tasks");
+        return Objects
+                .requireNonNull(path, "")
+                .startsWith("/tasks");
     }
 
     private Long extractID(String path) {
