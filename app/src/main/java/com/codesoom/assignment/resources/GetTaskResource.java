@@ -43,8 +43,4 @@ public class GetTaskResource extends TaskResource
                     throw new IllegalStateException("More than one ID exist");
                 });
     }
-
-
-
-
 }
