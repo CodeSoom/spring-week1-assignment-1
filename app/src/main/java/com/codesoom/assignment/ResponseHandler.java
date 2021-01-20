@@ -6,27 +6,54 @@ import java.util.List;
 import static com.codesoom.assignment.JSONParser.*;
 
 public class ResponseHandler {
-    String handle(String method, String path, List<Task> tasks) throws IOException {
+    public String handle(String method, String path, List<Task> tasks) throws IOException {
         String content = "";
 
-        if (method.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJSON(tasks);
-        } else if (method.equals("GET") && path.matches("/tasks/*[0-9]*")) {
-            content = "ToDo 상세 조회하기";
+        // check wrong path
+        if (!path.matches("/tasks/*[0-9]*")) {
+            return "Wrong URI path";
         }
 
-        if (method.equals("POST") && path.equals("/tasks")) {
-            content = taskToJSON(tasks.get(tasks.size() - 1));
-        }
+        Integer taskId = extractTaskId(path);
 
-        if ((method.equals("PUT") || method.equals("PATCH")) && path.matches("/tasks/*[0-9]*")) {
-            content = "ToDo 제목 수정하기";
-        }
+        switch (method) {
+            case "GET":
+                if (path.equals("/tasks")) {
+                    return tasksToJSON(tasks);
+                }
 
-        if (method.equals("DELETE") && path.matches("/tasks/*[0-9]*")) {
-            content = "ToDo 삭제하기";
-        }
+                if (taskId != null) {
+                    return String.valueOf(
+                            tasks.stream()
+                                    .filter(task -> taskId.intValue() == task.getId())
+                                    .findFirst()
+                    );
+                }
 
-        return content;
+                break;
+
+            case "POST":
+                return taskToJSON(tasks.get(tasks.size() - 1));
+
+            case "PUT": case "PATCH":
+                return "ToDo 제목 수정하기";
+
+            case "DELETE":
+                return "ToDo 삭제하기";
+
+            default:
+                return "Unknown HTTP method";
+        }
+    }
+
+    private Integer extractTaskId(String path) {
+        String[] splitPath = path.split("/");
+
+        try {
+            return Integer.getInteger(splitPath[splitPath.length - 1]);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
