@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
+    static final int OK = 200;
+    static final int CREATED = 201;
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
     private Long id=1L;
@@ -40,7 +42,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         if(method.equals("GET") && path.equals("/tasks")) {
             content = (tasks == null ) ? "[]" : tasksToJson();
-            exchange.sendResponseHeaders(200,content.getBytes().length);
+            exchange.sendResponseHeaders(OK,content.getBytes().length);
         }
 
         else if(method.equals("GET") && path.startsWith("/tasks")) {
@@ -55,7 +57,7 @@ public class DemoHttpHandler implements HttpHandler {
             }
 
             content = taskToJson(findTask);
-            exchange.sendResponseHeaders(200,content.getBytes().length);
+            exchange.sendResponseHeaders(OK,content.getBytes().length);
         }
 
         else if(method.equals("POST") && path.equals("/tasks")) {
@@ -64,7 +66,7 @@ public class DemoHttpHandler implements HttpHandler {
             tasks.add(task);
 
             content = taskToJson(task);
-            exchange.sendResponseHeaders(201,content.getBytes().length);
+            exchange.sendResponseHeaders(CREATED,content.getBytes().length);
         }
 
         OutputStream outputStream = exchange.getResponseBody();
