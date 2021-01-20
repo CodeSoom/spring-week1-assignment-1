@@ -1,20 +1,32 @@
 package com.codesoom.assignment.models;
 
+import com.codesoom.assignment.errors.AlreadyExistsIDException;
+import com.codesoom.assignment.errors.NotExistsIDException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TaskManagerTest {
+    @BeforeEach
+    void beforeEach() {
+        TaskManager.clear();
+    }
+
     @Test
     void findIfNotExist() {
-        Task task = TaskManager.find(100);
-        assertNull(task);
+        try {
+            TaskManager.find(100);
+        } catch (NotExistsIDException ignored) {
+            return;
+        }
+        fail();
     }
 
     @Test
     void successInsertTitle() {
         Task task = TaskManager.insert("sample");
+
         assertEquals("sample", task.title());
         assertEquals(1, task.id());
     }
@@ -23,6 +35,7 @@ public class TaskManagerTest {
     void successInsertTask() throws Exception {
         TaskManager.insert(new Task(2, "sample2"));
         Task task = TaskManager.find(2);
+
         assertEquals("sample2", task.title());
         assertEquals(2, task.id());
     }
@@ -33,10 +46,10 @@ public class TaskManagerTest {
 
         try {
             TaskManager.insert(new Task(1, "sample"));
-            throw new Exception("failed test");
-        } catch (Exception e) {
-            assertEquals("id 1 is already exists", e.getMessage());
+        } catch (AlreadyExistsIDException ignored) {
+            return;
         }
+        fail();
     }
 
     @Test
@@ -45,6 +58,7 @@ public class TaskManagerTest {
         TaskManager.modify(new Task(1, "sample1"));
 
         Task task = TaskManager.find(1);
+
         assertEquals("sample1", task.title());
     }
 
@@ -52,27 +66,32 @@ public class TaskManagerTest {
     void failModify() {
         try {
             TaskManager.modify(new Task(100, "not exist"));
-            throw new Exception("failed test");
-        } catch (Exception e) {
-            assertEquals("not exist task id", e.getMessage());
+        } catch (NotExistsIDException ignored) {
+            return;
         }
+        fail();
     }
 
     @Test
     void successDelete() throws Exception {
         TaskManager.insert("sample");
         TaskManager.delete(1);
-        Task task = TaskManager.find(1);
-        assertNull(task);
+
+        try {
+            TaskManager.find(1);
+        } catch (NotExistsIDException ignored) {
+            return;
+        }
+        fail();
     }
 
     @Test
     void failDelete() {
         try {
             TaskManager.delete(100);
-            throw new Exception("failed test");
-        } catch (Exception e) {
-            assertEquals("not exist task id", e.getMessage());
+        } catch (NotExistsIDException ignored) {
+            return;
         }
+        fail();
     }
 }
