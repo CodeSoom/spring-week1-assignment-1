@@ -26,11 +26,13 @@ public class WebHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
         String method = exchange.getRequestMethod();
+        System.out.println(path);
+
         if (method.equals("GET")) {
             if (path.equals("/tasks")) {
                 String content = transfer.taskListToJson(taskApplicationService.getAllTasks());
                 setJsonToResponseBody(exchange, content, 200);
-            } else if (path.contains("/task/")) {
+            } else if (path.contains("/tasks/")) {
                 Long taskId = parsePathToTaskId(path);
 
                 Optional<Task> task = taskApplicationService.findTask(taskId);
@@ -39,14 +41,13 @@ public class WebHandler implements HttpHandler {
                     sendNotFoundError(exchange);
                     return;
                 }
-
                 String content = transfer.taskToJson(task.get());
                 setJsonToResponseBody(exchange, content, 200);
             } else {
                 exchange.sendResponseHeaders(200, 0);
             }
         } else if (method.equals("POST")) {
-            if (path.equals("/task")) {
+            if (path.equals("/tasks")) {
                 String requestBody = new BufferedReader(
                         new InputStreamReader(exchange.getRequestBody()))
                         .lines()
@@ -57,7 +58,7 @@ public class WebHandler implements HttpHandler {
                 sendUpdatedTaskResult(exchange, taskId);
             }
         } else if (method.equals("PUT")) {
-            if (path.contains("/task")) {
+            if (path.contains("/tasks")) {
                 Long taskId = parsePathToTaskId(path);
                 String requestBody = new BufferedReader(
                         new InputStreamReader(exchange.getRequestBody()))
@@ -102,7 +103,7 @@ public class WebHandler implements HttpHandler {
     }
 
     private void sendNotFoundError(HttpExchange exchange) throws IOException {
-        String content = "Not Found";
+        String content = "{\"reason\": \"Not Found\"}";
         setJsonToResponseBody(exchange, content, 404);
     }
 }

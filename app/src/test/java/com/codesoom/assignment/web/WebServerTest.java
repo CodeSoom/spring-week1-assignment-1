@@ -83,7 +83,7 @@ public class WebServerTest {
     @Test
     void getSpecificTask() {
         // create task for get.
-        HttpPost post = new HttpPost("http://localhost:8000/task");
+        HttpPost post = new HttpPost("http://localhost:8000/tasks");
         String requestBody = "{\"title\": \"Play Game\"}";
         assertDoesNotThrow(() -> {
             StringEntity requestEntity = new StringEntity(requestBody);
@@ -91,7 +91,7 @@ public class WebServerTest {
             HttpClientBuilder.create().build().execute(post);
         });
 
-        HttpUriRequest request = new HttpGet("http://localhost:8000/task/1");
+        HttpUriRequest request = new HttpGet("http://localhost:8000/tasks/0");
         assertDoesNotThrow(() -> {
             HttpResponse httpResponse = HttpClientBuilder.create().build().execute(request);
             String responseBody = new BufferedReader(
@@ -107,7 +107,7 @@ public class WebServerTest {
 
     @Test
     void getUnCreatedTask() {
-        HttpUriRequest request = new HttpGet("http://localhost:8000/task/1");
+        HttpUriRequest request = new HttpGet("http://localhost:8000/tasks/1");
         assertDoesNotThrow(() -> {
             HttpResponse httpResponse = HttpClientBuilder.create().build().execute(request);
             assertEquals(404, httpResponse.getStatusLine().getStatusCode());
@@ -116,7 +116,7 @@ public class WebServerTest {
 
     @Test
     void putUnCreatedTask() {
-        HttpPut put = new HttpPut("http://localhost:8000/task/1");
+        HttpPut put = new HttpPut("http://localhost:8000/tasks/1");
         String requestBody = "{\"title\": \"Play Game\"}";
         assertDoesNotThrow(() -> {
             StringEntity requestEntity = new StringEntity(requestBody);
