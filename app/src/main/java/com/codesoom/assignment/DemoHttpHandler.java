@@ -25,8 +25,6 @@ public class DemoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        String content = "";
-
         System.out.println(method + " " + path);
         if (!body.isBlank()) {
             System.out.println(body);
@@ -35,23 +33,7 @@ public class DemoHttpHandler implements HttpHandler {
             tasks.add(task);
         }
 
-        if (method.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJSON(tasks);
-        } else if (method.equals("GET") && path.matches("/tasks/*[0-9]*")) {
-            content = "ToDo 상세 조회하기";
-        }
-
-        if (method.equals("POST") && path.equals("/tasks")) {
-            content = taskToJSON(tasks.get(tasks.size() - 1));
-        }
-
-        if ((method.equals("PUT") || method.equals("PATCH")) && path.matches("/tasks/*[0-9]*")) {
-            content = "ToDo 제목 수정하기";
-        }
-
-        if (method.equals("DELETE") && path.matches("/tasks/*[0-9]*")) {
-            content = "ToDo 삭제하기";
-        }
+        String content = new ResponseHandler().handle(method, path, tasks);
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
