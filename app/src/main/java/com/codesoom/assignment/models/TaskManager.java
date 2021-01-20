@@ -9,6 +9,7 @@ import java.util.List;
 
 /**
  * The class {@code TaskManager} is managing tasks.
+ * @see Task
  */
 public class TaskManager {
     private static long index = 0;
