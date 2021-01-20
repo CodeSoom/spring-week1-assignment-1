@@ -99,19 +99,30 @@ public class TaskHttpHandler implements HttpHandler {
 
             if (!isAdded) {
                 code = HttpStatusCode.BadRequest;
-                content = "Cannot added a Task";
+                content = "Cannot add a Task";
             }
         }
 
-        if (method.equals("PUT")) {
+        // PUT
+        if (method.equals("PUT") && (pathItems.length == 3)) {
+            Task task = getTask(id);
+            boolean isUpdated = updateTask(task, body);
+            code = HttpStatusCode.OK;
+            content = "Task successfully updated.";
+
+            if (!isUpdated) {
+                code = HttpStatusCode.BadRequest;
+                content = "Cannot update a Task";
+            }
+        }
+
+        // PATCH
+        if (method.equals("PATCH") && (pathItems.length == 3)) {
 
         }
 
-        if (method.equals("PATCH")) {
-
-        }
-
-        if (method.equals("DELETE")) {
+        // DELETE
+        if (method.equals("DELETE") && (pathItems.length == 3)) {
 
         }
 
@@ -121,6 +132,17 @@ public class TaskHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private boolean updateTask(Task task, String body) throws JsonProcessingException {
+        if (task == null) return false;
+
+        Task newTask = toTask(body);
+        if (newTask.getTitle() == null) return false;
+
+        task.setTitle(newTask.getTitle());
+
+        return true;
     }
 
     private boolean addTask(String body) throws JsonProcessingException {
