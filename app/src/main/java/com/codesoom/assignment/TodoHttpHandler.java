@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.models.HttpStatus;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,7 +16,7 @@ public class TodoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
     private ObjectMapper mapper = new ObjectMapper();
     private int index;
-    private int statusCode = 200;
+    private int statusCode = HttpStatus.OK;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -31,18 +32,18 @@ public class TodoHttpHandler implements HttpHandler {
         if (method.equals("GET")) {
             if (hasNumberParameter(path)) {
                 if (hasIndex(index - 1)) {
-                    statusCode = 200;
+                    statusCode = HttpStatus.OK;
                     content = taskToJson(index - 1);
                 } else
-                    statusCode = 404;
+                    statusCode = HttpStatus.NOT_FOUND;
             } else {
-                statusCode = 200;
+                statusCode = HttpStatus.OK;
                 content = taskToJson();
             }
         } else if (method.equals("POST") && path.equals("/tasks")) {
             Task task = jsonToTask(body);
             tasks.add(task);
-            statusCode = 201;
+            statusCode = HttpStatus.CREATED;
             content = taskToJson(task.getId() - 1);
         } else if (method.equals("PUT") || method.equals("PATCH")) {
             if (hasNumberParameter(path)) {
@@ -51,23 +52,23 @@ public class TodoHttpHandler implements HttpHandler {
                     Task task = jsonToTask(body);
                     task.setId((long) index);
                     tasks.add(index - 1, task);
-                    statusCode = 200;
+                    statusCode = HttpStatus.OK;
                     content = taskToJson(index - 1);
                 } else
-                    statusCode = 404;
+                    statusCode = HttpStatus.NOT_FOUND;
 
             } else {
-                statusCode = 404;
+                statusCode = HttpStatus.NOT_FOUND;
             }
         } else if (method.equals("DELETE")) {
             if (hasNumberParameter(path)) {
                 if (hasIndex(index - 1)) {
-                    statusCode = 204;
+                    statusCode = HttpStatus.NO_CONTENT;
                     tasks.remove(index - 1);
                 } else
-                    statusCode = 404;
+                    statusCode = HttpStatus.NOT_FOUND;
             } else {
-                statusCode = 404;
+                statusCode = HttpStatus.NOT_FOUND;
             }
         }
         exchange.sendResponseHeaders(statusCode, content.getBytes().length);
@@ -85,7 +86,7 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private boolean hasNumberParameter(String path) {
-        if(path.startsWith("/tasks/")) {
+        if (path.startsWith("/tasks/")) {
             String[] split = path.split("/tasks/");
             if (split.length == 2) {
                 index = Integer.parseInt(split[1]);
