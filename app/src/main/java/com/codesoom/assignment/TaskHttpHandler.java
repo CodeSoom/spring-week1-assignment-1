@@ -131,7 +131,15 @@ public class TaskHttpHandler implements HttpHandler {
 
         // DELETE
         if (method.equals("DELETE") && (pathItems.length == 3)) {
+            Task task = getTask(id);
+            boolean isDeleted = deleteTask(task);
+            code = HttpStatusCode.OK;
+            content = "Task successfully deleted";
 
+            if (!isDeleted) {
+                code = HttpStatusCode.BadRequest;
+                content = "Cannot delete a Task";
+            }
         }
 
         exchange.sendResponseHeaders(code, content.getBytes().length);
@@ -140,6 +148,13 @@ public class TaskHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private boolean deleteTask(Task task) {
+        if (task == null) return false;
+
+        tasks.remove(task);
+        return true;
     }
 
     private boolean patchTask(Task task, String body) throws JsonProcessingException {
