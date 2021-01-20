@@ -20,58 +20,96 @@ public class TodoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
+        String path = exchange.getRequestURI().getPath();
+        if (!path.startsWith("/tasks")) {
+            statusCode = HttpStatus.NOT_FOUND;
+            return;
+        }
+        String content = processRequest(exchange);
+        sendResponse(exchange, content);
+    }
+
+    private String processRequest(HttpExchange exchange) throws IOException {
+        String content = "";
+        switch (exchange.getRequestMethod()) {
+            case "GET":
+                content = processGetRequest(exchange);
+                break;
+            case "POST":
+                content = processPostRequest(exchange);
+                break;
+            case "PUT":
+            case "PATCH":
+                content = processPutAndPatchRequest(exchange);
+                break;
+            case "DELETE":
+                processDeleteRequest(exchange);
+                break;
+        }
+        return content;
+    }
+
+    private void processDeleteRequest(HttpExchange exchange) {
+        String path = exchange.getRequestURI().getPath();
+        if (!hasNumberParameter(path) || !hasIndex(index - 1)) {
+            statusCode = HttpStatus.NOT_FOUND;
+            return;
+        }
+        statusCode = HttpStatus.NO_CONTENT;
+        tasks.remove(index - 1);
+    }
+
+    private String processPutAndPatchRequest(HttpExchange exchange) throws IOException {
+        String body = getStringBody(exchange);
         String path = exchange.getRequestURI().getPath();
         String content = "";
+        if (!hasNumberParameter(path) || !hasIndex(index - 1)) {
+            statusCode = HttpStatus.NOT_FOUND;
+            return content;
+        }
+        tasks.remove(index - 1);
+        Task task = jsonToTask(body);
+        task.setId((long) index);
+        tasks.add(index - 1, task);
+        statusCode = HttpStatus.OK;
+        content = taskToJson(index - 1);
 
+        return content;
+    }
+
+    private String processPostRequest(HttpExchange exchange) throws IOException {
+        String body = getStringBody(exchange);
+        Task task = jsonToTask(body);
+        tasks.add(task);
+        statusCode = HttpStatus.CREATED;
+        String content = taskToJson(task.getId() - 1);
+        return content;
+    }
+
+    private String getStringBody(HttpExchange exchange) {
         InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream))
+        return new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
+    }
 
-        if (method.equals("GET")) {
-            if (hasNumberParameter(path)) {
-                if (hasIndex(index - 1)) {
-                    statusCode = HttpStatus.OK;
-                    content = taskToJson(index - 1);
-                } else
-                    statusCode = HttpStatus.NOT_FOUND;
-            } else {
-                statusCode = HttpStatus.OK;
-                content = taskToJson();
-            }
-        } else if (method.equals("POST") && path.equals("/tasks")) {
-            Task task = jsonToTask(body);
-            tasks.add(task);
-            statusCode = HttpStatus.CREATED;
-            content = taskToJson(task.getId() - 1);
-        } else if (method.equals("PUT") || method.equals("PATCH")) {
-            if (hasNumberParameter(path)) {
-                if (hasIndex(index - 1)) {
-                    tasks.remove(index - 1);
-                    Task task = jsonToTask(body);
-                    task.setId((long) index);
-                    tasks.add(index - 1, task);
-                    statusCode = HttpStatus.OK;
-                    content = taskToJson(index - 1);
-                } else
-                    statusCode = HttpStatus.NOT_FOUND;
-
-            } else {
-                statusCode = HttpStatus.NOT_FOUND;
-            }
-        } else if (method.equals("DELETE")) {
-            if (hasNumberParameter(path)) {
-                if (hasIndex(index - 1)) {
-                    statusCode = HttpStatus.NO_CONTENT;
-                    tasks.remove(index - 1);
-                } else
-                    statusCode = HttpStatus.NOT_FOUND;
-            } else {
-                statusCode = HttpStatus.NOT_FOUND;
-            }
+    private String processGetRequest(HttpExchange exchange) throws IOException {
+        String path = exchange.getRequestURI().getPath();
+        if (!hasNumberParameter(path)) {
+            statusCode = HttpStatus.OK;
+            String content = taskToJson();
+            return content;
         }
-        sendResponse(exchange, content);
+
+        if (!hasIndex(index - 1)) {
+            statusCode = HttpStatus.NOT_FOUND;
+            String content = "";
+            return content;
+        }
+        statusCode = HttpStatus.OK;
+        String content = taskToJson(index - 1);
+
+        return content;
     }
 
     private void sendResponse(HttpExchange exchange, String content) throws IOException {
@@ -90,13 +128,12 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private boolean hasNumberParameter(String path) {
-        if (path.startsWith("/tasks/")) {
-            String[] split = path.split("/tasks/");
-            if (split.length == 2) {
-                index = Integer.parseInt(split[1]);
-                return true;
-            }
+        String[] split = path.split("/tasks/");
+        if (split.length == 2) {
+            index = Integer.parseInt(split[1]);
+            return true;
         }
+
         return false;
     }
 
