@@ -66,6 +66,8 @@ public class WebHandler implements HttpHandler {
                 String content = transfer.taskToJson(createdTask.get());
                 setJsonToResponseBody(exchange, content, 201);
             }
+        } else if (method.equals("PUT")) {
+            exchange.sendResponseHeaders(404, 0);
         }
     }
 
