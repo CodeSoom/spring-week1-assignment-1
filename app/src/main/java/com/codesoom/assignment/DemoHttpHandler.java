@@ -50,7 +50,7 @@ public class DemoHttpHandler implements HttpHandler {
             }
 
             Long idValue = Long.parseLong(path.substring(7));
-            Task getTask = findTask(idValue);
+            Task getTask = getTask(idValue);
 
             if(getTask == null) {
                 exchange.sendResponseHeaders(NOT_FOUND,0);
@@ -78,7 +78,7 @@ public class DemoHttpHandler implements HttpHandler {
                 return;
             }
 
-            Task task = toTask(body);
+            Task task = jsonToTask(body);
             createTask(task);
             content = taskToJson(task);
             exchange.sendResponseHeaders(CREATED,content.getBytes().length);
@@ -93,7 +93,7 @@ public class DemoHttpHandler implements HttpHandler {
             }
 
             Long idValue = Long.parseLong(path.substring(7));
-            Task updateTask = findTask(idValue);
+            Task updateTask = getTask(idValue);
 
             if(updateTask == null) {
                 exchange.sendResponseHeaders(NOT_FOUND, 0);
@@ -101,8 +101,8 @@ public class DemoHttpHandler implements HttpHandler {
                 return;
             }
 
-            Task task = toTask(body);
-            updateTask.setTitle(task.getTitle());
+            Task task = jsonToTask(body);
+            updateTask(updateTask, task.getTitle());
             content = taskToJson(updateTask);
             exchange.sendResponseHeaders(OK,content.getBytes().length);
             writeContentWithOutputStream(exchange, content);
@@ -116,7 +116,7 @@ public class DemoHttpHandler implements HttpHandler {
             }
 
             Long idValue = Long.parseLong(path.substring(7));
-            Task deleteTask = findTask(idValue);
+            Task deleteTask = getTask(idValue);
 
             if(deleteTask==null) {
                 exchange.sendResponseHeaders(NOT_FOUND, 0);
@@ -124,26 +124,14 @@ public class DemoHttpHandler implements HttpHandler {
                 return;
             }
 
-            tasks.remove(deleteTask);
+            deleteTask(deleteTask);
             content = "";
             exchange.sendResponseHeaders(OK,0);
             writeContentWithOutputStream(exchange, content);
         }
     }
 
-    private void createTask(Task task) {
-        task.setId(id++);
-        tasks.add(task);
-    }
-
-    private void writeContentWithOutputStream(HttpExchange exchange, String content) throws IOException {
-        OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
-    }
-
-    private Task findTask(Long idValue) {
+    private Task getTask(Long idValue) {
         Task getTask = null;
         for(Task task : tasks){
             if(task.getId() == idValue){
@@ -154,8 +142,28 @@ public class DemoHttpHandler implements HttpHandler {
         return getTask;
     }
 
-    private Task toTask(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
+    private void createTask(Task postTask) {
+        postTask.setId(id++);
+        tasks.add(postTask);
+    }
+
+    private void updateTask(Task updateTask, String title) {
+        updateTask.setTitle(title);
+    }
+
+    private void deleteTask(Task deleteTask) {
+        tasks.remove(deleteTask);
+    }
+
+    private void writeContentWithOutputStream(HttpExchange exchange, String content) throws IOException {
+        OutputStream outputStream = exchange.getResponseBody();
+        outputStream.write(content.getBytes());
+        outputStream.flush();
+        outputStream.close();
+    }
+
+    private Task jsonToTask(String json) throws JsonProcessingException {
+        return objectMapper.readValue(json, Task.class);
     }
 
     private String tasksToJson() throws IOException {
