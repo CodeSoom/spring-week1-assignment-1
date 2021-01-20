@@ -35,15 +35,15 @@ public class WebHandler implements HttpHandler {
                     .collect(Collectors.joining(""));
             Task requestTask = transfer.jsonStringToTask(requestBody);
 
-            try {
-                Long taskId = taskApplicationService.createTask(requestTask.getTitle());
-                Task createdTask = taskApplicationService.findTask(taskId).orElseThrow(NotFoundTask::new);
+            Long taskId = taskApplicationService.createTask(requestTask.getTitle());
+            Optional<Task> createdTask = taskApplicationService.findTask(taskId);
 
-                String content = transfer.taskToJson(createdTask);
-                setJsonToResponseBody(exchange, content, 201);
-            } catch (NotFoundTask notFoundTask) {
-                notFoundTask.printStackTrace();
+            if (createdTask.isEmpty()) {
+                String content = "Not Found";
+                setJsonToResponseBody(exchange, content, 404);
             }
+            String content = transfer.taskToJson(createdTask.get());
+            setJsonToResponseBody(exchange, content, 201);
         } else {
             exchange.sendResponseHeaders(200, 0);
         }
