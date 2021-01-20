@@ -43,7 +43,7 @@ public class WebServerTest {
             HttpResponse httpResponse = HttpClientBuilder.create().build().execute(request);
 
             assertEquals(200, httpResponse.getStatusLine().getStatusCode());
-            assertNotNull(httpResponse.getFirstHeader("Content-Type"));
+            assertNotNull(httpResponse.getEntity().getContentType());
         });
     }
 }
