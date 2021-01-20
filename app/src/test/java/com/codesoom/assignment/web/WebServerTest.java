@@ -78,4 +78,28 @@ public class WebServerTest {
             assertEquals("{\"id\":1,\"title\":\"Play Game\"}", responseBody);
         });
     }
+
+    @Test
+    void getSpecificTask() {
+        // create task for get.
+        HttpPost post = new HttpPost("http://localhost:8000/task");
+        String requestBody = "{\"title\": \"Play Game\"}";
+        assertDoesNotThrow(() -> {
+            StringEntity requestEntity = new StringEntity(requestBody);
+            post.setEntity(requestEntity);
+        });
+
+        HttpUriRequest request = new HttpGet("http://localhost:8000/task/1");
+        assertDoesNotThrow(() -> {
+            HttpResponse httpResponse = HttpClientBuilder.create().build().execute(request);
+            String responseBody = new BufferedReader(
+                new InputStreamReader(httpResponse.getEntity().getContent()))
+                .lines()
+                .collect(Collectors.joining(""));
+
+            assertEquals(200, httpResponse.getStatusLine().getStatusCode());
+            assertNotNull(httpResponse.getEntity().getContentType());
+            assertEquals("{\"id\":1,\"title\":\"Play Game\"}", responseBody);
+        });
+    }
 }
