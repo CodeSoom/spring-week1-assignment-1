@@ -39,6 +39,10 @@ public class DemoHttpHandler implements HttpHandler {
             content = tasksToJSON();
         }
 
+        if(method.equals("POST") && path.equals("/tasks")) {
+            content = "A task has been created";
+        }
+
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
         OutputStream responseBody = exchange.getResponseBody();
