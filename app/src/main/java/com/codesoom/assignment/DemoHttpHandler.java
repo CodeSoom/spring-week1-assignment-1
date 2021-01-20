@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
-
-    private static final int OK = 200;
     private final ObjectMapper mapper = new ObjectMapper();
     private final List<Task> tasks = new ArrayList<>();
 
@@ -47,7 +45,7 @@ public class DemoHttpHandler implements HttpHandler {
             content = "Create a new task!";
         }
 
-        exchange.sendResponseHeaders(OK, content.getBytes().length);
+        exchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
 
