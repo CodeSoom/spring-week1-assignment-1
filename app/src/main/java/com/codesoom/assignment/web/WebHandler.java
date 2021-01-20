@@ -31,6 +31,19 @@ public class WebHandler implements HttpHandler {
             if (path.equals("/tasks")) {
                 String content = transfer.taskListToJson(taskApplicationService.getAllTasks());
                 setJsonToResponseBody(exchange, content, 200);
+            } else if (path.contains("/task/")) {
+                String resourceId = path.split("/")[2];
+                Long taskId = (long) Integer.parseInt(resourceId);
+
+                Optional<Task> task = taskApplicationService.findTask(taskId);
+
+                if (task.isEmpty()) {
+                    String content = "Not Found";
+                    setJsonToResponseBody(exchange, content, 404);
+                    return;
+                }
+                String content = transfer.taskToJson(task.get());
+                setJsonToResponseBody(exchange, content, 200);
             } else {
                 exchange.sendResponseHeaders(200, 0);
             }
@@ -48,6 +61,7 @@ public class WebHandler implements HttpHandler {
                 if (createdTask.isEmpty()) {
                     String content = "Not Found";
                     setJsonToResponseBody(exchange, content, 404);
+                    return;
                 }
                 String content = transfer.taskToJson(createdTask.get());
                 setJsonToResponseBody(exchange, content, 201);
