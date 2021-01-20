@@ -9,8 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class WebServerTest {
     WebServer server;
@@ -35,6 +34,16 @@ public class WebServerTest {
             HttpResponse httpResponse = HttpClientBuilder.create().build().execute(request);
 
             assertEquals(200, httpResponse.getStatusLine().getStatusCode());
+        });
+    }
+    @Test
+    void getAllEmptyTask() {
+        HttpUriRequest request = new HttpGet("http://localhost:8000/tasks");
+        assertDoesNotThrow(() -> {
+            HttpResponse httpResponse = HttpClientBuilder.create().build().execute(request);
+
+            assertEquals(200, httpResponse.getStatusLine().getStatusCode());
+            assertNotNull(httpResponse.getFirstHeader("Content-Type"));
         });
     }
 }
