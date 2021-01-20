@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 public class DemoHttpHandler implements HttpHandler {
     static final int OK = 200;
     static final int CREATED = 201;
+    static final int NOT_FOUND = 404;
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
     private Long id=1L;
@@ -31,13 +32,6 @@ public class DemoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        if(!body.isBlank()) {
-            System.out.println(body);
-//            Task task = toTask(body);
-//            task.setId(id++);
-//            tasks.add(task);
-        }
-
         String content = "Hello World";
 
         if(method.equals("GET") && path.equals("/tasks")) {
@@ -46,17 +40,16 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         else if(method.equals("GET") && path.startsWith("/tasks")) {
-            Task findTask = null;
+            Task getTask = null;
             Long idValue = Long.parseLong(path.substring(7));
-            System.out.println(idValue);
             for(Task task : tasks){
                 if(task.getId() == idValue){
-                    findTask = task;
+                    getTask = task;
                     break;
                 }
             }
 
-            content = taskToJson(findTask);
+            content = taskToJson(getTask);
             exchange.sendResponseHeaders(OK,content.getBytes().length);
         }
 
@@ -67,6 +60,41 @@ public class DemoHttpHandler implements HttpHandler {
 
             content = taskToJson(task);
             exchange.sendResponseHeaders(CREATED,content.getBytes().length);
+        }
+
+        else if((method.equals("PUT") || method.equals("PATCH")) && path.startsWith("/tasks")){
+            Task putTask = null;
+            Long idValue = Long.parseLong(path.substring(7));
+            for(Task task : tasks){
+                if(task.getId() == idValue){
+                    putTask = task;
+                    break;
+                }
+            }
+
+            if(putTask == null)
+                exchange.sendResponseHeaders(NOT_FOUND,0);
+            Task task = toTask(body);
+            putTask.setTitle(task.getTitle());
+            content = taskToJson(putTask);
+            exchange.sendResponseHeaders(OK,0);
+        }
+
+        else if(method.equals("DELETE") && path.startsWith("/tasks")) {
+            Task deleteTask = null;
+            Long idValue = Long.parseLong(path.substring(7));
+            for(Task task : tasks) {
+                if (task.getId() == idValue) {
+                    deleteTask = task;
+                    break;
+                }
+            }
+
+            if(deleteTask==null)
+                exchange.sendResponseHeaders(NOT_FOUND,0);
+            tasks.remove(deleteTask);
+            content = "";
+            exchange.sendResponseHeaders(OK,0);
         }
 
         OutputStream outputStream = exchange.getResponseBody();
