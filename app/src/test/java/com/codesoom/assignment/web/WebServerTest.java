@@ -12,13 +12,15 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class WebServerTest {
+    WebServer server;
+
     @BeforeEach
     void openServer() {
-        // Open server fot testing.
+        server = new WebServer(8000);
     }
     @AfterEach
     void closeServer() {
-        // Close server fot testing.
+        server.close();
     }
     @Test
     void getRoot(){
