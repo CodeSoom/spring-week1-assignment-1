@@ -9,82 +9,26 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 
 public class DemoHttpHandler implements HttpHandler {
 
     private TaskService taskService = new TaskService();
-    private static final String TASKS = "/tasks";
-    private static final String TASKS_PATTERN = TASKS + "/*[0-9]*";
+    public static final String TASKS = "/tasks";
+    public static final String TASKS_PATTERN = TASKS + "/*[0-9]*";
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         HttpRequest httpRequest = new HttpRequest(exchange.getRequestMethod(), exchange.getRequestURI(), exchange.getRequestBody());
 
-        if(!isValidRequest(httpRequest)) {
-            sendResponse(exchange, createWrongRequestResponse());
+        if (!isValidRequest(httpRequest)) {
+            sendResponse(exchange, createWrongMethodResponse());
             return;
         }
 
-        sendResponse(exchange, getHttpResponse(httpRequest));
-    }
-
-    private HttpResponse getHttpResponse(HttpRequest httpRequest) {
-        return switch (httpRequest.getMethod()) {
-            case GET -> createGetResponse(httpRequest.getPath());
-            case POST -> createPostResponse(httpRequest.getBody());
-            case PATCH, PUT -> createPatchOrPutResponse(httpRequest.getPath(), httpRequest.getBody());
-            case DELETE -> createDeleteResponse(httpRequest.getPath());
-            default -> createWrongMethodResponse();
-        };
-    }
-
-    private HttpResponse createGetResponse(String path) {
-        if (path.equals(TASKS)) {
-            return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_OK, taskService.getTasks());
-        }
-
-        Long id = getIdFromPath(path);
-        String content = taskService.getTask(id);
-
-        if (content.isEmpty()) {
-            return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_NOT_FOUND);
-        }
-
-        return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_OK, content);
-    }
-
-    private HttpResponse createPostResponse(String body) {
-        return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_CREATED, taskService.addTask(body));
-    }
-
-    private HttpResponse createPatchOrPutResponse(String path, String body) {
-        Long id = getIdFromPath(path);
-
-        if(taskService.getTask(id).isEmpty()) {
-            return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_NOT_FOUND);
-        }
-
-        String content = taskService.updateTask(id, body);
-        return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_OK, content);
-    }
-
-    private HttpResponse createDeleteResponse(String path) {
-        Long id = getIdFromPath(path);
-
-        if(taskService.getTask(id).isEmpty()) {
-            return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_NOT_FOUND);
-        }
-
-        taskService.deleteTask(id);
-        return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_NO_CONTENT);
-    }
-
-    private HttpResponse createWrongMethodResponse() {
-        return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_METHOD_NOT_ALLOWED);
-    }
-
-    private HttpResponse createWrongRequestResponse() {
-        return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_NOT_FOUND);
+        HttpRequestMethod httpRequestMethod = httpRequest.getMethod();
+        HttpResponse response = httpRequestMethod.createResponse(httpRequest, taskService);
+        sendResponse(exchange, response);
     }
 
     private void sendResponse(HttpExchange exchange, HttpResponse httpResponse) throws IOException {
@@ -109,9 +53,12 @@ public class DemoHttpHandler implements HttpHandler {
         };
     }
 
-    private Long getIdFromPath(String path) {
-        Long id = Long.valueOf(path.replace(TASKS + "/", ""));
-        return id;
+    private HttpResponse createWrongMethodResponse() {
+        return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_METHOD_NOT_ALLOWED);
+    }
+
+    private HttpResponse createWrongRequestResponse() {
+        return new HttpResponse(HttpResponse.HTTP_STATUS_CODE_NOT_FOUND);
     }
 
 }
