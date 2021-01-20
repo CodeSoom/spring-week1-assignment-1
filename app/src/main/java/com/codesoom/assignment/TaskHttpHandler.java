@@ -14,9 +14,7 @@ import java.util.stream.Collectors;
 
 class HttpStatusCode {
     public static final int OK = 200;
-    public static final int BadRequest = 400;
     public static final int NotFound = 404;
-    public static final int NotImplemented = 501;
 }
 
 public class TaskHttpHandler implements HttpHandler {
@@ -32,12 +30,12 @@ public class TaskHttpHandler implements HttpHandler {
         System.out.println(method + " " + path);
 
         String content = "OK";
-        int code = HttpStatusCode.OK;
+        int httpStatusCode = HttpStatusCode.OK;
 
         if (path == null) {
             System.out.println("[Undefined Path] 404 NotFound Exception");
             content = "Undefined path";
-            code = HttpStatusCode.NotFound;
+            httpStatusCode = HttpStatusCode.NotFound;
         }
 
         // "/tasks/1" is split into { "", "tasks", "1" }
@@ -46,7 +44,7 @@ public class TaskHttpHandler implements HttpHandler {
         if (!isValidPath(pathItems)) {
             System.out.println("[Invalid PATH] 404 NotFound Exception");
             content = "Invalid path";
-            code = HttpStatusCode.NotFound;
+            httpStatusCode = HttpStatusCode.NotFound;
         }
 
         int id = 0;
@@ -60,8 +58,8 @@ public class TaskHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        if (code != HttpStatusCode.OK) {
-            exchange.sendResponseHeaders(code, content.getBytes().length);
+        if (httpStatusCode != HttpStatusCode.OK) {
+            exchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
             OutputStream outputStream = exchange.getResponseBody();
             outputStream.write(content.getBytes());
             outputStream.flush();
@@ -69,80 +67,85 @@ public class TaskHttpHandler implements HttpHandler {
             return;
         }
 
-        code = HttpStatusCode.NotImplemented;
+        httpStatusCode = HttpStatusCode.NotFound;
         content = "";
 
         // GET all tasks
         if (method.equals("GET") && (pathItems.length == 2)) {
-            code = HttpStatusCode.OK;
             content = tasksToJSON();
+            httpStatusCode = HttpStatusCode.OK;
         }
 
         // GET one task
         if (method.equals("GET") && (pathItems.length == 3)) {
             Task task = getTask(id);
-            code = HttpStatusCode.OK;
+            httpStatusCode = HttpStatusCode.OK;
             content = taskToJSON(task);
 
             if (task == null) {
-                System.out.println("[GET] 404 NotFound Exception");
-                code = HttpStatusCode.NotFound;
+                httpStatusCode = HttpStatusCode.NotFound;
                 content = "Task #" + id +" doesn't exist";
             }
         }
 
         // POST
         if (method.equals("POST") && (pathItems.length == 2)) {
-            boolean isAdded = addTask(body);
-            code = HttpStatusCode.OK;
-            content = "Task successfully added.";
+            Task task = toTask(body);
+            int result = addTask(task);
+            httpStatusCode = result;
 
-            if (!isAdded) {
-                code = HttpStatusCode.BadRequest;
-                content = "Cannot add a Task";
+            switch (result) {
+                case HttpStatusCode.OK:
+                    content = taskToJSON(task);
+                    break;
+                case HttpStatusCode.NotFound:
+                    content = "Cannot add a Task";
+                    break;
+                default:
+                    content = "";
             }
         }
 
         // PUT
         if (method.equals("PUT") && (pathItems.length == 3)) {
             Task task = getTask(id);
-            boolean isUpdated = updateTask(task, body);
-            code = HttpStatusCode.OK;
-            content = "Task successfully updated.";
+            Task newTask = toTask(body);
+            int result = updateTask(task, newTask);
+            httpStatusCode = result;
 
-            if (!isUpdated) {
-                code = HttpStatusCode.BadRequest;
-                content = "Cannot update a Task";
+            switch (result) {
+                case HttpStatusCode.OK:
+                    content = taskToJSON(newTask);
+                    break;
+                default:
+                    break;
             }
         }
 
         // PATCH
         if (method.equals("PATCH") && (pathItems.length == 3)) {
             Task task = getTask(id);
-            boolean isPatched = patchTask(task, body);
-            code = HttpStatusCode.OK;
-            content = "Task successfully patched.";
+            Task newTask = toTask(body);
+            int result = patchTask(task, newTask);
+            httpStatusCode = result;
 
-            if (!isPatched) {
-                code = HttpStatusCode.BadRequest;
-                content = "Cannot patch a Task";
+            switch (result) {
+                case HttpStatusCode.OK:
+                    content = taskToJSON(newTask);
+                    break;
+                default:
+                    break;
             }
         }
 
         // DELETE
         if (method.equals("DELETE") && (pathItems.length == 3)) {
             Task task = getTask(id);
-            boolean isDeleted = deleteTask(task);
-            code = HttpStatusCode.OK;
-            content = "Task successfully deleted";
-
-            if (!isDeleted) {
-                code = HttpStatusCode.BadRequest;
-                content = "Cannot delete a Task";
-            }
+            int result = deleteTask(task);
+            httpStatusCode = result;
         }
 
-        exchange.sendResponseHeaders(code, content.getBytes().length);
+        exchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
@@ -150,50 +153,47 @@ public class TaskHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
-    private boolean deleteTask(Task task) {
-        if (task == null) return false;
+    private int deleteTask(Task task) {
+        if (task == null) return HttpStatusCode.NotFound;
 
         tasks.remove(task);
-        return true;
+        return HttpStatusCode.OK;
     }
 
-    private boolean patchTask(Task task, String body) throws JsonProcessingException {
-        if (task == null) return false;
-
-        Task newTask = toTask(body);
+    private int patchTask(Task task, Task newTask) throws JsonProcessingException {
+        if (task == null) return HttpStatusCode.NotFound;
+        if (newTask == null) return HttpStatusCode.NotFound;
 
         if (task.getTitle() != newTask.getTitle()) {
             task.setTitle(newTask.getTitle());
         }
 
-        return true;
+        return HttpStatusCode.OK;
     }
 
-    private boolean updateTask(Task task, String body) throws JsonProcessingException {
-        if (task == null) return false;
+    private int updateTask(Task task, Task newTask) throws JsonProcessingException {
+        if (task == null) return HttpStatusCode.NotFound;
+        if (newTask == null) return HttpStatusCode.NotFound;
 
-        Task newTask = toTask(body);
-        if (newTask.getTitle() == null) return false;
+        if (newTask.getTitle() == null) return HttpStatusCode.NotFound;
 
         task.setTitle(newTask.getTitle());
 
-        return true;
+        return HttpStatusCode.OK;
     }
 
-    private boolean addTask(String body) throws JsonProcessingException {
-        if (body.isBlank()) return false;
-
-        Task task = toTask(body);
+    private int addTask(Task task) throws JsonProcessingException {
+        if (task == null) return HttpStatusCode.NotFound;
 
         if (task.getId() == null) {
             long id = getNextId();
             task.setId(id);
         }
 
-        if (task.getId() < getNextId()) return false;
+        if (task.getId() < getNextId()) return HttpStatusCode.NotFound;
 
         tasks.add(task);
-        return true;
+        return HttpStatusCode.OK;
     }
 
     private long getNextId() {
@@ -228,6 +228,7 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private Task toTask(String content) throws JsonProcessingException {
+        if (content.isBlank()) return null;
         return objectMapper.readValue(content, Task.class);
     }
 
