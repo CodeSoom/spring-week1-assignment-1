@@ -3,6 +3,7 @@ package com.codesoom.assignment.web;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -109,6 +110,19 @@ public class WebServerTest {
         HttpUriRequest request = new HttpGet("http://localhost:8000/task/1");
         assertDoesNotThrow(() -> {
             HttpResponse httpResponse = HttpClientBuilder.create().build().execute(request);
+            assertEquals(404, httpResponse.getStatusLine().getStatusCode());
+        });
+    }
+
+    @Test
+    void putUnCreatedTask() {
+        HttpPut put = new HttpPut("http://localhost:8000/task/1");
+        String requestBody = "{\"title\": \"Play Game\"}";
+        assertDoesNotThrow(() -> {
+            StringEntity requestEntity = new StringEntity(requestBody);
+            put.setEntity(requestEntity);
+
+            HttpResponse httpResponse = HttpClientBuilder.create().build().execute(put);
             assertEquals(404, httpResponse.getStatusLine().getStatusCode());
         });
     }
