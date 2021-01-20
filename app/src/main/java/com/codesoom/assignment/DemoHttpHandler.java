@@ -1,24 +1,18 @@
 package com.codesoom.assignment;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
-import java.util.stream.Collectors;
-
+import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.util.IdGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import com.codesoom.assignment.models.Task;
+import java.io.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
 
@@ -80,23 +74,35 @@ public class DemoHttpHandler implements HttpHandler {
             int taskId = Integer.parseInt(id);
 
             if (requestMethod.equals("GET") && path.equals("/tasks/" + taskId)) {
-                Task task = tasks.get(taskId);
-                content = taskToJson(task);
-                this.statusCode = 200;
+                if (tasks.size() < taskId) {
+                    this.statusCode = 404;
+                } else {
+                    Task task = tasks.get(taskId - 1);
+                    content = taskToJson(task);
+                    this.statusCode = 200;
+                }
             }
 
             if (requestMethod.equals("PUT") && path.equals("/tasks/" + taskId)) {
-                if (!requestBody.isBlank()) {
-                    Task task = tasks.get(taskId);
-                    task.setTitle(mapper.readValue(requestBody, Task.class).getTitle());
-                    content = taskToJson(task);
+                if (tasks.size() < taskId) {
+                    this.statusCode = 404;
+                } else {
+                    if (!requestBody.isBlank()) {
+                        Task task = tasks.get(taskId - 1);
+                        task.setTitle(mapper.readValue(requestBody, Task.class).getTitle());
+                        content = taskToJson(task);
+                    }
+                    this.statusCode = 200;
                 }
-                this.statusCode = 200;
             }
 
             if (requestMethod.equals("DELETE") && path.equals("/tasks/" + taskId)) {
-                tasks.remove(taskId);
-                this.statusCode = 204;
+                if (tasks.size() < taskId) {
+                    this.statusCode = 404;
+                } else {
+                    tasks.remove(taskId);
+                    this.statusCode = 204;
+                }
             }
 
         }
