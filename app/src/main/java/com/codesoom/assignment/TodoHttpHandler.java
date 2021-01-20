@@ -22,9 +22,9 @@ public class TodoHttpHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
         String content = "";
-        if (path.startsWith("/tasks")) {
+        if (path.equals("/") || path.startsWith("/tasks")) {
             content = processRequest(exchange);
-        }else {
+        } else {
             statusCode = HttpStatus.NOT_FOUND;
         }
         sendResponse(exchange, content);
