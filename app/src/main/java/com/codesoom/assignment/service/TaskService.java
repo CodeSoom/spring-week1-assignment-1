@@ -41,10 +41,10 @@ public class TaskService {
     }
 
     private long generateNewTaskId() {
-        long id = 0;
+        long id = START_ID;
 
         if (!tasks.isEmpty()) {
-            //Task 삭제를 대비하여 가장 최근 task의 ID를 기준으로 생성
+            //Task 삭제를 대비하여 가장 최근 tas k의ID를 기준으로 생성
             id = tasks.keySet().stream().mapToLong(Long::longValue).max().getAsLong() + 1;
         }
         return id;
