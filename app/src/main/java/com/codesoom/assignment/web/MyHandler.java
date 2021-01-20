@@ -71,8 +71,12 @@ public class MyHandler implements HttpHandler {
             sendResponse(responseJson, 200, exchange);
         } else {
             long id = parseIdFromPath(requestInfo.getPath());
-            String responseJson = JsonUtil.toJson(taskService.getTask(id));
-            sendResponse(responseJson, 200, exchange);
+            try {
+                String responseJson = JsonUtil.toJson(taskService.getTask(id));
+                sendResponse(responseJson, 200, exchange);
+            } catch (IllegalArgumentException e) {
+                sendResponse("Not Found", 404, exchange);
+            }
         }
     }
 
@@ -86,15 +90,23 @@ public class MyHandler implements HttpHandler {
     private void processPut(RequestInfo requestInfo, HttpExchange exchange) throws IOException {
         long id = parseIdFromPath(requestInfo.getPath());
         Task task = JsonUtil.toTask(requestInfo.getBody());
-        Task updatedTask = taskService.updateTask(id, task.getTitle());
-        String responseJson = JsonUtil.toJson(updatedTask);
-        sendResponse(responseJson, 200, exchange);
+        try {
+            Task updatedTask = taskService.updateTask(id, task.getTitle());
+            String responseJson = JsonUtil.toJson(updatedTask);
+            sendResponse(responseJson, 200, exchange);
+        } catch (IllegalArgumentException e) {
+            sendResponse("Not Found", 404, exchange);
+        }
     }
 
     private void processDelete(RequestInfo requestInfo, HttpExchange exchange) throws IOException {
         long id = parseIdFromPath(requestInfo.getPath());
-        taskService.deleteTask(id);
-        sendResponse(200, exchange);
+        try {
+            taskService.deleteTask(id);
+            sendResponse(204, exchange);
+        } catch (IllegalArgumentException e) {
+            sendResponse("Not Found", 404, exchange);
+        }
     }
 
     private long parseIdFromPath(String path) throws NumberFormatException {
