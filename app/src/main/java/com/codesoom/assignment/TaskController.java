@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.codesoom.assignment.Status.*;
+import static com.codesoom.assignment.HttpStatus.*;
 
 public class TaskController {
 

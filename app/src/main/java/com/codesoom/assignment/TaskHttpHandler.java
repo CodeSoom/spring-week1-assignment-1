@@ -3,8 +3,7 @@ package com.codesoom.assignment;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.*;
-import java.util.stream.Collectors;
+import java.io.IOException;
 
 public class TaskHttpHandler implements HttpHandler {
 

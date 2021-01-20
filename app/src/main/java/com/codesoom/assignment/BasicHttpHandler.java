@@ -5,7 +5,7 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static com.codesoom.assignment.Status.NOT_FOUND;
+import static com.codesoom.assignment.HttpStatus.NOT_FOUND;
 
 public class BasicHttpHandler implements HttpHandler {
     @Override
