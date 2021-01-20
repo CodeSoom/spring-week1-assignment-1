@@ -4,10 +4,8 @@ import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.service.TaskService;
 import com.codesoom.assignment.util.JsonUtil;
 import com.codesoom.assignment.web.models.RequestInfo;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -28,7 +26,6 @@ public class MyHandler implements HttpHandler {
             sendResponse("Not Found", 404, exchange);
             return;
         }
-
         processRequest(requestInfo, exchange);
     }
 
@@ -57,10 +54,10 @@ public class MyHandler implements HttpHandler {
                     break;
             }
         } catch (NumberFormatException e) {
-            e.printStackTrace();
             sendResponse("Invalid Parameter", 400, exchange);
+        } catch (IllegalArgumentException e) {
+            sendResponse("Not Found", 404, exchange);
         } catch (Exception e) {
-            e.printStackTrace();
             sendResponse("Internal Server Error", 500, exchange);
         }
     }
@@ -71,12 +68,8 @@ public class MyHandler implements HttpHandler {
             sendResponse(responseJson, 200, exchange);
         } else {
             long id = parseIdFromPath(requestInfo.getPath());
-            try {
-                String responseJson = JsonUtil.toJson(taskService.getTask(id));
-                sendResponse(responseJson, 200, exchange);
-            } catch (IllegalArgumentException e) {
-                sendResponse("Not Found", 404, exchange);
-            }
+            String responseJson = JsonUtil.toJson(taskService.getTask(id));
+            sendResponse(responseJson, 200, exchange);
         }
     }
 
@@ -90,28 +83,20 @@ public class MyHandler implements HttpHandler {
     private void processPut(RequestInfo requestInfo, HttpExchange exchange) throws IOException {
         long id = parseIdFromPath(requestInfo.getPath());
         Task task = JsonUtil.toTask(requestInfo.getBody());
-        try {
-            Task updatedTask = taskService.updateTask(id, task.getTitle());
-            String responseJson = JsonUtil.toJson(updatedTask);
-            sendResponse(responseJson, 200, exchange);
-        } catch (IllegalArgumentException e) {
-            sendResponse("Not Found", 404, exchange);
-        }
+        Task updatedTask = taskService.updateTask(id, task.getTitle());
+        String responseJson = JsonUtil.toJson(updatedTask);
+        sendResponse(responseJson, 200, exchange);
     }
 
     private void processDelete(RequestInfo requestInfo, HttpExchange exchange) throws IOException {
         long id = parseIdFromPath(requestInfo.getPath());
-        try {
-            taskService.deleteTask(id);
-            sendResponse(204, exchange);
-        } catch (IllegalArgumentException e) {
-            sendResponse("Not Found", 404, exchange);
-        }
+        taskService.deleteTask(id);
+        sendResponse(204, exchange);
     }
 
     private long parseIdFromPath(String path) throws NumberFormatException {
         //path 마지막에 '/'이 붙어 있을 것을 대비
-        String idString = path.substring("/tasks/".length()).replace("/", "");
+        String idString = path.replace("/tasks/", "").replace("/", "");
         return Long.parseLong(idString);
     }
 
