@@ -35,11 +35,7 @@ public class RequestInfo {
 
     @Override
     public String toString() {
-        return "RequestInfo{" +
-                "method='" + method + '\'' +
-                ", path='" + path + '\'' +
-                ", body='" + body + '\'' +
-                '}';
+        return String.format("RequestInfo { method=%s, path=%s, body=%s }", method, path, body);
     }
 
 }
