@@ -16,16 +16,17 @@ public class TodoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
     private ObjectMapper mapper = new ObjectMapper();
     private int index;
-    private int statusCode = HttpStatus.NOT_FOUND;
+    private int statusCode = HttpStatus.OK;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
-        String content = "";
         if (path.equals("/") || path.startsWith("/tasks")) {
-            content = processRequest(exchange);
+            sendResponse(exchange, processRequest(exchange));
+            return;
         }
-        sendResponse(exchange, content);
+        statusCode=HttpStatus.NOT_FOUND;
+        sendResponse(exchange,"");
     }
 
     private String processRequest(HttpExchange exchange) throws IOException {
