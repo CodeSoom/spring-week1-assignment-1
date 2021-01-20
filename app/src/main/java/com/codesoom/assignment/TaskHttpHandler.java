@@ -26,8 +26,5 @@ public class TaskHttpHandler implements HttpHandler {
             case "DELETE" :
                 controller.deleteController(httpExchange);
         }
-
     }
-
-
 }
