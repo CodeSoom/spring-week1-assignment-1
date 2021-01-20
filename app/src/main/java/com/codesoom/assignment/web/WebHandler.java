@@ -55,7 +55,7 @@ public class WebHandler implements HttpHandler {
                 Task requestTask = transfer.jsonStringToTask(requestBody);
 
                 Long taskId = taskApplicationService.createTask(requestTask.getTitle());
-                sendUpdatedTaskResult(exchange, taskId);
+                sendUpdatedTaskResult(exchange, taskId, 201);
             }
         } else if (method.equals("PUT")) {
             if (path.contains("/tasks")) {
@@ -72,7 +72,7 @@ public class WebHandler implements HttpHandler {
                     sendNotFoundError(exchange);
                     return;
                 }
-                sendUpdatedTaskResult(exchange, taskId);
+                sendUpdatedTaskResult(exchange, taskId, 200);
             }
         }
     }
@@ -84,17 +84,16 @@ public class WebHandler implements HttpHandler {
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
-        outputStream.close();
     }
 
-    private void sendUpdatedTaskResult(HttpExchange exchange, Long taskId) throws IOException {
+    private void sendUpdatedTaskResult(HttpExchange exchange, Long taskId, int statusCode) throws IOException {
         Optional<Task> task = taskApplicationService.findTask(taskId);
         if (task.isEmpty()) {
             sendNotFoundError(exchange);
             return;
         }
         String content = transfer.taskToJson(task.get());
-        setJsonToResponseBody(exchange, content, 201);
+        setJsonToResponseBody(exchange, content, statusCode);
     }
 
     private Long parsePathToTaskId(String path){
