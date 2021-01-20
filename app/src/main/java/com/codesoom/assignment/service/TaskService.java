@@ -13,7 +13,7 @@ public class TaskService {
 
     public String getTasks() {
         List<Task> tasks = taskRepository.findAll();
-        if(tasks.size() == 0) {
+        if (tasks.size() == 0) {
             return "[]";
         }
 
@@ -24,7 +24,7 @@ public class TaskService {
 
     public String getTask(Long id) {
         Task task = taskRepository.findOne(id);
-        if(task == null) {
+        if (task == null) {
             return "";
         }
 

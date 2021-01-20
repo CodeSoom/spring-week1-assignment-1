@@ -24,7 +24,7 @@ public class JsonParser {
         return task;
     }
 
-    public String toJSON(Object object)  {
+    public String toJSON(Object object) {
         OutputStream outputStream = new ByteArrayOutputStream();
 
         try {

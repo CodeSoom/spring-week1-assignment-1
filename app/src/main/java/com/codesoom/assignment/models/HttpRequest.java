@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.stream.Collectors;
 
-public class HttpRequest {
+public abstract class HttpRequest {
 
     private HttpRequestMethod method;
 
@@ -33,5 +33,9 @@ public class HttpRequest {
     public String getBody() {
         return body;
     }
+
+    public abstract boolean isValidPath();
+
+    public abstract boolean isValidMethod();
 
 }

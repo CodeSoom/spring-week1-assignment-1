@@ -1,7 +1,7 @@
 package com.codesoom.assignment.repository;
 
-import com.codesoom.assignment.utils.IdGenerator;
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.utils.IdGenerator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
