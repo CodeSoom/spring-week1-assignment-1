@@ -40,7 +40,7 @@ public class TaskService {
     }
 
     private long generateNewTaskId() {
-        long id = 1;
+        long id = 0;
 
         if (!tasks.isEmpty()) {
             //Task 삭제를 대비하여 가장 최근 task의 ID를 기준으로 생성
