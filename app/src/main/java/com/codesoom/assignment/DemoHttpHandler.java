@@ -9,8 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.codesoom.assignment.JSONParser.taskToJSON;
-import static com.codesoom.assignment.JSONParser.toTask;
+import static com.codesoom.assignment.JSONParser.*;
 
 public class DemoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
@@ -37,10 +36,8 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         if (method.equals("GET") && path.equals("/tasks")) {
-            content = "ToDo 목록 얻기";
-        }
-
-        if (method.equals("GET") && path.matches("/tasks/*[0-9]*")) {
+            content = tasksToJSON(tasks);
+        } else if (method.equals("GET") && path.matches("/tasks/*[0-9]*")) {
             content = "ToDo 상세 조회하기";
         }
 
