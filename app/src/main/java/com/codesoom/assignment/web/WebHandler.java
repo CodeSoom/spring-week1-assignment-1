@@ -74,6 +74,18 @@ public class WebHandler implements HttpHandler {
                 }
                 sendUpdatedTaskResult(exchange, taskId, 200);
             }
+        } else if (method.equals("DELETE")) {
+            if (path.contains("/tasks")) {
+                Long taskId = parsePathToTaskId(path);
+                System.out.println(taskId);
+                Optional<Object> result = taskApplicationService.deleteTask(taskId);
+
+                if (result.isEmpty()) {
+                    sendNotFoundError(exchange);
+                    return;
+                }
+                exchange.sendResponseHeaders(204, 0);
+            }
         } else {
             sendNotFoundError(exchange);
         }
