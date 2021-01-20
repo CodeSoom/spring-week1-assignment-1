@@ -2,6 +2,7 @@ package com.codesoom.assignment;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import org.checkerframework.checker.nullness.Opt;
 
 import java.io.*;
 import java.net.URI;
@@ -40,7 +41,8 @@ public class MyHttpHandler implements HttpHandler {
             if (foundTask.isPresent()) {
                 content = JsonConverter.taskToJson(foundTask.get());
                 exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
-            } else {
+            }
+            if (foundTask.isEmpty()) {
                 System.out.println("not found task" + foundTask);
                 exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
             }
@@ -62,10 +64,12 @@ public class MyHttpHandler implements HttpHandler {
 
             if (!body.isBlank()) {
                 Optional<Task> foundTask = tasks.findTask(pathVariable);
+
                 if (foundTask.isPresent()) {
                     foundTask.get().setTitle(JsonConverter.extractValue(body));
                     exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
-                } else {
+                }
+                if (foundTask.isEmpty()) {
                     exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
                 }
             }
@@ -79,7 +83,8 @@ public class MyHttpHandler implements HttpHandler {
             if (foundTask.isPresent()) {
                 tasks.remove(foundTask.get());
                 exchange.sendResponseHeaders(HttpStatus.NO_CONTENT.getCode(), content.getBytes().length);
-            } else {
+            }
+            if (foundTask.isEmpty()) {
                 exchange.sendResponseHeaders(HttpStatus.OK.getCode(), 0);
             }
         }
