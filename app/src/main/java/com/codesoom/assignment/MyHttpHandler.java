@@ -1,7 +1,6 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -16,7 +15,7 @@ public class MyHttpHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
-        HttpRequest httpRequest = new HttpRequest(exchange);
+        HttpRequest httpRequest = new HttpRequest(exchange)
 
         String content = "Hello, world!";
 
@@ -25,7 +24,9 @@ public class MyHttpHandler implements HttpHandler {
                 case "GET":
                     break;
                 case "POST":
-                    POSTCreateNewTask(exchange, httpRequest);
+                    System.out.println("POST 입니다 : " + httpRequest.toString());
+                    content = POSTCreateNewTask(exchange, httpRequest);
+                    response(200, content, exchange);
                     break;
                 case "PUT":
                     break;
@@ -39,7 +40,6 @@ public class MyHttpHandler implements HttpHandler {
                     System.out.println(httpRequest.toString());
                     break;
             }
-            exchange.sendResponseHeaders(200, content.length());
         }
 
         if (httpRequest.hasMethod().isEmpty()) {
@@ -54,12 +54,20 @@ public class MyHttpHandler implements HttpHandler {
         outputStream.close(); // 호출해서 사용했던 시스템 자원을 풀어줌
     }
 
-    private void POSTCreateNewTask(HttpExchange exchange, HttpRequest httpRequest) throws JsonProcessingException {
+    private String POSTCreateNewTask(HttpExchange exchange, HttpRequest httpRequest) throws IOException {
         String path = httpRequest.hasPath();
+
         if (path.contains("/tasks")) {
             Task newTask = jsonConverter.JSONToTask(httpRequest.hasBody());
             taskRepository.createNewTask(newTask);
+            String content = JSONConverter.tasksToJSON(TaskRepository.getTaskStore()); // content ==> outputStream.toString()을 return한 것
+            return content;
         }
+        return null;
+    }
+
+    public void response(int responseCode, String content, HttpExchange exchange) throws IOException {
+        exchange.sendResponseHeaders(responseCode, content.length());
     }
 
 }

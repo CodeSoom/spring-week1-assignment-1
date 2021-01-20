@@ -10,6 +10,10 @@ public class TaskRepository {
     private static Map<Long, Task> taskStore = new HashMap<>();
     private static long sequence = 1L;
 
+    public static Map<Long, Task> getTaskStore() {
+        return taskStore;
+    }
+
     public Task createNewTask(Task newTask) {
         newTask.setId(sequence++);
         newTask.setTitle(newTask.getTitle());
