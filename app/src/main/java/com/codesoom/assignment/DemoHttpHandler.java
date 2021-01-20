@@ -58,10 +58,16 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private void toGet(String[] path, String body, HttpExchange exchange) throws IOException {
+        if (path.length == 0) {
+            responseOutput(successStatusCode, "Hello World", exchange);
+            return;
+        }
+
         if (!path[1].equals(checkPath)) {
             responseOutput(failStatusCode, "GET Path Error", exchange);
             return;
         }
+
         if (path.length >= 3) {
             int getNumber = Integer.parseInt(path[2]);
             if (!(tasks.size() <= getNumber -1)) {
