@@ -74,6 +74,8 @@ public class WebHandler implements HttpHandler {
                 }
                 sendUpdatedTaskResult(exchange, taskId, 200);
             }
+        } else {
+            sendNotFoundError(exchange);
         }
     }
 
