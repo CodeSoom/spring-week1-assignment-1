@@ -45,21 +45,42 @@ public class DemoHttpHandler implements HttpHandler {
 
         String content = "Hello World";
 
-        if(method.equals("GET")) {
-            requestForGet(path, exchange);
+        switch (method) {
+            case "GET" :
+                requestForGet(path, exchange);
+                break;
+
+            case "POST" :
+                requestForPost(path, body, exchange);
+                break;
+
+            case "PUT" :
+
+            case "PATCH" :
+                requestForPutOrPatch(path, body, exchange);
+                break;
+
+            case "DELETE" :
+                requestForDelete(path, exchange);
+                break;
+
         }
 
-        else if(method.equals("POST")) {
-            requestForPost(path, body, exchange);
-        }
-
-        else if((method.equals("PUT") || method.equals("PATCH"))){
-            requestForPutOrPatch(path, body, exchange);
-        }
-
-        else if(method.equals("DELETE")) {
-            requestForDelete(path, exchange);
-        }
+//        if(method.equals("GET")) {
+//            requestForGet(path, exchange);
+//        }
+//
+//        else if(method.equals("POST")) {
+//            requestForPost(path, body, exchange);
+//        }
+//
+//        else if((method.equals("PUT") || method.equals("PATCH"))){
+//            requestForPutOrPatch(path, body, exchange);
+//        }
+//
+//        else if(method.equals("DELETE")) {
+//            requestForDelete(path, exchange);
+//        }
     }
 
     public void requestForGet(String path, HttpExchange exchange) throws IOException {
