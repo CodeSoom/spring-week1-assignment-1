@@ -3,7 +3,7 @@ package com.codesoom.assignment.errors;
 /**
  * The class {@code NotExistsIDException} using when want to use not exists id.
  */
-public class NotExistsIDException extends Exception {
+public class NotExistsIDException extends RuntimeException {
     /**
      * Constructs a new exception with default message.
      */

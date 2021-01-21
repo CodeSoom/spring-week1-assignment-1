@@ -3,7 +3,7 @@ package com.codesoom.assignment.errors;
 /**
  * The class {@code AlreadyExistsIDException} using when insert already exists id.
  */
-public class AlreadyExistsIDException extends Exception {
+public class AlreadyExistsIDException extends RuntimeException {
     /**
      * Constructs a new exception with default message.
      */
