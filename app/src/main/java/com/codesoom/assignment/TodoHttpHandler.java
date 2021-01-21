@@ -9,13 +9,15 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
-    private List<Task> tasks = new ArrayList<>();
+    private Map<Long, Task> taskMap = new HashMap<>();
     private ObjectMapper mapper = new ObjectMapper();
-    private int index;
+    private long inputId;
+    private long lastTaskId = 1L;
     private int statusCode = HttpStatus.OK;
 
     @Override
@@ -25,8 +27,8 @@ public class TodoHttpHandler implements HttpHandler {
             sendResponse(exchange, processRequest(exchange));
             return;
         }
-        statusCode=HttpStatus.NOT_FOUND;
-        sendResponse(exchange,"");
+        statusCode = HttpStatus.NOT_FOUND;
+        sendResponse(exchange, "");
     }
 
     private String processRequest(HttpExchange exchange) throws IOException {
@@ -41,7 +43,7 @@ public class TodoHttpHandler implements HttpHandler {
             case "DELETE":
                 return processDeleteRequest(exchange);
             case "HEAD":
-                statusCode=HttpStatus.OK;
+                statusCode = HttpStatus.OK;
                 break;
             default:
                 return "";
@@ -50,41 +52,34 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private String processDeleteRequest(HttpExchange exchange) {
-        String path = exchange.getRequestURI().getPath();
-        if (!hasNumberParameter(path) || !hasIndex(index - 1)) {
+        if (!hasNumberParameter(exchange.getRequestURI().getPath()) || !hasId(inputId)) {
             statusCode = HttpStatus.NOT_FOUND;
             return "";
         }
         statusCode = HttpStatus.NO_CONTENT;
-        tasks.remove(index - 1);
+        taskMap.remove(inputId);
         return "";
     }
 
     private String processPutAndPatchRequest(HttpExchange exchange) throws IOException {
         String body = getStringBody(exchange);
         String path = exchange.getRequestURI().getPath();
-        String content = "";
-        if (!hasNumberParameter(path) || !hasIndex(index - 1)) {
+        if (!hasNumberParameter(path) || !hasId(inputId)) {
             statusCode = HttpStatus.NOT_FOUND;
-            return content;
+            return "";
         }
-        tasks.remove(index - 1);
-        Task task = jsonToTask(body);
-        task.setId((long) index);
-        tasks.add(index - 1, task);
+        Task task = jsonToTask(body, inputId);
+        taskMap.put(inputId, task);
         statusCode = HttpStatus.OK;
-        content = taskToJson(index - 1);
-
-        return content;
+        return taskToJson(inputId);
     }
 
     private String processPostRequest(HttpExchange exchange) throws IOException {
         String body = getStringBody(exchange);
         Task task = jsonToTask(body);
-        tasks.add(task);
+        taskMap.put(lastTaskId, task);
         statusCode = HttpStatus.CREATED;
-        String content = taskToJson(task.getId() - 1);
-        return content;
+        return taskToJson(lastTaskId++);
     }
 
     private String getStringBody(HttpExchange exchange) {
@@ -98,19 +93,15 @@ public class TodoHttpHandler implements HttpHandler {
         String path = exchange.getRequestURI().getPath();
         if (!hasNumberParameter(path)) {
             statusCode = HttpStatus.OK;
-            String content = taskToJson();
-            return content;
+            return taskToJson();
         }
 
-        if (!hasIndex(index - 1)) {
+        if (!hasId(inputId)) {
             statusCode = HttpStatus.NOT_FOUND;
-            String content = "";
-            return content;
+            return "";
         }
         statusCode = HttpStatus.OK;
-        String content = taskToJson(index - 1);
-
-        return content;
+        return taskToJson(inputId);
     }
 
     private void sendResponse(HttpExchange exchange, String content) throws IOException {
@@ -121,38 +112,43 @@ public class TodoHttpHandler implements HttpHandler {
         }
     }
 
-    private boolean hasIndex(int index) {
-        if (index < 0 || tasks.size() <= index) {
-            return false;
+    private boolean hasId(long id) {
+        if (taskMap.containsKey(id)) {
+            return true;
         }
-        return true;
+        return false;
     }
 
     private boolean hasNumberParameter(String path) {
         String[] split = path.split("/tasks/");
         if (split.length == 2) {
-            index = Integer.parseInt(split[1]);
+            inputId = Integer.parseInt(split[1]);
             return true;
         }
-
         return false;
     }
 
     private Task jsonToTask(String content) throws JsonProcessingException {
         Task task = mapper.readValue(content, Task.class);
-        task.setId((long) (tasks.size() + 1));
+        task.setId(lastTaskId);
+        return task;
+    }
+
+    private Task jsonToTask(String content, long byId) throws JsonProcessingException {
+        Task task = mapper.readValue(content, Task.class);
+        task.setId(byId);
         return task;
     }
 
     private String taskToJson() throws IOException {
         OutputStream outputstream = new ByteArrayOutputStream();
-        mapper.writeValue(outputstream, tasks);
+        mapper.writeValue(outputstream, new ArrayList<>(taskMap.values()));
         return outputstream.toString();
     }
 
-    private String taskToJson(long index) throws IOException {
+    private String taskToJson(long id) throws IOException {
         OutputStream outputstream = new ByteArrayOutputStream();
-        mapper.writeValue(outputstream, tasks.get((int) index));
+        mapper.writeValue(outputstream, taskMap.get(id));
         return outputstream.toString();
     }
 }
