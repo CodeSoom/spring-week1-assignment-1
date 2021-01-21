@@ -28,7 +28,7 @@ public class RootHttpHandler implements HttpHandler {
         String requestMethod = exchange.getRequestMethod();
 
         String result = ResultMessage.OK.getMessage();
-        if(requestURIPath.equals("/") && requestMethod.equals("GET")){
+        if(requestURIPath.equals("/") && (requestMethod.equals("GET") || requestMethod.equals("HEAD"))){
             exchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), result.getBytes().length);
         }else{
             result = ResultMessage.NOT_FOUND.getMessage();
