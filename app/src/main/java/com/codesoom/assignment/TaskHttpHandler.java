@@ -45,6 +45,15 @@ public class TaskHttpHandler implements HttpHandler {
         String content = "";
         HttpStatusCode httpStatusCode = HttpStatusCode.OK;
 
+        if (path.equals("/")) {
+            exchange.sendResponseHeaders(httpStatusCode.getValue(), content.getBytes().length);
+            OutputStream outputStream = exchange.getResponseBody();
+            outputStream.write(content.getBytes());
+            outputStream.flush();
+            outputStream.close();
+            return;
+        }
+
         if (path == null) {
             System.out.println("Undefined path...");
             httpStatusCode = HttpStatusCode.NotFound;
