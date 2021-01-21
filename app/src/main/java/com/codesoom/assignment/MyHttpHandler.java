@@ -11,30 +11,38 @@ public class MyHttpHandler implements HttpHandler {
 
     JSONConverter jsonConverter = new JSONConverter();
     TaskRepository taskRepository = new TaskRepository();
+    private Long idInPath;
+
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
-        HttpRequest httpRequest = new HttpRequest(exchange)
+        HttpRequest httpRequest = new HttpRequest(exchange);
 
         String content = "Hello, world!";
 
         if (!httpRequest.hasMethod().isEmpty()) {
             switch (httpRequest.hasMethod()) {
                 case "GET":
+                    System.out.println("GET : " + httpRequest.toString()); // 확인용
+                    // /tasks만 입력했을 경우 (아이디로 검색하지 않고 전체 목록 얻을 때)
+                    if (httpRequest.hasPath().equals("/tasks")) {
+                        break;
+                    }
                     break;
                 case "POST":
-                    System.out.println("POST 입니다 : " + httpRequest.toString());
-                    content = POSTCreateNewTask(exchange, httpRequest);
+                    System.out.println("POST : " + httpRequest.toString()); // 확인용
+                    content = POSTCreateNewTask(httpRequest);
                     response(200, content, exchange);
                     break;
                 case "PUT":
-                    break;
                 case "PATH":
                     System.out.println(httpRequest.toString());
                     break;
                 case "DELETE":
-                    System.out.println(httpRequest.toString());
+                    System.out.println("DELETE : " + httpRequest.toString()); // 확인용
+                    content = DELETETask(httpRequest);
+                    response(200, content, exchange);
                     break;
                 default:
                     System.out.println(httpRequest.toString());
@@ -54,7 +62,24 @@ public class MyHttpHandler implements HttpHandler {
         outputStream.close(); // 호출해서 사용했던 시스템 자원을 풀어줌
     }
 
-    private String POSTCreateNewTask(HttpExchange exchange, HttpRequest httpRequest) throws IOException {
+    public void response(int responseCode, String content, HttpExchange exchange) throws IOException {
+        exchange.sendResponseHeaders(responseCode, content.length());
+    }
+
+    private boolean getIdFromPath(HttpRequest httpRequest) {
+        String[] pathSplit = httpRequest.hasPath().split("/tasks/");
+        System.out.println(pathSplit[0]);
+        System.out.println(pathSplit[1]);
+        int pathWhitId = 2;
+        int idIndex = 1;
+        if (pathSplit.length == pathWhitId) {
+            idInPath = Long.parseLong(pathSplit[idIndex]);
+            return true;
+        }
+        return false;
+    }
+
+    private String POSTCreateNewTask(HttpRequest httpRequest) throws IOException {
         String path = httpRequest.hasPath();
 
         if (path.contains("/tasks")) {
@@ -63,11 +88,20 @@ public class MyHttpHandler implements HttpHandler {
             String content = JSONConverter.tasksToJSON(TaskRepository.getTaskStore()); // content ==> outputStream.toString()을 return한 것
             return content;
         }
-        return null;
+        return "POSTCreateNewTask() : content 없음";
     }
 
-    public void response(int responseCode, String content, HttpExchange exchange) throws IOException {
-        exchange.sendResponseHeaders(responseCode, content.length());
+    private String DELETETask(HttpRequest httpRequest) throws IOException {
+        String path = httpRequest.hasPath();
+
+        if (getIdFromPath(httpRequest)) {
+            Long deleteId = idInPath;
+            taskRepository.deleteTask(deleteId);
+            String content = JSONConverter.tasksToJSON(TaskRepository.getTaskStore());
+            System.out.println("content : " + content);
+            return content;
+        }
+        return "DELETETask() : content 없음";
     }
 
 }
