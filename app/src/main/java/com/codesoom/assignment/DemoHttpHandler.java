@@ -1,21 +1,14 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.models.Task;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
     Controller controller = new Controller();
-    private ObjectMapper objectMapper = new ObjectMapper();
-    private OutputStream outputStream;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
