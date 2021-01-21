@@ -10,8 +10,17 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MyHttpHandler implements HttpHandler {
-    private Tasks tasks = new Tasks();
-    private Pattern pattern = Pattern.compile("/tasks/\\d+");
+    private Tasks tasks;
+    private Pattern pattern;
+    private JsonConverter jsonConverter;
+    private IdGenerator idGenerator;
+
+    public MyHttpHandler() {
+        this.tasks = new Tasks();;
+        this.pattern = Pattern.compile("/tasks/\\d+");
+        this.jsonConverter = new JsonConverter();
+        this.idGenerator = new IdGenerator();
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -46,11 +55,11 @@ public class MyHttpHandler implements HttpHandler {
 
         if (method.equals("GET") && path.equals("/tasks")) {
             exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
-            return JsonConverter.tasksToJSON(tasks);
+            return jsonConverter.tasksToJSON(tasks);
         }
 
         if (method.equals("GET") && pattern.matcher(path).matches()) {
-            Long pathVariable = extractPathVariable(path, exchange);
+            Long pathVariable = extractPathVariable(path);
             Optional<Task> task = tasks.findTask(pathVariable);
             if (task.isEmpty()) {
                 exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
@@ -58,22 +67,22 @@ public class MyHttpHandler implements HttpHandler {
             }
 
             exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
-            return JsonConverter.taskToJson(task.get());
+            return jsonConverter.taskToJson(task.get());
         }
 
         if (method.equals("POST") && path.equals("/tasks")) {
             if (Objects.nonNull(body)) {
-                Task task = JsonConverter.toTask(body);
-                task.setId(IdGenerator.generate());
+                Task task = jsonConverter.toTask(body);
+                task.setId(idGenerator.generate());
                 tasks.addTask(task);
 
                 exchange.sendResponseHeaders(HttpStatus.CREATE.getCode(), content.getBytes().length);
-                return JsonConverter.taskToJson(task);
+                return jsonConverter.taskToJson(task);
             }
         }
 
         if (method.equals("PUT") && pattern.matcher(path).matches()) {
-            Long pathVariable = extractPathVariable(path, exchange);
+            Long pathVariable = extractPathVariable(path);
             Optional<Task> task = tasks.findTask(pathVariable);
 
             if (task.isEmpty()) {
@@ -81,15 +90,15 @@ public class MyHttpHandler implements HttpHandler {
                 return content;
             }
             if (Objects.nonNull(body)) {
-                task.get().setTitle(JsonConverter.extractValue(body));
+                task.get().setTitle(jsonConverter.extractValue(body));
                 exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
-                return JsonConverter.taskToJson(task.get());
+                return jsonConverter.taskToJson(task.get());
             }
         }
 
         if (method.equals("DELETE") && pattern.matcher(path).matches()) {
             content = "delete a task";
-            Long pathVariable = extractPathVariable(path, exchange);
+            Long pathVariable = extractPathVariable(path);
 
             Optional<Task> task = tasks.findTask(pathVariable);
             if (task.isEmpty()) {
@@ -113,7 +122,7 @@ public class MyHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
     }
 
-    private Long extractPathVariable(String path, HttpExchange exchange) throws IOException {
+    private Long extractPathVariable(String path) throws IOException {
         String[] paths = path.split("/");
 
         return Long.parseUnsignedLong(paths[2]);
