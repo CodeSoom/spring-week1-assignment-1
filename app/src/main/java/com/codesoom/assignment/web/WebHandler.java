@@ -71,6 +71,10 @@ public class WebHandler implements HttpHandler {
                 new ExpectRequestPattern("GET", "/"),
                 (request -> Optional.of(new HttpResponse(200, "Welcome to Las's service!")))
         ));
+        mappingList.add(new Mapping(
+                new ExpectRequestPattern("HEAD", "/"),
+                (request -> Optional.of(new HttpResponse(200, "Welcome to Las's service!")))
+        ));
 
         return mappingList;
     }
