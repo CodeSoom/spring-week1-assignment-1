@@ -42,9 +42,7 @@ public class TaskController {
         outputStream.close();
     }
 
-    private int getId(String uri) {
-        return Integer.parseInt(uri.split("/")[2]);
-    }
+
 
     public void postController(HttpExchange httpExchange) throws IOException {
         String body = getBody(httpExchange);
@@ -64,6 +62,26 @@ public class TaskController {
         outputStream.close();
     }
 
+    public void putController(HttpExchange httpExchange) {
+    }
+
+    public void patchController(HttpExchange httpExchange) {
+    }
+
+    public void deleteController(HttpExchange httpExchange) {
+    }
+
+    private int getId(String uri) {
+        return Integer.parseInt(uri.split("/")[2]);
+    }
+
+    public String getBody(HttpExchange httpExchange){
+        InputStream inputStream = httpExchange.getRequestBody();
+        return new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
+    }
+
     private String tasksToJSON() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
@@ -80,19 +98,4 @@ public class TaskController {
         return objectMapper.readValue(body, Task.class);
     }
 
-    public void putController(HttpExchange httpExchange) {
-    }
-
-    public void patchController(HttpExchange httpExchange) {
-    }
-
-    public void deleteController(HttpExchange httpExchange) {
-    }
-
-    public String getBody(HttpExchange httpExchange){
-        InputStream inputStream = httpExchange.getRequestBody();
-        return new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
-    }
 }
