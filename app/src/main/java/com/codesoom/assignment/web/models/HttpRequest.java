@@ -7,13 +7,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
-public class RequestInfo {
-    private final String method;
+public class HttpRequest {
+    private final HttpRequestMethod method;
     private final String path;
     private final String body;
 
-    public RequestInfo(HttpExchange exchange) {
-        this.method = exchange.getRequestMethod();
+    public HttpRequest(HttpExchange exchange) {
+        this.method = HttpRequestMethod.fromString(exchange.getRequestMethod());
         this.path = exchange.getRequestURI().getPath();
         InputStream bodyInputStream = exchange.getRequestBody();
         this.body = new BufferedReader(new InputStreamReader(bodyInputStream))
@@ -21,7 +21,7 @@ public class RequestInfo {
                 .collect(Collectors.joining("\n"));
     }
 
-    public String getMethod() {
+    public HttpRequestMethod getMethod() {
         return method;
     }
 
@@ -34,7 +34,7 @@ public class RequestInfo {
     }
 
     public boolean isServerHealthCheck() {
-        return path.equals("/") && method.equals("HEAD");
+        return path.equals("/") && method.equals(HttpRequestMethod.HEAD);
     }
 
     public boolean isInvalidPath() {
