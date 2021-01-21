@@ -1,6 +1,7 @@
 package com.codesoom.assignment.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Task {
@@ -13,9 +14,11 @@ public class Task {
         this.title = title;
     }
 
+    @JsonGetter
     public long id() {
         return this.id;
     }
+    @JsonGetter
     public String title() {
         return this.title;
     }
