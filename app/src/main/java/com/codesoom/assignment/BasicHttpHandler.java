@@ -7,22 +7,20 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import static com.codesoom.assignment.HttpStatus.NOT_FOUND;
+import static com.codesoom.assignment.HttpStatus.OK;
 
 public class BasicHttpHandler implements HttpHandler {
+
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
 
         String uri = String.valueOf(httpExchange.getRequestURI());
         if (uri.equals("/")){
-            httpExchange.sendResponseHeaders(NOT_FOUND.getStatus(), 0);
-            OutputStream outputStream = httpExchange.getResponseBody();
-            outputStream.flush();
-            outputStream.close();
+            httpExchange.sendResponseHeaders(OK.getStatus(), 0);
         }else{
             httpExchange.sendResponseHeaders(NOT_FOUND.getStatus(), 0);
-            OutputStream outputStream = httpExchange.getResponseBody();
-            outputStream.flush();
-            outputStream.close();
         }
+        OutputStream outputStream = httpExchange.getResponseBody();
+        outputStream.close();
     }
 }
