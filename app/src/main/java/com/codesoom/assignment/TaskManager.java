@@ -6,6 +6,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Class have methods that return Task object by arguments
+ *
+ * @author Taeheon Woo
+ * @version 1.0
+ *
+ */
 public class TaskManager {
     static Task toTask(String content, Long id) throws JsonProcessingException {
         Task task = new ObjectMapper().readValue(content, Task.class);

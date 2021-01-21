@@ -8,6 +8,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
+/**
+ * Class that can convert Task Object or List<Task> to JSON style String
+ *
+ * @author Taeheon Woo
+ * @version 1.0
+ * TODO: Merge methods using Generic
+ *
+ */
 public class JSONParser {
     static String taskToJSON(Task task) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();

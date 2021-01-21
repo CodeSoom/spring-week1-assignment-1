@@ -9,6 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Custom HttpHandler, that can handling related with Task object
+ *
+ * @author Taeheon Woo
+ * @version 1.0
+ *
+ */
 public class DemoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
 

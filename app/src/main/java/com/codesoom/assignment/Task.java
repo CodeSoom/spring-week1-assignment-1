@@ -1,5 +1,12 @@
 package com.codesoom.assignment;
 
+/**
+ * Model class about task having id and title
+ *
+ * @author Taeheon Woo
+ * @version 1.0
+ *
+ */
 public class Task {
     private Long id;
     private String title;
