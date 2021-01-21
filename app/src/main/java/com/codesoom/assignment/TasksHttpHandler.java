@@ -8,12 +8,17 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class DemoHttpHandler implements HttpHandler {
+public class TasksHttpHandler implements HttpHandler {
 
     private TaskService taskService = new TaskService();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
+        if (exchange.getRequestURI().getPath().equals(TasksHttpRequest.TASKS)) {
+            sendResponse(exchange, new HttpResponse(HttpStatus.METHOD_NOT_ALLOWED));
+            return;
+        }
+
         HttpRequest httpRequest = new TasksHttpRequest(exchange.getRequestMethod(), exchange.getRequestURI(), exchange.getRequestBody());
 
         if (!httpRequest.isValidMethod()) {

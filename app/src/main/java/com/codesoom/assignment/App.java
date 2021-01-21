@@ -14,7 +14,7 @@ public class App {
 
         try {
             HttpServer httpServer = HttpServer.create(address, 0);
-            HttpHandler handler = new DemoHttpHandler();
+            HttpHandler handler = new TasksHttpHandler();
 
             httpServer.createContext("/", handler);
             httpServer.start();
