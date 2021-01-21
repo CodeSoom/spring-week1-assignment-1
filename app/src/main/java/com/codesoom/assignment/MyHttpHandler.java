@@ -17,16 +17,28 @@ public class MyHttpHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
-        URI uri = exchange.getRequestURI();
-        String path = uri.getPath();
-
-        InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
+        String path = exchange.getRequestURI().getPath();
+        String content = "";
 
         System.out.println(method + " " + path);
-        String content = "Hello, world";
+
+        if (path.equals("/") || path.startsWith("/tasks")) {
+            content = methodHandler(exchange, path);
+        }
+        handleResponse(exchange, content);
+    }
+
+    private void handleResponse(HttpExchange exchange, String content) throws IOException {
+        OutputStream outputStream = exchange.getResponseBody();
+        outputStream.write(content.getBytes());
+        outputStream.flush();
+        outputStream.close();
+    }
+
+    private String methodHandler(HttpExchange exchange, String path) throws IOException {
+        String method = exchange.getRequestMethod();
+        String body = getBody(exchange);
+        String content = "";
 
         if (method.equals("GET") && path.equals("/tasks")) {
             content = JsonConverter.tasksToJSON(tasks);
@@ -35,7 +47,6 @@ public class MyHttpHandler implements HttpHandler {
 
         if (method.equals("GET") && pattern.matcher(path).matches()) {
             Long pathVariable = extractPathVariable(path, exchange);
-
             Optional<Task> task = tasks.findTask(pathVariable);
             if (task.isEmpty()) {
                 exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
@@ -56,7 +67,6 @@ public class MyHttpHandler implements HttpHandler {
         }
 
         if (method.equals("PUT") && pattern.matcher(path).matches()) {
-            content = "update a task";
             Long pathVariable = extractPathVariable(path, exchange);
             Optional<Task> task = tasks.findTask(pathVariable);
 
@@ -83,11 +93,14 @@ public class MyHttpHandler implements HttpHandler {
                 exchange.sendResponseHeaders(HttpStatus.NO_CONTENT.getCode(), content.getBytes().length);
             }
         }
+        return content;
+    }
 
-        OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
+    private String getBody(HttpExchange exchange) {
+        InputStream inputStream = exchange.getRequestBody();
+        return new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
     }
 
     private Long extractPathVariable(String path, HttpExchange exchange) throws IOException {
