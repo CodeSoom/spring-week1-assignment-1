@@ -14,7 +14,7 @@ public class TasksHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        if (exchange.getRequestURI().getPath().startsWith(TasksHttpRequest.TASKS)) {
+        if (!exchange.getRequestURI().getPath().startsWith(TasksHttpRequest.TASKS)) {
             sendResponse(exchange, new HttpResponse(HttpStatus.METHOD_NOT_ALLOWED));
             return;
         }
