@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class TaskRepository {
 
-    public static Map<Long, Task> taskStore = new HashMap<>();
+    private static Map<Long, Task> taskStore = new HashMap<>();
     private static long sequence = 1L;
 
     public static Map<Long, Task> getTaskStore() {
@@ -26,4 +26,8 @@ public class TaskRepository {
         taskStore.remove(deleteId);
     }
 
+    public void updateTaskTitle(Long idForUpdateTask, Task updateTaks) {
+        taskStore.replace(idForUpdateTask, updateTaks);
+
+    }
 }

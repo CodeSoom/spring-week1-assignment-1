@@ -31,21 +31,20 @@ public class MyHttpHandler implements HttpHandler {
                     }
                     break;
                 case "POST":
-                    System.out.println("POST : " + httpRequest.toString()); // 확인용
                     content = POSTCreateNewTask(httpRequest);
                     response(200, content, exchange);
                     break;
                 case "PUT":
                 case "PATH":
-                    System.out.println(httpRequest.toString());
+                    content = PUTUpdateTaskTitle(httpRequest);
+                    response(200, content, exchange);
                     break;
                 case "DELETE":
-                    System.out.println("DELETE : " + httpRequest.toString()); // 확인용
                     content = DELETETask(httpRequest);
                     response(200, content, exchange);
                     break;
                 default:
-                    System.out.println(httpRequest.toString());
+                    System.out.println("default : " + httpRequest.toString()); // 확인용
                     break;
             }
         }
@@ -68,8 +67,6 @@ public class MyHttpHandler implements HttpHandler {
 
     private boolean getIdFromPath(HttpRequest httpRequest) {
         String[] pathSplit = httpRequest.hasPath().split("/tasks/");
-        System.out.println(pathSplit[0]);
-        System.out.println(pathSplit[1]);
         int pathWhitId = 2;
         int idIndex = 1;
         if (pathSplit.length == pathWhitId) {
@@ -85,6 +82,7 @@ public class MyHttpHandler implements HttpHandler {
         if (path.contains("/tasks")) {
             Task newTask = jsonConverter.JSONToTask(httpRequest.hasBody());
             taskRepository.createNewTask(newTask);
+
             String content = JSONConverter.tasksToJSON(TaskRepository.getTaskStore()); // content ==> outputStream.toString()을 return한 것
             return content;
         }
@@ -97,11 +95,26 @@ public class MyHttpHandler implements HttpHandler {
         if (getIdFromPath(httpRequest)) {
             Long deleteId = idInPath;
             taskRepository.deleteTask(deleteId);
+
             String content = JSONConverter.tasksToJSON(TaskRepository.getTaskStore());
-            System.out.println("content : " + content);
             return content;
         }
         return "DELETETask() : content 없음";
+    }
+
+    private String PUTUpdateTaskTitle(HttpRequest httpRequest) throws IOException {
+        String path = httpRequest.hasPath();
+
+        if (getIdFromPath(httpRequest)) {
+            Long idForTaskUpdate = idInPath;
+            Task updateTask = jsonConverter.JSONToTask(httpRequest.hasBody());
+            updateTask.setId(idForTaskUpdate);
+            taskRepository.updateTaskTitle(idForTaskUpdate, updateTask);
+
+            String content = JSONConverter.tasksToJSON(taskRepository.getTaskStore());
+            return content;
+        }
+        return "PUTUpdateTaskTitle() : content 없음";
     }
 
 }
