@@ -28,7 +28,7 @@ public class TaskController {
         } else{
             int id = getId(uri);
             if (tasks.size() <= 0 || id > tasks.size()){
-                httpExchange.sendResponseHeaders(INTERNAL_SERVER_ERROR.getStatus(), 0);
+                httpExchange.sendResponseHeaders(INTERNAL_SERVER_ERROR.getStatus(), body.getBytes().length);
             }else{
                 body = tasksToJSONById(tasks.get(id-1));
                 httpExchange.sendResponseHeaders(OK.getStatus(), body.getBytes().length);
@@ -42,11 +42,8 @@ public class TaskController {
         outputStream.close();
     }
 
-
-
     public void postController(HttpExchange httpExchange) throws IOException {
         String body = getBody(httpExchange);
-        System.out.println(body);
         Task task = toTask(body);
         count += 1;
         task.setId(count);
@@ -54,7 +51,7 @@ public class TaskController {
 
         tasks.add(task);
 
-        httpExchange.sendResponseHeaders(CREATED.getStatus(), 0);
+        httpExchange.sendResponseHeaders(CREATED.getStatus(), body.getBytes().length);
 
         OutputStream outputStream = httpExchange.getResponseBody();
         outputStream.write(body.getBytes());
@@ -62,7 +59,34 @@ public class TaskController {
         outputStream.close();
     }
 
-    public void putController(HttpExchange httpExchange) {
+    public void putController(HttpExchange httpExchange) throws IOException {
+
+        String uri = String.valueOf(httpExchange.getRequestURI());
+        int id = getId(uri);
+        System.out.println(id);
+
+        String body = getBody(httpExchange);
+        String title = toTask(body).getTitle();
+
+        tasks.get(id-1).updateTitle(title);
+
+        Task task = tasks.get(id-1);
+        System.out.println(task);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutput out = new ObjectOutputStream(bos);
+        out.writeObject(task);
+        byte[] taskBytes = bos.toByteArray();
+        System.out.println(taskBytes);
+
+
+
+        httpExchange.sendResponseHeaders(OK.getStatus(), 0);
+        OutputStream outputStream = httpExchange.getResponseBody();
+//        outputStream.write(objectBytes);
+        outputStream.flush();
+        outputStream.close();
+
     }
 
     public void patchController(HttpExchange httpExchange) {
