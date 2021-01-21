@@ -1,7 +1,6 @@
 
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.springHandler;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
@@ -14,13 +13,14 @@ public class App {
         return "Hello World!";
     }
 
+    private static InetSocketAddress address = new InetSocketAddress(8000);
     public static void main(String[] args) {
 
         System.out.println(new App().getGreeting());
-        InetSocketAddress address = new InetSocketAddress(8000);
+        //InetSocketAddress address = new InetSocketAddress(8000);
         try {
             HttpServer httpServer = HttpServer.create(address, 0);
-            HttpHandler handler = new springHandler();
+            HttpHandler handler = new SpringHandler();
             httpServer.createContext("/", handler);
             httpServer.start();
         } catch (IOException e) {

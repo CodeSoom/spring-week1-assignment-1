@@ -8,7 +8,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
-public class springHandler implements HttpHandler {
+public class SpringHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
@@ -18,7 +18,7 @@ public class springHandler implements HttpHandler {
 
         System.out.println(method + " " + path);
 
-        String content = "Hello, world!";
+        String content = "매일 매일 달리지기 위한 첫걸음 시작하기!";
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
