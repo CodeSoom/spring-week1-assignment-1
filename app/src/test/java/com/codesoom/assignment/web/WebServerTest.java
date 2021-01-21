@@ -53,14 +53,13 @@ public class WebServerTest {
                     .collect(Collectors.joining(""));
 
             assertEquals(200, httpResponse.getStatusLine().getStatusCode());
-            assertNotNull(httpResponse.getEntity().getContentType());
             assertEquals("[]", responseBody);
         });
     }
 
     @Test
     void createNewTask() {
-        HttpPost post = new HttpPost("http://localhost:8000/task");
+        HttpPost post = new HttpPost("http://localhost:8000/tasks");
         String requestBody = "{\"title\": \"Play Game\"}";
         assertDoesNotThrow(() -> {
             StringEntity requestEntity = new StringEntity(requestBody);
@@ -75,7 +74,6 @@ public class WebServerTest {
                 .collect(Collectors.joining(""));
 
             assertEquals(201, httpResponse.getStatusLine().getStatusCode());
-            assertNotNull(httpResponse.getEntity().getContentType());
             assertEquals("{\"id\":1,\"title\":\"Play Game\"}", responseBody);
         });
     }
@@ -91,7 +89,7 @@ public class WebServerTest {
             HttpClientBuilder.create().build().execute(post);
         });
 
-        HttpUriRequest request = new HttpGet("http://localhost:8000/tasks/0");
+        HttpUriRequest request = new HttpGet("http://localhost:8000/tasks/1");
         assertDoesNotThrow(() -> {
             HttpResponse httpResponse = HttpClientBuilder.create().build().execute(request);
             String responseBody = new BufferedReader(
@@ -100,7 +98,6 @@ public class WebServerTest {
                 .collect(Collectors.joining(""));
 
             assertEquals(200, httpResponse.getStatusLine().getStatusCode());
-            assertNotNull(httpResponse.getEntity().getContentType());
             assertEquals("{\"id\":1,\"title\":\"Play Game\"}", responseBody);
         });
     }
