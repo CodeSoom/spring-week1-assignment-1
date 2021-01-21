@@ -13,12 +13,8 @@ public class App {
 
     public static void main(String[] args) {
         try {
-            InetSocketAddress address = new InetSocketAddress(8000);
-            HttpServer httpServer = HttpServer.create(address, 0);
-
-            HttpHandler handler = new DemoHttpHandler();
-            httpServer.createContext("/", handler);
-
+            HttpServer httpServer = HttpServer.create(new InetSocketAddress(Constant.port), Constant.backlog);
+            httpServer.createContext("/", new DemoHttpHandler());
             httpServer.start();
         } catch (IOException e) {
             e.printStackTrace();

@@ -27,7 +27,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         String content = new ResponseHandler().handle(method, path, tasks, body);
 
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+        exchange.sendResponseHeaders(Constant.ResponseCode.success, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
 
