@@ -32,7 +32,7 @@ public class ResponseHandler {
 
                 Task editableTask = getTask(tasks, taskId);
                 tasks.set(tasks.indexOf(editableTask), toTask(body, editableTask.getId()));
-                return taskToJSON(editableTask);
+                return taskToJSON(getTask(tasks, taskId));
 
             case "DELETE":
                 tasks.removeIf(task -> Objects.equals(taskId, task.getId()));
