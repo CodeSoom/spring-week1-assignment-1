@@ -44,11 +44,10 @@ public class TodoHttpHandler implements HttpHandler {
                 return processDeleteRequest(exchange);
             case "HEAD":
                 statusCode = HttpStatus.OK;
-                break;
+                return "";
             default:
                 return "";
         }
-        return "";
     }
 
     private String processDeleteRequest(HttpExchange exchange) {
