@@ -32,7 +32,7 @@ public class MyHttpHandler implements HttpHandler {
                     break;
                 case "POST":
                     content = POSTCreateNewTask(httpRequest);
-                    response(200, content, exchange);
+                    response(201, content, exchange);
                     break;
                 case "PUT":
                 case "PATH":
