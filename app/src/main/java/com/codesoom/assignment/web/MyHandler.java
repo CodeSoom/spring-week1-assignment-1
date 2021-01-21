@@ -49,6 +49,9 @@ public class MyHandler implements HttpHandler {
                 case "DELETE":
                     processDelete(requestInfo, exchange);
                     break;
+                case "HEAD":
+                    sendResponse(200, exchange);
+                    break;
                 default:
                     sendResponse("Method Not Allowed", 405, exchange);
                     break;
