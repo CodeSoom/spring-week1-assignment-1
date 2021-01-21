@@ -7,6 +7,9 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import static com.codesoom.assignment.HttpStatusCode.HTTP_CREATED;
+import static com.codesoom.assignment.HttpStatusCode.HTTP_OK;
+
 public class MyHttpHandler implements HttpHandler {
 
     JSONConverter jsonConverter = new JSONConverter();
@@ -32,16 +35,16 @@ public class MyHttpHandler implements HttpHandler {
                     break;
                 case "POST":
                     content = POSTCreateNewTask(httpRequest);
-                    response(201, content, exchange);
+                    response(HTTP_CREATED, content, exchange);
                     break;
                 case "PUT":
                 case "PATH":
                     content = PUTUpdateTaskTitle(httpRequest);
-                    response(200, content, exchange);
+                    response(HTTP_OK, content, exchange);
                     break;
                 case "DELETE":
                     content = DELETETask(httpRequest);
-                    response(200, content, exchange);
+                    response(HTTP_OK, content, exchange);
                     break;
                 default:
                     System.out.println("default : " + httpRequest.toString()); // 확인용
