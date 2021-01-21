@@ -1,8 +1,8 @@
 package com.codesoom.assignment.domain;
 
 public class Task {
-    long id;
-    String title;
+    private long id;
+    private String title;
 
     public Task(Long id, String title) {
         this.id = id;
