@@ -12,13 +12,9 @@ import java.io.OutputStream;
 import java.util.stream.Collectors;
 
 public class WebHandler implements HttpHandler {
-    TaskApplicationService taskApplicationService;
-    TaskJsonTransfer transfer;
     Controller controller;
 
     public WebHandler(TaskApplicationService taskApplicationService) {
-        this.taskApplicationService = taskApplicationService;
-        this.transfer = new TaskJsonTransfer();
         this.controller = new Controller(taskApplicationService);
     }
 
