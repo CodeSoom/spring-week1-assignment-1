@@ -5,7 +5,7 @@ import com.codesoom.assignment.web.models.HttpRequest;
 import com.codesoom.assignment.web.models.HttpRequestMethod;
 import com.codesoom.assignment.web.models.HttpResponse;
 import com.codesoom.assignment.web.models.HttpStatusCode;
-import com.codesoom.assignment.web.service.StrategyProcess;
+import com.codesoom.assignment.web.service.RequestControllable;
 import com.codesoom.assignment.web.util.HttpResponseTransfer;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -14,10 +14,10 @@ import java.util.Map;
 
 public class HttpRequestContext {
 
-    private final StrategyProcess nullStrategy = (httpRequest, taskService) -> new HttpResponse(HttpStatusCode.NOT_FOUND);
-    private final Map<HttpRequestMethod, StrategyProcess> requestStrategyProcessMap;
+    private final RequestControllable nullStrategy = (httpRequest, taskService) -> new HttpResponse(HttpStatusCode.NOT_FOUND);
+    private final Map<HttpRequestMethod, RequestControllable> requestStrategyProcessMap;
 
-    public HttpRequestContext(Map<HttpRequestMethod, StrategyProcess> requestStrategyProcessMap) {
+    public HttpRequestContext(Map<HttpRequestMethod, RequestControllable> requestStrategyProcessMap) {
         this.requestStrategyProcessMap = requestStrategyProcessMap;
     }
 
@@ -32,7 +32,7 @@ public class HttpRequestContext {
             return;
         }
 
-        StrategyProcess strategy = findStrategy(httpRequest.getMethod());
+        RequestControllable strategy = findStrategy(httpRequest.getMethod());
         HttpResponse httpResponse;
         try {
             httpResponse = strategy.process(httpRequest, taskService);
@@ -46,7 +46,7 @@ public class HttpRequestContext {
         HttpResponseTransfer.sendResponse(httpResponse, httpExchange);
     }
 
-    private StrategyProcess findStrategy(HttpRequestMethod method) {
+    private RequestControllable findStrategy(HttpRequestMethod method) {
         return requestStrategyProcessMap.getOrDefault(method, nullStrategy);
     }
 

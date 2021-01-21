@@ -9,13 +9,14 @@ import com.codesoom.assignment.web.models.HttpStatusCode;
 
 import java.io.IOException;
 
-public class PostStrategy implements StrategyProcess {
+public class UpdateRequestController implements RequestControllable {
     @Override
     public HttpResponse process(HttpRequest httpRequest, TaskService taskService) throws IOException {
+        long id = parseIdFromPath(httpRequest.getPath());
         Task task = JsonUtil.toTask(httpRequest.getBody());
-        Task createdTask = taskService.createNewTask(task.getTitle());
-        String responseJson = JsonUtil.toJson(createdTask);
-        return new HttpResponse(responseJson, HttpStatusCode.CREATED);
+        Task updatedTask = taskService.updateTask(id, task.getTitle());
+        String responseJson = JsonUtil.toJson(updatedTask);
+        return new HttpResponse(responseJson, HttpStatusCode.OK);
     }
 
 }

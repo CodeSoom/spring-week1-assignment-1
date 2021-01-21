@@ -6,7 +6,7 @@ import com.codesoom.assignment.web.models.HttpResponse;
 
 import java.io.IOException;
 
-public interface StrategyProcess {
+public interface RequestControllable {
     HttpResponse process(HttpRequest httpRequest, TaskService taskService) throws IOException;
 
     default long parseIdFromPath(String path) throws NumberFormatException {

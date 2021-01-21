@@ -17,12 +17,12 @@ public class App {
         MyHttpServer httpServer = new MyHttpServer(PORT);
         TaskService taskService = new TaskService();
 
-        Map<HttpRequestMethod, StrategyProcess> strategyProcessMap = new HashMap<>();
-        strategyProcessMap.put(HttpRequestMethod.GET, new GetStrategy());
-        strategyProcessMap.put(HttpRequestMethod.POST, new PostStrategy());
-        strategyProcessMap.put(HttpRequestMethod.PUT, new UpdateStrategy());
-        strategyProcessMap.put(HttpRequestMethod.PATCH, new UpdateStrategy());
-        strategyProcessMap.put(HttpRequestMethod.DELETE, new DeleteStrategy());
+        Map<HttpRequestMethod, RequestControllable> strategyProcessMap = new HashMap<>();
+        strategyProcessMap.put(HttpRequestMethod.GET, new GetRequestController());
+        strategyProcessMap.put(HttpRequestMethod.POST, new PostRequestController());
+        strategyProcessMap.put(HttpRequestMethod.PUT, new UpdateRequestController());
+        strategyProcessMap.put(HttpRequestMethod.PATCH, new UpdateRequestController());
+        strategyProcessMap.put(HttpRequestMethod.DELETE, new DeleteRequestController());
 
         HttpRequestContext requestContext = new HttpRequestContext(strategyProcessMap);
         HttpHandler handler = new MyHandler(taskService, requestContext);

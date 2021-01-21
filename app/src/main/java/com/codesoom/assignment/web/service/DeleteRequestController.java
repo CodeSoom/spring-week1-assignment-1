@@ -7,7 +7,7 @@ import com.codesoom.assignment.web.models.HttpStatusCode;
 
 import java.io.IOException;
 
-public class DeleteStrategy implements StrategyProcess {
+public class DeleteRequestController implements RequestControllable {
     @Override
     public HttpResponse process(HttpRequest httpRequest, TaskService taskService) throws IOException {
         long id = parseIdFromPath(httpRequest.getPath());
