@@ -26,6 +26,7 @@ enum Status {
 }
 
 public class DemoHttpHandler implements HttpHandler {
+    Controller controller = new Controller();
     Service service = new Service();
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
@@ -46,10 +47,10 @@ public class DemoHttpHandler implements HttpHandler {
         String content = "Hello World";
 
         switch (method) {
-            case "GET" -> requestForGet(path, exchange);
-            case "POST" -> requestForPost(path, body, exchange);
-            case "PUT", "PATCH" -> requestForPutOrPatch(path, body, exchange);
-            case "DELETE" -> requestForDelete(path, exchange);
+            case "GET" -> controller.requestForGet(path, tasks, exchange);
+            case "POST" -> controller.requestForPost(path, body, tasks, exchange);
+            case "PUT", "PATCH" -> controller.requestForPutOrPatch(path, body, tasks, exchange);
+            case "DELETE" -> controller.requestForDelete(path, tasks, exchange);
         }
 
 //        if(method.equals("GET")) {
@@ -69,7 +70,7 @@ public class DemoHttpHandler implements HttpHandler {
 //        }
     }
 
-    public void requestForGet(String path, HttpExchange exchange) throws IOException {
+    /*public void requestForGet(String path, HttpExchange exchange) throws IOException {
         String content = "";
         if(!path.startsWith("/tasks")) {
             exchange.sendResponseHeaders(Status.BAD_REQUEST.getStatus(),0);
@@ -166,9 +167,9 @@ public class DemoHttpHandler implements HttpHandler {
         content = "";
         exchange.sendResponseHeaders(Status.NO_CONTENT.getStatus(),0);
         writeContentWithOutputStream(exchange, content);
-    }
+    }*/
 
-    private void writeContentWithOutputStream(HttpExchange exchange, String content) throws IOException {
+    /*private void writeContentWithOutputStream(HttpExchange exchange, String content) throws IOException {
         outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
@@ -189,5 +190,5 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, task);
         return outputStream.toString();
-    }
+    }*/
 }
