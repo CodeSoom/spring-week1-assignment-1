@@ -40,6 +40,10 @@ public class MyHttpHandler implements HttpHandler {
         String body = getBody(exchange);
         String content = "";
 
+        if (method.equals("GET") && path.equals("/")) {
+            exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
+        }
+
         if (method.equals("GET") && path.equals("/tasks")) {
             content = JsonConverter.tasksToJSON(tasks);
             exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
@@ -93,6 +97,8 @@ public class MyHttpHandler implements HttpHandler {
                 exchange.sendResponseHeaders(HttpStatus.NO_CONTENT.getCode(), content.getBytes().length);
             }
         }
+
+
         return content;
     }
 
