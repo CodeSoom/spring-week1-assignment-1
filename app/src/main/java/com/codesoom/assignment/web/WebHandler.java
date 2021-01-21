@@ -40,7 +40,7 @@ public class WebHandler implements HttpHandler {
                 it -> it.controller.process(request)
             );
 
-        writeHttpResponse(exchange, response.orElse(new HttpResponse(404, "Not Found")));
+        writeHttpResponse(exchange, response.orElse(new HttpResponse(400, "Unknown request!!")));
     }
 
     List<Mapping> prepareMapping() {
