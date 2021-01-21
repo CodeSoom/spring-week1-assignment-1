@@ -1,7 +1,7 @@
 package com.codesoom.assignment;
 
 public class IdGenerator {
-    private static Long count = 1L;
+    private static Long count = 0L;
     private IdGenerator() {
     }
 
