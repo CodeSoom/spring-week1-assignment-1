@@ -15,7 +15,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 enum HttpStatusCode {
-    OK(200), NotFound(404);
+    OK(200),
+    Created(201),
+    NotFound(404);
 
     int value;
     HttpStatusCode(int value) {
@@ -105,7 +107,7 @@ public class TaskHttpHandler implements HttpHandler {
             httpStatusCode = result;
 
             switch (result) {
-                case OK:
+                case Created:
                     content = taskToJSON(task);
                     System.out.println("[POST] A Task successfully added.\n" + content);
                     break;
@@ -243,7 +245,7 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         tasks.add(task);
-        return HttpStatusCode.OK;
+        return HttpStatusCode.Created;
     }
 
     private long getNextId() {
