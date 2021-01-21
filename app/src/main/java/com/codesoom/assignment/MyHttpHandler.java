@@ -41,11 +41,12 @@ public class MyHttpHandler implements HttpHandler {
 
         if (method.equals("HEAD")) {
             exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
+            return content;
         }
 
         if (method.equals("GET") && path.equals("/tasks")) {
-            content = JsonConverter.tasksToJSON(tasks);
             exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
+            return JsonConverter.tasksToJSON(tasks);
         }
 
         if (method.equals("GET") && pattern.matcher(path).matches()) {
@@ -53,10 +54,11 @@ public class MyHttpHandler implements HttpHandler {
             Optional<Task> task = tasks.findTask(pathVariable);
             if (task.isEmpty()) {
                 exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
+                return content;
             }
-            content = JsonConverter.taskToJson(task.get());
-            exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
 
+            exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
+            return JsonConverter.taskToJson(task.get());
         }
 
         if (method.equals("POST") && path.equals("/tasks")) {
@@ -64,8 +66,9 @@ public class MyHttpHandler implements HttpHandler {
                 Task task = JsonConverter.toTask(body);
                 task.setId(IdGenerator.generate());
                 tasks.addTask(task);
-                content = JsonConverter.taskToJson(task);
+
                 exchange.sendResponseHeaders(HttpStatus.CREATE.getCode(), content.getBytes().length);
+                return JsonConverter.taskToJson(task);
             }
         }
 
@@ -75,11 +78,12 @@ public class MyHttpHandler implements HttpHandler {
 
             if (task.isEmpty()) {
                 exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
+                return content;
             }
             if (Objects.nonNull(body)) {
                 task.get().setTitle(JsonConverter.extractValue(body));
-                content = JsonConverter.taskToJson(task.get());
                 exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
+                return JsonConverter.taskToJson(task.get());
             }
         }
 
@@ -90,13 +94,14 @@ public class MyHttpHandler implements HttpHandler {
             Optional<Task> task = tasks.findTask(pathVariable);
             if (task.isEmpty()) {
                 exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
+                return content;
             }
             if (task.isPresent()) {
                 tasks.remove(task.get());
                 exchange.sendResponseHeaders(HttpStatus.NO_CONTENT.getCode(), content.getBytes().length);
+                return content;
             }
         }
-
 
         return content;
     }
