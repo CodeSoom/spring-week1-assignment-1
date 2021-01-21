@@ -26,10 +26,10 @@ enum Status {
 }
 
 public class DemoHttpHandler implements HttpHandler {
+    Service service = new Service();
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
     private OutputStream outputStream;
-    private Long id=1L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -46,24 +46,10 @@ public class DemoHttpHandler implements HttpHandler {
         String content = "Hello World";
 
         switch (method) {
-            case "GET" :
-                requestForGet(path, exchange);
-                break;
-
-            case "POST" :
-                requestForPost(path, body, exchange);
-                break;
-
-            case "PUT" :
-
-            case "PATCH" :
-                requestForPutOrPatch(path, body, exchange);
-                break;
-
-            case "DELETE" :
-                requestForDelete(path, exchange);
-                break;
-
+            case "GET" -> requestForGet(path, exchange);
+            case "POST" -> requestForPost(path, body, exchange);
+            case "PUT", "PATCH" -> requestForPutOrPatch(path, body, exchange);
+            case "DELETE" -> requestForDelete(path, exchange);
         }
 
 //        if(method.equals("GET")) {
@@ -99,7 +85,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         Long idValue = Long.parseLong(path.substring(7));
-        Task getTask = getTask(idValue);
+        Task getTask = service.getTask(idValue, tasks);
 
         if(getTask == null) {
             exchange.sendResponseHeaders(Status.NOT_FOUND.getStatus(),0);
@@ -129,14 +115,14 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         Task task = jsonToTask(body);
-        createTask(task);
+        service.createTask(task, tasks);
         content = taskToJson(task);
         exchange.sendResponseHeaders(Status.CREATED.getStatus(),content.getBytes().length);
         writeContentWithOutputStream(exchange, content);
     }
 
     private void requestForPutOrPatch(String path, String body, HttpExchange exchange) throws IOException {
-        String content = " ";
+        String content = "";
         if(!path.startsWith("/tasks")) {
             exchange.sendResponseHeaders(Status.BAD_REQUEST.getStatus(),0);
             writeContentWithOutputStream(exchange, "");
@@ -144,7 +130,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         Long idValue = Long.parseLong(path.substring(7));
-        Task updateTask = getTask(idValue);
+        Task updateTask = service.getTask(idValue, tasks);
 
         if(updateTask == null) {
             exchange.sendResponseHeaders(Status.NOT_FOUND.getStatus(), 0);
@@ -153,7 +139,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         Task task = jsonToTask(body);
-        updateTask(updateTask, task.getTitle());
+        service.updateTask(updateTask, task.getTitle());
         content = taskToJson(updateTask);
         exchange.sendResponseHeaders(Status.OK.getStatus(),content.getBytes().length);
         writeContentWithOutputStream(exchange, content);
@@ -168,7 +154,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         Long idValue = Long.parseLong(path.substring(7));
-        Task deleteTask = getTask(idValue);
+        Task deleteTask = service.getTask(idValue, tasks);
 
         if(deleteTask==null) {
             exchange.sendResponseHeaders(Status.NOT_FOUND.getStatus(), 0);
@@ -176,34 +162,10 @@ public class DemoHttpHandler implements HttpHandler {
             return;
         }
 
-        deleteTask(deleteTask);
+        service.deleteTask(deleteTask, tasks);
         content = "";
         exchange.sendResponseHeaders(Status.NO_CONTENT.getStatus(),0);
         writeContentWithOutputStream(exchange, content);
-    }
-
-    private Task getTask(Long idValue) {
-        Task getTask = null;
-        for(Task task : tasks) {
-            if(task.getId() == idValue){
-                getTask = task;
-                break;
-            }
-        }
-        return getTask;
-    }
-
-    private void createTask(Task postTask) {
-        postTask.setId(id++);
-        tasks.add(postTask);
-    }
-
-    private void updateTask(Task updateTask, String title) {
-        updateTask.setTitle(title);
-    }
-
-    private void deleteTask(Task deleteTask) {
-        tasks.remove(deleteTask);
     }
 
     private void writeContentWithOutputStream(HttpExchange exchange, String content) throws IOException {
