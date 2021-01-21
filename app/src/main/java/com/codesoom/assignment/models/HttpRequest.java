@@ -8,21 +8,21 @@ import java.util.stream.Collectors;
 
 public abstract class HttpRequest {
 
-    private HttpRequestMethod method;
+    private TasksHttpRequestMethod method;
 
     private String path;
 
     private String body;
 
     public HttpRequest(String method, URI uri, InputStream inputStream) {
-        this.method = HttpRequestMethod.valueOf(method);
+        this.method = TasksHttpRequestMethod.valueOf(method);
         this.path = uri.getPath();
         this.body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
     }
 
-    public HttpRequestMethod getMethod() {
+    public TasksHttpRequestMethod getMethod() {
         return method;
     }
 

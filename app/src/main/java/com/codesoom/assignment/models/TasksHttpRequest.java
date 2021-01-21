@@ -4,24 +4,24 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Arrays;
 
-public class HttpRequestForTasks extends HttpRequest {
+public class TasksHttpRequest extends HttpRequest {
 
     public static final String TASKS = "/tasks";
     public static final String TASKS_PATTERN = TASKS + "/*[0-9]*";
 
-    public HttpRequestForTasks(String method, URI uri, InputStream inputStream) {
+    public TasksHttpRequest(String method, URI uri, InputStream inputStream) {
         super(method, uri, inputStream);
     }
 
     @Override
     public boolean isValidMethod() {
-        return Arrays.stream(HttpRequestMethod.values()).anyMatch(method -> method == getMethod());
+        return Arrays.stream(TasksHttpRequestMethod.values()).anyMatch(method -> method == getMethod());
     }
 
     @Override
     public boolean isValidPath() {
         String path = getPath();
-        HttpRequestMethod method = getMethod();
+        TasksHttpRequestMethod method = getMethod();
 
         return switch (method) {
             case GET -> path.equals(TASKS) || path.matches(TASKS_PATTERN);

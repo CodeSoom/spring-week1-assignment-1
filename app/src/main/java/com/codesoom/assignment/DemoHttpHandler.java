@@ -14,7 +14,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        HttpRequest httpRequest = new HttpRequestForTasks(exchange.getRequestMethod(), exchange.getRequestURI(), exchange.getRequestBody());
+        HttpRequest httpRequest = new TasksHttpRequest(exchange.getRequestMethod(), exchange.getRequestURI(), exchange.getRequestBody());
 
         if (!httpRequest.isValidMethod()) {
             sendResponse(exchange, new HttpResponse(HttpStatus.METHOD_NOT_ALLOWED));
@@ -26,8 +26,8 @@ public class DemoHttpHandler implements HttpHandler {
             return;
         }
 
-        HttpRequestMethod httpRequestMethod = httpRequest.getMethod();
-        HttpResponse response = httpRequestMethod.createResponse(httpRequest, taskService);
+        TasksHttpRequestMethod tasksHttpRequestMethod = httpRequest.getMethod();
+        HttpResponse response = tasksHttpRequestMethod.processTasks(httpRequest, taskService);
         sendResponse(exchange, response);
     }
 
