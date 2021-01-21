@@ -5,11 +5,11 @@ import com.codesoom.assignment.models.Task;
 import java.util.*;
 
 public class TaskService {
-    private static final int START_ID = 0;
     private Map<Long, Task> tasks = new HashMap<>();
+    private IdGenerator idGenerator = new IdGenerator();
 
     public Task getTask(long id) {
-        return findTaskById(id).orElseThrow(() -> new IllegalArgumentException("Failed to find task (ID: " + id + ")"));
+        return getTaskByIdOrThrow(id);
     }
 
     public List<Task> getTasks() {
@@ -17,37 +17,31 @@ public class TaskService {
     }
 
     public Task createNewTask(String title) {
-        Task task = new Task(generateNewTaskId(), title);
+        Task task = new Task(idGenerator.generateNewTaskId(), title);
         tasks.put(task.getId(), task);
         System.out.println("Completed to create task - " + task.toString());
         return task;
     }
 
     public Task updateTask(long id, String newTitle) {
-        Task task = findTaskById(id).orElseThrow(() -> new IllegalArgumentException("Failed to find task (ID: " + id + ")"));;
+        Task task = getTaskByIdOrThrow(id);
         task.setTitle(newTitle);
         System.out.println("Completed to update task - " + task.toString());
         return task;
     }
 
     public void deleteTask(long id) {
-        Task task = findTaskById(id).orElseThrow(() -> new IllegalArgumentException("Failed to find task (ID: " + id + ")"));;
+        Task task = getTaskByIdOrThrow(id);
         tasks.remove(task.getId());
         System.out.println("Completed to delete task - " + task.toString());
     }
 
-    private Optional<Task> findTaskById(long id) {
-        return Optional.ofNullable(tasks.get(id));
+    private Task getTaskByIdOrThrow(long id) {
+        return findTaskById(id).orElseThrow(() -> new IllegalArgumentException("Failed to find task (ID: " + id + ")"));
     }
 
-    private long generateNewTaskId() {
-        long id = START_ID;
-
-        if (!tasks.isEmpty()) {
-            //Task 삭제를 대비하여 가장 최근 tas k의ID를 기준으로 생성
-            id = tasks.keySet().stream().mapToLong(Long::longValue).max().getAsLong() + 1;
-        }
-        return id;
+    private Optional<Task> findTaskById(long id) {
+        return Optional.ofNullable(tasks.get(id));
     }
 
 }
