@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 enum Status {
-    OK(200), CREATED(201), BAD_REQUEST(400), NOT_FOUND(404);
+    OK(200), CREATED(201), NO_CONTENT(204), BAD_REQUEST(400), NOT_FOUND(404);
 
     private final int status;
     Status(int status) {
@@ -157,7 +157,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         deleteTask(deleteTask);
         content = "";
-        exchange.sendResponseHeaders(Status.OK.getStatus(),0);
+        exchange.sendResponseHeaders(Status.NO_CONTENT.getStatus(),0);
         writeContentWithOutputStream(exchange, content);
     }
 
@@ -197,13 +197,13 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private String tasksToJson() throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
+        outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
         return outputStream.toString();
     }
 
     private String taskToJson(Task task) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
+        outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, task);
         return outputStream.toString();
     }
