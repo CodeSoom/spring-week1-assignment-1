@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * The class {@code TaskManager} is managing tasks.
+ * {@code TaskManager} is managing tasks.
  * @see Task
  */
 public class TaskManager {
@@ -115,7 +115,7 @@ public class TaskManager {
     }
 
     /**
-     * Remove all tasks and initialization {@code index}
+     * Remove all tasks and initialization {@code index}.
      */
     public static void clear() {
         TASKS.clear();
