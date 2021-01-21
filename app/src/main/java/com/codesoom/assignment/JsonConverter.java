@@ -9,9 +9,11 @@ import java.io.OutputStream;
 
 public class JsonConverter {
     private ObjectMapper objectMapper;
+    private OutputStream outputStream;
 
     public JsonConverter() {
         this.objectMapper = new ObjectMapper();
+        this.outputStream = new ByteArrayOutputStream();
     }
 
     public Task toTask(String content) throws JsonProcessingException {
@@ -19,13 +21,11 @@ public class JsonConverter {
     }
 
     public String taskToJson(Task task) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, task);
         return outputStream.toString();
     }
 
     public String tasksToJSON(Tasks tasks) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks.getTasks());
         return outputStream.toString();
     }
