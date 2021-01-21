@@ -11,32 +11,28 @@ import java.io.OutputStream;
 import java.util.List;
 
 public class Service {
-    Long id = 1L;
-    ObjectMapper objectMapper;
-    OutputStream outputStream;
+    private ObjectMapper objectMapper = new ObjectMapper();
+    private OutputStream outputStream;
+    Repository repository = new Repository();
 
-    public Task getTask(Long idValue, List<Task> tasks) {
-        Task getTask = null;
-        for(Task task : tasks) {
-            if(task.getId() == idValue){
-                getTask = task;
-                break;
-            }
-        }
-        return getTask;
+    public Task getTask(Long idValue) {
+        return repository.findById(idValue);
     }
 
-    public void createTask(Task postTask, List<Task> tasks) {
-        postTask.setId(id++);
-        tasks.add(postTask);
+    public List<Task> getAllTasks() {
+        return repository.findAll();
+    }
+
+    public void createTask(Task postTask) {
+        repository.create(postTask);
     }
 
     public void updateTask(Task updateTask, String title) {
-        updateTask.setTitle(title);
+        repository.update(updateTask, title);
     }
 
-    public void deleteTask(Task deleteTask, List<Task> tasks) {
-        tasks.remove(deleteTask);
+    public void deleteTask(Task deleteTask) {
+        repository.remove(deleteTask);
     }
 
     public void writeContentWithOutputStream(HttpExchange exchange, String content) throws IOException {
@@ -61,4 +57,5 @@ public class Service {
         objectMapper.writeValue(outputStream, task);
         return outputStream.toString();
     }
+
 }

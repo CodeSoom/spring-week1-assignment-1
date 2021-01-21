@@ -12,24 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-enum Status {
-    OK(200), CREATED(201), NO_CONTENT(204), BAD_REQUEST(400), NOT_FOUND(404);
-
-    private final int status;
-    Status(int status) {
-        this.status = status;
-    }
-
-    int getStatus(){
-        return this.status;
-    }
-}
-
 public class DemoHttpHandler implements HttpHandler {
     Controller controller = new Controller();
-    Service service = new Service();
     private ObjectMapper objectMapper = new ObjectMapper();
-    private List<Task> tasks = new ArrayList<>();
     private OutputStream outputStream;
 
     @Override
@@ -47,10 +32,10 @@ public class DemoHttpHandler implements HttpHandler {
         String content = "Hello World";
 
         switch (method) {
-            case "GET" -> controller.requestForGet(path, tasks, exchange);
-            case "POST" -> controller.requestForPost(path, body, tasks, exchange);
-            case "PUT", "PATCH" -> controller.requestForPutOrPatch(path, body, tasks, exchange);
-            case "DELETE" -> controller.requestForDelete(path, tasks, exchange);
+            case "GET" -> controller.requestForGet(path, exchange);
+            case "POST" -> controller.requestForPost(path, body, exchange);
+            case "PUT", "PATCH" -> controller.requestForPutOrPatch(path, body, exchange);
+            case "DELETE" -> controller.requestForDelete(path, exchange);
         }
 
 //        if(method.equals("GET")) {
