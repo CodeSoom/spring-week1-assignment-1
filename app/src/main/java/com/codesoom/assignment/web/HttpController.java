@@ -1,6 +1,8 @@
 package com.codesoom.assignment.web;
 
+import java.util.Optional;
+
 @FunctionalInterface
 public interface HttpController {
-    public HttpResponse process(HttpRequest request) throws Exception;
+    public Optional<HttpResponse> process(HttpRequest request);
 }

@@ -36,14 +36,8 @@ public class WebHandler implements HttpHandler {
             .filter(
                 it -> it.pattern.isMatched(request)
             ).findFirst()
-            .map(
-                it -> {
-                    try {
-                        return it.controller.process(request);
-                    } catch (Exception e) {
-                        return new HttpResponse(500, "Server error");
-                    }
-                }
+            .flatMap(
+                it -> it.controller.process(request)
             );
 
         writeHttpResponse(exchange, response.orElse(new HttpResponse(404, "Not Found")));
@@ -75,7 +69,7 @@ public class WebHandler implements HttpHandler {
         ));
         mappingList.add(new Mapping(
                 new ExpectRequestPattern("GET", "/"),
-                (request -> new HttpResponse(200, "Welcome to Las's service!"))
+                (request -> Optional.of(new HttpResponse(200, "Welcome to Las's service!")))
         ));
 
         return mappingList;

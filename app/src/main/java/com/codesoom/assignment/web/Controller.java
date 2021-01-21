@@ -2,7 +2,6 @@ package com.codesoom.assignment.web;
 
 import com.codesoom.assignment.application.TaskApplicationService;
 import com.codesoom.assignment.application.TaskJsonTransfer;
-import com.codesoom.assignment.domain.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.util.Optional;
@@ -16,51 +15,56 @@ public class Controller {
         this.taskApplicationService = taskApplicationService;
     }
 
-    HttpResponse getTasks(HttpRequest request) throws JsonProcessingException {
-        String content = transfer.taskListToJson(taskApplicationService.getAllTasks());
-        return new HttpResponse(200, content);
+    Optional<HttpResponse> getTasks(HttpRequest request) {
+        return transfer.taskListToJson(taskApplicationService.getAllTasks()).map(
+                it -> new HttpResponse(200, it)
+        );
     }
 
-    HttpResponse getTasksWithId(HttpRequest request) throws JsonProcessingException {
-        Optional<Task> task = taskApplicationService.findTask(request.getTaskId());
-
-        if (task.isEmpty()) {
-            return new HttpResponse(404, "Not Found");
-        }
-        String content = transfer.taskToJson(task.orElseThrow());
-        return new HttpResponse(200, content);
+    Optional<HttpResponse> getTasksWithId(HttpRequest request) {
+        return taskApplicationService.findTask(request.getTaskId()).flatMap(
+                it -> transfer.taskToJson(it)
+        ).map(
+                it -> new HttpResponse(200, it)
+        ).or(
+                () -> Optional.of(new HttpResponse(404, "Not Found"))
+        );
     }
 
-    HttpResponse postTask(HttpRequest request) throws JsonProcessingException {
-        Task requestTask = transfer.jsonStringToTask(request.requestBody);
-
-        Long taskId = taskApplicationService.createTask(requestTask.getTitle());
-        Task task = taskApplicationService.findTask(taskId).orElseThrow();
-
-        String content = transfer.taskToJson(task);
-        return new HttpResponse(201, content);
+    Optional<HttpResponse> postTask(HttpRequest request) {
+        return transfer.jsonStringToTask(request.requestBody).map(
+                it -> taskApplicationService.createTask(it.getTitle())
+        ).flatMap(
+                it -> taskApplicationService.findTask(it)
+        ).flatMap(
+                it -> transfer.taskToJson(it)
+        ).map(
+                it -> new HttpResponse(201, it)
+        ).or(
+                () -> Optional.of(new HttpResponse(404, "Not Found"))
+        );
     }
 
-    HttpResponse putTask(HttpRequest request) throws JsonProcessingException {
+    Optional<HttpResponse> putTask(HttpRequest request) {
         Long taskId = request.getTaskId();
-        Task requestTask = transfer.jsonStringToTask(request.requestBody);
-
-        Optional<Task> result = taskApplicationService.updateTaskTitle(taskId, requestTask.getTitle())
-                .flatMap(it -> taskApplicationService.findTask(taskId));
-        if (result.isEmpty()) {
-            return new HttpResponse(404, "Not Found");
-        }
-
-        String content = transfer.taskToJson(result.orElseThrow());
-        return new HttpResponse(200, content);
+        return transfer.jsonStringToTask(request.requestBody).map(
+                it -> taskApplicationService.updateTaskTitle(taskId, it.getTitle())
+        ).flatMap(
+                it -> taskApplicationService.findTask(taskId)
+        ).flatMap(
+                it -> transfer.taskToJson(it)
+        ).map(
+                it -> new HttpResponse(200, it)
+        ).or(
+                () -> Optional.of(new HttpResponse(404, "Not Found"))
+        );
     }
 
-    HttpResponse deleteTask(HttpRequest request) {
-        Optional<Object> result = taskApplicationService.deleteTask(request.getTaskId());
-
-        if (result.isEmpty()) {
-            return new HttpResponse(404, "Not Found");
-        }
-        return new HttpResponse(204, "Delete");
+    Optional<HttpResponse> deleteTask(HttpRequest request) {
+        return taskApplicationService.deleteTask(request.getTaskId()).map(
+               it -> new HttpResponse(204, "Delete")
+        ).or(
+                () -> Optional.of(new HttpResponse(404, "Not Found"))
+        );
     }
 }

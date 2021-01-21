@@ -15,7 +15,7 @@ public class TaskJsonTransferTest {
     void transferJsonToTask() {
         String jsonString = "{\"title\": \"Play Game\"}";
         assertDoesNotThrow(() -> {
-            Task task = transfer.jsonStringToTask(jsonString);
+            Task task = transfer.jsonStringToTask(jsonString).orElseThrow();
 
             assertNotNull(task);
             assertEquals("Play Game", task.getTitle());
@@ -28,7 +28,7 @@ public class TaskJsonTransferTest {
         Task task = new Task(1L, "Play Game");
 
         assertDoesNotThrow(() -> {
-            String json = transfer.taskToJson(task);
+            String json = transfer.taskToJson(task).orElseThrow();
 
             assertEquals(expectJsonString, json);
         });
@@ -43,7 +43,7 @@ public class TaskJsonTransferTest {
         taskList.add(task);
 
         assertDoesNotThrow(() -> {
-            String json = transfer.taskListToJson(taskList);
+            String json = transfer.taskListToJson(taskList).orElseThrow();
 
             assertEquals(expectJsonString, json);
         });
