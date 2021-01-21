@@ -1,5 +1,7 @@
 package com.codesoom.assignment.handlers;
 
+import com.codesoom.assignment.App.ResultMessage;
+import com.codesoom.assignment.App.HttpStatusCode;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -7,29 +9,30 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 
-import static com.codesoom.assignment.App.STATUS_NOT_FOUND;
-import static com.codesoom.assignment.App.STATUS_OK;
+/**
+ * 루트 도메인으로 들어왔을 경우 실행될 HttpHandler 입니다.
+ * "/"가 아닌 "/tasks" 로 들어오면 {@link TaskHttpHandler} 로 연결됩니다.
+ */
 
 public class RootHttpHandler implements HttpHandler {
 
-    public RootHttpHandler() {
-        System.out.println("RootHttpHandler Created");
-    }
+    /**
+     * 사용자가 Request 를 보내면 실행되는 메서드 입니다.
+     * @param exchange Http 통신을 통해 클라이언트에게 전달 받은 데이터가 들어있습니다.
+     */
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         URI requestURI = exchange.getRequestURI();
         String requestURIPath = requestURI.getPath();
         String requestMethod = exchange.getRequestMethod();
-        System.out.println(requestURIPath);
-        System.out.println(requestMethod);
-        System.out.println("Root");
-        String result = "Welcome!";
+
+        String result = ResultMessage.OK.getMessage();
         if(requestURIPath.equals("/") && requestMethod.equals("GET")){
-            exchange.sendResponseHeaders(STATUS_OK, result.getBytes().length);
+            exchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), result.getBytes().length);
         }else{
-            result = "404 Not Found!";
-            exchange.sendResponseHeaders(STATUS_NOT_FOUND, result.getBytes().length);
+            result = ResultMessage.NOT_FOUND.getMessage();
+            exchange.sendResponseHeaders(HttpStatusCode.NOT_FOUND.getCode(), result.getBytes().length);
         }
 
         OutputStream responseBody = exchange.getResponseBody();

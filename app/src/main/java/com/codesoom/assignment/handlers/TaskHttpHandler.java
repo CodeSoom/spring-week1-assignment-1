@@ -15,12 +15,14 @@ import java.util.stream.Collectors;
 import static com.codesoom.assignment.App.*;
 
 public class TaskHttpHandler implements HttpHandler {
-    List<Task> tasks;
-    ObjectMapper objectMapper = new ObjectMapper();
+    private List<Task> tasks = new ArrayList<Task>();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private int rCode;
 
-    public TaskHttpHandler() {
-        tasks = new ArrayList<Task>();
-    }
+    /**
+     * 사용자가 Request 를 보내면 실행되는 메서드 입니다.
+     * @param exchange Http 통신을 통해 클라이언트에게 전달 받은 데이터가 들어있습니다.
+     */
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -34,61 +36,47 @@ public class TaskHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-
-
-        if(requestMethod.equals("GET")){
-            result = getMapper(requestURIPath);
-            exchange.sendResponseHeaders(STATUS_OK, result.getBytes().length);
-        }else if(requestMethod.equals("POST")) {
-            if(body.isBlank()){
-                result = "Title must not empty!!";
-                exchange.sendResponseHeaders(STATUS_BAD_REQUEST, result.getBytes().length);
-            }else{
-                result = setTask(body);
-                exchange.sendResponseHeaders(STATUS_CREATED, result.getBytes().length);
+        switch (requestMethod) {
+            case "GET":
+                result = getMapper(requestURIPath);
+                break;
+            case "POST":
+                result = postMapper(body);
+                break;
+            case "PUT": {
+                result = putMapper(requestURIPath, body);
+                break;
             }
-        }else if(requestMethod.equals("PUT")){
-            String[] split = requestURIPath.split("/");
-            if(body.isBlank()){
-                result = "Title must not empty!!";
-                exchange.sendResponseHeaders(STATUS_BAD_REQUEST, result.getBytes().length);
-            }else if(split.length > 0 && split.length != 1){
-                System.out.println(split[2]);
-                long parseLong = Long.parseLong(split[2]);
-                result = updateTask(body, parseLong);
-                exchange.sendResponseHeaders(STATUS_OK, result.getBytes().length);
-            }else{
-                result = "Invalid ID!";
-                exchange.sendResponseHeaders(STATUS_BAD_REQUEST, result.getBytes().length);
+            case "DELETE": {
+                result = deleteMapper(requestURIPath);
+                break;
             }
-        }else if(requestMethod.equals("DELETE")){
-            String[] split = requestURIPath.split("/");
-            if(split.length > 0 && split.length != 1){
-                System.out.println(split[2]);
-                long parseLong = Long.parseLong(split[2]);
-                result = deleteTask(body, parseLong);
-                exchange.sendResponseHeaders(STATUS_OK, result.getBytes().length);
-            }else{
-                result = "Invalid ID!";
-                exchange.sendResponseHeaders(STATUS_BAD_REQUEST, result.getBytes().length);
-            }
-        }else{
-            result = "405 Method Not Allowed!";
-            exchange.sendResponseHeaders(STATUS_METHOD_NOT_ALLOWED, result.getBytes().length);
+            default:
+                result = ResultMessage.METHOD_NOT_ALLOWED.getMessage();
+                rCode = HttpStatusCode.METHOD_NOT_ALLOWED.getCode();
+                break;
         }
 
+        exchange.sendResponseHeaders(rCode, result.getBytes().length);
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.write(result.getBytes());
         responseBody.flush();
         exchange.close();
     }
 
+   
+
+
+
     /**
-     * Method Get Mapper
-     * */
+     * 사용자의 RequestMethod 가 GET 이 였을 경우 URIPath 에 따라 필요한 메서드를 실행해주는 분기 메서드 입니다.
+     * @param requestURIPath 사용자가 어떤 URL 로 접속했는지를 나타내주는 String 인자 입니다.
+     * @return 분기를 통해 결과값을 String 으로 리턴합니다.
+     */
 
     private String getMapper(String requestURIPath) throws IOException {
         String result = "";
+        rCode = HttpStatusCode.OK.getCode();
         if(requestURIPath.equals("/tasks")){
             result = getTasks();
         }else if(requestURIPath.contains("/tasks")){
@@ -98,25 +86,87 @@ public class TaskHttpHandler implements HttpHandler {
                 result = getTask(parseLong);
             }else{
                 result = "Wrong argument passed!";
+                rCode = HttpStatusCode.BAD_REQUEST.getCode();
             }
         }
         return result;
     }
 
+
     /**
-     * Get Stored Tasks
-     * */
+     * 사용자의 RequestMethod 가 POST 였을 경우 Body Parameter 의 여부에 따라 필요한 메서드를 실행해주는 분기 메서드 입니다.
+     * @param body 사용자가 Request 로 보낸 Body Parameter 가 String 인자로 들어옵니다.
+     * @return 분기를 통해 결과값을 String 으로 리턴합니다.
+     */
+
+    private String postMapper(String body) throws IOException {
+        String result;
+        if (body.isBlank()) {
+            result = ResultMessage.BAD_REQUEST.getMessage();
+            rCode = HttpStatusCode.BAD_REQUEST.getCode();
+        } else {
+            result = setTask(body);
+        }
+
+        return result;
+    }
+
+    /**
+     * 사용자의 RequestMethod 가 PUT 였을 경우 Body Parameter 의 여부에 따라 필요한 메서드를 실행해주는 분기 메서드 입니다.
+     * @param requestURIPath 사용자가 접속 요청을 보낸 URI 에 path 정보가 String 인자로 들어옵니다.
+     * @param body 사용자가 Request 로 보낸 Body Parameter 가 String 인자로 들어옵니다.
+     * @return 분기를 통해 결과값을 String 으로 리턴합니다.
+     */
+
+    private String putMapper(String requestURIPath, String body) throws IOException {
+        String[] split = requestURIPath.split("/");
+        String result = ResultMessage.BAD_REQUEST.getMessage();
+        rCode = HttpStatusCode.BAD_REQUEST.getCode();
+        if (!body.isBlank() && split.length > 0 && split.length != 1) {
+            long parseLong = Long.parseLong(split[2]);
+            result = updateTask(body, parseLong);
+        }
+
+        return result;
+    }
+
+
+    /**
+     * 사용자의 RequestMethod 가 PUT 였을 경우 Body Parameter 의 여부에 따라 필요한 메서드를 실행해주는 분기 메서드 입니다.
+     * @param requestURIPath 사용자가 접속 요청을 보낸 URI 에 path 정보가 String 인자로 들어옵니다.
+     * @return 분기를 통해 결과값을 String 으로 리턴합니다.
+     */
+
+    private String deleteMapper(String requestURIPath) throws IOException {
+        String result = ResultMessage.BAD_REQUEST.getMessage();
+        rCode = HttpStatusCode.BAD_REQUEST.getCode();
+        String[] split = requestURIPath.split("/");
+        if (split.length > 0 && split.length != 1) {
+            long parseLong = Long.parseLong(split[2]);
+            result = deleteTask(parseLong);
+        }
+        return result;
+    }
+    
+
+    /**
+     * 저장되어있는 전체 Task 를 조회합니다.
+     *
+     * @return 전체 Task 를 String 으로 리턴합니다.
+     */
 
     private String getTasks() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
-        System.out.println(outputStream.toString());
         return outputStream.toString();
     }
 
     /**
-     * Get Stored Task
-     * */
+     * ID 에 해당하는 Task 를 조회합니다.
+     *
+     * @param ID 조회할 Task 와 매칭될 ID 입니다.
+     * @return ID 에 해당하는 Task 를 JSON 형태의 String 으로 리턴합니다.
+     */
 
     private String getTask(long ID) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
@@ -126,45 +176,60 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     /**
-     * Create New Task
-     * */
+     * 새로운 Task 를 생성합니다.
+     *
+     * @param title Task 데이터가 들어있는 JSON 형태의 String 입니다.
+     * @return 전체 Task 를 리턴합니다.
+     */
 
-    private String setTask(String jsonString) throws IOException {
-        Task taskJson = toTask(jsonString);
+    private String setTask(String title) throws IOException {
+        Task taskJson = toTask(title);
         if(tasks.size() > 0){
             taskJson.setId(tasks.get(tasks.size() - 1).getId() + 1L);
         }
+        System.out.println(taskJson);
         tasks.add(taskJson);
+        rCode = HttpStatusCode.CREATED.getCode();
         return getTasks();
     }
 
     /**
-     * Update The Task
-     * */
+     * ID에 해당하는 Task 를 ArrayList 에서 찾아 title 을 업데이트합니다.
+     *
+     * @param title 매칭된 Task 의 변경 될 title 제목입니다.
+     * @param ID ArrayList 에 저장된 Task 를 매칭하기 위한 Key 값입니다.
+     * @return 전체 Task 를 리턴합니다.
+     */
 
-    private String updateTask(String jsonString, long ID) throws IOException {
-        Task taskJson = toTask(jsonString);
+    private String updateTask(String title, long ID) throws IOException {
         if(tasks.size() > 0){
-            tasks.get((int) ID - 1 ).setTitle(taskJson.getTitle());
+            tasks.get((int) ID - 1 ).setTitle(title);
         }
+        rCode = HttpStatusCode.OK.getCode();
         return getTasks();
     }
 
     /**
-     * Delete The Task
-     * */
+     * ID에 해당하는 Task 를 ArrayList 에서 제거합니다.
+     *
+     * @param ID ArrayList 에 저장된 Task 를 매칭하기 위한 Key 값입니다.
+     * @return 전체 Task 를 리턴합니다.
+     */
 
-    private String deleteTask(String jsonString, long ID) throws IOException {
-        Task taskJson = toTask(jsonString);
+    private String deleteTask(long ID) throws IOException {
         if(tasks.size() > 0){
             tasks.remove((int) ID - 1 );
         }
+        rCode = HttpStatusCode.OK.getCode();
         return getTasks();
     }
 
     /**
-     * Converting Json Object to Task
-     * */
+     * 전달 받은 JSON 형태의 문자열을 Jackson 을 사용해 Task 형태로 변환합니다.
+     *
+     * @param content JSON 형태의 String 을 인자로 받습니다.
+     * @return 값을 읽어 Task 를 리턴합니다.
+     */
 
     private Task toTask(String content) throws JsonProcessingException {
         return objectMapper.readValue(content, Task.class);

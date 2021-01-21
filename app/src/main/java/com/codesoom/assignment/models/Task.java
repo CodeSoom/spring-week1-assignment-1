@@ -5,6 +5,8 @@ public class Task {
     private long Id = 1;
     private String Title;
 
+
+
     public long getId() {
         return Id;
     }
@@ -17,8 +19,6 @@ public class Task {
         return Title;
     }
 
-    public void setTitle(String title) {
-        Title = title;
-    }
+    public void setTitle(String title) { Title = title; }
 
 }
