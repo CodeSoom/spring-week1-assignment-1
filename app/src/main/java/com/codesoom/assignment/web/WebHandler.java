@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class WebHandler implements HttpHandler {
@@ -28,26 +29,26 @@ public class WebHandler implements HttpHandler {
                 new InputStreamReader(exchange.getRequestBody()))
                 .lines()
                 .collect(Collectors.joining(""));
+        HttpRequest request = new HttpRequest(path, requestBody);
 
         if (path.contains("/tasks/")) {
-            Long id = parsePathToTaskId(path);
             switch (method) {
                 case "GET":
-                    response = controller.getTasksWithId(id);
+                    response = controller.getTasksWithId(request);
                     break;
                 case "PUT":
-                    response = controller.putTask(id, requestBody);
+                    response = controller.putTask(request);
                     break;
                 case "DELETE":
-                    response = controller.deleteTask(id);
+                    response = controller.deleteTask(request);
                     break;
             }
         }
         if (path.equals("/tasks")) {
             if (method.equals("GET")) {
-                response = controller.getTasks();
+                response = controller.getTasks(request);
             } else if (method.equals("POST")) {
-                response = controller.postTask(requestBody);
+                response = controller.postTask(request);
             }
         }
         if (path.equals("/")) {
@@ -65,10 +66,5 @@ public class WebHandler implements HttpHandler {
         outputStream.write(response.content.getBytes());
         outputStream.flush();
         outputStream.close();
-    }
-
-    private Long parsePathToTaskId(String path) {
-        String resourceId = path.split("/")[2];
-        return (long) Integer.parseInt(resourceId);
     }
 }

@@ -16,13 +16,13 @@ public class Controller {
         this.taskApplicationService = taskApplicationService;
     }
 
-    HttpResponse getTasks() throws JsonProcessingException {
+    HttpResponse getTasks(HttpRequest request) throws JsonProcessingException {
         String content = transfer.taskListToJson(taskApplicationService.getAllTasks());
         return new HttpResponse(200, content);
     }
 
-    HttpResponse getTasksWithId(Long id) throws JsonProcessingException {
-        Optional<Task> task = taskApplicationService.findTask(id);
+    HttpResponse getTasksWithId(HttpRequest request) throws JsonProcessingException {
+        Optional<Task> task = taskApplicationService.findTask(request.getTaskId());
 
         if (task.isEmpty()) {
             return new HttpResponse(404, "Not Found");
@@ -31,8 +31,8 @@ public class Controller {
         return new HttpResponse(200, content);
     }
 
-    HttpResponse postTask(String body) throws JsonProcessingException {
-        Task requestTask = transfer.jsonStringToTask(body);
+    HttpResponse postTask(HttpRequest request) throws JsonProcessingException {
+        Task requestTask = transfer.jsonStringToTask(request.requestBody);
 
         Long taskId = taskApplicationService.createTask(requestTask.getTitle());
         Task task = taskApplicationService.findTask(taskId).orElseThrow();
@@ -41,11 +41,12 @@ public class Controller {
         return new HttpResponse(201, content);
     }
 
-    HttpResponse putTask(Long id, String body) throws JsonProcessingException {
-        Task requestTask = transfer.jsonStringToTask(body);
+    HttpResponse putTask(HttpRequest request) throws JsonProcessingException {
+        Long taskId = request.getTaskId();
+        Task requestTask = transfer.jsonStringToTask(request.requestBody);
 
-        Optional<Task> result = taskApplicationService.updateTaskTitle(id, requestTask.getTitle())
-                .flatMap(it -> taskApplicationService.findTask(id));
+        Optional<Task> result = taskApplicationService.updateTaskTitle(taskId, requestTask.getTitle())
+                .flatMap(it -> taskApplicationService.findTask(taskId));
         if (result.isEmpty()) {
             return new HttpResponse(404, "Not Found");
         }
@@ -54,8 +55,8 @@ public class Controller {
         return new HttpResponse(200, content);
     }
 
-    HttpResponse deleteTask(Long id) {
-        Optional<Object> result = taskApplicationService.deleteTask(id);
+    HttpResponse deleteTask(HttpRequest request) {
+        Optional<Object> result = taskApplicationService.deleteTask(request.getTaskId());
 
         if (result.isEmpty()) {
             return new HttpResponse(404, "Not Found");
