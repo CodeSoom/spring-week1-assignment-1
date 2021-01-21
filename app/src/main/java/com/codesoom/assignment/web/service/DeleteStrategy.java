@@ -1,19 +1,18 @@
-package com.codesoom.assignment.web;
+package com.codesoom.assignment.web.service;
 
 import com.codesoom.assignment.service.TaskService;
 import com.codesoom.assignment.web.models.HttpRequest;
+import com.codesoom.assignment.web.models.HttpResponse;
 import com.codesoom.assignment.web.models.HttpStatusCode;
-import com.codesoom.assignment.web.util.HttpResponseTransfer;
-import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 
 public class DeleteStrategy implements StrategyProcess {
     @Override
-    public void process(HttpRequest httpRequest, HttpExchange httpExchange, TaskService taskService) throws IOException {
+    public HttpResponse process(HttpRequest httpRequest, TaskService taskService) throws IOException {
         long id = parseIdFromPath(httpRequest.getPath());
         taskService.deleteTask(id);
-        HttpResponseTransfer.sendResponse(HttpStatusCode.NO_CONTENT, httpExchange);
+        return new HttpResponse(HttpStatusCode.NO_CONTENT);
     }
 
 }

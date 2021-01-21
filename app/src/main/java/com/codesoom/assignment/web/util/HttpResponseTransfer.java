@@ -1,12 +1,15 @@
 package com.codesoom.assignment.web.util;
 
+import com.codesoom.assignment.web.models.HttpResponse;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
 public class HttpResponseTransfer {
-
+    public static void sendResponse(HttpResponse response, HttpExchange exchange) throws IOException {
+        sendResponse(response.getContent(), response.getCode(), exchange);
+    }
 
     public static void sendResponse(int responseCode, HttpExchange exchange) throws IOException {
         sendResponse("", responseCode, exchange);

@@ -3,7 +3,9 @@ package com.codesoom.assignment.web;
 import com.codesoom.assignment.service.TaskService;
 import com.codesoom.assignment.web.models.HttpRequest;
 import com.codesoom.assignment.web.models.HttpRequestMethod;
+import com.codesoom.assignment.web.models.HttpResponse;
 import com.codesoom.assignment.web.models.HttpStatusCode;
+import com.codesoom.assignment.web.service.StrategyProcess;
 import com.codesoom.assignment.web.util.HttpResponseTransfer;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -12,8 +14,7 @@ import java.util.Map;
 
 public class HttpRequestContext {
 
-    private final StrategyProcess nullStrategy = (httpRequest, httpExchange, taskService) ->
-            HttpResponseTransfer.sendResponse(HttpStatusCode.NOT_FOUND, httpExchange);
+    private final StrategyProcess nullStrategy = (httpRequest, taskService) -> new HttpResponse(HttpStatusCode.NOT_FOUND);
     private final Map<HttpRequestMethod, StrategyProcess> requestStrategyProcessMap;
 
     public HttpRequestContext(Map<HttpRequestMethod, StrategyProcess> requestStrategyProcessMap) {
@@ -32,15 +33,17 @@ public class HttpRequestContext {
         }
 
         StrategyProcess strategy = findStrategy(httpRequest.getMethod());
+        HttpResponse httpResponse;
         try {
-            strategy.process(httpRequest, httpExchange, taskService);
+            httpResponse = strategy.process(httpRequest, taskService);
         } catch (NumberFormatException e) {
-            HttpResponseTransfer.sendResponse(HttpStatusCode.INVALID_PARAMETER, httpExchange);
+            httpResponse = new HttpResponse(HttpStatusCode.INVALID_PARAMETER);
         } catch (IllegalArgumentException e) {
-            HttpResponseTransfer.sendResponse(HttpStatusCode.NOT_FOUND, httpExchange);
+            httpResponse = new HttpResponse(HttpStatusCode.NOT_FOUND);
         } catch (Exception e) {
-            HttpResponseTransfer.sendResponse(HttpStatusCode.INTERNAL_ERROR, httpExchange);
+            httpResponse = new HttpResponse(HttpStatusCode.INTERNAL_ERROR);
         }
+        HttpResponseTransfer.sendResponse(httpResponse, httpExchange);
     }
 
     private StrategyProcess findStrategy(HttpRequestMethod method) {

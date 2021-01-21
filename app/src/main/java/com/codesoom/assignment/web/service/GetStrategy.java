@@ -1,25 +1,27 @@
-package com.codesoom.assignment.web;
+package com.codesoom.assignment.web.service;
 
 import com.codesoom.assignment.service.TaskService;
 import com.codesoom.assignment.util.JsonUtil;
 import com.codesoom.assignment.web.models.HttpRequest;
+import com.codesoom.assignment.web.models.HttpResponse;
 import com.codesoom.assignment.web.models.HttpStatusCode;
-import com.codesoom.assignment.web.util.HttpResponseTransfer;
-import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 
 public class GetStrategy implements StrategyProcess {
     @Override
-    public void process(HttpRequest httpRequest, HttpExchange httpExchange, TaskService taskService) throws IOException {
+    public HttpResponse process(HttpRequest httpRequest, TaskService taskService) throws IOException {
+        HttpResponse response;
+
         if (httpRequest.getPath().equals("/tasks") || httpRequest.getPath().equals("/tasks/")) {
             String responseJson = JsonUtil.toJson(taskService.getTasks());
-            HttpResponseTransfer.sendResponse(responseJson, HttpStatusCode.OK, httpExchange);
+            response = new HttpResponse(responseJson, HttpStatusCode.OK);
         } else {
             long id = parseIdFromPath(httpRequest.getPath());
             String responseJson = JsonUtil.toJson(taskService.getTask(id));
-            HttpResponseTransfer.sendResponse(responseJson, HttpStatusCode.OK, httpExchange);
+            response = new HttpResponse(responseJson, HttpStatusCode.OK);
         }
+        return response;
     }
 
 }
