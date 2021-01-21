@@ -27,7 +27,7 @@ public class MyHttpHandler implements HttpHandler {
 
         System.out.println(method + " " + path);
         String content = "Hello, world";
-        
+
         if (method.equals("GET") && path.equals("/tasks")) {
             content = JsonConverter.tasksToJSON(tasks);
             exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
