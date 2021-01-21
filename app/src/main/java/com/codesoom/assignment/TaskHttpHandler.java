@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 enum HttpStatusCode {
     OK(200),
     Created(201),
+    NoContent(204),
     NotFound(404);
 
     int value;
@@ -169,7 +170,7 @@ public class TaskHttpHandler implements HttpHandler {
             httpStatusCode = result;
 
             switch (result) {
-                case OK:
+                case NoContent:
                     System.out.println("[DELETE] A Task successfully deleted.");
                     break;
                 case NotFound:
@@ -195,7 +196,7 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         tasks.remove(task);
-        return HttpStatusCode.OK;
+        return HttpStatusCode.NoContent;
     }
 
     private HttpStatusCode patchTask(Task task, Task newTask) throws JsonProcessingException {
