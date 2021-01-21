@@ -24,6 +24,10 @@ public class WebHandler implements HttpHandler {
         String method = exchange.getRequestMethod();
 
         HttpResponse response = null;
+        String requestBody = new BufferedReader(
+                new InputStreamReader(exchange.getRequestBody()))
+                .lines()
+                .collect(Collectors.joining(""));
 
         if (method.equals("GET")) {
             if (path.equals("/tasks")) {
@@ -36,21 +40,11 @@ public class WebHandler implements HttpHandler {
             }
         } else if (method.equals("POST")) {
             if (path.equals("/tasks")) {
-
-                String requestBody = new BufferedReader(
-                        new InputStreamReader(exchange.getRequestBody()))
-                        .lines()
-                        .collect(Collectors.joining(""));
                 response = controller.postTask(requestBody);
             }
         } else if (method.equals("PUT")) {
             if (path.contains("/tasks")) {
                 Long taskId = parsePathToTaskId(path);
-
-                String requestBody = new BufferedReader(
-                        new InputStreamReader(exchange.getRequestBody()))
-                        .lines()
-                        .collect(Collectors.joining(""));
                 response = controller.putTask(taskId, requestBody);
             }
         } else if (method.equals("DELETE")) {
