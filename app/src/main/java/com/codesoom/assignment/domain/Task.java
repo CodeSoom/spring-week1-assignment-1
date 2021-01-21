@@ -23,6 +23,6 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Task:"+String.valueOf(id);
+        return "Task:"+ id;
     }
 }
