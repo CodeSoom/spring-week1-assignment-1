@@ -26,8 +26,8 @@ public class DemoHttpHandler implements HttpHandler {
             return;
         }
 
-        TasksHttpRequestMethod tasksHttpRequestMethod = httpRequest.getMethod();
-        HttpResponse response = tasksHttpRequestMethod.processTasks(httpRequest, taskService);
+        HttpRequestProcessor httpRequestProcessor = httpRequest.getMethod();
+        HttpResponse response = httpRequestProcessor.processTasks(httpRequest, taskService);
         sendResponse(exchange, response);
     }
 
