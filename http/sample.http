@@ -18,6 +18,11 @@ GET {{host}}/tasks
 
 ###
 
+GET {{host}}/tasks/a
+
+###
+
+
 GET {{host}}/tasks/1
 
 ###
@@ -40,3 +45,5 @@ DELETE  {{host}}/tasks/1
 ###
 
 GET {{host}}/tasks
+
+###
