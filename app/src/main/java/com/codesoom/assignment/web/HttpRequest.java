@@ -2,9 +2,11 @@ package com.codesoom.assignment.web;
 
 public class HttpRequest {
     String path;
+    String method;
     String requestBody;
 
-    public HttpRequest(String path, String requestBody) {
+    public HttpRequest(String method, String path, String requestBody) {
+        this.method = method;
         this.path = path;
         this.requestBody = requestBody;
     }
