@@ -5,15 +5,9 @@ import java.util.List;
 import java.util.Objects;
 
 import static com.codesoom.assignment.JSONParser.*;
+import static com.codesoom.assignment.TaskManager.*;
 
 public class ResponseHandler {
-    Task getTask(List<Task> tasks, Long taskId) {
-        return tasks.stream()
-                .filter(element -> Objects.equals(taskId, element.getId()))
-                .findFirst()
-                .orElse(new Task());
-    }
-
     public String handle(String method, String path, List<Task> tasks, String body) throws IOException {
         // check wrong path
         if (!path.matches("/tasks/*[0-9]*")) return "Wrong URI path";

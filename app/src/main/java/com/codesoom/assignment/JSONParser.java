@@ -20,10 +20,4 @@ public class JSONParser {
         new ObjectMapper().writeValue(outputStream, tasks);
         return  outputStream.toString();
     }
-
-    static Task toTask(String content, Long id) throws JsonProcessingException {
-        Task task = new ObjectMapper().readValue(content, Task.class);
-        task.setId(id);
-        return task;
-    }
 }
