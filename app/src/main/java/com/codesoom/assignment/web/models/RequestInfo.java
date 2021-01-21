@@ -33,6 +33,14 @@ public class RequestInfo {
         return body;
     }
 
+    public boolean isServerHealthCheck() {
+        return path.equals("/") && method.equals("HEAD");
+    }
+
+    public boolean isInvalidPath() {
+        return !path.startsWith("/tasks");
+    }
+
     @Override
     public String toString() {
         return String.format("RequestInfo { method=%s, path=%s, body=%s }", method, path, body);

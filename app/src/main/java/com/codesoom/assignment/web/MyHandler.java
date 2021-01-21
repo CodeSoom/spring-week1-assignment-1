@@ -22,15 +22,16 @@ public class MyHandler implements HttpHandler {
         RequestInfo requestInfo = new RequestInfo(exchange);
         printRequestInfo(requestInfo);
 
-        if (isInvalidPath(requestInfo.getPath())) {
+        if (requestInfo.isServerHealthCheck()) {
+            sendResponse(200, exchange);
+            return;
+        }
+
+        if (requestInfo.isInvalidPath()) {
             sendResponse("Not Found", 404, exchange);
             return;
         }
         processRequest(requestInfo, exchange);
-    }
-
-    private boolean isInvalidPath(String path) {
-        return !path.startsWith("/tasks");
     }
 
     private void processRequest(RequestInfo requestInfo, HttpExchange exchange) throws IOException {
@@ -48,9 +49,6 @@ public class MyHandler implements HttpHandler {
                     break;
                 case "DELETE":
                     processDelete(requestInfo, exchange);
-                    break;
-                case "HEAD":
-                    sendResponse(200, exchange);
                     break;
                 default:
                     sendResponse("Method Not Allowed", 405, exchange);
