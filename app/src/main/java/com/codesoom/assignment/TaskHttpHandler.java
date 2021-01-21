@@ -10,11 +10,21 @@ import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-class HttpStatusCode {
-    public static final int OK = 200;
-    public static final int NotFound = 404;
+enum HttpStatusCode {
+    OK(200), NotFound(404);
+
+    int value;
+    HttpStatusCode(int value) {
+        this.value = value;
+    }
+
+    int getValue() {
+        return value;
+    }
 }
 
 public class TaskHttpHandler implements HttpHandler {
@@ -30,7 +40,7 @@ public class TaskHttpHandler implements HttpHandler {
         System.out.println(method + " " + path);
 
         String content = "";
-        int httpStatusCode = HttpStatusCode.OK;
+        HttpStatusCode httpStatusCode = HttpStatusCode.OK;
 
         if (path == null) {
             System.out.println("Undefined path...");
@@ -57,7 +67,7 @@ public class TaskHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         if (httpStatusCode != HttpStatusCode.OK) {
-            exchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
+            exchange.sendResponseHeaders(httpStatusCode.getValue(), content.getBytes().length);
             OutputStream outputStream = exchange.getResponseBody();
             outputStream.write(content.getBytes());
             outputStream.flush();
@@ -91,15 +101,15 @@ public class TaskHttpHandler implements HttpHandler {
         // POST
         if (method.equals("POST") && (pathItems.length == 2)) {
             Task task = toTask(body);
-            int result = addTask(task);
+            HttpStatusCode result = addTask(task);
             httpStatusCode = result;
 
             switch (result) {
-                case HttpStatusCode.OK:
+                case OK:
                     content = taskToJSON(task);
                     System.out.println("[POST] A Task successfully added.\n" + content);
                     break;
-                case HttpStatusCode.NotFound:
+                case NotFound:
                     System.out.println("[POST] NotFound Exception thrown...");
                     break;
                 default:
@@ -112,15 +122,15 @@ public class TaskHttpHandler implements HttpHandler {
         if (method.equals("PUT") && (pathItems.length == 3)) {
             Task task = getTask(id);
             Task newTask = toTask(body);
-            int result = updateTask(task, newTask);
+            HttpStatusCode result = updateTask(task, newTask);
             httpStatusCode = result;
 
             switch (result) {
-                case HttpStatusCode.OK:
+                case OK:
                     content = taskToJSON(newTask);
                     System.out.println("[PUT] Task successfully updated.\n" + content);
                     break;
-                case HttpStatusCode.NotFound:
+                case NotFound:
                     System.out.println("[PUT] NotFound Exception thrown...");
                     break;
                 default:
@@ -133,15 +143,15 @@ public class TaskHttpHandler implements HttpHandler {
         if (method.equals("PATCH") && (pathItems.length == 3)) {
             Task task = getTask(id);
             Task newTask = toTask(body);
-            int result = patchTask(task, newTask);
+            HttpStatusCode result = patchTask(task, newTask);
             httpStatusCode = result;
 
             switch (result) {
-                case HttpStatusCode.OK:
+                case OK:
                     content = taskToJSON(newTask);
                     System.out.println("[PATCH] A Task successfully patched.\n" + content);
                     break;
-                case HttpStatusCode.NotFound:
+                case NotFound:
                     System.out.println("[PATCH] NotFound Exception thrown...");
                     break;
                 default:
@@ -153,14 +163,14 @@ public class TaskHttpHandler implements HttpHandler {
         // DELETE
         if (method.equals("DELETE") && (pathItems.length == 3)) {
             Task task = getTask(id);
-            int result = deleteTask(task);
+            HttpStatusCode result = deleteTask(task);
             httpStatusCode = result;
 
             switch (result) {
-                case HttpStatusCode.OK:
+                case OK:
                     System.out.println("[DELETE] A Task successfully deleted.");
                     break;
-                case HttpStatusCode.NotFound:
+                case NotFound:
                     System.out.println("[DELETE] NotFound Exception thrown...");
                     break;
                 default:
@@ -169,7 +179,7 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
-        exchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
+        exchange.sendResponseHeaders(httpStatusCode.getValue(), content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
@@ -177,44 +187,60 @@ public class TaskHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
-    private int deleteTask(Task task) {
-        if (task == null) return HttpStatusCode.NotFound;
+    private HttpStatusCode deleteTask(Task task) {
+        if (task == null) {
+            return HttpStatusCode.NotFound;
+        }
 
         tasks.remove(task);
         return HttpStatusCode.OK;
     }
 
-    private int patchTask(Task task, Task newTask) throws JsonProcessingException {
-        if (task == null) return HttpStatusCode.NotFound;
-        if (newTask == null) return HttpStatusCode.NotFound;
+    private HttpStatusCode patchTask(Task task, Task newTask) throws JsonProcessingException {
+        if (task == null) {
+            return HttpStatusCode.NotFound;
+        }
+        if (newTask == null) {
+            return HttpStatusCode.NotFound;
+        }
 
-        if (task.getTitle() != newTask.getTitle()) {
+        if (!task.getTitle().equals(newTask.getTitle())) {
             task.setTitle(newTask.getTitle());
         }
 
         return HttpStatusCode.OK;
     }
 
-    private int updateTask(Task task, Task newTask) throws JsonProcessingException {
-        if (task == null) return HttpStatusCode.NotFound;
-        if (newTask == null) return HttpStatusCode.NotFound;
+    private HttpStatusCode updateTask(Task task, Task newTask) throws JsonProcessingException {
+        if (task == null) {
+            return HttpStatusCode.NotFound;
+        }
+        if (newTask == null) {
+            return HttpStatusCode.NotFound;
+        }
 
-        if (newTask.getTitle() == null) return HttpStatusCode.NotFound;
+        if (newTask.getTitle() == null) {
+            return HttpStatusCode.NotFound;
+        }
 
         task.setTitle(newTask.getTitle());
 
         return HttpStatusCode.OK;
     }
 
-    private int addTask(Task task) throws JsonProcessingException {
-        if (task == null) return HttpStatusCode.NotFound;
+    private HttpStatusCode addTask(Task task) throws JsonProcessingException {
+        if (task == null) {
+            return HttpStatusCode.NotFound;
+        }
 
         if (task.getId() == null) {
             long id = getNextId();
             task.setId(id);
         }
 
-        if (task.getId() < getNextId()) return HttpStatusCode.NotFound;
+        if (task.getId() < getNextId()) {
+            return HttpStatusCode.NotFound;
+        }
 
         tasks.add(task);
         return HttpStatusCode.OK;
@@ -231,28 +257,33 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private boolean isValidPath(String[] pathItems) {
-        if (pathItems.length < 2) return false;
-        if (pathItems.length > 3) return false;
-        if (!pathItems[0].isBlank()) return false;
-        if (!pathItems[1].equals(MAIN_PATH)) return false;
+        if (pathItems.length < 2) {
+            return false;
+        }
+        if (pathItems.length > 3) {
+            return false;
+        }
+        if (!pathItems[0].isBlank()) {
+            return false;
+        }
+        if (!pathItems[1].equals(MAIN_PATH)) {
+            return false;
+        }
 
         return true;
     }
 
     private Task getTask(int id) throws IOException {
-        Task retTask = null;
+        Optional<Task> task = tasks.stream().filter(i -> i.getId() == id).findFirst();
 
-        for (Task task : tasks) {
-            if (task.getId() == id) {
-                retTask = task;
-                break;
-            }
-        }
-        return retTask;
+        if (task.isEmpty()) return null;
+        return task.get();
     }
 
     private Task toTask(String content) throws JsonProcessingException {
-        if (content.isBlank()) return null;
+        if (content.isBlank()) {
+            return null;
+        }
         return objectMapper.readValue(content, Task.class);
     }
 
