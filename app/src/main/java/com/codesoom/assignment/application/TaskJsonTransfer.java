@@ -33,7 +33,7 @@ public class TaskJsonTransfer {
         try {
             List<JsonTask> jsonTaskList = tasks
                 .stream()
-                .map(t -> new JsonTask(t.getId(), t.getTitle()))
+                .map(it -> new JsonTask(it.getId(), it.getTitle()))
                 .collect(Collectors.toList());
             return Optional.ofNullable(objectMapper.writeValueAsString(jsonTaskList));
         } catch (JsonProcessingException e) {
