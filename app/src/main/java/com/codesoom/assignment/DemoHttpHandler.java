@@ -12,11 +12,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+enum Status {
+    OK(200), CREATED(201), BAD_REQUEST(400), NOT_FOUND(404);
+
+    private final int status;
+    Status(int status) {
+        this.status = status;
+    }
+
+    int getStatus(){
+        return this.status;
+    }
+}
+
 public class DemoHttpHandler implements HttpHandler {
-    static final int OK = 200;
-    static final int CREATED = 201;
-    static final int BAD_REQUEST = 400;
-    static final int NOT_FOUND = 404;
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
     private OutputStream outputStream;
@@ -56,14 +65,14 @@ public class DemoHttpHandler implements HttpHandler {
     public void requestForGet(String path, HttpExchange exchange) throws IOException {
         String content = "";
         if(!path.startsWith("/tasks")) {
-            exchange.sendResponseHeaders(BAD_REQUEST,0);
+            exchange.sendResponseHeaders(Status.BAD_REQUEST.getStatus(),0);
             writeContentWithOutputStream(exchange, "");
             return;
         }
 
         if(path.equals("/tasks")) {
             content = (tasks == null ) ? "[]" : tasksToJson();
-            exchange.sendResponseHeaders(OK,content.getBytes().length);
+            exchange.sendResponseHeaders(Status.OK.getStatus(),content.getBytes().length);
             writeContentWithOutputStream(exchange, content);
             return;
         }
@@ -72,20 +81,20 @@ public class DemoHttpHandler implements HttpHandler {
         Task getTask = getTask(idValue);
 
         if(getTask == null) {
-            exchange.sendResponseHeaders(NOT_FOUND,0);
+            exchange.sendResponseHeaders(Status.NOT_FOUND.getStatus(),0);
             writeContentWithOutputStream(exchange, "");
             return;
         }
 
         content = taskToJson(getTask);
-        exchange.sendResponseHeaders(OK,content.getBytes().length);
+        exchange.sendResponseHeaders(Status.OK.getStatus(),content.getBytes().length);
         writeContentWithOutputStream(exchange, content);
     }
 
     private void requestForPost(String path, String body, HttpExchange exchange) throws IOException {
         String content = "";
         if(!path.startsWith("/tasks")) {
-            exchange.sendResponseHeaders(BAD_REQUEST,0);
+            exchange.sendResponseHeaders(Status.BAD_REQUEST.getStatus(),0);
             writeContentWithOutputStream(exchange, "");
             return;
         }
@@ -93,7 +102,7 @@ public class DemoHttpHandler implements HttpHandler {
         String requestTitle = body.split("\"")[1];
 
         if(!requestTitle.equals("title")) {
-            exchange.sendResponseHeaders(BAD_REQUEST,0);
+            exchange.sendResponseHeaders(Status.BAD_REQUEST.getStatus(),0);
             writeContentWithOutputStream(exchange, "");
             return;
         }
@@ -101,14 +110,14 @@ public class DemoHttpHandler implements HttpHandler {
         Task task = jsonToTask(body);
         createTask(task);
         content = taskToJson(task);
-        exchange.sendResponseHeaders(CREATED,content.getBytes().length);
+        exchange.sendResponseHeaders(Status.CREATED.getStatus(),content.getBytes().length);
         writeContentWithOutputStream(exchange, content);
     }
 
     private void requestForPutOrPatch(String path, String body, HttpExchange exchange) throws IOException {
         String content = " ";
         if(!path.startsWith("/tasks")) {
-            exchange.sendResponseHeaders(BAD_REQUEST,0);
+            exchange.sendResponseHeaders(Status.BAD_REQUEST.getStatus(),0);
             writeContentWithOutputStream(exchange, "");
             return;
         }
@@ -117,7 +126,7 @@ public class DemoHttpHandler implements HttpHandler {
         Task updateTask = getTask(idValue);
 
         if(updateTask == null) {
-            exchange.sendResponseHeaders(NOT_FOUND, 0);
+            exchange.sendResponseHeaders(Status.NOT_FOUND.getStatus(), 0);
             writeContentWithOutputStream(exchange, content);
             return;
         }
@@ -125,14 +134,14 @@ public class DemoHttpHandler implements HttpHandler {
         Task task = jsonToTask(body);
         updateTask(updateTask, task.getTitle());
         content = taskToJson(updateTask);
-        exchange.sendResponseHeaders(OK,content.getBytes().length);
+        exchange.sendResponseHeaders(Status.OK.getStatus(),content.getBytes().length);
         writeContentWithOutputStream(exchange, content);
     }
 
     private void requestForDelete(String path, HttpExchange exchange) throws IOException {
         String content = "";
         if(!path.startsWith("/tasks")) {
-            exchange.sendResponseHeaders(BAD_REQUEST,0);
+            exchange.sendResponseHeaders(Status.BAD_REQUEST.getStatus(),0);
             writeContentWithOutputStream(exchange, "");
             return;
         }
@@ -141,14 +150,14 @@ public class DemoHttpHandler implements HttpHandler {
         Task deleteTask = getTask(idValue);
 
         if(deleteTask==null) {
-            exchange.sendResponseHeaders(NOT_FOUND, 0);
+            exchange.sendResponseHeaders(Status.NOT_FOUND.getStatus(), 0);
             writeContentWithOutputStream(exchange, content);
             return;
         }
 
         deleteTask(deleteTask);
         content = "";
-        exchange.sendResponseHeaders(OK,0);
+        exchange.sendResponseHeaders(Status.OK.getStatus(),0);
         writeContentWithOutputStream(exchange, content);
     }
 
