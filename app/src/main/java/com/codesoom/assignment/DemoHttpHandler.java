@@ -5,12 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
@@ -31,7 +30,13 @@ public class DemoHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
+        InputStream requestBody = exchange.getRequestBody();
+        String body = new BufferedReader(new InputStreamReader(requestBody))
+                .lines()
+                .collect(Collectors.joining("\n"));
+
         System.out.println(method + " " + path);
+        System.out.println(body);
 
         String content = "나는 진정 행복한 부자가 될 것이다.";
 
