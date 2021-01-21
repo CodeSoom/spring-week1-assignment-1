@@ -20,4 +20,9 @@ public class Task {
     public Task updateTaskTitle(String newTitle) {
         return new Task(id, newTitle);
     }
+
+    @Override
+    public String toString() {
+        return "Task:"+String.valueOf(id);
+    }
 }
