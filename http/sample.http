@@ -18,6 +18,11 @@ GET {{host}}/tasks
 
 ###
 
+GET {{host}}/tasks/a
+
+###
+
+
 GET {{host}}/tasks/1
 
 ###
