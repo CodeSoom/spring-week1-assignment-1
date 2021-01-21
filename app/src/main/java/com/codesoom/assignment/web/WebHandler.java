@@ -1,7 +1,6 @@
 package com.codesoom.assignment.web;
 
 import com.codesoom.assignment.application.TaskApplicationService;
-import com.codesoom.assignment.application.TaskJsonTransfer;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -12,14 +11,15 @@ import java.io.OutputStream;
 import java.util.stream.Collectors;
 
 public class WebHandler implements HttpHandler {
-    Controller controller;
+    TaskApplicationService taskApplicationService;
 
     public WebHandler(TaskApplicationService taskApplicationService) {
-        this.controller = new Controller(taskApplicationService);
+        this.taskApplicationService = taskApplicationService;
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
+        Controller controller = new Controller(taskApplicationService);
         String path = exchange.getRequestURI().getPath();
         String method = exchange.getRequestMethod();
 
@@ -29,31 +29,32 @@ public class WebHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining(""));
 
-        if (method.equals("GET")) {
-            if (path.equals("/tasks")) {
-                response = controller.getTasks();
-            } else if (path.contains("/tasks/")) {
-                Long id = parsePathToTaskId(path);
-                response = controller.getTasksWithId(id);
-            } else {
-                response = new HttpResponse(200, "");
+        if (path.contains("/tasks/")) {
+            Long id = parsePathToTaskId(path);
+            switch (method) {
+                case "GET":
+                    response = controller.getTasksWithId(id);
+                    break;
+                case "PUT":
+                    response = controller.putTask(id, requestBody);
+                    break;
+                case "DELETE":
+                    response = controller.deleteTask(id);
+                    break;
             }
-        } else if (method.equals("POST")) {
-            if (path.equals("/tasks")) {
+        }
+        if (path.equals("/tasks")) {
+            if (method.equals("GET")) {
+                response = controller.getTasks();
+            } else if (method.equals("POST")) {
                 response = controller.postTask(requestBody);
             }
-        } else if (method.equals("PUT")) {
-            if (path.contains("/tasks")) {
-                Long taskId = parsePathToTaskId(path);
-                response = controller.putTask(taskId, requestBody);
-            }
-        } else if (method.equals("DELETE")) {
-            if (path.contains("/tasks")) {
-                Long taskId = parsePathToTaskId(path);
-                response = controller.deleteTask(taskId);
-            }
-        } else {
-            response = new HttpResponse(404, "");
+        }
+        if (path.equals("/")) {
+            response = new HttpResponse(200, "Welcome to Las's service!");
+        }
+        if (response == null) {
+            response = new HttpResponse(404, "Not Found");
         }
         writeHttpResponse(exchange, response);
     }
@@ -63,11 +64,11 @@ public class WebHandler implements HttpHandler {
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(response.content.getBytes());
         outputStream.flush();
+        outputStream.close();
     }
 
-    private Long parsePathToTaskId(String path){
+    private Long parsePathToTaskId(String path) {
         String resourceId = path.split("/")[2];
         return (long) Integer.parseInt(resourceId);
     }
-
 }
