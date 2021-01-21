@@ -46,11 +46,11 @@ public class MyHttpHandler implements HttpHandler {
         }
 
         if (method.equals("POST") && path.equals("/tasks")) {
-            content = "create a new task";
             if (Objects.nonNull(body)) {
                 Task task = JsonConverter.toTask(body);
                 task.setId(IdGenerator.generate());
                 tasks.addTask(task);
+                content = JsonConverter.taskToJson(task);
                 exchange.sendResponseHeaders(HttpStatus.CREATE.getCode(), content.getBytes().length);
             }
         }
@@ -58,14 +58,14 @@ public class MyHttpHandler implements HttpHandler {
         if (method.equals("PUT") && pattern.matcher(path).matches()) {
             content = "update a task";
             Long pathVariable = extractPathVariable(path, exchange);
+            Optional<Task> task = tasks.findTask(pathVariable);
 
+            if (task.isEmpty()) {
+                exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
+            }
             if (Objects.nonNull(body)) {
-                Optional<Task> task = tasks.findTask(pathVariable);
-
-                if (task.isEmpty()) {
-                    exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
-                }
                 task.get().setTitle(JsonConverter.extractValue(body));
+                content = JsonConverter.taskToJson(task.get());
                 exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
             }
         }
