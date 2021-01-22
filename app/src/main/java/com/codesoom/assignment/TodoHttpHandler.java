@@ -52,11 +52,11 @@ public class TodoHttpHandler implements HttpHandler {
 
     private String processDeleteRequest(HttpExchange exchange) {
         String path = exchange.getRequestURI().getPath();
-        if(!hasNumberParameter(path)){
+        if (!hasNumberParameter(path)) {
             statusCode = HttpStatus.NOT_FOUND;
             return "";
         }
-        inputId=extractNumber(path);
+        inputId = extractNumber(path);
         if (!hasId(inputId)) {
             statusCode = HttpStatus.NOT_FOUND;
             return "";
@@ -67,7 +67,7 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private long extractNumber(String path) {
-        path=path.replace("/tasks/", "");
+        path = path.replace("/tasks/", "");
         if (path.matches("^[0-9]+$")) {
             return Long.parseLong(path);
         }
@@ -77,12 +77,12 @@ public class TodoHttpHandler implements HttpHandler {
     private String processPutAndPatchRequest(HttpExchange exchange) throws IOException {
         String body = getStringBody(exchange);
         String path = exchange.getRequestURI().getPath();
-        if (!hasNumberParameter(path) ) {
+        if (!hasNumberParameter(path)) {
             statusCode = HttpStatus.NOT_FOUND;
             return "";
         }
-        inputId=extractNumber(path);
-        if (!hasId(inputId) ) {
+        inputId = extractNumber(path);
+        if (!hasId(inputId)) {
             statusCode = HttpStatus.NOT_FOUND;
             return "";
         }
@@ -113,7 +113,7 @@ public class TodoHttpHandler implements HttpHandler {
             statusCode = HttpStatus.OK;
             return taskToJson();
         }
-        inputId=extractNumber(path);
+        inputId = extractNumber(path);
         if (!hasId(inputId)) {
             statusCode = HttpStatus.NOT_FOUND;
             return "";
@@ -138,9 +138,8 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private boolean hasNumberParameter(String path) {
-        path=path.replace("/tasks/", "");
+        path = path.replace("/tasks/", "");
         if (path.matches("^[0-9]+$")) {
-            inputId = Long.parseLong(path);
             return true;
         }
         return false;
