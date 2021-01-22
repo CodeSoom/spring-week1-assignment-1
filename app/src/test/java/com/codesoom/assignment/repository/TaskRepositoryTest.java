@@ -22,7 +22,7 @@ class TaskRepositoryTest {
 
     @Test
     void addTask() {
-        Long id = idGenerator.getId();
+        Long id = idGenerator.newId();
         Task task = new Task(id, "do something1!");
 
         taskRepository.save(task);
