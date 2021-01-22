@@ -279,7 +279,7 @@ public class TaskHttpHandler implements HttpHandler {
         return lastId + 1;
     }
 
-    private boolean isValidPath(String[] pathItems) {
+    public boolean isValidPath(String[] pathItems) {
         if (pathItems.length != VALID_PATH_LENGTH_WITHOUT_ID && pathItems.length != VALID_PATH_LENGTH_WITH_ID) {
             return false;
         }
