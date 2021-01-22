@@ -15,7 +15,8 @@ public class TaskRepository {
     }
 
     public Task createNewTask(Task newTask) {
-        newTask.setId(sequence++);
+        newTask.setId(sequence);
+        sequence = sequence + 1;
         newTask.setTitle(newTask.getTitle());
         taskStore.put(newTask.getId(), newTask);
         System.out.println("새로운 Task 추가 완료 : " + "id=" + newTask.getId() + "/ title=" + newTask.getTitle());
