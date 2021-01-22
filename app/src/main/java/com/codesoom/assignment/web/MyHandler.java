@@ -1,20 +1,22 @@
 package com.codesoom.assignment.web;
 
-import com.codesoom.assignment.service.TaskService;
 import com.codesoom.assignment.web.models.HttpRequest;
+import com.codesoom.assignment.web.models.HttpStatusCode;
+import com.codesoom.assignment.web.util.HttpResponseTransfer;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 public class MyHandler implements HttpHandler {
+    private final Map<String, HttpRequestContextBase> requestContextMap = new HashMap<>();
 
-    private final TaskService taskService;
-    private final HttpRequestContext requestContext;
-
-    public MyHandler(TaskService taskService, HttpRequestContext requestContext) {
-        this.taskService = taskService;
-        this.requestContext = requestContext;
+    public void addRequestContext(String path, HttpRequestContextBase httpRequestContext) {
+        requestContextMap.put(path, httpRequestContext);
+        System.out.println("Added new context at - " + path);
     }
 
     @Override
@@ -22,11 +24,23 @@ public class MyHandler implements HttpHandler {
         HttpRequest httpRequest = new HttpRequest(exchange);
         printHttpRequest(httpRequest);
 
-        requestContext.processRequest(httpRequest, exchange, taskService);
+        if (httpRequest.isServerHealthCheck()) {
+            HttpResponseTransfer.sendResponse(HttpStatusCode.OK, exchange);
+            return;
+        }
+
+        Optional<HttpRequestContextBase> matchedContext = requestContextMap.entrySet().stream()
+                .filter(entry -> httpRequest.getPath().startsWith(entry.getKey())).map(Map.Entry::getValue).findFirst();
+
+        if (matchedContext.isEmpty()) {
+            HttpResponseTransfer.sendResponse(HttpStatusCode.NOT_FOUND, exchange);
+            return;
+        }
+
+        matchedContext.get().processHttpRequest(httpRequest, exchange);
     }
 
     private void printHttpRequest(HttpRequest httpRequest) {
         System.out.println("Received new request - " + httpRequest.toString());
     }
-
 }
