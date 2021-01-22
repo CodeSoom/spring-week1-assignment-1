@@ -2,7 +2,9 @@ package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TaskRepository {
@@ -31,5 +33,9 @@ public class TaskRepository {
     public void updateTaskTitle(Long idForUpdateTask, Task updateTaks) {
         taskStore.replace(idForUpdateTask, updateTaks);
         System.out.println("Task 수정 완료");
+    }
+
+    public List<Task> findAll() {
+        return new ArrayList<>(taskStore.values());
     }
 }

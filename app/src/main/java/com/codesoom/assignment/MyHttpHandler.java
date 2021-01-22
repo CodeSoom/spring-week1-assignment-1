@@ -6,6 +6,7 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 import static com.codesoom.assignment.HttpStatusCode.*;
 
@@ -28,6 +29,9 @@ public class MyHttpHandler implements HttpHandler {
                     System.out.println("GET : " + httpRequest.toString()); // 확인용
                     // /tasks만 입력했을 경우 (아이디로 검색하지 않고 전체 목록 얻을 때)
                     if (httpRequest.hasPath().equals("/tasks")) {
+                        GETAllTaskList();
+                        content = JSONConverter.tasksToJSON(TaskRepository.getTaskStore());
+                        response(HTTP_OK, content, exchange);
                         break;
                     }
                     break;
@@ -129,4 +133,7 @@ public class MyHttpHandler implements HttpHandler {
         return false;
     }
 
+    private List<Task> GETAllTaskList() {
+        return taskRepository.findAll();
+    }
 }
