@@ -77,27 +77,8 @@ public class TaskHttpHandler implements HttpHandler {
             return;
         }
 
-        // PUT
-        if (method.equals("PUT") && (pathItems.length == VALID_PATH_LENGTH_WITH_ID)) {
-            Task task = getTask(id);
-            Task newTask = toTask(body);
-            HttpStatusCode result = updateTask(task, newTask);
-            httpStatusCode = result;
-
-            switch (result) {
-                case OK:
-                    content = taskToJSON(newTask);
-                    System.out.println("[PUT] Task successfully updated.\n" + content);
-                    break;
-                case NotFound:
-                    System.out.println("[PUT] NotFound Exception thrown...");
-                    break;
-                default:
-                    System.out.println("[PUT] Unhandled Exception thrown...");
-                    break;
-            }
-
-            sendHttpResponse(exchange, httpStatusCode, content);
+        if (method.equals("PUT")) {
+            put(exchange, pathItems.length, id, body);
             return;
         }
 
@@ -148,6 +129,28 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         sendHttpResponse(exchange, httpStatusCode, content);
+    }
+
+    private void put(HttpExchange exchange, int length, int id, String body) throws IOException {
+        if (length == VALID_PATH_LENGTH_WITHOUT_ID) {
+            sendHttpResponse(exchange, HttpStatusCode.NotFound, "");
+            System.out.println("[PUT] NotFound Exception thrown...");
+            return;
+        }
+
+        Task task = getTask(id);
+        Task newTask = toTask(body);
+        boolean isUpdated = updateTask(task, newTask);
+
+        if (!isUpdated) {
+            sendHttpResponse(exchange, HttpStatusCode.NotFound, "");
+            System.out.println("[PUT] NotFound Exception thrown...");
+            return;
+        }
+
+        String taskJson = taskToJSON(newTask);
+        sendHttpResponse(exchange, HttpStatusCode.OK, taskJson);
+        System.out.println("[PUT] A Task successfully updated.\n" + taskJson);
     }
 
     private void post(HttpExchange exchange, int length, String body) throws IOException {
@@ -226,21 +229,21 @@ public class TaskHttpHandler implements HttpHandler {
         return HttpStatusCode.OK;
     }
 
-    private HttpStatusCode updateTask(Task task, Task newTask) throws JsonProcessingException {
+    private boolean updateTask(Task task, Task newTask) throws JsonProcessingException {
         if (task == null) {
-            return HttpStatusCode.NotFound;
+            return false;
         }
         if (newTask == null) {
-            return HttpStatusCode.NotFound;
+            return false;
         }
 
         if (newTask.getTitle() == null) {
-            return HttpStatusCode.NotFound;
+            return false;
         }
 
         task.setTitle(newTask.getTitle());
 
-        return HttpStatusCode.OK;
+        return true;
     }
 
     private boolean addTask(Task task) throws JsonProcessingException {
