@@ -261,6 +261,7 @@ public class TaskHttpHandler implements HttpHandler {
             task.setId(id);
         }
 
+        // Id of the task to be added should be larger than the last id of current tasks
         if (task.getId() < getNextId()) {
             return false;
         }
