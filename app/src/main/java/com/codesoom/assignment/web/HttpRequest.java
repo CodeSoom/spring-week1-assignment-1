@@ -42,5 +42,4 @@ public class HttpRequest {
     public String toString() {
         return String.format("RequestInfo { method=%s, path=%s, body=%s }", method, path, body);
     }
-
 }

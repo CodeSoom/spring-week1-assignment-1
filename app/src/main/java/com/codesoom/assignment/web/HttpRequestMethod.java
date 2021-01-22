@@ -17,5 +17,4 @@ public enum HttpRequestMethod {
         }
         return NONE;
     }
-
 }

@@ -20,5 +20,4 @@ public class HttpResponse {
     public String getContent() {
         return content;
     }
-
 }

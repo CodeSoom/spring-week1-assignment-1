@@ -11,5 +11,4 @@ public class IdGenerator {
     public long generateNewTaskId() {
         return idCounter++;
     }
-
 }
