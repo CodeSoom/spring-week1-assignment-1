@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.sql.SQLOutput;
 
 /**
  * 1. Create HttpServer
@@ -20,8 +21,7 @@ public class App {
         try {
             InetSocketAddress address = new InetSocketAddress(PORT_NUMBER);
             HttpServer server = HttpServer.create(address, 0);
-            server.createContext("/tasks", new TaskHttpHandler());
-            server.createContext("/", new BasicHttpHandler());
+            server.createContext("/", new TaskHttpHandler());
             server.start();
         } catch (IOException e) {
             e.printStackTrace();

@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 
+
 public class TaskHttpHandler implements HttpHandler {
 
     private TaskController controller = new TaskController();
@@ -17,14 +18,20 @@ public class TaskHttpHandler implements HttpHandler {
         switch (method){
             case "GET" :
                 controller.getController(httpExchange);
+                break;
             case "POST" :
                 controller.postController(httpExchange);
+                break;
             case "PUT" :
                 controller.putController(httpExchange);
+                break;
             case "PATCH" :
                 controller.patchController(httpExchange);
+                break;
             case "DELETE" :
                 controller.deleteController(httpExchange);
+                break;
+            default:
         }
     }
 }
