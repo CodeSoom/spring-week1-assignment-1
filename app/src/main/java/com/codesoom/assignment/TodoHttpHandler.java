@@ -15,9 +15,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
-    private Map<Long, Task> taskMap = new HashMap<>();
-    private ObjectMapper mapper = new ObjectMapper();
-    private long inputId;
+    private final Map<Long, Task> taskMap = new HashMap<>();
+    private final ObjectMapper mapper = new ObjectMapper();
     private long lastTaskId = 1L;
 
     @Override
@@ -44,23 +43,23 @@ public class TodoHttpHandler implements HttpHandler {
             case "DELETE":
                 return processDeleteRequest(exchange);
             case "HEAD":
-                return new Response(HttpStatus.OK,"");
+                return new Response(HttpStatus.OK, "");
             default:
-                return new Response(HttpStatus.METHOD_NOT_ALLOWED,"");
+                return new Response(HttpStatus.METHOD_NOT_ALLOWED, "");
         }
     }
 
     private Response processDeleteRequest(HttpExchange exchange) {
         String path = exchange.getRequestURI().getPath();
         if (!hasNumberParameter(path)) {
-            return new Response(HttpStatus.NOT_FOUND,"");
+            return new Response(HttpStatus.NOT_FOUND, "");
         }
-        inputId = extractNumber(path);
+        long inputId = extractNumber(path);
         if (!hasId(inputId)) {
-            return new Response(HttpStatus.NOT_FOUND,"");
+            return new Response(HttpStatus.NOT_FOUND, "");
         }
         taskMap.remove(inputId);
-        return new Response(HttpStatus.NO_CONTENT,"");
+        return new Response(HttpStatus.NO_CONTENT, "");
     }
 
     private long extractNumber(String path) {
@@ -75,22 +74,22 @@ public class TodoHttpHandler implements HttpHandler {
         String body = getStringBody(exchange);
         String path = exchange.getRequestURI().getPath();
         if (!hasNumberParameter(path)) {
-            return new Response(HttpStatus.NOT_FOUND,"");
+            return new Response(HttpStatus.NOT_FOUND, "");
         }
-        inputId = extractNumber(path);
+        long inputId = extractNumber(path);
         if (!hasId(inputId)) {
-            return new Response(HttpStatus.NOT_FOUND,"");
+            return new Response(HttpStatus.NOT_FOUND, "");
         }
         Task task = jsonToTask(body, inputId);
         taskMap.put(inputId, task);
-        return new Response(HttpStatus.OK,taskToJson(inputId));
+        return new Response(HttpStatus.OK, taskToJson(inputId));
     }
 
     private Response processPostRequest(HttpExchange exchange) throws IOException {
         String body = getStringBody(exchange);
         Task task = jsonToTask(body);
         taskMap.put(lastTaskId, task);
-        return new Response(HttpStatus.CREATED,taskToJson(lastTaskId++));
+        return new Response(HttpStatus.CREATED, taskToJson(lastTaskId++));
     }
 
     private String getStringBody(HttpExchange exchange) {
@@ -105,7 +104,7 @@ public class TodoHttpHandler implements HttpHandler {
         if (!hasNumberParameter(path)) {
             return new Response(HttpStatus.OK, taskToJson());
         }
-        inputId = extractNumber(path);
+        long inputId = extractNumber(path);
         if (!hasId(inputId)) {
             return new Response(HttpStatus.NOT_FOUND, "");
         }

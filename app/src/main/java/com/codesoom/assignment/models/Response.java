@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 public class Response {
-    private int statusCode;
-    private String content;
+    private final int statusCode;
+    private final String content;
 
     public Response(int statusCode, String content) {
         this.statusCode = statusCode;
