@@ -1,19 +1,16 @@
-package com.codesoom.assignment.web;
+package com.codesoom.assignment.web.user;
 
-import com.codesoom.assignment.models.Task;
-import com.codesoom.assignment.service.TaskService;
-import com.codesoom.assignment.util.JsonUtil;
-import com.codesoom.assignment.web.models.HttpRequestMethod;
-import com.codesoom.assignment.web.models.HttpResponse;
-import com.codesoom.assignment.web.models.HttpStatusCode;
-import com.codesoom.assignment.web.service.RequestControllable;
+import com.codesoom.assignment.domain.User;
+import com.codesoom.assignment.application.user.UserService;
+import com.codesoom.assignment.application.JsonUtil;
+import com.codesoom.assignment.web.*;
 
-public class TaskHttpRequestContext extends HttpRequestContextBase {
-    public static final String BASE_PATH = "/tasks";
-    private final TaskService taskService;
+public class UserHttpRequestContext extends HttpRequestContextBase {
+    public static final String BASE_PATH = "/users";
+    private final UserService userService;
 
-    public TaskHttpRequestContext(TaskService taskService) {
-        this.taskService = taskService;
+    public UserHttpRequestContext(UserService userService) {
+        this.userService = userService;
         requestControllerMap.put(HttpRequestMethod.GET, getTaskRequestController());
         requestControllerMap.put(HttpRequestMethod.POST, postTaskRequestController());
         requestControllerMap.put(HttpRequestMethod.PUT, updateTaskRequestController());
@@ -26,11 +23,11 @@ public class TaskHttpRequestContext extends HttpRequestContextBase {
             HttpResponse response;
 
             if (isRequestTaskList(httpRequest.getPath())) {
-                String responseJson = JsonUtil.toJson(taskService.getTasks());
+                String responseJson = JsonUtil.toJson(userService.getUsers());
                 response = new HttpResponse(responseJson, HttpStatusCode.OK);
             } else {
                 long id = parseIdFromPath(httpRequest.getPath());
-                String responseJson = JsonUtil.toJson(taskService.getTask(id));
+                String responseJson = JsonUtil.toJson(userService.getUser(id));
                 response = new HttpResponse(responseJson, HttpStatusCode.OK);
             }
             return response;
@@ -39,9 +36,9 @@ public class TaskHttpRequestContext extends HttpRequestContextBase {
 
     private RequestControllable postTaskRequestController() {
         return httpRequest -> {
-            Task task = JsonUtil.toTask(httpRequest.getBody());
-            Task createdTask = taskService.createNewTask(task.getTitle());
-            String responseJson = JsonUtil.toJson(createdTask);
+            User user = JsonUtil.toUser(httpRequest.getBody());
+            User createdUser = userService.createNewUsers(user.getName(), user.getAge());
+            String responseJson = JsonUtil.toJson(createdUser);
             return new HttpResponse(responseJson, HttpStatusCode.CREATED);
         };
     }
@@ -49,8 +46,8 @@ public class TaskHttpRequestContext extends HttpRequestContextBase {
     private RequestControllable updateTaskRequestController() {
         return httpRequest -> {
             long id = parseIdFromPath(httpRequest.getPath());
-            Task task = JsonUtil.toTask(httpRequest.getBody());
-            Task updatedTask = taskService.updateTask(id, task.getTitle());
+            User user = JsonUtil.toUser(httpRequest.getBody());
+            User updatedTask = userService.updateUser(id, user.getName(), user.getAge());
             String responseJson = JsonUtil.toJson(updatedTask);
             return new HttpResponse(responseJson, HttpStatusCode.OK);
         };
@@ -59,7 +56,7 @@ public class TaskHttpRequestContext extends HttpRequestContextBase {
     private RequestControllable deleteTaskRequestController() {
         return httpRequest ->  {
             long id = parseIdFromPath(httpRequest.getPath());
-            taskService.deleteTask(id);
+            userService.deleteUser(id);
             return new HttpResponse(HttpStatusCode.NO_CONTENT);
         };
     }

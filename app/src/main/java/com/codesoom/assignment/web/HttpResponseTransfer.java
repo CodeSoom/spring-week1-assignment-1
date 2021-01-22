@@ -1,6 +1,5 @@
-package com.codesoom.assignment.web.util;
+package com.codesoom.assignment.web;
 
-import com.codesoom.assignment.web.models.HttpResponse;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package com.codesoom.assignment.web.models;
+package com.codesoom.assignment.web;
 
 public class HttpStatusCode {
     public static final int OK = 200;

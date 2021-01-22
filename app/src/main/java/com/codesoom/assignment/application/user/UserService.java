@@ -1,7 +1,7 @@
-package com.codesoom.assignment.service;
+package com.codesoom.assignment.application.user;
 
-import com.codesoom.assignment.models.Task;
-import com.codesoom.assignment.models.User;
+import com.codesoom.assignment.application.IdGenerator;
+import com.codesoom.assignment.domain.User;
 
 import java.util.*;
 

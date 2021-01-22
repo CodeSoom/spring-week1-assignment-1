@@ -6,8 +6,11 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
+/**
+ * The {@code MyHttpServer} class is HTTP Server
+ */
 public class MyHttpServer {
-    private HttpServer httpServer;
+    private final HttpServer httpServer;
 
     public MyHttpServer(int port) throws IOException {
         InetSocketAddress address = new InetSocketAddress(port);

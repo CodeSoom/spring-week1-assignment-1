@@ -1,7 +1,8 @@
 package com.codesoom.assignment.service;
 
-import com.codesoom.assignment.models.Task;
-import com.codesoom.assignment.service.TaskService;
+import com.codesoom.assignment.application.task.TaskService;
+import com.codesoom.assignment.domain.Task;
+
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

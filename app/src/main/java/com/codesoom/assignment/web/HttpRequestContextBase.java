@@ -1,11 +1,5 @@
 package com.codesoom.assignment.web;
 
-import com.codesoom.assignment.web.models.HttpRequest;
-import com.codesoom.assignment.web.models.HttpRequestMethod;
-import com.codesoom.assignment.web.models.HttpResponse;
-import com.codesoom.assignment.web.models.HttpStatusCode;
-import com.codesoom.assignment.web.service.RequestControllable;
-import com.codesoom.assignment.web.util.HttpResponseTransfer;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;

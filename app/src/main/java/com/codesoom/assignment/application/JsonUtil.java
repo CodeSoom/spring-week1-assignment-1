@@ -1,7 +1,7 @@
-package com.codesoom.assignment.util;
+package com.codesoom.assignment.application;
 
-import com.codesoom.assignment.models.Task;
-import com.codesoom.assignment.models.User;
+import com.codesoom.assignment.domain.Task;
+import com.codesoom.assignment.domain.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

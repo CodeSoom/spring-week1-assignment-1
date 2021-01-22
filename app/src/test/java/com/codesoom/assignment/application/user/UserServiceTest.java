@@ -1,7 +1,7 @@
 package com.codesoom.assignment.service;
 
-import com.codesoom.assignment.models.Task;
-import com.codesoom.assignment.models.User;
+import com.codesoom.assignment.application.user.UserService;
+import com.codesoom.assignment.domain.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

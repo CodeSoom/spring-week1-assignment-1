@@ -1,8 +1,5 @@
 package com.codesoom.assignment.web;
 
-import com.codesoom.assignment.web.models.HttpRequest;
-import com.codesoom.assignment.web.models.HttpStatusCode;
-import com.codesoom.assignment.web.util.HttpResponseTransfer;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 

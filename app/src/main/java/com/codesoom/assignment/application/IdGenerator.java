@@ -1,4 +1,4 @@
-package com.codesoom.assignment.service;
+package com.codesoom.assignment.application;
 
 public class IdGenerator {
     private static final int START_ID = 0;
