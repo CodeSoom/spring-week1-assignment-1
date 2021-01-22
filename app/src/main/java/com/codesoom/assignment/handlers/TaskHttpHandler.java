@@ -179,6 +179,7 @@ public class TaskHttpHandler implements HttpHandler {
         OutputStream outputStream = new ByteArrayOutputStream();
         if(tasks.size() > 0){
             for(Task task : tasks){
+                System.out.println(task.getId());
                 if(task.getId() == ID){
                     objectMapper.writeValue(outputStream, task);
                     responseCode = HttpStatusCode.OK.getCode();
@@ -238,7 +239,7 @@ public class TaskHttpHandler implements HttpHandler {
         if(tasks.size() > 0){
             for(Task task : tasks){
                 if(task.getId() == ID){
-                    tasks.remove(ID);
+                    tasks.remove(task);
                     responseCode = HttpStatusCode.NO_CONTENT.getCode();
                     return "";
                 }
