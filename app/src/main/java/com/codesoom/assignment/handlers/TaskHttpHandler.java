@@ -67,7 +67,6 @@ public class TaskHttpHandler implements HttpHandler {
                     break;
             }
         }
-        System.out.println(responseCode);
         exchange.sendResponseHeaders(responseCode, result.getBytes().length);
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.write(result.getBytes());
@@ -179,7 +178,6 @@ public class TaskHttpHandler implements HttpHandler {
         OutputStream outputStream = new ByteArrayOutputStream();
         if(tasks.size() > 0){
             for(Task task : tasks){
-                System.out.println(task.getId());
                 if(task.getId() == ID){
                     objectMapper.writeValue(outputStream, task);
                     responseCode = HttpStatusCode.OK.getCode();
@@ -205,7 +203,7 @@ public class TaskHttpHandler implements HttpHandler {
         }
         tasks.add(taskJson);
         responseCode = HttpStatusCode.CREATED.getCode();
-        return getTasks();
+        return taskJson.toString();
     }
 
     /**
