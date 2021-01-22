@@ -10,6 +10,7 @@ import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.codesoom.assignment.App.*;
@@ -39,6 +40,7 @@ public class TaskHttpHandler implements HttpHandler {
         String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
+
         if(requestURIPath == null){
             responseCode = HttpStatusCode.NOT_FOUND.getCode();
             result = ResultMessage.NOT_FOUND.getMessage();
@@ -50,7 +52,8 @@ public class TaskHttpHandler implements HttpHandler {
                 case "POST":
                     result = postMapper(body);
                     break;
-                case "PUT": {
+                case "PUT":
+                case "PATCH": {
                     result = putMapper(requestURIPath, body);
                     break;
                 }
@@ -64,8 +67,7 @@ public class TaskHttpHandler implements HttpHandler {
                     break;
             }
         }
-
-
+        System.out.println(responseCode);
         exchange.sendResponseHeaders(responseCode, result.getBytes().length);
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.write(result.getBytes());
@@ -87,8 +89,7 @@ public class TaskHttpHandler implements HttpHandler {
         }else if(requestURIPath.contains("/tasks")){
             String[] split = requestURIPath.split("/");
             if(split.length == 3){
-                long parseLong = Long.parseLong(split[2]);
-                result = getTask(parseLong);
+                result = getTask(extractIDFromBody(requestURIPath));
             }else{
                 result = ResultMessage.BAD_REQUEST.getMessage();
                 responseCode = HttpStatusCode.BAD_REQUEST.getCode();
@@ -109,7 +110,11 @@ public class TaskHttpHandler implements HttpHandler {
             result = ResultMessage.BAD_REQUEST.getMessage();
             responseCode = HttpStatusCode.BAD_REQUEST.getCode();
         } else {
-            result = setTask(body);
+            String title = body;
+            if(title.contains("=")){
+                title = getParameterFromBody(body);
+            }
+            result = setTask(title);
         }
 
         return result;
@@ -125,10 +130,13 @@ public class TaskHttpHandler implements HttpHandler {
     private String putMapper(String requestURIPath, String body) throws IOException {
         String[] split = requestURIPath.split("/");
         String result = ResultMessage.BAD_REQUEST.getMessage();
+        String title = body;
+        if(title.contains("=")){
+            title = getParameterFromBody(body);
+        }
         responseCode = HttpStatusCode.BAD_REQUEST.getCode();
         if (!body.isBlank() && split.length > 0 && split.length != 1) {
-            long parseLong = Long.parseLong(split[2]);
-            result = updateTask(body, parseLong);
+            result = updateTask(title, extractIDFromBody(requestURIPath));
         }
 
         return result;
@@ -145,8 +153,7 @@ public class TaskHttpHandler implements HttpHandler {
         responseCode = HttpStatusCode.BAD_REQUEST.getCode();
         String[] split = requestURIPath.split("/");
         if (split.length > 0 && split.length != 1) {
-            long parseLong = Long.parseLong(split[2]);
-            result = deleteTask(parseLong);
+            result = deleteTask(extractIDFromBody(requestURIPath));
         }
         return result;
     }
@@ -198,7 +205,6 @@ public class TaskHttpHandler implements HttpHandler {
         if(tasks.size() > 0){
             taskJson.setId(tasks.get(tasks.size() - 1).getId() + 1L);
         }
-        System.out.println(taskJson);
         tasks.add(taskJson);
         responseCode = HttpStatusCode.CREATED.getCode();
         return getTasks();
@@ -258,4 +264,33 @@ public class TaskHttpHandler implements HttpHandler {
         return objectMapper.readValue(content, Task.class);
     }
 
+    /**
+     * 전달 받은 JSON 형태의 문자열을 Jackson 을 사용해 Task 형태로 변환합니다.
+     *
+     * @param body "key=value" 형태의 string 을 인자로 받습니다.
+     * @return '=' 을 split 으로 나눠서 배열 인덱스 1번에 담긴 value 를 리턴합니다.
+     */
+
+    private String getParameterFromBody(String body) {
+        String[] split = body.split("=");
+        return split[1];
+    }
+
+    /**
+     * Request 로 전달받은 URI 에서 숫자 ID의 값을 추출합니다.
+     *
+     * @param uri URI 형태의 스트링을 인자로 받습니다.
+     * @return 숫자를 찾으면 해당 숫자를 리턴, 못찾으면 -1 을 리턴합니다.
+     */
+
+    private long extractIDFromBody(String uri) {
+        Pattern pattern = Pattern.compile("[^0-9]");
+        String extractNumber = pattern.matcher(uri).replaceAll("");
+        if(extractNumber.equals("")){
+            return -1;
+        }
+        return Long.parseLong(extractNumber);
+    }
+
 }
+
