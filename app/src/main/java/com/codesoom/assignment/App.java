@@ -16,7 +16,7 @@ public class App {
 
     /** Http Status Code 를 정의합니다. */
     public enum HttpStatusCode {
-        OK(200), CREATED(201), BAD_REQUEST(400), NOT_FOUND(404), METHOD_NOT_ALLOWED(405);
+        OK(200), CREATED(201), NO_CONTENT(204), BAD_REQUEST(400), NOT_FOUND(404), METHOD_NOT_ALLOWED(405);
 
         private final int statusCode;
 
