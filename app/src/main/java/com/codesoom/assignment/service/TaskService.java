@@ -13,7 +13,7 @@ public class TaskService {
 
     public String getTasks() {
         List<Task> tasks = taskRepository.findAll();
-        if (tasks.size() == 0) {
+        if (tasks.isEmpty()) {
             return "[]";
         }
 
