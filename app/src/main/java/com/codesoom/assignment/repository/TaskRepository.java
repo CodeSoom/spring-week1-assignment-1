@@ -19,7 +19,7 @@ public class TaskRepository {
     }
 
     public Task save(Task task) {
-        Long id = idGenerator.getId();
+        Long id = idGenerator.newId();
         task.setId(id);
         taskMap.put(id, task);
 

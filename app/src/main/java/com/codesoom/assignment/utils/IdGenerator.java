@@ -1,12 +1,13 @@
 package com.codesoom.assignment.utils;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public class IdGenerator {
 
-    private Long id = 0L;
+    private static final AtomicLong id = new AtomicLong(0);
 
-    public Long getId() {
-        id++;
-        return id;
+    public Long newId() {
+        return id.incrementAndGet();
     }
 
 }
