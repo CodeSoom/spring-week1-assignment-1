@@ -20,6 +20,73 @@ public class TasksTest {
     }
 
     /**
+     * <p>메소드 : {@code Tasks.handler}</p>
+     * <p>상황 : {@code path}에 id가 없고, {@code Task}가 하나도 없을 때.</p>
+     * <p>기대 : 비어있는 JSON array string 반환.</p>
+     */
+    @Test
+    void handlerGetMethodWithoutIDWithoutTasks() throws JsonProcessingException {
+        final String method = "GET";
+        final String path = "/tasks/";
+
+        Response response = handler.handler(method, path);
+        assertEquals(Response.STATUS_OK, response.statusCode());
+        assertEquals("[]", response.content());
+    }
+
+    /**
+     * <p>메소드 : {@code Tasks.handler}</p>
+     * <p>상황 : {@code path}에 id가 없고, {@code Task}가 있을 때.</p>
+     * <p>기대 : JSON array string 반환.</p>
+     */
+    @Test
+    void handlerGetMethodWithoutIDWithTasks() throws JsonProcessingException {
+        final long id = 1L;
+        final String title = "sample";
+        TaskManager.insert(title);
+
+        final String method = "GET";
+        final String path = "/tasks/";
+
+        Response response = handler.handler(method, path);
+        assertEquals(Response.STATUS_OK, response.statusCode());
+        assertEquals(String.format("[{\"id\":%d,\"title\":\"%s\"}]", id, title), response.content());
+    }
+
+    /**
+     * <p>메소드 : {@code Tasks.handler}</p>
+     * <p>상황 : {@code path}에 id가 있고, {@code Task}가 하나도 없을 때.</p>
+     * <p>기대 : Status Not Found 를 반환.</p>
+     */
+    @Test
+    void handlerGetMethodWithIDWithoutTasks() throws JsonProcessingException {
+        final String method = "GET";
+        final String path = "/tasks/1";
+
+        Response response = handler.handler(method, path);
+        assertEquals(Response.STATUS_NOT_FOUND, response.statusCode());
+    }
+
+    /**
+     * <p>메소드 : {@code Tasks.handler}</p>
+     * <p>상황 : {@code path}에 id가 있고, {@code Task}가 있을 때.</p>
+     * <p>기대 : JSON string 반환.</p>
+     */
+    @Test
+    void handlerGetMethodWithIDWithTasks() throws JsonProcessingException {
+        final long id = 1L;
+        final String title = "sample";
+        TaskManager.insert(title);
+
+        final String method = "GET";
+        final String path = "/tasks/1";
+
+        Response response = handler.handler(method, path);
+        assertEquals(Response.STATUS_OK, response.statusCode());
+        assertEquals(String.format("{\"id\":%d,\"title\":\"%s\"}", id, title), response.content());
+    }
+
+    /**
      * <p>메소드 : {@code Tasks.get}</p>
      * <p>상황 : {@code Task}가 하나도 없을 때.</p>
      * <p>기대 : 비어있는 JSON array string 반환.</p>

@@ -10,6 +10,41 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 
 public class Tasks {
+    private static final String PATH_SPLITTER = "/";
+    private static final int ID_POSITION = 2;
+
+    public Response handler(String method, String path) throws JsonProcessingException {
+        return handler(method, path, "");
+    }
+
+    public Response handler(String method, String path, String body) throws JsonProcessingException {
+        Long id = getIDFromPath(path);
+
+        switch (method) {
+            case "GET":
+                try {
+                    String content = id == null ? get() : get(id);
+                    return new Response(Response.STATUS_OK, content);
+                } catch (NotExistsIDException e) {
+                    String content = e.toString();
+                    return new Response(Response.STATUS_NOT_FOUND, content);
+                }
+            case "POST":
+            case "PUT":
+            case "PATCH":
+            case "DELETE":
+        }
+        return null;
+    }
+
+    private Long getIDFromPath(String path) {
+        String[] split = path.split(PATH_SPLITTER);
+        if (split.length < ID_POSITION + 1) {
+            return null;
+        }
+        return Long.parseLong(split[ID_POSITION]);
+    }
+
     /**
      * When request GET method without id.
      *
