@@ -10,8 +10,7 @@ import java.io.OutputStream;
 import java.net.URI;
 
 /**
- * 루트 도메인으로 들어왔을 경우 실행될 HttpHandler 입니다.
- * "/"가 아닌 "/tasks" 로 들어오면 {@link TaskHttpHandler} 로 연결됩니다.
+ * 루트 도메인 리퀘스트를 처리합니다.
  */
 
 public class RootHttpHandler implements HttpHandler {
