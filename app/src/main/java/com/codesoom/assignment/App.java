@@ -8,6 +8,7 @@ import java.net.InetSocketAddress;
 
 public class App {
     private static final int PORT = 8000;
+    private static final String TASKS = "/tasks";
 
     public static void main(String[] args) {
         InetSocketAddress address = new InetSocketAddress(PORT);
@@ -16,7 +17,7 @@ public class App {
             HttpServer httpServer = HttpServer.create(address, 0);
             HttpHandler handler = new TasksHttpHandler();
 
-            httpServer.createContext("/", handler);
+            httpServer.createContext(TASKS, handler);
             httpServer.start();
         } catch (IOException e) {
             e.printStackTrace();

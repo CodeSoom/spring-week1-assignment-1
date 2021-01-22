@@ -6,23 +6,23 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.stream.Collectors;
 
-public abstract class HttpRequest {
+public class HttpRequest {
 
-    private TasksHttpRequestMethod method;
+    private RequestMethod method;
 
     private String path;
 
     private String body;
 
     public HttpRequest(String method, URI uri, InputStream inputStream) {
-        this.method = TasksHttpRequestMethod.valueOf(method);
+        this.method = RequestMethod.valueOf(method);
         this.path = uri.getPath();
         this.body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
     }
 
-    public TasksHttpRequestMethod getMethod() {
+    public RequestMethod getMethod() {
         return method;
     }
 
@@ -33,9 +33,5 @@ public abstract class HttpRequest {
     public String getBody() {
         return body;
     }
-
-    public abstract boolean isValidPath();
-
-    public abstract boolean isValidMethod();
 
 }

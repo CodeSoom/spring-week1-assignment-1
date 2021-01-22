@@ -1,7 +1,8 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.models.*;
-import com.codesoom.assignment.service.TaskService;
+import com.codesoom.assignment.controller.TasksController;
+import com.codesoom.assignment.models.HttpRequest;
+import com.codesoom.assignment.models.HttpResponse;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -10,30 +11,14 @@ import java.io.OutputStream;
 
 public class TasksHttpHandler implements HttpHandler {
 
-    private TaskService taskService = new TaskService();
-
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        if (!exchange.getRequestURI().getPath().startsWith(TasksHttpRequest.TASKS)) {
-            sendResponse(exchange, new HttpResponse(HttpStatus.METHOD_NOT_ALLOWED));
-            return;
-        }
+        HttpRequest httpRequest = new HttpRequest(exchange.getRequestMethod(), exchange.getRequestURI(), exchange.getRequestBody());
 
-        HttpRequest httpRequest = new TasksHttpRequest(exchange.getRequestMethod(), exchange.getRequestURI(), exchange.getRequestBody());
+        TasksReflection tasksReflection = new TasksReflection();
+        HttpResponse httpResponse = (HttpResponse) tasksReflection.processMethod(TasksController.class, httpRequest);
 
-        if (!httpRequest.isValidMethod()) {
-            sendResponse(exchange, new HttpResponse(HttpStatus.METHOD_NOT_ALLOWED));
-            return;
-        }
-
-        if (!httpRequest.isValidPath()) {
-            sendResponse(exchange, new HttpResponse(HttpStatus.NOT_FOUND));
-            return;
-        }
-
-        HttpRequestProcessor httpRequestProcessor = httpRequest.getMethod();
-        HttpResponse response = httpRequestProcessor.processTasks(httpRequest, taskService);
-        sendResponse(exchange, response);
+        sendResponse(exchange, httpResponse);
     }
 
     private void sendResponse(HttpExchange exchange, HttpResponse httpResponse) throws IOException {

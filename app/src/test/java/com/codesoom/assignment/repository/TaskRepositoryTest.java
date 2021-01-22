@@ -2,6 +2,7 @@ package com.codesoom.assignment.repository;
 
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.utils.IdGenerator;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,8 +17,13 @@ class TaskRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        taskRepository = new TaskRepository();
+        taskRepository = TaskRepository.getInstance();
         idGenerator = new IdGenerator();
+    }
+
+    @AfterEach
+    void afterEach() {
+        taskRepository.removeAll();
     }
 
     @Test
