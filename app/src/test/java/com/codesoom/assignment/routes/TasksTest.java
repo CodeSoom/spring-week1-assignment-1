@@ -87,6 +87,63 @@ public class TasksTest {
     }
 
     /**
+     * <p>메소드 : {@code Tasks.handler}</p>
+     * <p>상황 : {@code method}가 POST 이고, {@code Task}에 id가 포함되어있지 않고, 중복되는 {@code Task}가 없을 때</p>
+     * <p>기대 : Status Created 반환. {@code Task}가 자동 생성된 id를 가졌는지 확인.</p>
+     */
+    @Test
+    void handlerPostMethodWithoutIDWithoutException() throws JsonProcessingException {
+        final String title = "sample";
+        final String method = "POST";
+        final String path = "/tasks";
+        final String body = String.format("{\"title\":\"%s\"}", title);
+
+        Response response = handler.handler(method, path, body);
+        assertEquals(Response.STATUS_CREATED, response.statusCode());
+
+        // 최초 자동 생성 된 ID는 1이다.
+        TaskManager.find(1);
+    }
+
+    /**
+     * <p>메소드 : {@code Tasks.handler}</p>
+     * <p>상황 : {@code method}가 POST 이고, {@code Task}에 id가 있고, 중복되는 {@code Task}가 없을 때</p>
+     * <p>기대 : Status Created 반환. 입력된 {@code Task}가 존재하는지 확인.</p>
+     */
+    @Test
+    void handlerPostMethodWithIDWithoutException() throws JsonProcessingException {
+        final long id = 101L;
+        final String title = "sample";
+        final String method = "POST";
+        final String path = "/tasks";
+        final String body = String.format("{\"id\":%d,\"title\":\"%s\"}", id, title);
+
+        Response response = handler.handler(method, path, body);
+        assertEquals(Response.STATUS_CREATED, response.statusCode());
+
+        TaskManager.find(id);
+    }
+
+    /**
+     * <p>메소드 : {@code Tasks.handler}</p>
+     * <p>상황 : {@code method}가 POST 이고, {@code Task}에 id가 있고, 중복되는 {@code Task}가 있을 때</p>
+     * <p>기대 : Status Bad Request 반환.</p>
+     */
+    @Test
+    void handlerPostMethodWithIDWithException() throws JsonProcessingException {
+        final long id = 101L;
+        final String title = "sample";
+        final String method = "POST";
+        final String path = "/tasks";
+        final String body = String.format("{\"id\":%d,\"title\":\"%s\"}", id, title);
+
+        TaskManager.insert(new Task(id, title));
+
+        Response response = handler.handler(method, path, body);
+        assertEquals(Response.STATUS_BAD_REQUEST, response.statusCode());
+    }
+
+    /**
      * <p>메소드 : {@code Tasks.get}</p>
      * <p>상황 : {@code Task}가 하나도 없을 때.</p>
      * <p>기대 : 비어있는 JSON array string 반환.</p>

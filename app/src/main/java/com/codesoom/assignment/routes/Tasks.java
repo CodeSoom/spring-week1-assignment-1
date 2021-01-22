@@ -13,6 +13,8 @@ public class Tasks {
     private static final String PATH_SPLITTER = "/";
     private static final int ID_POSITION = 2;
 
+    private final ObjectMapper mapper = new ObjectMapper();
+
     public Response handler(String method, String path) throws JsonProcessingException {
         return handler(method, path, "");
     }
@@ -30,11 +32,18 @@ public class Tasks {
                     return new Response(Response.STATUS_NOT_FOUND, content);
                 }
             case "POST":
+                Task task = mapper.readValue(body, Task.class);
+                try {
+                    post(task);
+                    return new Response(Response.STATUS_CREATED, "");
+                } catch (AlreadyExistsIDException e) {
+                    return new Response(Response.STATUS_BAD_REQUEST, e.toString());
+                }
             case "PUT":
             case "PATCH":
             case "DELETE":
         }
-        return null;
+        return new Response(Response.STATUS_NOT_FOUND, "Not found");
     }
 
     private Long getIDFromPath(String path) {
