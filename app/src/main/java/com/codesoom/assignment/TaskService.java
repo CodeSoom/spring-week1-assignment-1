@@ -34,8 +34,16 @@ public class TaskService {
         return tasksToJSONById(task);
     }
 
-    public String updateTask(HttpExchange httpExchange){
+    public String updateTask(HttpExchange httpExchange) throws IOException {
+        String body = getBody(httpExchange);
+        String title = toTask(body).getTitle();
 
+        String uri = String.valueOf(httpExchange.getRequestURI());
+        int id = getId(uri);
+
+        tasks.get(id-1).updateTitle(title);
+
+        return tasksToJSONById(tasks.get(id-1));
     }
 
     public String deleteTask(HttpExchange httpExchange){

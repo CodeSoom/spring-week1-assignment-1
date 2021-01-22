@@ -18,12 +18,12 @@ public class TaskController {
     public void getController(HttpExchange httpExchange) throws IOException {
         String uri = String.valueOf(httpExchange.getRequestURI());
 
-        if (!taskService.isBodyEmpty(httpExchange)){
+        if (!taskService.isBodyEmpty(httpExchange)) {
             errorController(httpExchange);
             return;
         }
 
-        if (uri.length() <= 7){
+        if (uri.length() <= 7) {
             String body = taskService.getTasks();
             httpExchange.sendResponseHeaders(OK.getStatus(), body.getBytes().length);
             taskService.processBody(httpExchange, body);
@@ -31,7 +31,7 @@ public class TaskController {
         }
         int id = taskService.getId(uri);
 
-        if (id <= taskService.tasks.size() && id >= 1){
+        if (id <= taskService.tasks.size() && id >= 1) {
             String body = taskService.getTaskById(id);
             httpExchange.sendResponseHeaders(OK.getStatus(), body.getBytes().length);
             taskService.processBody(httpExchange, body);
@@ -44,7 +44,7 @@ public class TaskController {
     public void postController(HttpExchange httpExchange) throws IOException {
         String uri = String.valueOf(httpExchange.getRequestURI());
 
-        if (taskService.isBodyEmpty(httpExchange) || uri.length() >= 8){
+        if (taskService.isBodyEmpty(httpExchange) || uri.length() >= 8) {
             errorController(httpExchange);
             return;
         }
@@ -57,42 +57,59 @@ public class TaskController {
     public void putController(HttpExchange httpExchange) throws IOException {
 
         String uri = String.valueOf(httpExchange.getRequestURI());
-        int id = getId(uri);
-        System.out.println(id);
 
-        String body = getBody(httpExchange);
-        String title = toTask(body).getTitle();
+        if (taskService.isBodyEmpty(httpExchange) || uri.length() <= 7) {
+            errorController(httpExchange);
+            return;
+        }
 
-        tasks.get(id-1).updateTitle(title);
+        if (uri.length() >= 8) {
+            int id = taskService.getId(uri);
+            System.out.println(id);
 
-        Task task = tasks.get(id-1);
-        System.out.println(task);
+            if (id <= taskService.tasks.size() && id >= 1) {
+                String body = taskService.updateTask(httpExchange);
+                httpExchange.sendResponseHeaders(OK.getStatus(), body.getBytes().length);
+                taskService.processBody(httpExchange, body);
+                return;
+            }
+            errorController(httpExchange);
 
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutput out = new ObjectOutputStream(bos);
-        out.writeObject(task);
-        byte[] taskBytes = bos.toByteArray();
-        System.out.println(taskBytes);
-
-
-        httpExchange.sendResponseHeaders(OK.getStatus(), 0);
-        OutputStream outputStream = httpExchange.getResponseBody();
-//        outputStream.write(objectBytes);
-        outputStream.flush();
-        outputStream.close();
-
+        }
     }
 
-    public void patchController(HttpExchange httpExchange) {
+    public void patchController(HttpExchange httpExchange) throws IOException {
+
+        String uri = String.valueOf(httpExchange.getRequestURI());
+
+        if (taskService.isBodyEmpty(httpExchange) || uri.length() <= 7){
+            errorController(httpExchange);
+            return;
+        }
+
+        if (uri.length() >= 8) {
+            int id = taskService.getId(uri);
+            System.out.println(id);
+
+            if (id <= taskService.tasks.size() && id >= 1){
+                String body = taskService.updateTask(httpExchange);
+                httpExchange.sendResponseHeaders(OK.getStatus(), body.getBytes().length);
+                taskService.processBody(httpExchange, body);
+                return;
+            }
+            errorController(httpExchange);
+        }
     }
 
-    public void deleteController(HttpExchange httpExchange) {
-    }
+        public void deleteController (HttpExchange httpExchange){
+        }
 
 
-    private void errorController(HttpExchange httpExchange) throws IOException {
-        httpExchange.sendResponseHeaders(INTERNAL_SERVER_ERROR.getStatus(), 0);
-        taskService.processBody(httpExchange, "");
+        public void errorController (HttpExchange httpExchange) throws IOException {
+            httpExchange.sendResponseHeaders(INTERNAL_SERVER_ERROR.getStatus(), 0);
+            taskService.processBody(httpExchange, "");
+        }
+
     }
 
 }
