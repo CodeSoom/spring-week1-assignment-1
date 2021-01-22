@@ -31,14 +31,8 @@ public class TaskService {
         return task;
     }
 
-    public void deleteTask(long id) {
-        Task task = getTaskById(id);
-        tasks.remove(task.getId());
-        System.out.println("Completed to delete task - " + task.toString());
-    }
-
-    private Task getTaskById(long id) throws IllegalArgumentException {
-        return findTaskById(id).orElseThrow(() -> new IllegalArgumentException("Failed to find task (ID: " + id + ")"));
+    public Optional<Task> deleteTask(long id) {
+        return findTaskById(id).map(task -> tasks.remove(task.getId()));
     }
 
     private Optional<Task> findTaskById(long id) {

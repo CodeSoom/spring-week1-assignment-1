@@ -1,4 +1,4 @@
-package com.codesoom.assignment.service;
+package com.codesoom.assignment.application.task;
 
 import com.codesoom.assignment.application.task.TaskService;
 import com.codesoom.assignment.domain.Task;

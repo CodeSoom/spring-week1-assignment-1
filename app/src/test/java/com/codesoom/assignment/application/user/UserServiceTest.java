@@ -1,4 +1,4 @@
-package com.codesoom.assignment.service;
+package com.codesoom.assignment.application.user;
 
 import com.codesoom.assignment.application.user.UserService;
 import com.codesoom.assignment.domain.User;

@@ -5,6 +5,8 @@ import com.codesoom.assignment.application.task.TaskService;
 import com.codesoom.assignment.application.JsonUtil;
 import com.codesoom.assignment.web.*;
 
+import java.util.Optional;
+
 public class TaskHttpRequestContext extends HttpRequestContextBase {
     public static final String BASE_PATH = "/tasks";
     private final TaskService taskService;
@@ -56,8 +58,9 @@ public class TaskHttpRequestContext extends HttpRequestContextBase {
     private RequestControllable deleteTaskRequestController() {
         return httpRequest ->  {
             long id = parseIdFromPath(httpRequest.getPath());
-            taskService.deleteTask(id);
-            return new HttpResponse(HttpStatusCode.NO_CONTENT);
+            return taskService.deleteTask(id)
+                    .map(e ->  new HttpResponse(HttpStatusCode.NO_CONTENT))
+                    .or(() -> Optional.of(new HttpResponse(HttpStatusCode.NO_CONTENT)));
         };
     }
 
