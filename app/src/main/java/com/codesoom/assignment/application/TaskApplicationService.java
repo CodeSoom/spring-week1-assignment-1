@@ -31,14 +31,31 @@ public class TaskApplicationService {
     }
 
     public Optional<Object> updateTaskTitle(Long taskId, String newTitle) {
-        return findTask(taskId).map(
-            it -> it.updateTaskTitle(newTitle)
-        ).map(
-            it -> taskMap.put(taskId, it)
+        Optional<Task> targetTask = findTask(taskId).map(
+                it -> it.updateTaskTitle(newTitle)
         );
+        return putTaskToMap(targetTask);
+    }
+
+    private Optional<Object> putTaskToMap(Optional<Task> task) {
+        if (task.isEmpty()) {
+            return Optional.empty();
+        }
+        Task targetTask = task.get();
+        taskMap.put(targetTask.getId(), targetTask);
+        return Optional.of(new Object());
     }
 
     public Optional<Object> deleteTask(Long taskId) {
-        return findTask(taskId).map(it -> taskMap.remove(it.getId()));
+        return deleteTask(findTask(taskId));
+    }
+
+    private Optional<Object> deleteTask(Optional<Task> task) {
+        if (task.isEmpty()) {
+            return Optional.empty();
+        }
+        Task targetTask = task.get();
+        taskMap.remove(targetTask.getId());
+        return Optional.of(new Object());
     }
 }
