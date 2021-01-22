@@ -51,7 +51,13 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private String processDeleteRequest(HttpExchange exchange) {
-        if (!hasNumberParameter(exchange.getRequestURI().getPath()) || !hasId(inputId)) {
+        String path = exchange.getRequestURI().getPath();
+        if(!hasNumberParameter(path)){
+            statusCode = HttpStatus.NOT_FOUND;
+            return "";
+        }
+        inputId=extractNumber(path);
+        if (!hasId(inputId)) {
             statusCode = HttpStatus.NOT_FOUND;
             return "";
         }
@@ -60,10 +66,23 @@ public class TodoHttpHandler implements HttpHandler {
         return "";
     }
 
+    private long extractNumber(String path) {
+        path=path.replace("/tasks/", "");
+        if (path.matches("^[0-9]+$")) {
+            return Long.parseLong(path);
+        }
+        return -1;
+    }
+
     private String processPutAndPatchRequest(HttpExchange exchange) throws IOException {
         String body = getStringBody(exchange);
         String path = exchange.getRequestURI().getPath();
-        if (!hasNumberParameter(path) || !hasId(inputId)) {
+        if (!hasNumberParameter(path) ) {
+            statusCode = HttpStatus.NOT_FOUND;
+            return "";
+        }
+        inputId=extractNumber(path);
+        if (!hasId(inputId) ) {
             statusCode = HttpStatus.NOT_FOUND;
             return "";
         }
@@ -94,7 +113,7 @@ public class TodoHttpHandler implements HttpHandler {
             statusCode = HttpStatus.OK;
             return taskToJson();
         }
-
+        inputId=extractNumber(path);
         if (!hasId(inputId)) {
             statusCode = HttpStatus.NOT_FOUND;
             return "";
@@ -119,9 +138,9 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private boolean hasNumberParameter(String path) {
-        String[] split = path.split("/tasks/");
-        if (split.length == 2) {
-            inputId = Integer.parseInt(split[1]);
+        path=path.replace("/tasks/", "");
+        if (path.matches("^[0-9]+$")) {
+            inputId = Long.parseLong(path);
             return true;
         }
         return false;
@@ -133,9 +152,9 @@ public class TodoHttpHandler implements HttpHandler {
         return task;
     }
 
-    private Task jsonToTask(String content, long byId) throws JsonProcessingException {
+    private Task jsonToTask(String content, long inputId) throws JsonProcessingException {
         Task task = mapper.readValue(content, Task.class);
-        task.setId(byId);
+        task.setId(inputId);
         return task;
     }
 
