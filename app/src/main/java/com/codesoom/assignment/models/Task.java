@@ -5,8 +5,6 @@ public class Task {
     private long Id = 1;
     private String Title;
 
-
-
     public long getId() {
         return Id;
     }

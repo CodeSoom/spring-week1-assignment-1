@@ -64,10 +64,6 @@ public class TaskHttpHandler implements HttpHandler {
         exchange.close();
     }
 
-   
-
-
-
     /**
      * 사용자의 RequestMethod 가 GET 이 였을 경우 URIPath 에 따라 필요한 메서드를 실행해주는 분기 메서드 입니다.
      * @param requestURIPath 사용자가 어떤 URL 로 접속했는지를 나타내주는 String 인자 입니다.
@@ -91,7 +87,6 @@ public class TaskHttpHandler implements HttpHandler {
         }
         return result;
     }
-
 
     /**
      * 사용자의 RequestMethod 가 POST 였을 경우 Body Parameter 의 여부에 따라 필요한 메서드를 실행해주는 분기 메서드 입니다.
@@ -130,7 +125,6 @@ public class TaskHttpHandler implements HttpHandler {
         return result;
     }
 
-
     /**
      * 사용자의 RequestMethod 가 PUT 였을 경우 Body Parameter 의 여부에 따라 필요한 메서드를 실행해주는 분기 메서드 입니다.
      * @param requestURIPath 사용자가 접속 요청을 보낸 URI 에 path 정보가 String 인자로 들어옵니다.
@@ -147,7 +141,6 @@ public class TaskHttpHandler implements HttpHandler {
         }
         return result;
     }
-    
 
     /**
      * 저장되어있는 전체 Task 를 조회합니다.
