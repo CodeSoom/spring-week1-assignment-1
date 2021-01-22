@@ -190,4 +190,35 @@ public class TasksTest {
         }
         fail();
     }
+
+    /**
+     * <p>메소드 : {@code Tasks.delete}</p>
+     * <p>상황 : 입력된 ID가 존재할 때.</p>
+     * <p>기대 : 에러를 던지지 않음.</p>
+     */
+    @Test
+    void deleteWhenExistID() {
+        final long id = 1L;
+        final String title = "sample";
+
+        TaskManager.insert(new Task(id, title));
+        Tasks.delete(id);
+    }
+
+    /**
+     * <p>메소드 : {@code Tasks.delete}</p>
+     * <p>상황 : 입력된 ID가 존재하지 않을 때.</p>
+     * <p>기대 : {@code NotExistsIDException}을 던짐.</p>
+     */
+    @Test
+    void deleteWhenNotExistID() {
+        final long id = 1L;
+
+        try {
+            Tasks.delete(id);
+        } catch (NotExistsIDException e) {
+            return;
+        }
+        fail();
+    }
 }
