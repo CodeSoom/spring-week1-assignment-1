@@ -37,14 +37,14 @@ public class ResponseHandler {
                 return taskToJSON(selectedTask);
 
             case "POST":
-                if (body.isBlank()) break;
+                if (body.isBlank()) { break; }
 
                 Task newTask = toTask(body, (long) (tasks.size() + 1));
                 tasks.add(newTask);
                 return taskToJSON(tasks.get(tasks.size() - 1));
 
             case "PUT": case "PATCH":
-                if (body.isBlank()) break;
+                if (body.isBlank()) { break; }
 
                 Task editableTask = getTask(tasks, taskId);
                 // TODO: getTask에서 아래의 로직을 처리할 수 있도록 함

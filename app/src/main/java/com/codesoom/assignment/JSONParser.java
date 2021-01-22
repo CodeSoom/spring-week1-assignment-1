@@ -21,6 +21,6 @@ public class JSONParser {
     static String tasksToJSON(List<Task> tasks) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         new ObjectMapper().writeValue(outputStream, tasks);
-        return  outputStream.toString();
+        return outputStream.toString();
     }
 }
