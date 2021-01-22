@@ -225,7 +225,7 @@ public class TaskHttpHandler implements HttpHandler {
      * ID에 해당하는 Task 를 ArrayList 에서 제거합니다.
      *
      * @param ID ArrayList 에 저장된 Task 를 매칭하기 위한 Key 값입니다.
-     * @return 매치되는 ID가 있으면 OK message 를 리턴하고, 없으면 Not Found message 를 리턴합니다.
+     * @return 매치되는 ID가 있으면 해당 task를 지우고 empty string 를 리턴하고, 없으면 Not Found message 를 리턴합니다.
      */
 
     private String deleteTask(long ID) throws IOException {
@@ -233,8 +233,8 @@ public class TaskHttpHandler implements HttpHandler {
             for(Task task : tasks){
                 if(task.getId() == ID){
                     tasks.remove(ID);
-                    responseCode = HttpStatusCode.OK.getCode();
-                    return ResultMessage.OK.getMessage();
+                    responseCode = HttpStatusCode.NO_CONTENT.getCode();
+                    return "";
                 }
             }
         }
