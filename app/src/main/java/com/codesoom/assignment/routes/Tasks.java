@@ -50,8 +50,8 @@ public class Tasks {
             case "POST":
                 Task task = mapper.readValue(body, Task.class);
                 try {
-                    post(task);
-                    return new Response(Response.STATUS_CREATED, task.toString());
+                    Task newTask = post(task);
+                    return new Response(Response.STATUS_CREATED, newTask.toString());
                 } catch (AlreadyExistsIDException e) {
                     return new Response(Response.STATUS_BAD_REQUEST, e.toString());
                 }
@@ -134,11 +134,12 @@ public class Tasks {
      * @param task is want to insert task.
      * @throws AlreadyExistsIDException when task id is already exist.
      */
-    public void post(Task task) throws AlreadyExistsIDException {
+    public Task post(Task task) throws AlreadyExistsIDException {
         if (task.id() == null) {
-            TaskManager.insert(task.title());
+            return TaskManager.insert(task.title());
         } else {
             TaskManager.insert(task);
+            return task;
         }
     }
 
