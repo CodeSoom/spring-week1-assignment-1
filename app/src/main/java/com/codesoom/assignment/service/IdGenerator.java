@@ -2,14 +2,14 @@ package com.codesoom.assignment.service;
 
 public class IdGenerator {
     private static final int START_ID = 0;
-    private int idCnt;
+    private int idCounter;
 
     public IdGenerator() {
-        this.idCnt = START_ID;
+        this.idCounter = START_ID;
     }
 
     public long generateNewTaskId() {
-        return idCnt++;
+        return idCounter++;
     }
 
 }
