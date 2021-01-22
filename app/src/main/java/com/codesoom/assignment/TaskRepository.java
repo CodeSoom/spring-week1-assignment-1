@@ -24,10 +24,11 @@ public class TaskRepository {
 
     public void deleteTask(Long deleteId) {
         taskStore.remove(deleteId);
+        System.out.println("Task 삭제 완료");
     }
 
     public void updateTaskTitle(Long idForUpdateTask, Task updateTaks) {
         taskStore.replace(idForUpdateTask, updateTaks);
-
+        System.out.println("Task 수정 완료");
     }
 }

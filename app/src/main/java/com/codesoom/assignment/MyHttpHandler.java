@@ -7,15 +7,13 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static com.codesoom.assignment.HttpStatusCode.HTTP_CREATED;
-import static com.codesoom.assignment.HttpStatusCode.HTTP_OK;
+import static com.codesoom.assignment.HttpStatusCode.*;
 
 public class MyHttpHandler implements HttpHandler {
 
     JSONConverter jsonConverter = new JSONConverter();
     TaskRepository taskRepository = new TaskRepository();
     private Long idInPath;
-
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -43,8 +41,12 @@ public class MyHttpHandler implements HttpHandler {
                     response(HTTP_OK, content, exchange);
                     break;
                 case "DELETE":
-                    content = DELETETask(httpRequest);
-                    response(HTTP_OK, content, exchange);
+                    if (DELETETask(httpRequest)) { // id가 있고 정상적일 때
+                        content = JSONConverter.tasksToJSON(TaskRepository.getTaskStore());
+                        response(HTTP_OK, content, exchange);
+                        break;
+                    }
+                    response(HTTP_NOT_FOUND, content, exchange); // id 값이 없을 때
                     break;
                 default:
                     System.out.println("default : " + httpRequest.toString()); // 확인용
@@ -92,18 +94,19 @@ public class MyHttpHandler implements HttpHandler {
         return "POSTCreateNewTask() : content 없음";
     }
 
-    private String DELETETask(HttpRequest httpRequest) throws IOException {
+
+    private boolean DELETETask(HttpRequest httpRequest) throws IOException {
         String path = httpRequest.hasPath();
+        Long deleteId = idInPath;
 
-        if (getIdFromPath(httpRequest)) {
-            Long deleteId = idInPath;
+        // path의 id가 storeTaks에 있을 때
+        if (getIdFromPath(httpRequest) && taskRepository.getTaskStore().containsKey(deleteId)) {
             taskRepository.deleteTask(deleteId);
-
-            String content = JSONConverter.tasksToJSON(TaskRepository.getTaskStore());
-            return content;
+            return true;
         }
-        return "DELETETask() : content 없음";
+        return false;
     }
+
 
     private String PUTUpdateTaskTitle(HttpRequest httpRequest) throws IOException {
         String path = httpRequest.hasPath();
