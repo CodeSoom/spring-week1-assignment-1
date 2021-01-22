@@ -37,8 +37,8 @@ public class MyHttpHandler implements HttpHandler {
                     break;
                 case "PUT":
                 case "PATH":
-                    content = PUTUpdateTaskTitle(httpRequest);
-                    response(HTTP_OK, content, exchange);
+//                    content = PUTUpdateTaskTitle(httpRequest);
+//                    response(HTTP_OK, content, exchange);
                     break;
                 case "DELETE":
                     if (DELETETask(httpRequest)) { // id가 있고 정상적일 때
@@ -70,16 +70,25 @@ public class MyHttpHandler implements HttpHandler {
         exchange.sendResponseHeaders(responseCode, content.length());
     }
 
-    private boolean getIdFromPath(HttpRequest httpRequest) {
-        String[] pathSplit = httpRequest.hasPath().split("/tasks/");
-        int pathWhitId = 2;
-        int idIndex = 1;
-        if (pathSplit.length == pathWhitId) {
-            idInPath = Long.parseLong(pathSplit[idIndex]);
-            return true;
+    private boolean pathExists(HttpRequest httpRequest) {
+        String path = httpRequest.hasPath();
+        String idInPath = path.replace("/tasks/", "");
+        if (idInPath == null) {
+            return false;
         }
-        return false;
+        return true;
     }
+
+    private Long getIdFromPath(HttpRequest httpRequest) {
+        if (pathExists(httpRequest)) {
+            String path = httpRequest.hasPath();
+            String id = path.replace("/tasks/", "");
+            long idInPath = Long.parseLong(id);
+            return idInPath;
+        }
+        return 0L;
+    }
+
 
     private String POSTCreateNewTask(HttpRequest httpRequest) throws IOException {
         String path = httpRequest.hasPath();
@@ -96,11 +105,10 @@ public class MyHttpHandler implements HttpHandler {
 
 
     private boolean DELETETask(HttpRequest httpRequest) throws IOException {
-        String path = httpRequest.hasPath();
+        Long idInPath = getIdFromPath(httpRequest);
         Long deleteId = idInPath;
-
         // path의 id가 storeTaks에 있을 때
-        if (getIdFromPath(httpRequest) && taskRepository.getTaskStore().containsKey(deleteId)) {
+        if (pathExists(httpRequest) && taskRepository.getTaskStore().containsKey(deleteId)) {
             taskRepository.deleteTask(deleteId);
             return true;
         }
@@ -108,19 +116,19 @@ public class MyHttpHandler implements HttpHandler {
     }
 
 
-    private String PUTUpdateTaskTitle(HttpRequest httpRequest) throws IOException {
-        String path = httpRequest.hasPath();
-
-        if (getIdFromPath(httpRequest)) {
-            Long idForTaskUpdate = idInPath;
-            Task updateTask = jsonConverter.JSONToTask(httpRequest.hasBody());
-            updateTask.setId(idForTaskUpdate);
-            taskRepository.updateTaskTitle(idForTaskUpdate, updateTask);
-
-            String content = JSONConverter.tasksToJSON(taskRepository.getTaskStore());
-            return content;
-        }
-        return "PUTUpdateTaskTitle() : content 없음";
-    }
+//    private String PUTUpdateTaskTitle(HttpRequest httpRequest) throws IOException {
+//        String path = httpRequest.hasPath();
+//
+//        if (getIdFromPath(httpRequest)) {
+//            Long idForTaskUpdate = idInPath;
+//            Task updateTask = jsonConverter.JSONToTask(httpRequest.hasBody());
+//            updateTask.setId(idForTaskUpdate);
+//            taskRepository.updateTaskTitle(idForTaskUpdate, updateTask);
+//
+//            String content = JSONConverter.tasksToJSON(taskRepository.getTaskStore());
+//            return content;
+//        }
+//        return "PUTUpdateTaskTitle() : content 없음";
+//    }
 
 }
