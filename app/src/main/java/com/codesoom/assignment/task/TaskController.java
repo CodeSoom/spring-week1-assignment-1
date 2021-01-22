@@ -1,9 +1,7 @@
 package com.codesoom.assignment.task;
 
 import com.sun.net.httpserver.HttpExchange;
-
 import java.io.IOException;
-
 import static com.codesoom.assignment.http.HttpStatus.*;
 
 public class TaskController {

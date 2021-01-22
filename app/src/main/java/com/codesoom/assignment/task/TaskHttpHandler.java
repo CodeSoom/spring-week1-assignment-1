@@ -46,9 +46,4 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
     }
-
-
-
-
-
 }
