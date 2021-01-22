@@ -51,7 +51,7 @@ public class Tasks {
                 Task task = mapper.readValue(body, Task.class);
                 try {
                     post(task);
-                    return new Response(Response.STATUS_CREATED, "");
+                    return new Response(Response.STATUS_CREATED, task.toString());
                 } catch (AlreadyExistsIDException e) {
                     return new Response(Response.STATUS_BAD_REQUEST, e.toString());
                 }
