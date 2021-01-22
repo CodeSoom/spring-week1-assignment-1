@@ -82,27 +82,8 @@ public class TaskHttpHandler implements HttpHandler {
             return;
         }
 
-        // PATCH
-        if (method.equals("PATCH") && (pathItems.length == VALID_PATH_LENGTH_WITH_ID)) {
-            Task task = getTask(id);
-            Task newTask = toTask(body);
-            HttpStatusCode result = patchTask(task, newTask);
-            httpStatusCode = result;
-
-            switch (result) {
-                case OK:
-                    content = taskToJSON(newTask);
-                    System.out.println("[PATCH] A Task successfully patched.\n" + content);
-                    break;
-                case NotFound:
-                    System.out.println("[PATCH] NotFound Exception thrown...");
-                    break;
-                default:
-                    System.out.println("[PATCH] Unhandled Exception thrown...");
-                    break;
-            }
-
-            sendHttpResponse(exchange, httpStatusCode, content);
+        if (method.equals("PATCH")) {
+            patch(exchange, pathItems.length, id, body);
             return;
         }
 
@@ -129,6 +110,28 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         sendHttpResponse(exchange, httpStatusCode, content);
+    }
+
+    private void patch(HttpExchange exchange, int length, int id, String body) throws IOException {
+        if (length == VALID_PATH_LENGTH_WITHOUT_ID) {
+            sendHttpResponse(exchange, HttpStatusCode.NotFound, "");
+            System.out.println("[PATCH] NotFound Exception thrown...");
+            return;
+        }
+
+        Task task = getTask(id);
+        Task newTask = toTask(body);
+        boolean isPatched = patchTask(task, newTask);
+
+        if (!isPatched) {
+            sendHttpResponse(exchange, HttpStatusCode.NotFound, "");
+            System.out.println("[PATCH] NotFound Exception thrown...");
+            return;
+        }
+
+        String taskJson = taskToJSON(newTask);
+        sendHttpResponse(exchange, HttpStatusCode.OK, taskJson);
+        System.out.println("[PATCH] A Task successfully patched.\n" + taskJson);
     }
 
     private void put(HttpExchange exchange, int length, int id, String body) throws IOException {
@@ -214,19 +217,19 @@ public class TaskHttpHandler implements HttpHandler {
         return HttpStatusCode.NoContent;
     }
 
-    private HttpStatusCode patchTask(Task task, Task newTask) throws JsonProcessingException {
+    private boolean patchTask(Task task, Task newTask) throws JsonProcessingException {
         if (task == null) {
-            return HttpStatusCode.NotFound;
+            return false;
         }
         if (newTask == null) {
-            return HttpStatusCode.NotFound;
+            return false;
         }
 
         if (!task.getTitle().equals(newTask.getTitle())) {
             task.setTitle(newTask.getTitle());
         }
 
-        return HttpStatusCode.OK;
+        return true;
     }
 
     private boolean updateTask(Task task, Task newTask) throws JsonProcessingException {
