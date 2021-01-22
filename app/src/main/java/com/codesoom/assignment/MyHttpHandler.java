@@ -37,8 +37,12 @@ public class MyHttpHandler implements HttpHandler {
                     break;
                 case "PUT":
                 case "PATH":
-//                    content = PUTUpdateTaskTitle(httpRequest);
-//                    response(HTTP_OK, content, exchange);
+                    if (PUTUpdateTaskTitle(httpRequest)) {
+                        content = JSONConverter.tasksToJSON(TaskRepository.getTaskStore());
+                        response(HTTP_OK, content, exchange);
+                        break;
+                    }
+                    response(HTTP_NOT_FOUND, content, exchange);
                     break;
                 case "DELETE":
                     if (DELETETask(httpRequest)) { // id가 있고 정상적일 때
@@ -89,7 +93,6 @@ public class MyHttpHandler implements HttpHandler {
         return 0L;
     }
 
-
     private String POSTCreateNewTask(HttpRequest httpRequest) throws IOException {
         String path = httpRequest.hasPath();
 
@@ -103,10 +106,9 @@ public class MyHttpHandler implements HttpHandler {
         return "POSTCreateNewTask() : content 없음";
     }
 
-
     private boolean DELETETask(HttpRequest httpRequest) throws IOException {
-        Long idInPath = getIdFromPath(httpRequest);
-        Long deleteId = idInPath;
+        Long deleteId = getIdFromPath(httpRequest);
+
         // path의 id가 storeTaks에 있을 때
         if (pathExists(httpRequest) && taskRepository.getTaskStore().containsKey(deleteId)) {
             taskRepository.deleteTask(deleteId);
@@ -115,20 +117,16 @@ public class MyHttpHandler implements HttpHandler {
         return false;
     }
 
+    private boolean PUTUpdateTaskTitle(HttpRequest httpRequest) throws IOException {
+        Long idForTaskUpdate = getIdFromPath(httpRequest);
 
-//    private String PUTUpdateTaskTitle(HttpRequest httpRequest) throws IOException {
-//        String path = httpRequest.hasPath();
-//
-//        if (getIdFromPath(httpRequest)) {
-//            Long idForTaskUpdate = idInPath;
-//            Task updateTask = jsonConverter.JSONToTask(httpRequest.hasBody());
-//            updateTask.setId(idForTaskUpdate);
-//            taskRepository.updateTaskTitle(idForTaskUpdate, updateTask);
-//
-//            String content = JSONConverter.tasksToJSON(taskRepository.getTaskStore());
-//            return content;
-//        }
-//        return "PUTUpdateTaskTitle() : content 없음";
-//    }
+        if (pathExists(httpRequest) && taskRepository.getTaskStore().containsKey(idForTaskUpdate)) {
+            Task updateTask = jsonConverter.JSONToTask(httpRequest.hasBody());
+            updateTask.setId(idForTaskUpdate);
+            taskRepository.updateTaskTitle(idForTaskUpdate, updateTask);
+            return true;
+        }
+        return false;
+    }
 
 }
