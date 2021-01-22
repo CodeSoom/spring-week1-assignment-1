@@ -37,9 +37,6 @@ public class HttpRequest {
         return path.equals("/") && method.equals(HttpRequestMethod.HEAD);
     }
 
-    public boolean isInvalidPath() {
-        return !path.startsWith("/tasks");
-    }
 
     @Override
     public String toString() {

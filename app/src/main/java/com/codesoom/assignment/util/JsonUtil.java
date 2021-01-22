@@ -1,6 +1,7 @@
 package com.codesoom.assignment.util;
 
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.models.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -15,4 +16,7 @@ public class JsonUtil {
         return objectMapper.readValue(content, Task.class);
     }
 
+    public static User toUser(String content) throws JsonProcessingException {
+        return objectMapper.readValue(content, User.class);
+    }
 }
