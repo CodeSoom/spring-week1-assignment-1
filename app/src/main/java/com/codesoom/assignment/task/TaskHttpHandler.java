@@ -5,33 +5,50 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 
+import static com.codesoom.assignment.http.HttpStatus.*;
+
 
 public class TaskHttpHandler implements HttpHandler {
 
-    private TaskController controller = new TaskController();
+    private TaskController taskcontroller = new TaskController();
+    private TaskService taskService = new TaskService();
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
 
         String method = httpExchange.getRequestMethod();
+        String uri = httpExchange.getRequestURI().getPath();
+
+        if (uri.equals("/")){
+            httpExchange.sendResponseHeaders(OK.getStatus(), 0);
+            taskService.processBody(httpExchange, "");
+            return;
+        }
+        if (!uri.startsWith("/tasks")){
+            httpExchange.sendResponseHeaders(NOT_FOUND.getStatus(), 0);
+            taskService.processBody(httpExchange, "");
+            return;
+        }
 
         switch (method){
             case "GET" :
-                controller.getController(httpExchange);
-                break;
+                taskcontroller.getController(httpExchange);
             case "POST" :
-                controller.postController(httpExchange);
-                break;
+                taskcontroller.postController(httpExchange);
             case "PUT" :
-                controller.putController(httpExchange);
-                break;
+                taskcontroller.putController(httpExchange);
             case "PATCH" :
-                controller.patchController(httpExchange);
-                break;
+                taskcontroller.patchController(httpExchange);
             case "DELETE" :
-                controller.deleteController(httpExchange);
-                break;
+                taskcontroller.deleteController(httpExchange);
             default:
+                httpExchange.sendResponseHeaders(METHOD_NOT_ALLOWED.getStatus(), 0);
         }
+
     }
+
+
+
+
+
 }
