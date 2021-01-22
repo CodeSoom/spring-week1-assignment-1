@@ -81,11 +81,11 @@ public class TaskHttpHandler implements HttpHandler {
             result = getTasks();
         }else if(requestURIPath.contains("/tasks")){
             String[] split = requestURIPath.split("/");
-            if(split.length > 0 &&  split.length != 1){
+            if(split.length == 3){
                 long parseLong = Long.parseLong(split[2]);
                 result = getTask(parseLong);
             }else{
-                result = "Wrong argument passed!";
+                result = ResultMessage.BAD_REQUEST.getMessage();
                 responseCode = HttpStatusCode.BAD_REQUEST.getCode();
             }
         }
