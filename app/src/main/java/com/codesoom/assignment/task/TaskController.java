@@ -119,7 +119,7 @@ public class TaskController {
 
 
     public void errorController (HttpExchange httpExchange) throws IOException {
-        httpExchange.sendResponseHeaders(INTERNAL_SERVER_ERROR.getStatus(), 0);
+        httpExchange.sendResponseHeaders(NOT_FOUND.getStatus(), 0);
         taskService.processBody(httpExchange, "");
     }
 
