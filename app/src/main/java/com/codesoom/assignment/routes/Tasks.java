@@ -15,10 +15,27 @@ public class Tasks {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    /**
+     * Without body handler.
+     *
+     * @param method is request method.
+     * @param path is request path.
+     * @return response data.
+     * @throws JsonProcessingException when parse request body failed.
+     */
     public Response handler(String method, String path) throws JsonProcessingException {
         return handler(method, path, "");
     }
 
+    /**
+     * Task handler.
+     *
+     * @param method is request handler.
+     * @param path is request path.
+     * @param body is request body.
+     * @return response data.
+     * @throws JsonProcessingException when parse request body failed.
+     */
     public Response handler(String method, String path, String body) throws JsonProcessingException {
         Long id = getIDFromPath(path);
 
@@ -59,10 +76,26 @@ public class Tasks {
                     return new Response(Response.STATUS_NOT_FOUND, e.toString());
                 }
             case "DELETE":
+                if (id == null) {
+                    return new Response(Response.STATUS_BAD_REQUEST, "Not include id in path");
+                }
+
+                try {
+                    delete(id);
+                    return new Response(Response.STATUS_NO_CONTENT, "");
+                } catch (NotExistsIDException e) {
+                    return new Response(Response.STATUS_NOT_FOUND, e.toString());
+                }
         }
         return new Response(Response.STATUS_NOT_FOUND, "Not found");
     }
 
+    /**
+     * Extract id from request path.
+     *
+     * @param path is request path.
+     * @return Long type id. When not found id, returns null.
+     */
     private Long getIDFromPath(String path) {
         String[] split = path.split(PATH_SPLITTER);
         if (split.length < ID_POSITION + 1) {

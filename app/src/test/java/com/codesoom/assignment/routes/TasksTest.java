@@ -237,6 +237,53 @@ public class TasksTest {
     }
 
     /**
+     * <p>메소드 : {@code Tasks.handler}</p>
+     * <p>상황 : {@code method}가 DELETE 이고, {@code Task}에 id가 있고, {@code Task}가 있을 때</p>
+     * <p>기대 : Status No Content 반환.</p>
+     */
+    @Test
+    void handlerDeleteMethodWithIDWithoutException() throws JsonProcessingException {
+        final long id = 101L;
+        final String title = "sample";
+        final String method = "DELETE";
+        final String path = String.format("/tasks/%d", id);
+
+        TaskManager.insert(new Task(id, title));
+
+        Response response = handler.handler(method, path);
+        assertEquals(Response.STATUS_NO_CONTENT, response.statusCode());
+    }
+
+    /**
+     * <p>메소드 : {@code Tasks.handler}</p>
+     * <p>상황 : {@code method}가 DELETE 이고, {@code Task}에 id가 있고, {@code Task}가 없을 때</p>
+     * <p>기대 : Status No Content 반환.</p>
+     */
+    @Test
+    void handlerDeleteMethodWithIDWithException() throws JsonProcessingException {
+        final long id = 101L;
+        final String method = "DELETE";
+        final String path = String.format("/tasks/%d", id);
+
+        Response response = handler.handler(method, path);
+        assertEquals(Response.STATUS_NOT_FOUND, response.statusCode());
+    }
+
+    /**
+     * <p>메소드 : {@code Tasks.handler}</p>
+     * <p>상황 : {@code method}가 DELETE 이고, {@code path}에 id가 없을 때</p>
+     * <p>기대 : Status Bad Request 반환.</p>
+     */
+    @Test
+    void handlerDeleteMethodWithoutIDWithException() throws JsonProcessingException {
+        final String method = "DELETE";
+        final String path = "/tasks/";
+
+        Response response = handler.handler(method, path);
+        assertEquals(Response.STATUS_BAD_REQUEST, response.statusCode());
+    }
+
+    /**
      * <p>메소드 : {@code Tasks.get}</p>
      * <p>상황 : {@code Task}가 하나도 없을 때.</p>
      * <p>기대 : 비어있는 JSON array string 반환.</p>
