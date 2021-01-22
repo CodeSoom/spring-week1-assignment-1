@@ -7,11 +7,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Class have methods that return Task object by arguments
- *
- * @author Taeheon Woo
- * @version 1.0
- *
+ * return task by arguments
  */
 public class TaskManager {
     static Task toTask(String content, Long id) throws JsonProcessingException {

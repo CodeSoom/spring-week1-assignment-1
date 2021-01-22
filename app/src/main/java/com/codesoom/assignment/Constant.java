@@ -1,11 +1,7 @@
 package com.codesoom.assignment;
 
 /**
- * Class have constants used in application
- *
- * @author Taeheon Woo
- * @version 1.0
- *
+ * contains constants used in application
  */
 public class Constant {
     static final int port = 8000;
