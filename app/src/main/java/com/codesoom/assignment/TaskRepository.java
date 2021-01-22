@@ -38,4 +38,8 @@ public class TaskRepository {
     public List<Task> findAll() {
         return new ArrayList<>(taskStore.values());
     }
+
+    public Task getTaskById(Long id) {
+        return taskStore.get(id);
+    }
 }

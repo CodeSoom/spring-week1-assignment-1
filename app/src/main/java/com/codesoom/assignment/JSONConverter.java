@@ -27,10 +27,19 @@ public class JSONConverter {
         return outputStream.toString();
     }
 
-    Task JSONToTask(String json) throws JsonProcessingException {
+    static Task JSONToTask(String json) throws JsonProcessingException {
         // json 데이터를 task의 클래스로 변환
         return objectMapper.readValue(json, Task.class);
     }
 
+    static String taskToJSON(Task task) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+
+        // Java Object to JSON
+        objectMapper.writeValue(outputStream, task);
+
+        // String 형식의 content 변수에 담기 위해 String으로 변환하여 return
+        return outputStream.toString();
+    }
 
 }

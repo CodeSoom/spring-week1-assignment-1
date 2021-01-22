@@ -20,13 +20,12 @@ public class MyHttpHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
 
         HttpRequest httpRequest = new HttpRequest(exchange);
-
         String content = "Hello, world!";
+
 
         if (!httpRequest.hasMethod().isEmpty()) {
             switch (httpRequest.hasMethod()) {
                 case "GET":
-                    System.out.println("GET : " + httpRequest.toString()); // 확인용
                     // /tasks만 입력했을 경우 (아이디로 검색하지 않고 전체 목록 얻을 때)
                     if (httpRequest.hasPath().equals("/tasks")) {
                         GETAllTaskList();
@@ -34,6 +33,12 @@ public class MyHttpHandler implements HttpHandler {
                         response(HTTP_OK, content, exchange);
                         break;
                     }
+                    // tasks/{id}를 입력했을 경우 (입력한 아이디에 해당하는 할일만 보여줌)
+                    Long id = getIdFromPath(httpRequest);
+                    findOne(id);
+                    content = JSONConverter.taskToJSON(findOne(id));
+                    System.out.println("content2 : " + content);
+                    response(HTTP_CREATED, content, exchange);
                     break;
                 case "POST":
                     content = POSTCreateNewTask(httpRequest);
@@ -60,7 +65,10 @@ public class MyHttpHandler implements HttpHandler {
                     System.out.println("default : " + httpRequest.toString()); // 확인용
                     break;
             }
+        } else {
+            response(HTTP_NOT_FOUND, content, exchange);
         }
+
 
         if (httpRequest.hasMethod().isEmpty()) {
             content = "There isn't Method";
@@ -135,5 +143,9 @@ public class MyHttpHandler implements HttpHandler {
 
     private List<Task> GETAllTaskList() {
         return taskRepository.findAll();
+    }
+
+    private Task findOne(Long id) {
+        return taskRepository.getTaskById(id);
     }
 }
