@@ -204,30 +204,42 @@ public class TaskHttpHandler implements HttpHandler {
      *
      * @param title 매칭된 Task 의 변경 될 title 제목입니다.
      * @param ID ArrayList 에 저장된 Task 를 매칭하기 위한 Key 값입니다.
-     * @return 전체 Task 를 리턴합니다.
+     * @return 매칭되는 ID가 있으면 해당 task 를 리턴하고, 없으면 Not Found message 를 리턴합니다.
      */
 
     private String updateTask(String title, long ID) throws IOException {
         if(tasks.size() > 0){
-            tasks.get((int) ID - 1 ).setTitle(title);
+            for(Task task : tasks){
+                if(task.getId() == ID){
+                    task.setTitle(title);
+                    responseCode = HttpStatusCode.OK.getCode();
+                    return getTask(ID);
+                }
+            }
         }
-        responseCode = HttpStatusCode.OK.getCode();
-        return getTasks();
+        responseCode = HttpStatusCode.NOT_FOUND.getCode();
+        return ResultMessage.NOT_FOUND.getMessage();
     }
 
     /**
      * ID에 해당하는 Task 를 ArrayList 에서 제거합니다.
      *
      * @param ID ArrayList 에 저장된 Task 를 매칭하기 위한 Key 값입니다.
-     * @return 전체 Task 를 리턴합니다.
+     * @return 매치되는 ID가 있으면 OK message 를 리턴하고, 없으면 Not Found message 를 리턴합니다.
      */
 
     private String deleteTask(long ID) throws IOException {
         if(tasks.size() > 0){
-            tasks.remove((int) ID - 1 );
+            for(Task task : tasks){
+                if(task.getId() == ID){
+                    tasks.remove(ID);
+                    responseCode = HttpStatusCode.OK.getCode();
+                    return ResultMessage.OK.getMessage();
+                }
+            }
         }
-        responseCode = HttpStatusCode.OK.getCode();
-        return getTasks();
+        responseCode = HttpStatusCode.NOT_FOUND.getCode();
+        return ResultMessage.NOT_FOUND.getMessage();
     }
 
     /**
