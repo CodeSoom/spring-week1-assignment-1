@@ -72,26 +72,8 @@ public class TaskHttpHandler implements HttpHandler {
             return;
         }
 
-        // POST
-        if (method.equals("POST") && (pathItems.length == VALID_PATH_LENGTH_WITHOUT_ID)) {
-            Task task = toTask(body);
-            HttpStatusCode result = addTask(task);
-            httpStatusCode = result;
-
-            switch (result) {
-                case Created:
-                    content = taskToJSON(task);
-                    System.out.println("[POST] A Task successfully added.\n" + content);
-                    break;
-                case NotFound:
-                    System.out.println("[POST] NotFound Exception thrown...");
-                    break;
-                default:
-                    System.out.println("[POST] Unhandled Exception thrown...");
-                    break;
-            }
-
-            sendHttpResponse(exchange, httpStatusCode, content);
+        if (method.equals("POST")) {
+            post(exchange, pathItems.length, body);
             return;
         }
 
@@ -168,6 +150,27 @@ public class TaskHttpHandler implements HttpHandler {
         sendHttpResponse(exchange, httpStatusCode, content);
     }
 
+    private void post(HttpExchange exchange, int length, String body) throws IOException {
+        if (length == VALID_PATH_LENGTH_WITH_ID) {
+            sendHttpResponse(exchange, HttpStatusCode.NotFound, "");
+            System.out.println("[POST] NotFound Exception thrown...");
+            return;
+        }
+
+        Task task = toTask(body);
+        boolean isAdded = addTask(task);
+
+        if (!isAdded) {
+            sendHttpResponse(exchange, HttpStatusCode.NotFound, "");
+            System.out.println("[POST] NotFound Exception thrown...");
+            return;
+        }
+
+        String taskJson = taskToJSON(task);
+        sendHttpResponse(exchange, HttpStatusCode.Created, taskJson);
+        System.out.println("[POST] A Task successfully added.\n" + taskJson);
+    }
+
     private void get(HttpExchange exchange, int length, int id) throws IOException {
         if (length == VALID_PATH_LENGTH_WITHOUT_ID) {
             String tasksJson = tasksToJSON();
@@ -240,9 +243,9 @@ public class TaskHttpHandler implements HttpHandler {
         return HttpStatusCode.OK;
     }
 
-    private HttpStatusCode addTask(Task task) throws JsonProcessingException {
+    private boolean addTask(Task task) throws JsonProcessingException {
         if (task == null) {
-            return HttpStatusCode.NotFound;
+            return false;
         }
 
         if (task.getId() == null) {
@@ -251,11 +254,11 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         if (task.getId() < getNextId()) {
-            return HttpStatusCode.NotFound;
+            return false;
         }
 
         tasks.add(task);
-        return HttpStatusCode.Created;
+        return true;
     }
 
     private long getNextId() {
