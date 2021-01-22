@@ -41,6 +41,7 @@ public class TaskHttpHandler implements HttpHandler {
             return;
         }
 
+        // https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html#split(java.lang.String)
         // "/tasks/1" is split into { "", "tasks", "1" }    => length 3
         // "/tasks/" is split into { "", "tasks" }          => length 2
         // "/tasks" is split into { "", "tasks" }           => length 2
@@ -66,29 +67,8 @@ public class TaskHttpHandler implements HttpHandler {
         String content = "";
         HttpStatusCode httpStatusCode = HttpStatusCode.NotFound;
 
-        // GET all tasks
-        if (method.equals("GET") && (pathItems.length == VALID_PATH_LENGTH_WITHOUT_ID)) {
-            content = tasksToJSON();
-            httpStatusCode = HttpStatusCode.OK;
-            System.out.println("[GET] Tasks successfully returned.\n" + content);
-            sendHttpResponse(exchange, httpStatusCode, content);
-            return;
-        }
-
-        // GET one task
-        if (method.equals("GET") && (pathItems.length == VALID_PATH_LENGTH_WITH_ID)) {
-            Task task = getTask(id);
-
-            if (task == null) {
-                httpStatusCode = HttpStatusCode.NotFound;
-                System.out.println("[GET] NotFound Exception thrown...\nTask #" + id + " doesn't exist");
-            } else {
-                content = taskToJSON(task);
-                httpStatusCode = HttpStatusCode.OK;
-                System.out.println("[GET] A Task successfully returned.\n" + content);
-            }
-
-            sendHttpResponse(exchange, httpStatusCode, content);
+        if (method.equals("GET")) {
+            get(exchange, pathItems.length, id);
             return;
         }
 
@@ -186,6 +166,28 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         sendHttpResponse(exchange, httpStatusCode, content);
+    }
+
+    private void get(HttpExchange exchange, int length, int id) throws IOException {
+        if (length == VALID_PATH_LENGTH_WITHOUT_ID) {
+            String tasksJson = tasksToJSON();
+            sendHttpResponse(exchange, HttpStatusCode.OK, tasksJson);
+            System.out.println("[GET] Tasks successfully returned.\n" + tasksJson);
+            return;
+        }
+
+        Task task = getTask(id);
+
+        if (task == null) {
+            sendHttpResponse(exchange, HttpStatusCode.NotFound, "");
+            System.out.println("[GET] NotFound Exception thrown...\nTask #" + id + " doesn't exist");
+            return;
+        }
+
+        String taskJson = taskToJSON(task);
+
+        sendHttpResponse(exchange, HttpStatusCode.OK, taskJson);
+        System.out.println("[GET] A Task successfully returned.\n" + taskJson);
     }
 
     private void sendHttpResponse(HttpExchange exchange, HttpStatusCode httpStatusCode, String content) throws IOException {
