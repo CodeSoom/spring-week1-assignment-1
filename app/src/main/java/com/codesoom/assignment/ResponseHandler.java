@@ -8,8 +8,8 @@ import static com.codesoom.assignment.JSONParser.*;
 import static com.codesoom.assignment.TaskManager.*;
 
 /**
- * handle responses content by requests
- * TODO: if possible, change switch statement to hashmap
+ * Handle responses content by requests.
+ * TODO: if possible, change switch statement to hashmap.
  */
 public class ResponseHandler {
     public String handle(String method, String path, List<Task> tasks, String body) throws IOException, ResponseHandlingException {

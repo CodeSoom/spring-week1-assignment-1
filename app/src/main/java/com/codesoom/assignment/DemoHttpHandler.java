@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Handle related with Task object
+ * Handle related with Task object.
  */
 public class DemoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();

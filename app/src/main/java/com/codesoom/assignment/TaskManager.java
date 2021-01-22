@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * return task by arguments
+ * Return task by arguments.
  */
 public class TaskManager {
     static Task toTask(String content, Long id) throws JsonProcessingException {

@@ -1,7 +1,7 @@
 package com.codesoom.assignment;
 
 /**
- * contains constants used in application
+ * Contains constants used in application.
  */
 public class Constant {
     static final int PORT = 8000;

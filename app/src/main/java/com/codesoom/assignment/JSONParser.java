@@ -9,8 +9,8 @@ import java.io.OutputStream;
 import java.util.List;
 
 /**
- * change task or task list to JSON style text
- * TODO: Merge methods using Generic
+ * Change task or task list to JSON style text.
+ * TODO: Merge methods using Generic.
  */
 public class JSONParser {
     static String taskToJSON(Task task) throws IOException {

@@ -1,7 +1,7 @@
 package com.codesoom.assignment;
 
 /**
- * task model, contains id and title
+ * Task model, contains id and title.
  */
 public class Task {
     private Long id;
