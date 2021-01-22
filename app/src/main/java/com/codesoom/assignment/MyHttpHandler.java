@@ -122,9 +122,7 @@ public class MyHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
     }
 
-    private Long extractPathVariable(String path) throws IOException {
-        String[] paths = path.split("/");
-
-        return Long.parseUnsignedLong(paths[2]);
+    private Long extractPathVariable(String path) {
+        return Long.parseUnsignedLong(path.substring(path.lastIndexOf("/") + 1));
     }
 }
