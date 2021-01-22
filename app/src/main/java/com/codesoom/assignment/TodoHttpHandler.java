@@ -56,9 +56,7 @@ public class TodoHttpHandler implements HttpHandler {
             return new Response(HttpStatus.NOT_FOUND, "");
         }
         long inputId = extractNumber(path);
-        System.out.println(inputId);
         if (!hasId(inputId)) {
-            System.out.println("!");
             return new Response(HttpStatus.NOT_FOUND, "");
         }
         taskMap.remove(inputId);
@@ -80,7 +78,7 @@ public class TodoHttpHandler implements HttpHandler {
         if (!hasId(inputId)) {
             return new Response(HttpStatus.NOT_FOUND, "");
         }
-        Task task = jsonToTask(body, inputId);
+        Task task = jsonToTask(body);
         taskMap.put(inputId, task);
         return new Response(HttpStatus.OK, taskToJson(inputId));
     }
@@ -124,12 +122,6 @@ public class TodoHttpHandler implements HttpHandler {
     private Task jsonToTask(String content) throws JsonProcessingException {
         Task task = mapper.readValue(content, Task.class);
         task.setId(lastTaskId);
-        return task;
-    }
-
-    private Task jsonToTask(String content, long inputId) throws JsonProcessingException {
-        Task task = mapper.readValue(content, Task.class);
-        task.setId(inputId);
         return task;
     }
 
