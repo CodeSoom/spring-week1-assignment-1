@@ -2,7 +2,6 @@ package com.codesoom.assignment.web.user;
 
 import com.codesoom.assignment.domain.User;
 import com.codesoom.assignment.application.user.UserService;
-import com.codesoom.assignment.application.JsonUtil;
 import com.codesoom.assignment.web.*;
 
 public class UserHttpRequestContext extends HttpRequestContextBase {
@@ -23,22 +22,26 @@ public class UserHttpRequestContext extends HttpRequestContextBase {
             HttpResponse response;
 
             if (isRequestTaskList(httpRequest.getPath())) {
-                String responseJson = JsonUtil.toJson(userService.getUsers());
+                String responseJson = jsonMapper.toJson(userService.getUsers());
                 response = new HttpResponse(responseJson, HttpStatusCode.OK);
             } else {
                 long id = parseIdFromPath(httpRequest.getPath());
-                String responseJson = JsonUtil.toJson(userService.getUser(id));
+                String responseJson = jsonMapper.toJson(userService.getUser(id));
                 response = new HttpResponse(responseJson, HttpStatusCode.OK);
             }
             return response;
         };
     }
 
+    private boolean isRequestTaskList(String path) {
+        return path.equals(BASE_PATH) || path.equals(BASE_PATH + "/");
+    }
+
     private RequestControllable postTaskRequestController() {
         return httpRequest -> {
-            User user = JsonUtil.toUser(httpRequest.getBody());
+            User user = jsonMapper.toUser(httpRequest.getBody());
             User createdUser = userService.createNewUsers(user.getName(), user.getAge());
-            String responseJson = JsonUtil.toJson(createdUser);
+            String responseJson = jsonMapper.toJson(createdUser);
             return new HttpResponse(responseJson, HttpStatusCode.CREATED);
         };
     }
@@ -46,9 +49,9 @@ public class UserHttpRequestContext extends HttpRequestContextBase {
     private RequestControllable updateTaskRequestController() {
         return httpRequest -> {
             long id = parseIdFromPath(httpRequest.getPath());
-            User user = JsonUtil.toUser(httpRequest.getBody());
+            User user = jsonMapper.toUser(httpRequest.getBody());
             User updatedTask = userService.updateUser(id, user.getName(), user.getAge());
-            String responseJson = JsonUtil.toJson(updatedTask);
+            String responseJson = jsonMapper.toJson(updatedTask);
             return new HttpResponse(responseJson, HttpStatusCode.OK);
         };
     }
@@ -59,10 +62,6 @@ public class UserHttpRequestContext extends HttpRequestContextBase {
             userService.deleteUser(id);
             return new HttpResponse(HttpStatusCode.NO_CONTENT);
         };
-    }
-
-    private boolean isRequestTaskList(String path) {
-        return path.equals(BASE_PATH) || path.equals(BASE_PATH + "/");
     }
 
     private long parseIdFromPath(String path) throws NumberFormatException {

@@ -1,5 +1,6 @@
 package com.codesoom.assignment.web;
 
+import com.codesoom.assignment.application.JsonMapper;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.util.Map;
 public abstract class HttpRequestContextBase {
     private final RequestControllable nullController = httpRequest -> new HttpResponse(HttpStatusCode.NOT_FOUND);
     protected final Map<HttpRequestMethod, RequestControllable> requestControllerMap = new HashMap<>();
+    protected final JsonMapper jsonMapper = new JsonMapper();
 
     public void processHttpRequest(HttpRequest httpRequest, HttpExchange httpExchange) throws IOException {
         RequestControllable controller = findController(httpRequest.getMethod());

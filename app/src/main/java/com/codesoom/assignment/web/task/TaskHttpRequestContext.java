@@ -2,10 +2,7 @@ package com.codesoom.assignment.web.task;
 
 import com.codesoom.assignment.domain.Task;
 import com.codesoom.assignment.application.task.TaskService;
-import com.codesoom.assignment.application.JsonUtil;
 import com.codesoom.assignment.web.*;
-
-import java.util.Optional;
 
 public class TaskHttpRequestContext extends HttpRequestContextBase {
     public static final String BASE_PATH = "/tasks";
@@ -25,11 +22,11 @@ public class TaskHttpRequestContext extends HttpRequestContextBase {
             HttpResponse response;
 
             if (isRequestTaskList(httpRequest.getPath())) {
-                String responseJson = JsonUtil.toJson(taskService.getTasks());
+                String responseJson = jsonMapper.toJson(taskService.getTasks());
                 response = new HttpResponse(responseJson, HttpStatusCode.OK);
             } else {
                 long id = parseIdFromPath(httpRequest.getPath());
-                String responseJson = JsonUtil.toJson(taskService.getTask(id));
+                String responseJson = jsonMapper.toJson(taskService.getTask(id));
                 response = new HttpResponse(responseJson, HttpStatusCode.OK);
             }
             return response;
@@ -38,9 +35,9 @@ public class TaskHttpRequestContext extends HttpRequestContextBase {
 
     private RequestControllable postTaskRequestController() {
         return httpRequest -> {
-            Task task = JsonUtil.toTask(httpRequest.getBody());
+            Task task = jsonMapper.toTask(httpRequest.getBody());
             Task createdTask = taskService.createNewTask(task.getTitle());
-            String responseJson = JsonUtil.toJson(createdTask);
+            String responseJson = jsonMapper.toJson(createdTask);
             return new HttpResponse(responseJson, HttpStatusCode.CREATED);
         };
     }
@@ -48,9 +45,9 @@ public class TaskHttpRequestContext extends HttpRequestContextBase {
     private RequestControllable updateTaskRequestController() {
         return httpRequest -> {
             long id = parseIdFromPath(httpRequest.getPath());
-            Task task = JsonUtil.toTask(httpRequest.getBody());
+            Task task = jsonMapper.toTask(httpRequest.getBody());
             Task updatedTask = taskService.updateTask(id, task.getTitle());
-            String responseJson = JsonUtil.toJson(updatedTask);
+            String responseJson = jsonMapper.toJson(updatedTask);
             return new HttpResponse(responseJson, HttpStatusCode.OK);
         };
     }
@@ -58,9 +55,8 @@ public class TaskHttpRequestContext extends HttpRequestContextBase {
     private RequestControllable deleteTaskRequestController() {
         return httpRequest ->  {
             long id = parseIdFromPath(httpRequest.getPath());
-            return taskService.deleteTask(id)
-                    .map(e ->  new HttpResponse(HttpStatusCode.NO_CONTENT))
-                    .or(() -> Optional.of(new HttpResponse(HttpStatusCode.NO_CONTENT)));
+            taskService.deleteTask(id);
+            return new HttpResponse(HttpStatusCode.NO_CONTENT);
         };
     }
 
