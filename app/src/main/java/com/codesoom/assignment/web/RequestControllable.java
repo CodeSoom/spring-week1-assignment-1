@@ -4,5 +4,5 @@ import java.io.IOException;
 import java.util.Optional;
 
 public interface RequestControllable {
-    Optional<HttpResponse> process(HttpRequest httpRequest) throws IOException;
+    HttpResponse process(HttpRequest httpRequest) throws IOException;
 }
