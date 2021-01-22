@@ -203,7 +203,7 @@ public class TaskHttpHandler implements HttpHandler {
         }
         tasks.add(taskJson);
         responseCode = HttpStatusCode.CREATED.getCode();
-        return taskJson.toString();
+        return getTasks();
     }
 
     /**
