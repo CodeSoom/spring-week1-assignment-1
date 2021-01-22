@@ -1,14 +1,30 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SpringHandler implements HttpHandler {
     static final int httpStatus = 200;
+
+    private List<Task> tasks = new ArrayList<>();
+
+    public SpringHandler() {
+        Task task = new Task();
+        task.setId(1L);
+        task.setTitle("Do nothing....");
+
+        tasks.add(task);
+    }
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
@@ -20,8 +36,11 @@ public class SpringHandler implements HttpHandler {
 
         String content = "매일 매일 달리지기 위한 첫걸음 시작하기!";
 
+
+
         if(method.equals("GET") && path.equals("/tasks")) {
-            content = "[{\"id\":1, \"title\":\"Do nothing\"}]";
+
+            content = tasksToJSON();
         }
 
         if(method.equals("POST") && path.equals("/tasks")) {
@@ -37,5 +56,13 @@ public class SpringHandler implements HttpHandler {
         outputStream.flush();
         outputStream.close();
 
+    }
+
+    private String tasksToJSON() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, tasks);
+        
+        return outputStream.toString();
     }
 }
