@@ -31,7 +31,7 @@ public class Response {
     public void send(HttpExchange exchange) throws IOException {
         OutputStream outputStream = exchange.getResponseBody();
 
-        exchange.sendResponseHeaders(statusCode, content.length());
+        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
 
         outputStream.write(content.getBytes());
         outputStream.flush();
