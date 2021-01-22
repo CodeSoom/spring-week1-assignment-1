@@ -1,5 +1,6 @@
 package com.codesoom.assignment.routes;
 
+import com.codesoom.assignment.errors.AlreadyExistsIDException;
 import com.codesoom.assignment.errors.NotExistsIDException;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.models.TaskManager;
@@ -100,5 +101,25 @@ public class TasksTest {
 
         // 만약 id가 1인 Task 가 존재하지 않을 시 NotExistsIDException 을 던짐
         TaskManager.find(id);
+    }
+
+    /**
+     * <p>메소드 : {@code Tasks.post}</p>
+     * <p>상황 : 입력된 {@code Task}의 ID가 이미 있을 때.</p>
+     * <p>기대 : {@code AlreadyExistsIDException}을 던짐.</p>
+     */
+    @Test
+    void postWhenExistsID() {
+        TaskManager.insert("sample");
+
+        final long id = 1L;
+        final String title = "sample";
+
+        try {
+            Tasks.post(new Task(id, title));
+        } catch (AlreadyExistsIDException e) {
+            return;
+        }
+        fail();
     }
 }
