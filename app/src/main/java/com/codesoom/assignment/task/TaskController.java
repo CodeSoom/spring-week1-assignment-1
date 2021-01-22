@@ -1,15 +1,10 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.task;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.io.IOException;
 
-import static com.codesoom.assignment.HttpStatus.*;
+import static com.codesoom.assignment.http.HttpStatus.*;
 
 public class TaskController {
 
@@ -101,15 +96,33 @@ public class TaskController {
         }
     }
 
-        public void deleteController (HttpExchange httpExchange){
+    public void deleteController(HttpExchange httpExchange) throws IOException {
+
+        String uri = String.valueOf(httpExchange.getRequestURI());
+
+        if (!taskService.isBodyEmpty(httpExchange) || uri.length() <= 7){
+            errorController(httpExchange);
+            return;
         }
 
+        if (uri.length() >= 8) {
+            int id = taskService.getId(uri);
+            System.out.println(id);
 
-        public void errorController (HttpExchange httpExchange) throws IOException {
-            httpExchange.sendResponseHeaders(INTERNAL_SERVER_ERROR.getStatus(), 0);
-            taskService.processBody(httpExchange, "");
+            if (id <= taskService.tasks.size() && id >= 1){
+                String body = taskService.deleteTask(httpExchange);
+                httpExchange.sendResponseHeaders(OK.getStatus(), body.getBytes().length);
+                taskService.processBody(httpExchange, body);
+                return;
+            }
+            errorController(httpExchange);
         }
+    }
 
+
+    public void errorController (HttpExchange httpExchange) throws IOException {
+        httpExchange.sendResponseHeaders(INTERNAL_SERVER_ERROR.getStatus(), 0);
+        taskService.processBody(httpExchange, "");
     }
 
 }

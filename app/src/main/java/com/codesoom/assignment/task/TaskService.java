@@ -1,4 +1,4 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.task;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,9 +8,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.codesoom.assignment.HttpStatus.INTERNAL_SERVER_ERROR;
-import static com.codesoom.assignment.HttpStatus.OK;
 
 public class TaskService {
 
@@ -46,8 +43,14 @@ public class TaskService {
         return tasksToJSONById(tasks.get(id-1));
     }
 
-    public String deleteTask(HttpExchange httpExchange){
+    public String deleteTask(HttpExchange httpExchange) throws IOException {
+        String uri = String.valueOf(httpExchange.getRequestURI());
+        int id = getId(uri);
 
+        Task task = tasks.get(id-1);
+        tasks.remove(id-1);
+
+        return tasksToJSONById(task);
     }
 
     public Long plusId(){
