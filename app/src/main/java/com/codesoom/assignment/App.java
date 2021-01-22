@@ -14,7 +14,7 @@ public class App {
     public static final int PORT = 8000;
     public static final int BACKLOG = 0;
 
-    /* Http Status Code 를 정의한 Enum */
+    /** Http Status Code 를 정의합니다. */
     public enum HttpStatusCode {
         OK(200), CREATED(201), BAD_REQUEST(400), NOT_FOUND(404), METHOD_NOT_ALLOWED(405);
 
@@ -28,9 +28,9 @@ public class App {
         }
     }
 
-    /* 사용자에게 전달할 Message 를 정의한 Enum */
+    /** 사용자에게 전달할 Message 를 정의합니다. */
     public enum ResultMessage {
-        OK("200 OK"), CREATED("201 CREATED"), BAD_REQUEST("400 BAD_REQUEST"), NOT_FOUND("404 NOT_FOUND"), METHOD_NOT_ALLOWED("405 METHOD_NOT_ALLOWED");
+        OK("200 OK"), CREATED("201 Created"), BAD_REQUEST("400 Bad Request"), NOT_FOUND("404 Not Found"), METHOD_NOT_ALLOWED("405 Method Not Allowed");
 
         private String resultMessage;
 
@@ -55,11 +55,8 @@ public class App {
         InetSocketAddress address = new InetSocketAddress(PORT);
         HttpServer httpServer = HttpServer.create(address, BACKLOG);
 
-        HttpHandler roothandler = new RootHttpHandler(); // "/" 로 들어왔을 경우 실행 될 Handler
-        HttpHandler taskHandler = new TaskHttpHandler(); // "/tasks"로 들어왔을 경우 실행 될 Handler
-
-        httpServer.createContext("/", roothandler);
-        httpServer.createContext("/tasks", taskHandler);
+        httpServer.createContext("/", new RootHttpHandler());
+        httpServer.createContext("/tasks", new TaskHttpHandler());
 
         httpServer.start();
     }
