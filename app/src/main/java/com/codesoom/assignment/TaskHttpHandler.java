@@ -15,7 +15,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class TaskHttpHandler implements HttpHandler {
+    private static final int VALID_PATH_LENGTH_WITHOUT_ID = 2;
+    private static final int VALID_PATH_LENGTH_WITH_ID = 3;
     private static final String MAIN_PATH = "tasks";
+
     private List<Task> tasks = new ArrayList<>();
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -38,7 +41,9 @@ public class TaskHttpHandler implements HttpHandler {
             return;
         }
 
-        // "/tasks/1" is split into { "", "tasks", "1" }
+        // "/tasks/1" is split into { "", "tasks", "1" }    => length 3
+        // "/tasks/" is split into { "", "tasks" }          => length 2
+        // "/tasks" is split into { "", "tasks" }           => length 2
         String[] pathItems = path.split("/");
 
         if (!isValidPath(pathItems)) {
@@ -48,9 +53,9 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         int id = 0;
-        if (pathItems.length == 3) {
-            // if segments[2] is not integer, 400 BadRequest - NumberFormatException thrown
-            id = Integer.parseInt(pathItems[2]);
+        if (pathItems.length == VALID_PATH_LENGTH_WITH_ID) {
+            // if id is not integer, 400 BadRequest - NumberFormatException thrown
+            id = Integer.parseInt(pathItems[VALID_PATH_LENGTH_WITH_ID - 1]);
         }
 
         InputStream inputStream = exchange.getRequestBody();
@@ -62,7 +67,7 @@ public class TaskHttpHandler implements HttpHandler {
         HttpStatusCode httpStatusCode = HttpStatusCode.NotFound;
 
         // GET all tasks
-        if (method.equals("GET") && (pathItems.length == 2)) {
+        if (method.equals("GET") && (pathItems.length == VALID_PATH_LENGTH_WITHOUT_ID)) {
             content = tasksToJSON();
             httpStatusCode = HttpStatusCode.OK;
             System.out.println("[GET] Tasks successfully returned.\n" + content);
@@ -71,7 +76,7 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         // GET one task
-        if (method.equals("GET") && (pathItems.length == 3)) {
+        if (method.equals("GET") && (pathItems.length == VALID_PATH_LENGTH_WITH_ID)) {
             Task task = getTask(id);
 
             if (task == null) {
@@ -88,7 +93,7 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         // POST
-        if (method.equals("POST") && (pathItems.length == 2)) {
+        if (method.equals("POST") && (pathItems.length == VALID_PATH_LENGTH_WITHOUT_ID)) {
             Task task = toTask(body);
             HttpStatusCode result = addTask(task);
             httpStatusCode = result;
@@ -111,7 +116,7 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         // PUT
-        if (method.equals("PUT") && (pathItems.length == 3)) {
+        if (method.equals("PUT") && (pathItems.length == VALID_PATH_LENGTH_WITH_ID)) {
             Task task = getTask(id);
             Task newTask = toTask(body);
             HttpStatusCode result = updateTask(task, newTask);
@@ -135,7 +140,7 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         // PATCH
-        if (method.equals("PATCH") && (pathItems.length == 3)) {
+        if (method.equals("PATCH") && (pathItems.length == VALID_PATH_LENGTH_WITH_ID)) {
             Task task = getTask(id);
             Task newTask = toTask(body);
             HttpStatusCode result = patchTask(task, newTask);
@@ -159,7 +164,7 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         // DELETE
-        if (method.equals("DELETE") && (pathItems.length == 3)) {
+        if (method.equals("DELETE") && (pathItems.length == VALID_PATH_LENGTH_WITH_ID)) {
             Task task = getTask(id);
             HttpStatusCode result = deleteTask(task);
             httpStatusCode = result;
@@ -262,10 +267,7 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private boolean isValidPath(String[] pathItems) {
-        if (pathItems.length < 2) {
-            return false;
-        }
-        if (pathItems.length > 3) {
+        if (pathItems.length != VALID_PATH_LENGTH_WITHOUT_ID && pathItems.length != VALID_PATH_LENGTH_WITH_ID) {
             return false;
         }
         if (!pathItems[0].isBlank()) {
