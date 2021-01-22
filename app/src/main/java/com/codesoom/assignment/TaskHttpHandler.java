@@ -87,29 +87,31 @@ public class TaskHttpHandler implements HttpHandler {
             return;
         }
 
-        // DELETE
-        if (method.equals("DELETE") && (pathItems.length == VALID_PATH_LENGTH_WITH_ID)) {
-            Task task = getTask(id);
-            HttpStatusCode result = deleteTask(task);
-            httpStatusCode = result;
-
-            switch (result) {
-                case NoContent:
-                    System.out.println("[DELETE] A Task successfully deleted.");
-                    break;
-                case NotFound:
-                    System.out.println("[DELETE] NotFound Exception thrown...");
-                    break;
-                default:
-                    System.out.println("[DELETE] Unhandled Exception thrown...");
-                    break;
-            }
-
-            sendHttpResponse(exchange, httpStatusCode, content);
-            return;
+        if (method.equals("DELETE")) {
+            delete(exchange, pathItems.length, id);
         }
 
         sendHttpResponse(exchange, httpStatusCode, content);
+    }
+
+    private void delete(HttpExchange exchange, int length, int id) throws IOException {
+        if (length == VALID_PATH_LENGTH_WITHOUT_ID) {
+            sendHttpResponse(exchange, HttpStatusCode.NotFound, "");
+            System.out.println("[DELETE] NotFound Exception thrown...");
+            return;
+        }
+
+        Task task = getTask(id);
+        boolean isDeleted = deleteTask(task);
+
+        if (!isDeleted) {
+            sendHttpResponse(exchange, HttpStatusCode.NotFound, "");
+            System.out.println("[DELETE] NotFound Exception thrown...");
+            return;
+        }
+
+        sendHttpResponse(exchange, HttpStatusCode.NoContent, "");
+        System.out.println("[DELETE] A Task successfully deleted.");
     }
 
     private void patch(HttpExchange exchange, int length, int id, String body) throws IOException {
@@ -208,13 +210,13 @@ public class TaskHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
-    private HttpStatusCode deleteTask(Task task) {
+    private boolean deleteTask(Task task) {
         if (task == null) {
-            return HttpStatusCode.NotFound;
+            return false;
         }
 
         tasks.remove(task);
-        return HttpStatusCode.NoContent;
+        return true;
     }
 
     private boolean patchTask(Task task, Task newTask) throws JsonProcessingException {
