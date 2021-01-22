@@ -1,19 +1,20 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SpringHandler implements HttpHandler {
+    private ObjectMapper objectMapper = new ObjectMapper();
     static final int httpStatus = 200;
 
     private List<Task> tasks = new ArrayList<>();
@@ -24,6 +25,7 @@ public class SpringHandler implements HttpHandler {
         task.setTitle("Do nothing....");
 
         tasks.add(task);
+
     }
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -32,7 +34,19 @@ public class SpringHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
+        InputStream inputStream = exchange.getRequestBody();
+        inputStream.read();
+        String body = new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
         System.out.println(method + " " + path);
+        if( !body.isBlank()) {
+            System.out.println(body);
+
+            Task task = toTask(body);
+            System.out.println(task);
+        }
+        System.out.println(body);
 
         String content = "매일 매일 달리지기 위한 첫걸음 시작하기!";
 
@@ -58,11 +72,17 @@ public class SpringHandler implements HttpHandler {
 
     }
 
+    private Task toTask(String content) throws JsonProcessingException {
+       return objectMapper.readValue(content, Task.class);
+
+    }
+
     private String tasksToJSON() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
+
+
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
-        
+
         return outputStream.toString();
     }
 }
