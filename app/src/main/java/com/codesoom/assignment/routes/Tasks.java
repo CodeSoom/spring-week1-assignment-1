@@ -46,11 +46,12 @@ public class Tasks {
         TaskManager.modify(task);
     }
 
-    /*public String patch(long id, String title) {
-
+    public static String patch(long id, String title) throws NotExistsIDException {
+        Task task = TaskManager.modify(id, title);
+        return task.toString();
     }
 
-    public void delete(long id) {
+    /*public void delete(long id) {
 
     }*/
 }

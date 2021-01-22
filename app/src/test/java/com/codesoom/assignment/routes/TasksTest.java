@@ -155,4 +155,39 @@ public class TasksTest {
         }
         fail();
     }
+
+    /**
+     * <p>메소드 : {@code Tasks.patch}</p>
+     * <p>상황 : 입력된 {@code Task}의 ID가 존재할 때.</p>
+     * <p>기대 : 변경된 {@code Task}의 JSON string 을 반환.</p>
+     */
+    @Test
+    void patchWhenExistID() {
+        final long id = 1L;
+        final String title = "sample";
+        final String modifiedTitle = "modified sample";
+
+        TaskManager.insert(new Task(id, title));
+        String data = Tasks.patch(id, modifiedTitle);
+
+        assertEquals(String.format("{\"id\":%d,\"title\":\"%s\"}", id, modifiedTitle), data);
+    }
+
+    /**
+     * <p>메소드 : {@code Tasks.patch}</p>
+     * <p>상황 : 입력된 {@code Task}의 ID가 존재하지 않을 때.</p>
+     * <p>기대 : {@code NotExistsIDException}을 던짐.</p>
+     */
+    @Test
+    void patchWhenNotExistID() {
+        final long id = 1L;
+        final String title = "sample";
+
+        try {
+            Tasks.patch(id, title);
+        } catch (NotExistsIDException e) {
+            return;
+        }
+        fail();
+    }
 }
