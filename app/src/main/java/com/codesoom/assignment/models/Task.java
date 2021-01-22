@@ -7,12 +7,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Task {
-    private final long id;
+    private final Long id;
     private final String title;
 
     @JsonCreator
     public Task(
-            @JsonProperty("id") long id,
+            @JsonProperty("id") Long id,
             @JsonProperty("title") String title
     ) {
         this.id = id;
@@ -20,7 +20,7 @@ public class Task {
     }
 
     @JsonGetter
-    public long id() {
+    public Long id() {
         return this.id;
     }
 

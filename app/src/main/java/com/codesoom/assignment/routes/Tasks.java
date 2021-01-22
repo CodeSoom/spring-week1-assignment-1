@@ -1,5 +1,6 @@
 package com.codesoom.assignment.routes;
 
+import com.codesoom.assignment.errors.AlreadyExistsIDException;
 import com.codesoom.assignment.errors.NotExistsIDException;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.models.TaskManager;
@@ -33,11 +34,15 @@ public class Tasks {
         return task.toString();
     }
 
-    /*public String post(Task task) {
-
+    public static void post(Task task) throws AlreadyExistsIDException {
+        if (task.id() == null) {
+            TaskManager.insert(task.title());
+        } else {
+            TaskManager.insert(task);
+        }
     }
 
-    public String put(Task task) {
+    /*public String put(Task task) {
 
     }
 

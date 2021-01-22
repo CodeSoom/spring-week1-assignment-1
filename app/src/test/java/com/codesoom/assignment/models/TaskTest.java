@@ -32,7 +32,7 @@ public class TaskTest {
 
     @Test
     void taskToString() {
-        Task task = new Task(1, "title");
+        Task task = new Task(1L, "title");
 
         assertEquals("{\"id\":1,\"title\":\"title\"}", task.toString());
     }

@@ -72,7 +72,7 @@ public class TaskManagerTest {
         TaskManager.insert("sample");
 
         try {
-            TaskManager.insert(new Task(1, "sample"));
+            TaskManager.insert(new Task(1L, "sample"));
         } catch (AlreadyExistsIDException ignored) {
             return;
         }
@@ -125,7 +125,7 @@ public class TaskManagerTest {
     @Test
     void modifyNotExistID() {
         try {
-            TaskManager.modify(new Task(100, "not exist"));
+            TaskManager.modify(new Task(100L, "not exist"));
         } catch (NotExistsIDException ignored) {
             return;
         }
