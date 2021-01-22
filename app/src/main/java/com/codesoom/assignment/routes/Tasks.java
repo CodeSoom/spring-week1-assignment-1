@@ -28,8 +28,7 @@ public class Tasks {
                     String content = id == null ? get() : get(id);
                     return new Response(Response.STATUS_OK, content);
                 } catch (NotExistsIDException e) {
-                    String content = e.toString();
-                    return new Response(Response.STATUS_NOT_FOUND, content);
+                    return new Response(Response.STATUS_NOT_FOUND, e.toString());
                 }
             case "POST":
                 Task task = mapper.readValue(body, Task.class);
@@ -40,7 +39,25 @@ public class Tasks {
                     return new Response(Response.STATUS_BAD_REQUEST, e.toString());
                 }
             case "PUT":
+                task = mapper.readValue(body, Task.class);
+                try {
+                    put(task);
+                    return new Response(Response.STATUS_OK, body);
+                } catch (NotExistsIDException e) {
+                    return new Response(Response.STATUS_NOT_FOUND, e.toString());
+                }
             case "PATCH":
+                if (id == null) {
+                    return new Response(Response.STATUS_BAD_REQUEST, "Not include id in path");
+                }
+
+                task = mapper.readValue(body, Task.class);
+                try {
+                    String data = patch(id, task.title());
+                    return new Response(Response.STATUS_OK, data);
+                } catch (NotExistsIDException e) {
+                    return new Response(Response.STATUS_NOT_FOUND, e.toString());
+                }
             case "DELETE":
         }
         return new Response(Response.STATUS_NOT_FOUND, "Not found");

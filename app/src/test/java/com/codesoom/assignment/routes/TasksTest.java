@@ -144,6 +144,99 @@ public class TasksTest {
     }
 
     /**
+     * <p>메소드 : {@code Tasks.handler}</p>
+     * <p>상황 : {@code method}가 PUT 이고, {@code Task}에 id가 있고, {@code Task}가 있을 때</p>
+     * <p>기대 : Status OK 반환.</p>
+     */
+    @Test
+    void handlerPutMethodWithIDWithoutException() throws JsonProcessingException {
+        final long id = 101L;
+        final String title = "sample";
+        final String modifiedTitle = "modified sample";
+        final String method = "PUT";
+        final String path = String.format("/tasks/%d", id);
+        final String body = String.format("{\"id\":%d,\"title\":\"%s\"}", id, modifiedTitle);
+
+        TaskManager.insert(new Task(id, title));
+
+        Response response = handler.handler(method, path, body);
+        assertEquals(Response.STATUS_OK, response.statusCode());
+        assertEquals(body, response.content());
+    }
+
+    /**
+     * <p>메소드 : {@code Tasks.handler}</p>
+     * <p>상황 : {@code method}가 PUT 이고, {@code Task}에 id가 있고, {@code Task}가 없을 때</p>
+     * <p>기대 : Status Not Found 반환.</p>
+     */
+    @Test
+    void handlerPutMethodWithIDWithException() throws JsonProcessingException {
+        final long id = 101L;
+        final String modifiedTitle = "modified sample";
+        final String method = "PUT";
+        final String path = String.format("/tasks/%d", id);
+        final String body = String.format("{\"id\":%d,\"title\":\"%s\"}", id, modifiedTitle);
+
+        Response response = handler.handler(method, path, body);
+        assertEquals(Response.STATUS_NOT_FOUND, response.statusCode());
+    }
+
+    /**
+     * <p>메소드 : {@code Tasks.handler}</p>
+     * <p>상황 : {@code method}가 PATCH 이고, {@code Task}에 id가 있고, {@code Task}가 있을 때</p>
+     * <p>기대 : Status OK 반환.</p>
+     */
+    @Test
+    void handlerPatchMethodWithIDWithoutException() throws JsonProcessingException {
+        final long id = 101L;
+        final String title = "sample";
+        final String modifiedTitle = "modified sample";
+        final String method = "PATCH";
+        final String path = String.format("/tasks/%d", id);
+        final String body = String.format("{\"id\":%d,\"title\":\"%s\"}", id, modifiedTitle);
+
+        TaskManager.insert(new Task(id, title));
+
+        Response response = handler.handler(method, path, body);
+        assertEquals(Response.STATUS_OK, response.statusCode());
+        assertEquals(body, response.content());
+    }
+
+    /**
+     * <p>메소드 : {@code Tasks.handler}</p>
+     * <p>상황 : {@code method}가 PATCH 이고, {@code Task}에 id가 없고, {@code Task}가 있을 때</p>
+     * <p>기대 : Status Bad Request 반환.</p>
+     */
+    @Test
+    void handlerPatchMethodWithoutIDWithoutException() throws JsonProcessingException {
+        final long id = 101L;
+        final String modifiedTitle = "modified sample";
+        final String method = "PATCH";
+        final String path = "/tasks/";
+        final String body = String.format("{\"id\":%d,\"title\":\"%s\"}", id, modifiedTitle);
+
+        Response response = handler.handler(method, path, body);
+        assertEquals(Response.STATUS_BAD_REQUEST, response.statusCode());
+    }
+
+    /**
+     * <p>메소드 : {@code Tasks.handler}</p>
+     * <p>상황 : {@code method}가 PATCH 이고, {@code Task}에 id가 있고, {@code Task}가 없을 때</p>
+     * <p>기대 : Status Not Found 반환.</p>
+     */
+    @Test
+    void handlerPatchMethodWithIDWithException() throws JsonProcessingException {
+        final long id = 101L;
+        final String modifiedTitle = "modified sample";
+        final String method = "PATCH";
+        final String path = String.format("/tasks/%d", id);
+        final String body = String.format("{\"id\":%d,\"title\":\"%s\"}", id, modifiedTitle);
+
+        Response response = handler.handler(method, path, body);
+        assertEquals(Response.STATUS_NOT_FOUND, response.statusCode());
+    }
+
+    /**
      * <p>메소드 : {@code Tasks.get}</p>
      * <p>상황 : {@code Task}가 하나도 없을 때.</p>
      * <p>기대 : 비어있는 JSON array string 반환.</p>
