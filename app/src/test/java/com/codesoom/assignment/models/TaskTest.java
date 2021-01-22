@@ -4,10 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TaskTest {
@@ -35,13 +31,9 @@ public class TaskTest {
     }
 
     @Test
-    void taskToString() throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        ObjectMapper mapper = new ObjectMapper();
+    void taskToString() {
         Task task = new Task(1, "title");
 
-        mapper.writeValue(outputStream, task);
-
-        assertEquals("{\"id\":1,\"title\":\"title\"}", outputStream.toString());
+        assertEquals("{\"id\":1,\"title\":\"title\"}", task.toString());
     }
 }
