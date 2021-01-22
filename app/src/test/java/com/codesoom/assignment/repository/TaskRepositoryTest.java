@@ -17,7 +17,7 @@ class TaskRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        taskRepository = TaskRepository.getInstance();
+        taskRepository = new TaskRepository();
         idGenerator = new IdGenerator();
     }
 

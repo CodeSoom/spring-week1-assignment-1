@@ -3,7 +3,6 @@ package com.codesoom.assignment;
 import com.codesoom.assignment.controller.TasksController;
 import com.codesoom.assignment.models.HttpRequest;
 import com.codesoom.assignment.models.HttpResponse;
-import com.codesoom.assignment.models.RequestMethod;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -12,14 +11,14 @@ import java.io.OutputStream;
 
 public class TasksHttpHandler implements HttpHandler {
 
-    private final static String TASKS = "/tasks";
+    private TasksController tasksController = new TasksController();
+    private TasksReflection tasksReflection = new TasksReflection(tasksController);
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         HttpRequest httpRequest = new HttpRequest(exchange.getRequestMethod(), exchange.getRequestURI(), exchange.getRequestBody());
 
-        TasksReflection tasksReflection = new TasksReflection(TASKS);
-        HttpResponse httpResponse = tasksReflection.processMethod(TasksController.class, httpRequest);
+        HttpResponse httpResponse = tasksReflection.processMethod(httpRequest);
 
         sendResponse(exchange, httpResponse);
     }

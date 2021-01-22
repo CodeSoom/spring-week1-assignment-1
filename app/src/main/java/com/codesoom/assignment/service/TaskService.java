@@ -9,7 +9,7 @@ import java.util.List;
 public class TaskService {
 
     private JsonParser jsonParser = new JsonParser();
-    private TaskRepository taskRepository = TaskRepository.getInstance();
+    private TaskRepository taskRepository = new TaskRepository();
 
     public String getTasks() {
         List<Task> tasks = taskRepository.findAll();

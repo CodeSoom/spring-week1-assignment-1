@@ -13,14 +13,6 @@ public class TaskRepository {
     private Map<Long, Task> taskMap = new HashMap<>();
     private IdGenerator idGenerator = new IdGenerator();
 
-    private static TaskRepository taskRepository = new TaskRepository();
-
-    private TaskRepository() {}
-
-    public static TaskRepository getInstance() {
-        return taskRepository;
-    }
-
     public List<Task> findAll() {
         List<Task> tasks = new ArrayList<>(taskMap.values());
         return tasks;
