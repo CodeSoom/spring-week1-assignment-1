@@ -12,7 +12,7 @@ public class Controller {
     public void requestForGet(String path, HttpExchange exchange) throws IOException {
         String content = "";
         if(!path.startsWith("/tasks")) {
-            exchange.sendResponseHeaders(Status.BAD_REQUEST.getStatus(),0);
+            exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getHttpStatus(),0);
             service.writeContentWithOutputStream(exchange, "");
             return;
         }
@@ -20,7 +20,7 @@ public class Controller {
         if(path.equals("/tasks")) {
             List<Task> tasks = service.getAllTasks();
             content = (tasks == null ) ? "[]" : service.tasksToJson(tasks);
-            exchange.sendResponseHeaders(Status.OK.getStatus(),content.getBytes().length);
+            exchange.sendResponseHeaders(HttpStatus.OK.getHttpStatus(),content.getBytes().length);
             service.writeContentWithOutputStream(exchange, content);
             return;
         }
@@ -29,20 +29,20 @@ public class Controller {
         Task getTask = service.getTask(idValue);
 
         if(getTask == null) {
-            exchange.sendResponseHeaders(Status.NOT_FOUND.getStatus(),0);
+            exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getHttpStatus(),0);
             service.writeContentWithOutputStream(exchange, "");
             return;
         }
 
         content = service.taskToJson(getTask);
-        exchange.sendResponseHeaders(Status.OK.getStatus(),content.getBytes().length);
+        exchange.sendResponseHeaders(HttpStatus.OK.getHttpStatus(),content.getBytes().length);
         service.writeContentWithOutputStream(exchange, content);
     }
 
     public void requestForPost(String path, String body, HttpExchange exchange) throws IOException {
         String content = "";
         if(!path.startsWith("/tasks")) {
-            exchange.sendResponseHeaders(Status.BAD_REQUEST.getStatus(),0);
+            exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getHttpStatus(),0);
             service.writeContentWithOutputStream(exchange, "");
             return;
         }
@@ -50,24 +50,22 @@ public class Controller {
         String requestTitle = body.split("\"")[1];
 
         if(!requestTitle.equals("title")) {
-            exchange.sendResponseHeaders(Status.BAD_REQUEST.getStatus(),0);
+            exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getHttpStatus(),0);
             service.writeContentWithOutputStream(exchange, "");
             return;
         }
 
-        System.out.println("hello");
         Task task = service.jsonToTask(body);
-        System.out.println("bye");
         service.createTask(task);
         content = service.taskToJson(task);
-        exchange.sendResponseHeaders(Status.CREATED.getStatus(),content.getBytes().length);
+        exchange.sendResponseHeaders(HttpStatus.CREATED.getHttpStatus(),content.getBytes().length);
         service.writeContentWithOutputStream(exchange, content);
     }
 
     public void requestForPutOrPatch(String path, String body, HttpExchange exchange) throws IOException {
         String content = "";
         if(!path.startsWith("/tasks")) {
-            exchange.sendResponseHeaders(Status.BAD_REQUEST.getStatus(),0);
+            exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getHttpStatus(),0);
             service.writeContentWithOutputStream(exchange, "");
             return;
         }
@@ -76,7 +74,7 @@ public class Controller {
         Task updateTask = service.getTask(idValue);
 
         if(updateTask == null) {
-            exchange.sendResponseHeaders(Status.NOT_FOUND.getStatus(), 0);
+            exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getHttpStatus(), 0);
             service.writeContentWithOutputStream(exchange, content);
             return;
         }
@@ -84,14 +82,14 @@ public class Controller {
         Task task = service.jsonToTask(body);
         service.updateTask(updateTask, task.getTitle());
         content = service.taskToJson(updateTask);
-        exchange.sendResponseHeaders(Status.OK.getStatus(),content.getBytes().length);
+        exchange.sendResponseHeaders(HttpStatus.OK.getHttpStatus(),content.getBytes().length);
         service.writeContentWithOutputStream(exchange, content);
     }
 
     public void requestForDelete(String path, HttpExchange exchange) throws IOException {
         String content = "";
         if(!path.startsWith("/tasks")) {
-            exchange.sendResponseHeaders(Status.BAD_REQUEST.getStatus(),0);
+            exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getHttpStatus(),0);
             service.writeContentWithOutputStream(exchange, "");
             return;
         }
@@ -100,14 +98,14 @@ public class Controller {
         Task deleteTask = service.getTask(idValue);
 
         if(deleteTask==null) {
-            exchange.sendResponseHeaders(Status.NOT_FOUND.getStatus(), 0);
+            exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getHttpStatus(), 0);
             service.writeContentWithOutputStream(exchange, content);
             return;
         }
 
         service.deleteTask(deleteTask);
         content = "";
-        exchange.sendResponseHeaders(Status.NO_CONTENT.getStatus(),0);
+        exchange.sendResponseHeaders(HttpStatus.NO_CONTENT.getHttpStatus(),0);
         service.writeContentWithOutputStream(exchange, content);
     }
 }
