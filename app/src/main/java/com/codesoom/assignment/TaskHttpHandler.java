@@ -14,22 +14,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-enum HttpStatusCode {
-    OK(200),
-    Created(201),
-    NoContent(204),
-    NotFound(404);
-
-    int value;
-    HttpStatusCode(int value) {
-        this.value = value;
-    }
-
-    int getValue() {
-        return value;
-    }
-}
-
 public class TaskHttpHandler implements HttpHandler {
     private static final String MAIN_PATH = "tasks";
     private List<Task> tasks = new ArrayList<>();
@@ -42,21 +26,21 @@ public class TaskHttpHandler implements HttpHandler {
         String path = uri.getPath();
         System.out.println(method + " " + path);
 
-        String content = "";
-        HttpStatusCode httpStatusCode = HttpStatusCode.OK;
-
-        if (path.equals("/")) {
-            exchange.sendResponseHeaders(httpStatusCode.getValue(), content.getBytes().length);
+        if (path == null) {
+            System.out.println("Undefined path...");
+            exchange.sendResponseHeaders(HttpStatusCode.NotFound.getValue(), 0);
             OutputStream outputStream = exchange.getResponseBody();
-            outputStream.write(content.getBytes());
             outputStream.flush();
             outputStream.close();
             return;
         }
 
-        if (path == null) {
-            System.out.println("Undefined path...");
-            httpStatusCode = HttpStatusCode.NotFound;
+        if (path.equals("/")) {
+            exchange.sendResponseHeaders(HttpStatusCode.OK.getValue(), 0);
+            OutputStream outputStream = exchange.getResponseBody();
+            outputStream.flush();
+            outputStream.close();
+            return;
         }
 
         // "/tasks/1" is split into { "", "tasks", "1" }
@@ -64,7 +48,11 @@ public class TaskHttpHandler implements HttpHandler {
 
         if (!isValidPath(pathItems)) {
             System.out.println("Invalid path...");
-            httpStatusCode = HttpStatusCode.NotFound;
+            exchange.sendResponseHeaders(HttpStatusCode.NotFound.getValue(), 0);
+            OutputStream outputStream = exchange.getResponseBody();
+            outputStream.flush();
+            outputStream.close();
+            return;
         }
 
         int id = 0;
@@ -78,16 +66,8 @@ public class TaskHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        if (httpStatusCode != HttpStatusCode.OK) {
-            exchange.sendResponseHeaders(httpStatusCode.getValue(), content.getBytes().length);
-            OutputStream outputStream = exchange.getResponseBody();
-            outputStream.write(content.getBytes());
-            outputStream.flush();
-            outputStream.close();
-            return;
-        }
-
-        httpStatusCode = HttpStatusCode.NotFound;
+        String content = "";
+        HttpStatusCode httpStatusCode = HttpStatusCode.NotFound;
 
         // GET all tasks
         if (method.equals("GET") && (pathItems.length == 2)) {
