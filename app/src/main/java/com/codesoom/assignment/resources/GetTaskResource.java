@@ -1,8 +1,7 @@
 package com.codesoom.assignment.resources;
 
-import com.codesoom.assignment.Constants;
+import com.codesoom.assignment.URLs;
 import com.codesoom.assignment.models.Task;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jdi.request.InvalidRequestStateException;
 
 import java.io.IOException;
@@ -15,12 +14,11 @@ public class GetTaskResource extends TaskResource
     @Override
     public String handleRequest(String path, String body) throws IOException {
 
-        System.out.println("Get Task Resource path = " + path);
-        if (path.equals(Constants.TASKS)) {
+        if (path.equals(URLs.TASKS)) {
             return tasksToJSON();
         }
-        if (path.startsWith(Constants.TASKS_ID)) {
-            String param = path.substring(Constants.TASKS_ID.length());
+        if (path.startsWith(URLs.TASKS_ID)) {
+            String param = path.substring(URLs.TASKS_ID.length());
             Long id = parseParam(param);
             Optional<Task> taskOpt = getTaskById(id);
             Task task = taskOpt.orElseThrow(() -> new NoSuchElementException("Not found"));

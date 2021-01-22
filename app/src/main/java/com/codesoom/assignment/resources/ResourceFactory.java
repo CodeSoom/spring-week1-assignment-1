@@ -1,14 +1,16 @@
 package com.codesoom.assignment.resources;
 
+import com.codesoom.assignment.HttpMethod;
+
 public class ResourceFactory {
 
-    public TaskResource createResource(String method) {
+    public TaskResource createResource(HttpMethod method) {
         TaskResource taskResource = null;
         switch (method) {
-            case "GET":
+            case GET:
                 taskResource = new GetTaskResource();
                 break;
-            case "POST":
+            case POST:
                 taskResource = new PostTaskResource();
             //TODO: PUT, DELETE
         }

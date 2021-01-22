@@ -2,14 +2,14 @@ package com.codesoom.assignment;
 
 public enum HttpStatusCode {
 
-    OK(200, "ok"),
-    CREATED(201, "created"),
+    OK(200, "OK"),
+    CREATED(201, "Created"),
 
-    BAD_REQUEST(400, "bad request"),
-    NOT_FOUND(404, "not found"),
-    METHOD_NOT_ALLOWED(405, "method not allowed"),
+    BAD_REQUEST(400, "Bad Request"),
+    NOT_FOUND(404, "Not Found"),
+    METHOD_NOT_ALLOWED(405, "Method Not Allowed"),
 
-    INTERNAL_SERVER_ERROR(500, "internal server error");
+    INTERNAL_SERVER_ERROR(500, "Internal Server Error");
 
     private int code;
     private String status;

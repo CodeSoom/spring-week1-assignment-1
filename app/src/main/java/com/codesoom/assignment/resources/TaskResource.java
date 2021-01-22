@@ -20,7 +20,7 @@ public abstract class TaskResource implements ResourceHandler {
     }
 
     protected String tasksToJSON() throws IOException {
-        System.out.println("tasks to JSON... ");
+
         OutputStream outputStream = new ByteArrayOutputStream();
         mapper.writeValue(outputStream, tasks);
 
@@ -28,7 +28,7 @@ public abstract class TaskResource implements ResourceHandler {
     }
 
     protected String taskToJSON(Task task) throws IOException {
-        System.out.println("task To JSON... ");
+
         OutputStream outputStream = new ByteArrayOutputStream();
         mapper.writeValue(outputStream, task);
 

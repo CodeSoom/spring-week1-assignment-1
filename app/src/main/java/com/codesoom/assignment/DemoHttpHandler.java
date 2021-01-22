@@ -23,13 +23,12 @@ public class DemoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        System.out.println(method + " " + path);
         String content = handleRequest(method, path, body);
 
         if (content.equals(HttpStatusCode.BAD_REQUEST.getStatus())) {
-            exchange.sendResponseHeaders(HttpStatusCode.NOT_FOUND.getCode(), content.getBytes().length);
+            sendResponseHeaders(exchange, content, HttpStatusCode.NOT_FOUND);
         } else {
-            exchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), content.getBytes().length);
+            sendResponseHeaders(exchange, content, HttpStatusCode.OK);
         }
 
         OutputStream outputStream = exchange.getResponseBody();
@@ -39,26 +38,24 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
+    private void sendResponseHeaders(HttpExchange exchange, String content, HttpStatusCode notFound) throws IOException {
+        exchange.sendResponseHeaders(notFound.getCode(), content.getBytes().length);
+    }
+
     private String handleRequest(String method, String path, String body)
             throws IOException {
 
-        if (isProperMethod(method) && isProperPath(path)) {
+        HttpMethod httpMethod = HttpMethod.valueOf(method);
+        if (HttpMethod.isProperMethod(httpMethod) && isProperPath(path)) {
             ResourceFactory factory = new ResourceFactory();
-            TaskResource resource = factory.createResource(method);
+            TaskResource resource = factory.createResource(httpMethod);
             return resource.handleRequest(path, body);
         }
 
         return HttpStatusCode.BAD_REQUEST.getStatus();
     }
 
-    private boolean isProperMethod(String method) {
-        return method.equals(HttpMethod.GET.name()) ||
-               method.equals(HttpMethod.POST.name()) ||
-               method.equals(HttpMethod.PUT.name()) ||
-               method.equals(HttpMethod.DELETE.name());
-    }
-
-    private boolean isProperPath(String path) {
-        return path.startsWith(Constants.TASKS);
+    public boolean isProperPath(String path) {
+        return path.startsWith(URLs.TASKS);
     }
 }
