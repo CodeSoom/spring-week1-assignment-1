@@ -65,12 +65,12 @@ public class TaskHttpRequestContext extends HttpRequestContextBase {
     }
 
     private boolean isRequestTaskList(String path) {
-        return path.equals("/tasks") || path.equals("/tasks/");
+        return path.equals(BASE_PATH) || path.equals(BASE_PATH + "/");
     }
 
     private long parseIdFromPath(String path) throws NumberFormatException {
         //path 마지막에 '/'이 붙어 있을 것을 대비
-        String idString = path.replace("/tasks/", "").replace("/", "");
+        String idString = path.replace(BASE_PATH, "").replaceAll("/", "");
         return Long.parseLong(idString);
     }
 }

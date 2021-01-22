@@ -6,10 +6,10 @@ import java.util.*;
 
 public class TaskService {
     private Map<Long, Task> tasks = new HashMap<>();
-    private IdGenerator idGenerator = new IdGenerator();
+    private final IdGenerator idGenerator = new IdGenerator();
 
     public Task getTask(long id) {
-        return getTaskByIdOrThrow(id);
+        return getTaskById(id);
     }
 
     public List<Task> getTasks() {
@@ -24,24 +24,23 @@ public class TaskService {
     }
 
     public Task updateTask(long id, String newTitle) {
-        Task task = getTaskByIdOrThrow(id);
+        Task task = getTaskById(id);
         task.setTitle(newTitle);
         System.out.println("Completed to update task - " + task.toString());
         return task;
     }
 
     public void deleteTask(long id) {
-        Task task = getTaskByIdOrThrow(id);
+        Task task = getTaskById(id);
         tasks.remove(task.getId());
         System.out.println("Completed to delete task - " + task.toString());
     }
 
-    private Task getTaskByIdOrThrow(long id) {
+    private Task getTaskById(long id) throws IllegalArgumentException {
         return findTaskById(id).orElseThrow(() -> new IllegalArgumentException("Failed to find task (ID: " + id + ")"));
     }
 
     private Optional<Task> findTaskById(long id) {
         return Optional.ofNullable(tasks.get(id));
     }
-
 }

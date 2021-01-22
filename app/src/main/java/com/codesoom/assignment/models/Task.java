@@ -27,5 +27,4 @@ public class Task {
     public String toString() {
         return String.format("Task { id=%s, title=%s }", id, title);
     }
-
 }
