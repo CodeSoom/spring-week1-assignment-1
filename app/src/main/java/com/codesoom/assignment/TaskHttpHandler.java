@@ -28,18 +28,13 @@ public class TaskHttpHandler implements HttpHandler {
 
         if (path == null) {
             System.out.println("Undefined path...");
-            exchange.sendResponseHeaders(HttpStatusCode.NotFound.getValue(), 0);
-            OutputStream outputStream = exchange.getResponseBody();
-            outputStream.flush();
-            outputStream.close();
+            sendHttpResponse(exchange, HttpStatusCode.NotFound, "");
             return;
         }
 
         if (path.equals("/")) {
-            exchange.sendResponseHeaders(HttpStatusCode.OK.getValue(), 0);
-            OutputStream outputStream = exchange.getResponseBody();
-            outputStream.flush();
-            outputStream.close();
+            System.out.println("Default path for checking server is running...");
+            sendHttpResponse(exchange, HttpStatusCode.OK, "");
             return;
         }
 
@@ -48,10 +43,7 @@ public class TaskHttpHandler implements HttpHandler {
 
         if (!isValidPath(pathItems)) {
             System.out.println("Invalid path...");
-            exchange.sendResponseHeaders(HttpStatusCode.NotFound.getValue(), 0);
-            OutputStream outputStream = exchange.getResponseBody();
-            outputStream.flush();
-            outputStream.close();
+            sendHttpResponse(exchange, HttpStatusCode.NotFound, "");
             return;
         }
 
@@ -74,6 +66,8 @@ public class TaskHttpHandler implements HttpHandler {
             content = tasksToJSON();
             httpStatusCode = HttpStatusCode.OK;
             System.out.println("[GET] Tasks successfully returned.\n" + content);
+            sendHttpResponse(exchange, httpStatusCode, content);
+            return;
         }
 
         // GET one task
@@ -88,6 +82,9 @@ public class TaskHttpHandler implements HttpHandler {
                 httpStatusCode = HttpStatusCode.OK;
                 System.out.println("[GET] A Task successfully returned.\n" + content);
             }
+
+            sendHttpResponse(exchange, httpStatusCode, content);
+            return;
         }
 
         // POST
@@ -108,6 +105,9 @@ public class TaskHttpHandler implements HttpHandler {
                     System.out.println("[POST] Unhandled Exception thrown...");
                     break;
             }
+
+            sendHttpResponse(exchange, httpStatusCode, content);
+            return;
         }
 
         // PUT
@@ -129,6 +129,9 @@ public class TaskHttpHandler implements HttpHandler {
                     System.out.println("[PUT] Unhandled Exception thrown...");
                     break;
             }
+
+            sendHttpResponse(exchange, httpStatusCode, content);
+            return;
         }
 
         // PATCH
@@ -150,6 +153,9 @@ public class TaskHttpHandler implements HttpHandler {
                     System.out.println("[PATCH] Unhandled Exception thrown...");
                     break;
             }
+
+            sendHttpResponse(exchange, httpStatusCode, content);
+            return;
         }
 
         // DELETE
@@ -169,8 +175,15 @@ public class TaskHttpHandler implements HttpHandler {
                     System.out.println("[DELETE] Unhandled Exception thrown...");
                     break;
             }
+
+            sendHttpResponse(exchange, httpStatusCode, content);
+            return;
         }
 
+        sendHttpResponse(exchange, httpStatusCode, content);
+    }
+
+    private void sendHttpResponse(HttpExchange exchange, HttpStatusCode httpStatusCode, String content) throws IOException {
         exchange.sendResponseHeaders(httpStatusCode.getValue(), content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
