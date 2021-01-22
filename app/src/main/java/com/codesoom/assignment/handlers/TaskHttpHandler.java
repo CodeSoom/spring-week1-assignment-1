@@ -14,10 +14,14 @@ import java.util.stream.Collectors;
 
 import static com.codesoom.assignment.App.*;
 
+/**
+ * Task 도메인 리퀘스트를 처리합니다.
+ */
+
 public class TaskHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<Task>();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private int rCode;
+    private int responseCode;
 
     /**
      * 사용자가 Request 를 보내면 실행되는 메서드 입니다.
@@ -53,11 +57,11 @@ public class TaskHttpHandler implements HttpHandler {
             }
             default:
                 result = ResultMessage.METHOD_NOT_ALLOWED.getMessage();
-                rCode = HttpStatusCode.METHOD_NOT_ALLOWED.getCode();
+                responseCode = HttpStatusCode.METHOD_NOT_ALLOWED.getCode();
                 break;
         }
 
-        exchange.sendResponseHeaders(rCode, result.getBytes().length);
+        exchange.sendResponseHeaders(responseCode, result.getBytes().length);
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.write(result.getBytes());
         responseBody.flush();
@@ -72,7 +76,7 @@ public class TaskHttpHandler implements HttpHandler {
 
     private String getMapper(String requestURIPath) throws IOException {
         String result = "";
-        rCode = HttpStatusCode.OK.getCode();
+        responseCode = HttpStatusCode.OK.getCode();
         if(requestURIPath.equals("/tasks")){
             result = getTasks();
         }else if(requestURIPath.contains("/tasks")){
@@ -82,7 +86,7 @@ public class TaskHttpHandler implements HttpHandler {
                 result = getTask(parseLong);
             }else{
                 result = "Wrong argument passed!";
-                rCode = HttpStatusCode.BAD_REQUEST.getCode();
+                responseCode = HttpStatusCode.BAD_REQUEST.getCode();
             }
         }
         return result;
@@ -98,7 +102,7 @@ public class TaskHttpHandler implements HttpHandler {
         String result;
         if (body.isBlank()) {
             result = ResultMessage.BAD_REQUEST.getMessage();
-            rCode = HttpStatusCode.BAD_REQUEST.getCode();
+            responseCode = HttpStatusCode.BAD_REQUEST.getCode();
         } else {
             result = setTask(body);
         }
@@ -116,7 +120,7 @@ public class TaskHttpHandler implements HttpHandler {
     private String putMapper(String requestURIPath, String body) throws IOException {
         String[] split = requestURIPath.split("/");
         String result = ResultMessage.BAD_REQUEST.getMessage();
-        rCode = HttpStatusCode.BAD_REQUEST.getCode();
+        responseCode = HttpStatusCode.BAD_REQUEST.getCode();
         if (!body.isBlank() && split.length > 0 && split.length != 1) {
             long parseLong = Long.parseLong(split[2]);
             result = updateTask(body, parseLong);
@@ -133,7 +137,7 @@ public class TaskHttpHandler implements HttpHandler {
 
     private String deleteMapper(String requestURIPath) throws IOException {
         String result = ResultMessage.BAD_REQUEST.getMessage();
-        rCode = HttpStatusCode.BAD_REQUEST.getCode();
+        responseCode = HttpStatusCode.BAD_REQUEST.getCode();
         String[] split = requestURIPath.split("/");
         if (split.length > 0 && split.length != 1) {
             long parseLong = Long.parseLong(split[2]);
@@ -158,14 +162,23 @@ public class TaskHttpHandler implements HttpHandler {
      * ID 에 해당하는 Task 를 조회합니다.
      *
      * @param ID 조회할 Task 와 매칭될 ID 입니다.
-     * @return ID 에 해당하는 Task 를 JSON 형태의 String 으로 리턴합니다.
+     * @return ID 에 해당하는 Task 를 JSON 형태의 String 으로 리턴하고, 해당되는 ID가 없으면 NOT_FOUND 메세지를 리턴합니다.
      */
 
     private String getTask(long ID) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        Task task = tasks.get((int) ID - 1);
-        objectMapper.writeValue(outputStream, task);
-        return outputStream.toString();
+        String resultMessage = ResultMessage.NOT_FOUND.getMessage();
+        responseCode = HttpStatusCode.NOT_FOUND.getCode();
+        if(tasks.size() > 0){
+            for(Task task : tasks){
+                if(task.getId() == ID){
+                    objectMapper.writeValue(outputStream, task);
+                    responseCode = HttpStatusCode.OK.getCode();
+                    return outputStream.toString();
+                }
+            }
+        }
+      return resultMessage;
     }
 
     /**
@@ -182,7 +195,7 @@ public class TaskHttpHandler implements HttpHandler {
         }
         System.out.println(taskJson);
         tasks.add(taskJson);
-        rCode = HttpStatusCode.CREATED.getCode();
+        responseCode = HttpStatusCode.CREATED.getCode();
         return getTasks();
     }
 
@@ -198,7 +211,7 @@ public class TaskHttpHandler implements HttpHandler {
         if(tasks.size() > 0){
             tasks.get((int) ID - 1 ).setTitle(title);
         }
-        rCode = HttpStatusCode.OK.getCode();
+        responseCode = HttpStatusCode.OK.getCode();
         return getTasks();
     }
 
@@ -213,7 +226,7 @@ public class TaskHttpHandler implements HttpHandler {
         if(tasks.size() > 0){
             tasks.remove((int) ID - 1 );
         }
-        rCode = HttpStatusCode.OK.getCode();
+        responseCode = HttpStatusCode.OK.getCode();
         return getTasks();
     }
 
