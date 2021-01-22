@@ -11,6 +11,11 @@ public class TasksController {
 
     private TaskService taskService = new TaskService();
 
+    @RequestMapping(method = RequestMethod.HEAD, path = "/")
+    public HttpResponse root(HttpRequest httpRequest) {
+        return new HttpResponse(HttpStatus.OK, "");
+    }
+
     @RequestMapping(method = RequestMethod.GET, path = "/tasks")
     public HttpResponse getTasks(HttpRequest httpRequest) {
         return new HttpResponse(HttpStatus.OK, taskService.getTasks());
