@@ -28,9 +28,29 @@ public class DemoHttpHandler implements HttpHandler {
 
         System.out.println(method + " " + path);
 
-        String content = new ResponseHandler().handle(method, path, tasks, body);
+        String content = "";
+        int statusCode = Constant.HttpStatusCode.OK;
 
-        exchange.sendResponseHeaders(Constant.HttpStatusCode.OK, content.getBytes().length);
+        try {
+            content = new ResponseHandler().handle(method, path, tasks, body);
+
+            switch (method) {
+                case "POST":
+                    statusCode = Constant.HttpStatusCode.CREATED;
+                    break;
+
+                case "DELETE":
+                    statusCode = Constant.HttpStatusCode.NO_CONTENT;
+                    break;
+            }
+
+        } catch (ResponseHandlingException e) {
+            e.printDescription();
+            content = "";
+            statusCode = Constant.HttpStatusCode.NOT_FOUND;
+        }
+
+        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
 

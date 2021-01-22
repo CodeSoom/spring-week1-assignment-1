@@ -12,17 +12,29 @@ import static com.codesoom.assignment.TaskManager.*;
  * TODO: if possible, change switch statement to hashmap
  */
 public class ResponseHandler {
-    public String handle(String method, String path, List<Task> tasks, String body) throws IOException {
+    public String handle(String method, String path, List<Task> tasks, String body) throws IOException, ResponseHandlingException {
         // check wrong path
-        if (!path.matches("/tasks/*[0-9]*")) return "Wrong URI path";
+        if (!path.matches("/tasks/*[0-9]*")) {
+            throw new ResponseHandlingException(ResponseHandlingException.ErrorCode.WRONG_PATH);
+        }
 
         Long taskId = extractTaskId(path);
 
         switch (method) {
             case "GET":
-                return (path.equals("/tasks"))
-                        ? tasksToJSON(tasks) // fetch task list
-                        : taskToJSON(getTask(tasks, taskId)); // fetch a task
+                // fetch task list
+                if (path.equals("/tasks")) {
+                    return tasksToJSON(tasks);
+                }
+
+                // fetch a task
+                Task selectedTask = getTask(tasks, taskId);
+                // TODO: getTask에서 아래의 로직을 처리할 수 있도록 함
+                if (selectedTask.getId() == null) {
+                    throw new ResponseHandlingException(ResponseHandlingException.ErrorCode.WRONG_PATH);
+                }
+
+                return taskToJSON(selectedTask);
 
             case "POST":
                 if (body.isBlank()) break;
@@ -35,18 +47,27 @@ public class ResponseHandler {
                 if (body.isBlank()) break;
 
                 Task editableTask = getTask(tasks, taskId);
+                // TODO: getTask에서 아래의 로직을 처리할 수 있도록 함
+                if (editableTask.getId() == null) {
+                    throw new ResponseHandlingException(ResponseHandlingException.ErrorCode.WRONG_PATH);
+                }
+
                 tasks.set(tasks.indexOf(editableTask), toTask(body, editableTask.getId()));
                 return taskToJSON(getTask(tasks, taskId));
 
             case "DELETE":
+                if (getTask(tasks, taskId).getId() == null) {
+                    throw new ResponseHandlingException(ResponseHandlingException.ErrorCode.WRONG_PATH);
+                }
+
                 tasks.removeIf(task -> Objects.equals(taskId, task.getId()));
                 return "";
 
             default:
-                return "Unknown HTTP method";
+                throw new ResponseHandlingException(ResponseHandlingException.ErrorCode.UNKNOWN_HTTP_METHOD);
         }
 
-        return "Wrong URI path";
+        throw new ResponseHandlingException(ResponseHandlingException.ErrorCode.WRONG_PATH);
     }
 
     private Long extractTaskId(String path) {
