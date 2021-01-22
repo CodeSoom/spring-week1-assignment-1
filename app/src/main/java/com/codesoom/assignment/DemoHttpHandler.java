@@ -23,13 +23,14 @@ public class DemoHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         String content = "Hello World";
+        controller.requestHttp(method, path, body, exchange);
 
-        switch (method) {
-            case "GET" -> controller.requestForGet(path, exchange);
-            case "POST" -> controller.requestForPost(path, body, exchange);
-            case "PUT", "PATCH" -> controller.requestForPutOrPatch(path, body, exchange);
-            case "DELETE" -> controller.requestForDelete(path, exchange);
-        }
+//        switch (method) {
+//            case "GET" -> controller.requestForGet(path, exchange);
+//            case "POST" -> controller.requestForPost(path, body, exchange);
+//            case "PUT", "PATCH" -> controller.requestForPutOrPatch(path, body, exchange);
+//            case "DELETE" -> controller.requestForDelete(path, exchange);
+//        }
 
 //        if(method.equals("GET")) {
 //            requestForGet(path, exchange);

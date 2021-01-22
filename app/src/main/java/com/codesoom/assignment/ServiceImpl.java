@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
-public class Service {
+public class ServiceImpl {
     private ObjectMapper objectMapper = new ObjectMapper();
     private OutputStream outputStream;
     Repository repository = new Repository();
