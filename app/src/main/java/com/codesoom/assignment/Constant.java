@@ -9,5 +9,8 @@ public class Constant {
 
     class HttpStatusCode {
         static final int OK = 200;
+        static final int CREATED = 201;
+        static final int NO_CONTENT = 204;
+        static final int NOT_FOUND = 404;
     }
 }
