@@ -42,11 +42,11 @@ public class Tasks {
         }
     }
 
-    /*public String put(Task task) {
-
+    public static void put(Task task) throws NotExistsIDException {
+        TaskManager.modify(task);
     }
 
-    public String patch(long id, String title) {
+    /*public String patch(long id, String title) {
 
     }
 

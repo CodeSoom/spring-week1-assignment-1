@@ -122,4 +122,37 @@ public class TasksTest {
         }
         fail();
     }
+
+    /**
+     * <p>메소드 : {@code Tasks.put}</p>
+     * <p>상황 : 입력된 {@code Task}의 ID가 존재할 때.</p>
+     * <p>기대 : 에러가 나지 않음.</p>
+     */
+    @Test
+    void putWhenExistID() {
+        final long id = 1L;
+        final String title = "sample";
+        final String modifiedTitle = "modified sample";
+
+        TaskManager.insert(new Task(id, title));
+        Tasks.put(new Task(id, modifiedTitle));
+    }
+
+    /**
+     * <p>메소드 : {@code Tasks.put}</p>
+     * <p>상황 : 입력된 {@code Task}의 ID가 존재하지 않을 때.</p>
+     * <p>기대 : {@code NotExistsIDException}을 던짐.</p>
+     */
+    @Test
+    void putWhenNotExistID() {
+        final long id = 1L;
+        final String title = "sample";
+
+        try {
+            Tasks.put(new Task(id, title));
+        } catch (NotExistsIDException e) {
+            return;
+        }
+        fail();
+    }
 }
