@@ -38,8 +38,8 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
-    private void sendResponseHeaders(HttpExchange exchange, String content, HttpStatusCode notFound) throws IOException {
-        exchange.sendResponseHeaders(notFound.getCode(), content.getBytes().length);
+    private void sendResponseHeaders(HttpExchange exchange, String content, HttpStatusCode statusCode) throws IOException {
+        exchange.sendResponseHeaders(statusCode.getCode(), content.getBytes().length);
     }
 
     private String handleRequest(String method, String path, String body)
