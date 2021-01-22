@@ -11,12 +11,18 @@ import java.io.OutputStream;
 
 public class TasksHttpHandler implements HttpHandler {
 
+    private String path;
+
+    public TasksHttpHandler(String path) {
+        this.path = path;
+    }
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         HttpRequest httpRequest = new HttpRequest(exchange.getRequestMethod(), exchange.getRequestURI(), exchange.getRequestBody());
 
-        TasksReflection tasksReflection = new TasksReflection();
-        HttpResponse httpResponse = (HttpResponse) tasksReflection.processMethod(TasksController.class, httpRequest);
+        TasksReflection tasksReflection = new TasksReflection(path);
+        HttpResponse httpResponse = tasksReflection.processMethod(TasksController.class, httpRequest);
 
         sendResponse(exchange, httpResponse);
     }

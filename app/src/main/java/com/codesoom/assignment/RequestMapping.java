@@ -10,6 +10,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface RequestMapping {
+
     RequestMethod method() default RequestMethod.GET;
+
     String path();
+
 }
