@@ -12,6 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class TasksTest {
+    private final Tasks handler = new Tasks();
+
     @BeforeEach
     void beforeEach() {
         TaskManager.clear();
@@ -24,7 +26,7 @@ public class TasksTest {
      */
     @Test
     void getAllWithoutTasks() throws JsonProcessingException {
-        String tasks = Tasks.get();
+        String tasks = handler.get();
 
         assertEquals("[]", tasks);
     }
@@ -38,7 +40,7 @@ public class TasksTest {
     void getAllWithTasks() throws JsonProcessingException {
         TaskManager.insert("sample");
 
-        String tasks = Tasks.get();
+        String tasks = handler.get();
 
         assertEquals("[{\"id\":1,\"title\":\"sample\"}]", tasks);
     }
@@ -51,7 +53,7 @@ public class TasksTest {
     @Test
     void getOneWhenNotExist() {
         try {
-            Tasks.get(1);
+            handler.get(1);
         } catch (NotExistsIDException e) {
             return;
         }
@@ -67,7 +69,7 @@ public class TasksTest {
     void getOneWhenExist() {
         TaskManager.insert("sample");
 
-        String task = Tasks.get(1);
+        String task = handler.get(1);
 
         assertEquals("{\"id\":1,\"title\":\"sample\"}", task);
     }
@@ -81,7 +83,7 @@ public class TasksTest {
     void postWithoutID() {
         final String title = "sample";
 
-        Tasks.post(new Task(null, title));
+        handler.post(new Task(null, title));
 
         // 만약 id가 1인 Task 가 존재하지 않을 시 NotExistsIDException 을 던짐
         TaskManager.find(1);
@@ -97,7 +99,7 @@ public class TasksTest {
         final long id = 100L;
         final String title = "sample";
 
-        Tasks.post(new Task(id, title));
+        handler.post(new Task(id, title));
 
         // 만약 id가 1인 Task 가 존재하지 않을 시 NotExistsIDException 을 던짐
         TaskManager.find(id);
@@ -116,7 +118,7 @@ public class TasksTest {
         final String title = "sample";
 
         try {
-            Tasks.post(new Task(id, title));
+            handler.post(new Task(id, title));
         } catch (AlreadyExistsIDException e) {
             return;
         }
@@ -135,7 +137,7 @@ public class TasksTest {
         final String modifiedTitle = "modified sample";
 
         TaskManager.insert(new Task(id, title));
-        Tasks.put(new Task(id, modifiedTitle));
+        handler.put(new Task(id, modifiedTitle));
     }
 
     /**
@@ -149,7 +151,7 @@ public class TasksTest {
         final String title = "sample";
 
         try {
-            Tasks.put(new Task(id, title));
+            handler.put(new Task(id, title));
         } catch (NotExistsIDException e) {
             return;
         }
@@ -168,7 +170,7 @@ public class TasksTest {
         final String modifiedTitle = "modified sample";
 
         TaskManager.insert(new Task(id, title));
-        String data = Tasks.patch(id, modifiedTitle);
+        String data = handler.patch(id, modifiedTitle);
 
         assertEquals(String.format("{\"id\":%d,\"title\":\"%s\"}", id, modifiedTitle), data);
     }
@@ -184,7 +186,7 @@ public class TasksTest {
         final String title = "sample";
 
         try {
-            Tasks.patch(id, title);
+            handler.patch(id, title);
         } catch (NotExistsIDException e) {
             return;
         }
@@ -202,7 +204,7 @@ public class TasksTest {
         final String title = "sample";
 
         TaskManager.insert(new Task(id, title));
-        Tasks.delete(id);
+        handler.delete(id);
     }
 
     /**
@@ -215,7 +217,7 @@ public class TasksTest {
         final long id = 1L;
 
         try {
-            Tasks.delete(id);
+            handler.delete(id);
         } catch (NotExistsIDException e) {
             return;
         }

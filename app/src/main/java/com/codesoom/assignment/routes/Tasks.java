@@ -16,7 +16,7 @@ public class Tasks {
      * @return JSON array string.
      * @throws JsonProcessingException internal server error.
      */
-    public static String get() throws JsonProcessingException {
+    public String get() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         List<Task> tasks = TaskManager.find();
         return mapper.writeValueAsString(tasks);
@@ -29,7 +29,7 @@ public class Tasks {
      * @return JSON string.
      * @throws NotExistsIDException when id is not exist.
      */
-    public static String get(long id) throws NotExistsIDException {
+    public String get(long id) throws NotExistsIDException {
         Task task = TaskManager.find(id);
         return task.toString();
     }
@@ -40,7 +40,7 @@ public class Tasks {
      * @param task is want to insert task.
      * @throws AlreadyExistsIDException when task id is already exist.
      */
-    public static void post(Task task) throws AlreadyExistsIDException {
+    public void post(Task task) throws AlreadyExistsIDException {
         if (task.id() == null) {
             TaskManager.insert(task.title());
         } else {
@@ -54,18 +54,18 @@ public class Tasks {
      * @param task is want to modify task.
      * @throws NotExistsIDException when task id is not exist.
      */
-    public static void put(Task task) throws NotExistsIDException {
+    public void put(Task task) throws NotExistsIDException {
         TaskManager.modify(task);
     }
 
     /**
      * When request PATCH method with id.
      *
-     * @param id is want to modify target task id.
+     * @param id    is want to modify target task id.
      * @param title is want to modify task title.
      * @throws NotExistsIDException when task id is not exist.
      */
-    public static String patch(long id, String title) throws NotExistsIDException {
+    public String patch(long id, String title) throws NotExistsIDException {
         Task task = TaskManager.modify(id, title);
         return task.toString();
     }
@@ -76,7 +76,7 @@ public class Tasks {
      * @param id is want to delete target task id.
      * @throws NotExistsIDException when task id is not exist.
      */
-    public static void delete(long id) throws NotExistsIDException {
+    public void delete(long id) throws NotExistsIDException {
         TaskManager.delete(id);
     }
 }
