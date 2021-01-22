@@ -39,27 +39,32 @@ public class TaskHttpHandler implements HttpHandler {
         String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
-
-        switch (requestMethod) {
-            case "GET":
-                result = getMapper(requestURIPath);
-                break;
-            case "POST":
-                result = postMapper(body);
-                break;
-            case "PUT": {
-                result = putMapper(requestURIPath, body);
-                break;
+        if(requestURIPath == null){
+            responseCode = HttpStatusCode.NOT_FOUND.getCode();
+            result = ResultMessage.NOT_FOUND.getMessage();
+        }else{
+            switch (requestMethod) {
+                case "GET":
+                    result = getMapper(requestURIPath);
+                    break;
+                case "POST":
+                    result = postMapper(body);
+                    break;
+                case "PUT": {
+                    result = putMapper(requestURIPath, body);
+                    break;
+                }
+                case "DELETE": {
+                    result = deleteMapper(requestURIPath);
+                    break;
+                }
+                default:
+                    result = ResultMessage.METHOD_NOT_ALLOWED.getMessage();
+                    responseCode = HttpStatusCode.METHOD_NOT_ALLOWED.getCode();
+                    break;
             }
-            case "DELETE": {
-                result = deleteMapper(requestURIPath);
-                break;
-            }
-            default:
-                result = ResultMessage.METHOD_NOT_ALLOWED.getMessage();
-                responseCode = HttpStatusCode.METHOD_NOT_ALLOWED.getCode();
-                break;
         }
+
 
         exchange.sendResponseHeaders(responseCode, result.getBytes().length);
         OutputStream responseBody = exchange.getResponseBody();
@@ -167,8 +172,6 @@ public class TaskHttpHandler implements HttpHandler {
 
     private String getTask(long ID) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        String resultMessage = ResultMessage.NOT_FOUND.getMessage();
-        responseCode = HttpStatusCode.NOT_FOUND.getCode();
         if(tasks.size() > 0){
             for(Task task : tasks){
                 if(task.getId() == ID){
@@ -178,7 +181,9 @@ public class TaskHttpHandler implements HttpHandler {
                 }
             }
         }
-      return resultMessage;
+
+      responseCode = HttpStatusCode.NOT_FOUND.getCode();
+      return ResultMessage.NOT_FOUND.getMessage();
     }
 
     /**
