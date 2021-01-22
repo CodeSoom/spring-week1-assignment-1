@@ -30,7 +30,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         String content = new ResponseHandler().handle(method, path, tasks, body);
 
-        exchange.sendResponseHeaders(Constant.ResponseCode.success, content.getBytes().length);
+        exchange.sendResponseHeaders(Constant.HttpStatusCode.OK, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
 
