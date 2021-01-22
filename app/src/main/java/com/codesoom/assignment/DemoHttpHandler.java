@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
+    private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
 
     public DemoHttpHandler() {
@@ -57,9 +59,11 @@ public class DemoHttpHandler implements HttpHandler {
 
     }
 
-    private String tasksToJSON() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
+    private Task toTask(String content) throws JsonProcessingException {
+        return objectMapper.readValue(content, Task.class);
+    }
 
+    private String tasksToJSON() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
 
