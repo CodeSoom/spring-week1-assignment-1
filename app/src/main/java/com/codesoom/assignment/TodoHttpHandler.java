@@ -12,6 +12,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
@@ -55,7 +56,9 @@ public class TodoHttpHandler implements HttpHandler {
             return new Response(HttpStatus.NOT_FOUND, "");
         }
         long inputId = extractNumber(path);
+        System.out.println(inputId);
         if (!hasId(inputId)) {
+            System.out.println("!");
             return new Response(HttpStatus.NOT_FOUND, "");
         }
         taskMap.remove(inputId);
@@ -64,10 +67,7 @@ public class TodoHttpHandler implements HttpHandler {
 
     private long extractNumber(String path) {
         path = path.replace("/tasks/", "");
-        if (path.matches("^[0-9]+$")) {
-            return Long.parseLong(path);
-        }
-        return -1;
+        return OptionalLong.of(Long.parseLong(path)).getAsLong();
     }
 
     private Response processPutAndPatchRequest(HttpExchange exchange) throws IOException {
@@ -113,10 +113,7 @@ public class TodoHttpHandler implements HttpHandler {
 
 
     private boolean hasId(long id) {
-        if (taskMap.containsKey(id)) {
-            return true;
-        }
-        return false;
+        return taskMap.containsKey(id);
     }
 
     private boolean hasNumberParameter(String path) {
