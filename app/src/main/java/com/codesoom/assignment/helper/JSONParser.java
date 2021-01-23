@@ -13,15 +13,17 @@ import java.util.List;
  * TODO: Merge methods using Generic.
  */
 public class JSONParser {
-    public static String taskToJSON(Task task) throws IOException {
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    public String taskToJSON(Task task) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        new ObjectMapper().writeValue(outputStream, task);
+        objectMapper.writeValue(outputStream, task);
         return outputStream.toString();
     }
 
-    public static String tasksToJSON(List<Task> tasks) throws IOException {
+    public String tasksToJSON(List<Task> tasks) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        new ObjectMapper().writeValue(outputStream, tasks);
+        objectMapper.writeValue(outputStream, tasks);
         return outputStream.toString();
     }
 }

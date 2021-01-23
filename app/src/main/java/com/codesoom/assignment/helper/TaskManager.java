@@ -11,13 +11,13 @@ import java.util.Objects;
  * Return task by arguments.
  */
 public class TaskManager {
-    public static Task toTask(String content, Long id) throws JsonProcessingException {
+    public Task toTask(String content, Long id) throws JsonProcessingException {
         Task task = new ObjectMapper().readValue(content, Task.class);
         task.setId(id);
         return task;
     }
 
-    public static Task getTask(List<Task> tasks, Long taskId) {
+    public Task getTask(List<Task> tasks, Long taskId) {
         return tasks.stream()
                 .filter(element -> Objects.equals(taskId, element.getId()))
                 .findFirst()

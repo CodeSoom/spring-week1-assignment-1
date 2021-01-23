@@ -1,7 +1,6 @@
 package com.codesoom.assignment.handler;
 
 import com.codesoom.assignment.HttpStatusCode;
-import com.codesoom.assignment.ServerConfiguration;
 import com.codesoom.assignment.HttpMethod;
 import com.codesoom.assignment.ResponseHandlingException;
 import com.codesoom.assignment.model.Task;
