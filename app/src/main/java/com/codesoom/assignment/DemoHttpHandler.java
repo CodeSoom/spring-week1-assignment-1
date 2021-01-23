@@ -16,13 +16,16 @@ import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
 
-    private List<Task> tasks = new ArrayList<>();
-    private IdGenerator idGenerator = new IdGenerator();
-    ObjectMapper mapper = new ObjectMapper();
-    int statusCode = 404;
+    private List<Task> tasks;
+    private IdGenerator idGenerator;
+    private ObjectMapper mapper;
+    private int statusCode = 404;
 
     public DemoHttpHandler() {
-        Task task = new Task();
+        tasks = new ArrayList<>();
+        idGenerator = new IdGenerator();
+        mapper = new ObjectMapper();
+
     }
 
     @Override
@@ -38,8 +41,8 @@ public class DemoHttpHandler implements HttpHandler {
 
         InputStream inputStream = exchange.getRequestBody();
         String requestBody = new BufferedReader(new InputStreamReader(inputStream))
-            .lines()
-            .collect(Collectors.joining("\n"));
+                .lines()
+                .collect(Collectors.joining("\n"));
 
         System.out.println(requestMethod + " " + path);
 
@@ -61,7 +64,8 @@ public class DemoHttpHandler implements HttpHandler {
 
             if (requestMethod.equals("POST") && path.equals("/tasks")) {
                 if (!requestBody.isBlank()) {
-                    Task task = toTask(requestBody);
+                    Task task = new Task();
+                    task = toTask(requestBody);
                     task.setId(idGenerator.generate());
                     tasks.add(task);
                 }
@@ -114,26 +118,20 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private String taskToJson(Task task) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, task);
+        mapper.writeValue(outputStream, task);
 
         return outputStream.toString();
     }
 
     private String tasksToJson(List<Task> tasks) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
+        mapper.writeValue(outputStream, tasks);
 
         return outputStream.toString();
     }
 
     private Task toTask(String content) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        return objectMapper.readValue(content, Task.class);
+        return mapper.readValue(content, Task.class);
     }
 }
