@@ -4,6 +4,7 @@ import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.repository.TaskRepository;
 import com.codesoom.assignment.utils.JsonParser;
 
+import java.io.IOException;
 import java.util.List;
 
 public class TaskService {
@@ -11,7 +12,7 @@ public class TaskService {
     private JsonParser jsonParser = new JsonParser();
     private TaskRepository taskRepository = new TaskRepository();
 
-    public String getTasks() {
+    public String getTasks() throws IOException {
         List<Task> tasks = taskRepository.findAll();
         if (tasks.isEmpty()) {
             return "[]";
@@ -22,7 +23,7 @@ public class TaskService {
         return content;
     }
 
-    public String getTask(Long id) {
+    public String getTask(Long id) throws IOException {
         Task task = taskRepository.findOne(id);
         if (task == null) {
             return "";
@@ -33,14 +34,14 @@ public class TaskService {
         return content;
     }
 
-    public String addTask(String body) {
+    public String addTask(String body) throws IOException {
         Task task = taskRepository.save(jsonParser.toTask(body));
         String content = jsonParser.toJSON(task);
 
         return content;
     }
 
-    public String updateTask(Long id, String body) {
+    public String updateTask(Long id, String body) throws IOException {
         Task task = taskRepository.update(id, jsonParser.toTask(body));
         String content = jsonParser.toJSON(task);
 
