@@ -16,14 +16,6 @@ public class DemoHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
 
-    public DemoHttpHandler() {
-        Task task1 = new Task();
-        task1.setId(1L);
-        task1.setTitle("'나는 이미 행복한 부자다' 라고 되뇌기");
-
-        tasks.add(task1);
-    }
-
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
@@ -38,17 +30,20 @@ public class DemoHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         System.out.println(method + " " + path);
-        System.out.println(body);
+
+        if(!body.isBlank()) {
+            Task task = toTask(body);
+            tasks.add(task);
+
+            System.out.println(body);
+        }
 
         String content = "나는 진정 행복한 부자가 될 것이다.";
 
-        if(method.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJSON();
+        if(path.equals("/tasks")) {
+            content = handleCollection(method);
         }
 
-        if(method.equals("POST") && path.equals("/tasks")) {
-            content = "A task has been created";
-        }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
@@ -57,6 +52,18 @@ public class DemoHttpHandler implements HttpHandler {
         responseBody.flush();
         responseBody.close();
 
+    }
+
+    private String handleCollection(String method) throws IOException {
+        if(method.equals("GET")) {
+            return tasksToJSON();
+        }
+
+        if(method.equals("POST")) {
+            return "A task has been created";
+        }
+
+        return "e: invalid method";
     }
 
     private Task toTask(String content) throws JsonProcessingException {
