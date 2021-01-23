@@ -14,7 +14,7 @@ public class MyHttpHandler implements HttpHandler {
 
     JSONConverter jsonConverter = new JSONConverter();
     TaskRepository taskRepository = new TaskRepository();
-    private Long idInPath;
+    private Long notFoundId = 0L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -28,16 +28,15 @@ public class MyHttpHandler implements HttpHandler {
                 case "GET":
                     // /tasks만 입력했을 경우 (아이디로 검색하지 않고 전체 목록 얻을 때)
                     if (httpRequest.hasPath().equals("/tasks")) {
-                        GETAllTaskList();
+                        getAllTaskList();
                         content = jsonConverter.tasksToJson(taskRepository.getTaskStore());
                         response(HTTP_OK, content, exchange);
                         break;
                     }
                     // tasks/{id}를 입력했을 경우 (입력한 아이디에 해당하는 할일만 보여줌)
-                    Long id = getIdFromPath(httpRequest);
+                    Long id = httpRequest.getId();
                     findOne(id);
                     content = jsonConverter.taskToJson(findOne(id));
-                    System.out.println("content2 : " + content);
                     response(HTTP_CREATED, content, exchange);
                     break;
                 case "POST":
@@ -54,13 +53,15 @@ public class MyHttpHandler implements HttpHandler {
                     response(HTTP_NOT_FOUND, content, exchange);
                     break;
                 case "DELETE":
-                    if (deleteTask(httpRequest)) { // id가 있고 정상적일 때
+                    if (deleteTask(httpRequest.getId())) {
                         content = jsonConverter.tasksToJson(taskRepository.getTaskStore());
                         response(HTTP_OK, content, exchange);
                         break;
                     }
-                    response(HTTP_NOT_FOUND, content, exchange); // id 값이 없을 때
-                    break;
+                    if (httpRequest.getId().equals(notFoundId)) {
+                        response(HTTP_NOT_FOUND, content, exchange);
+                        break;
+                    }
                 default:
                     System.out.println("default : " + httpRequest.toString()); // 확인용
                     break;
@@ -86,25 +87,6 @@ public class MyHttpHandler implements HttpHandler {
         exchange.sendResponseHeaders(responseCode, content.length());
     }
 
-    private boolean pathExists(HttpRequest httpRequest) {
-        String path = httpRequest.hasPath();
-        String idInPath = path.replace("/tasks/", "");
-        if (idInPath == null) {
-            return false;
-        }
-        return true;
-    }
-
-    private Long getIdFromPath(HttpRequest httpRequest) {
-        if (pathExists(httpRequest)) {
-            String path = httpRequest.hasPath();
-            String id = path.replace("/tasks/", "");
-            long idInPath = Long.parseLong(id);
-            return idInPath;
-        }
-        return 0L;
-    }
-
     private String postCreateNewTask(HttpRequest httpRequest) throws IOException {
         String path = httpRequest.hasPath();
 
@@ -118,11 +100,8 @@ public class MyHttpHandler implements HttpHandler {
         return "POSTCreateNewTask() : content 없음";
     }
 
-    private boolean deleteTask(HttpRequest httpRequest) throws IOException {
-        Long deleteId = getIdFromPath(httpRequest);
-
-        // path의 id가 storeTaks에 있을 때
-        if (pathExists(httpRequest) && taskRepository.getTaskStore().containsKey(deleteId)) {
+    private boolean deleteTask(Long deleteId) throws IOException {
+        if (taskRepository.getTaskStore().containsKey(deleteId)) {
             taskRepository.deleteTask(deleteId);
             return true;
         }
@@ -130,9 +109,8 @@ public class MyHttpHandler implements HttpHandler {
     }
 
     private boolean putUpdateTaskTitle(HttpRequest httpRequest) throws IOException {
-        Long idForTaskUpdate = getIdFromPath(httpRequest);
-
-        if (pathExists(httpRequest) && taskRepository.getTaskStore().containsKey(idForTaskUpdate)) {
+        Long idForTaskUpdate = httpRequest.getId();
+        if (taskRepository.getTaskStore().containsKey(idForTaskUpdate)) {
             Task updateTask = jsonConverter.jsonToTask(httpRequest.hasBody());
             updateTask.setId(idForTaskUpdate);
             taskRepository.updateTaskTitle(idForTaskUpdate, updateTask);
@@ -141,7 +119,7 @@ public class MyHttpHandler implements HttpHandler {
         return false;
     }
 
-    private List<Task> GETAllTaskList() {
+    private List<Task> getAllTaskList() {
         return taskRepository.findAll();
     }
 

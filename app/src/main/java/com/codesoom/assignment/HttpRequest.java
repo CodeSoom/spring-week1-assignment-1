@@ -12,6 +12,7 @@ public class HttpRequest {
     private String method;
     private String path;
     private String body;
+    private Long id;
 
     public HttpRequest(HttpExchange exchange) {
         this.method = exchange.getRequestMethod(); // request로 어떤 메서드가 들어오는지 확인
@@ -20,6 +21,7 @@ public class HttpRequest {
         this.body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
+        this.id = getIdFromPath(path);
     }
 
     public String hasMethod() {
@@ -34,9 +36,21 @@ public class HttpRequest {
         return body;
     }
 
+    public Long getId() {
+        return id;
+    }
+
     @Override
     public String toString() {
         return "method=" + method + ", path=" + path + ", body=" + body;
     }
 
+    private Long getIdFromPath(String path) {
+        String idInPath = "";
+        if (path.contains("/tasks/")) {
+            idInPath = path.replace("/tasks/", "");
+            return Long.parseLong(idInPath);
+        }
+        return null;
+    }
 }
