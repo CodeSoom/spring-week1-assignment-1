@@ -1,97 +1,125 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Controller {
-    ServiceImpl serviceImpl = new ServiceImpl();
+    List<Task> tasks = new ArrayList<>();
+    Long id = 1L;
+
+    private ObjectMapper objectMapper = new ObjectMapper();
+    private OutputStream outputStream;
+
+    public Task getTask(Long idValue) {
+        return tasks.stream()
+                .filter(task -> task.getId().equals(idValue))
+                .findFirst().orElse(null);
+    }
 
     public void requestHttp(String method, String path, String body, HttpExchange exchange) throws IOException {
-        String content = "";
 
         if(method.equals("GET")){
             if(!path.startsWith("/tasks")) {
-                serviceImpl.send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
+                send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
                 return;
             }
 
             if(path.equals("/tasks")) {
-                List<Task> tasks = serviceImpl.getAllTasks();
-                content = serviceImpl.taskToJson(tasks);
-                serviceImpl.send(exchange, content, HttpStatus.OK.getHttpStatus());
+                send(exchange, taskToJson(tasks), HttpStatus.OK.getHttpStatus());
                 return;
             }
 
             Long idValue = Long.parseLong(path.substring("/tasks/".length()));
-            Task getTask = serviceImpl.getTask(idValue);
+            Task getTask = getTask(idValue);
 
             if(getTask == null) {
-                serviceImpl.send(exchange, "", HttpStatus.NOT_FOUND.getHttpStatus());
+                send(exchange, "", HttpStatus.NOT_FOUND.getHttpStatus());
                 return;
             }
 
-            content = serviceImpl.taskToJson(getTask);
-            serviceImpl.send(exchange, content, HttpStatus.OK.getHttpStatus());
+            send(exchange, taskToJson(getTask), HttpStatus.OK.getHttpStatus());
         }
 
         else if(method.equals("POST")){
             if(!path.startsWith("/tasks")) {
-                serviceImpl.send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
+                send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
                 return;
             }
 
             String requestTitle = body.split("\"")[1];
             if(!requestTitle.equals("title")) {
-                serviceImpl.send(exchange, content, HttpStatus.BAD_REQUEST.getHttpStatus());
+                send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
                 return;
             }
 
-            Task task = serviceImpl.jsonToTask(body);
-            serviceImpl.createTask(task);
-            content = serviceImpl.taskToJson(task);
-            serviceImpl.send(exchange, content, HttpStatus.CREATED.getHttpStatus());
+            Task task = jsonToTask(body);
+            task.setId(id++);
+            tasks.add(task);
+            send(exchange, taskToJson(task), HttpStatus.CREATED.getHttpStatus());
         }
 
         else if(method.equals("PUT") || method.equals("PATCH")) {
             if(!path.startsWith("/tasks")) {
-                serviceImpl.send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
+                send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
                 return;
             }
 
             Long idValue = Long.parseLong(path.substring("/tasks/".length()));
-            Task updateTask = serviceImpl.getTask(idValue);
+            Task updateTask = getTask(idValue);
 
             if(updateTask == null) {
-                serviceImpl.send(exchange, "", HttpStatus.NOT_FOUND.getHttpStatus());
+                send(exchange, "", HttpStatus.NOT_FOUND.getHttpStatus());
                 return;
             }
 
-            Task task = serviceImpl.jsonToTask(body);
-            serviceImpl.updateTask(updateTask, task.getTitle());
-            content = serviceImpl.taskToJson(updateTask);
-            serviceImpl.send(exchange, content, HttpStatus.OK.getHttpStatus());
+            Task task = jsonToTask(body);
+            updateTask.setTitle(task.getTitle());
+            send(exchange, taskToJson(updateTask), HttpStatus.OK.getHttpStatus());
         }
 
         else if(method.equals("DELETE")) {
             if(!path.startsWith("/tasks")) {
-                serviceImpl.send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
+                send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
                 return;
             }
 
             Long idValue = Long.parseLong(path.substring("/tasks/".length()));
-            Task deleteTask = serviceImpl.getTask(idValue);
+            Task deleteTask = getTask(idValue);
 
             if(deleteTask==null) {
-                serviceImpl.send(exchange, "", HttpStatus.NOT_FOUND.getHttpStatus());
+                send(exchange, "", HttpStatus.NOT_FOUND.getHttpStatus());
                 return;
             }
 
-            serviceImpl.deleteTask(deleteTask);
-            serviceImpl.send(exchange, "", HttpStatus.NO_CONTENT.getHttpStatus());
+            tasks.remove(deleteTask);
+            send(exchange, "", HttpStatus.NO_CONTENT.getHttpStatus());
         }
+    }
+
+    public void send(HttpExchange exchange, String content, int HttpStatus) throws IOException {
+        exchange.sendResponseHeaders(HttpStatus,content.getBytes().length);
+        outputStream = exchange.getResponseBody();
+        outputStream.write(content.getBytes());
+        outputStream.flush();
+        outputStream.close();
+    }
+
+    public Task jsonToTask(String json) throws JsonProcessingException {
+        return objectMapper.readValue(json, Task.class);
+    }
+
+    public String taskToJson(Object object) throws IOException {
+        outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, object);
+        return outputStream.toString();
     }
 
 }
