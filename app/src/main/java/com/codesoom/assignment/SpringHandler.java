@@ -11,6 +11,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class SpringHandler implements HttpHandler {
@@ -32,12 +33,17 @@ public class SpringHandler implements HttpHandler {
         System.out.println(method + " " + path);
 
         if(path.startsWith("/tasks")) {
-            handleCollection(exchange, method);
+            Long id = Long.parseLong(path.substring("/tasks/".length()));
+            System.out.println(id);
+            handleItem(exchange, method, id);
             return;
         }
 
         send(exchange, httpStatus, "매일 매일 달리지기 위한 첫걸음 시작하기!");
     }
+
+
+
 
     private void handleCollection(HttpExchange exchange, String method) throws IOException {
         if(method.equals("GET")) {
@@ -47,16 +53,41 @@ public class SpringHandler implements HttpHandler {
         if(method.equals("POST")) {
 //
             String body = getBody(exchange);
-            if( !body.isBlank()) {
 
-                Task task = toTask(body);
-                task.setId(generateId());
-                tasks.add(task);
+            Task task = toTask(body);
+            task.setId(generateId());
+            tasks.add(task);
 
-                send(exchange, httpStatus, toJSON(task));
-            }
+            send(exchange, httpStatus, toJSON(task));
 
         }
+    }
+
+    private void handleItem(HttpExchange exchange, String method, Long id) throws IOException {
+        if(method.equals("GET")) {
+            Task task = findTask(id);
+
+
+            if(task == null) {
+                send(exchange, 404, "");
+                return;
+            }
+            send(exchange, httpStatus, toJSON(tasks));
+
+        }
+
+        if(method.equals("PUT") || method.equals("PATCH")) {
+            Task task = findTask(id);
+
+
+            if(task == null) {
+                send(exchange, 404, "");
+                return;
+            }
+            send(exchange, httpStatus, toJSON(tasks));
+
+        }
+
     }
 
 
@@ -84,6 +115,14 @@ public class SpringHandler implements HttpHandler {
         outputStream.close();
 
     }
+
+    private Task findTask(Long id) {
+        return tasks.stream()
+                .filter(task -> task.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
 
 
     private Task toTask(String content) throws JsonProcessingException {
