@@ -24,22 +24,10 @@ public class DemoHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
-        InputStream requestBody = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(requestBody))
-                .lines()
-                .collect(Collectors.joining("\n"));
-
         System.out.println(method + " " + path);
 
-        if(!body.isBlank()) {
-            Task task = toTask(body);
-            tasks.add(task);
-
-            System.out.println(body);
-        }
-
         if(path.equals("/tasks")) {
-            String content = handleCollection(method);
+            String content = handleCollection(exchange, method);
             send(exchange,200, content);
             return;
         }
@@ -57,12 +45,22 @@ public class DemoHttpHandler implements HttpHandler {
         responseBody.close();
     }
 
-    private String handleCollection(String method) throws IOException {
+    private String handleCollection(HttpExchange exchange, String method) throws IOException {
         if(method.equals("GET")) {
             return tasksToJSON();
         }
 
         if(method.equals("POST")) {
+            InputStream requestBody = exchange.getRequestBody();
+            String body = new BufferedReader(new InputStreamReader(requestBody))
+                    .lines()
+                    .collect(Collectors.joining("\n"));
+
+            Task task = toTask(body);
+            tasks.add(task);
+
+            System.out.println(body);
+
             return "A task has been created";
         }
 
