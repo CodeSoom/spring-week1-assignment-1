@@ -1,11 +1,14 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.handler;
+
+import com.codesoom.assignment.ResponseHandlingException;
+import com.codesoom.assignment.model.Task;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
-import static com.codesoom.assignment.JSONParser.*;
-import static com.codesoom.assignment.TaskManager.*;
+import static com.codesoom.assignment.helper.JSONParser.*;
+import static com.codesoom.assignment.helper.TaskManager.*;
 
 /**
  * Handle responses content by requests.

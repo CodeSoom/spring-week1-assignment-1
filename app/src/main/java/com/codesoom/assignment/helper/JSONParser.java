@@ -1,5 +1,6 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.helper;
 
+import com.codesoom.assignment.model.Task;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.ByteArrayOutputStream;
@@ -12,13 +13,13 @@ import java.util.List;
  * TODO: Merge methods using Generic.
  */
 public class JSONParser {
-    static String taskToJSON(Task task) throws IOException {
+    public static String taskToJSON(Task task) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         new ObjectMapper().writeValue(outputStream, task);
         return outputStream.toString();
     }
 
-    static String tasksToJSON(List<Task> tasks) throws IOException {
+    public static String tasksToJSON(List<Task> tasks) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         new ObjectMapper().writeValue(outputStream, tasks);
         return outputStream.toString();

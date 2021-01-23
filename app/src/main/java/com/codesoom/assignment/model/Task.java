@@ -1,4 +1,4 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.model;
 
 /**
  * Task model, contains id and title.

@@ -1,7 +1,7 @@
 package com.codesoom.assignment;
 
 public class ResponseHandlingException extends Exception {
-    enum ErrorCode {
+    public enum ErrorCode {
         WRONG_PATH, UNKNOWN_HTTP_METHOD
     }
 

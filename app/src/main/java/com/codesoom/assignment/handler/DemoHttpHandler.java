@@ -1,10 +1,12 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.handler;
 
+import com.codesoom.assignment.Constant;
+import com.codesoom.assignment.ResponseHandlingException;
+import com.codesoom.assignment.model.Task;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
