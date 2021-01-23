@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.models.Response;
 import com.codesoom.assignment.resources.ResourceFactory;
 import com.codesoom.assignment.resources.TaskResource;
 import com.sun.net.httpserver.HttpExchange;
@@ -23,26 +24,18 @@ public class DemoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        String content = handleRequest(method, path, body);
+        Response response = handleRequest(method, path, body);
 
-        if (content.equals(HttpStatusCode.BAD_REQUEST.getStatus())) {
-            sendResponseHeaders(exchange, content, HttpStatusCode.NOT_FOUND);
-        } else {
-            sendResponseHeaders(exchange, content, HttpStatusCode.OK);
-        }
+        exchange.sendResponseHeaders(response.getHttpStatusCode().getCode(), response.getContent().getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
 
-        outputStream.write(content.getBytes());
+        outputStream.write(response.getContent().getBytes());
         outputStream.flush();
         outputStream.close();
     }
 
-    private void sendResponseHeaders(HttpExchange exchange, String content, HttpStatusCode statusCode) throws IOException {
-        exchange.sendResponseHeaders(statusCode.getCode(), content.getBytes().length);
-    }
-
-    private String handleRequest(String method, String path, String body)
+    private Response handleRequest(String method, String path, String body)
             throws IOException {
 
         HttpMethod httpMethod = HttpMethod.valueOf(method);
@@ -52,7 +45,7 @@ public class DemoHttpHandler implements HttpHandler {
             return resource.handleRequest(path, body);
         }
 
-        return HttpStatusCode.BAD_REQUEST.getStatus();
+        return new Response(HttpStatusCode.BAD_REQUEST.getStatus(), HttpStatusCode.BAD_REQUEST);
     }
 
     public boolean isProperPath(String path) {
