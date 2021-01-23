@@ -15,6 +15,9 @@ public class MyHttpHandler implements HttpHandler {
     JSONConverter jsonConverter = new JSONConverter();
     TaskRepository taskRepository = new TaskRepository();
     private Long notFoundId = 0L;
+    private int minimunMethodLength = 1;
+
+    private
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -22,22 +25,24 @@ public class MyHttpHandler implements HttpHandler {
         HttpRequest httpRequest = new HttpRequest(exchange);
         String content = "Hello, world!";
 
+        if (httpRequest.hasPath().isEmpty()) {
+            response(HTTP_NOT_FOUND, content, exchange);
+        }
 
-        if (!httpRequest.hasMethod().isEmpty()) {
+        if (httpRequest.hasMethod().length() >= minimunMethodLength) {
             switch (httpRequest.hasMethod()) {
                 case "GET":
-                    // /tasks만 입력했을 경우 (아이디로 검색하지 않고 전체 목록 얻을 때)
+                    /* /tasks만 입력했을 경우 (할 일 전체 목록을 얻는 경우) */
                     if (httpRequest.hasPath().equals("/tasks")) {
                         getAllTaskList();
                         content = jsonConverter.tasksToJson(taskRepository.getTaskStore());
                         response(HTTP_OK, content, exchange);
                         break;
                     }
-                    // tasks/{id}를 입력했을 경우 (입력한 아이디에 해당하는 할일만 보여줌)
+                    /* /tasks/{id}를 입력했을 경우 (입력한 아이디에 해당하는 할 일만 가져오는 경우) */
                     Long id = httpRequest.getId();
-                    findOne(id);
-                    content = jsonConverter.taskToJson(findOne(id));
-                    response(HTTP_CREATED, content, exchange);
+                    content = jsonConverter.taskToJson(findTaskById(id));
+                    response(HTTP_OK, content, exchange);
                     break;
                 case "POST":
                     content = postCreateNewTask(httpRequest);
@@ -66,15 +71,8 @@ public class MyHttpHandler implements HttpHandler {
                     System.out.println("default : " + httpRequest.toString()); // 확인용
                     break;
             }
-        } else {
-            response(HTTP_NOT_FOUND, content, exchange);
         }
 
-
-        if (httpRequest.hasMethod().isEmpty()) {
-            content = "There isn't Method";
-            exchange.sendResponseHeaders(404, content.length());
-        }
 
         // response 처리
         OutputStream outputStream = exchange.getResponseBody(); // getResponseBody() : Response를 byte 배열로 반환
@@ -123,7 +121,7 @@ public class MyHttpHandler implements HttpHandler {
         return taskRepository.findAll();
     }
 
-    private Task findOne(Long id) {
+    private Task findTaskById(Long id) {
         return taskRepository.getTaskById(id);
     }
 }
