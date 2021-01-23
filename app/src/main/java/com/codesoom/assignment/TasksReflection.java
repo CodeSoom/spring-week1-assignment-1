@@ -29,7 +29,7 @@ public class TasksReflection {
                 .filter(method -> isMatched(method, httpRequest))
                 .findFirst();
 
-        if (!matchedMethod.isPresent()) {
+        if (matchedMethod.isEmpty()) {
             return new HttpResponse(HttpStatus.NOT_FOUND, "");
         }
 
