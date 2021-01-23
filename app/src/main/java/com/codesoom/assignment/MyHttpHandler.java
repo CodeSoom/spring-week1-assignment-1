@@ -48,13 +48,15 @@ public class MyHttpHandler implements HttpHandler {
                     break;
                 case "PUT":
                 case "PATH":
-                    if (putUpdateTaskTitle(httpRequest)) {
+                    if (canUpdateTaskTitle(httpRequest) == true) {
                         content = jsonConverter.tasksToJson(taskRepository.getTaskStore());
                         response(HTTP_OK, content, exchange);
                         break;
                     }
-                    response(HTTP_NOT_FOUND, content, exchange);
-                    break;
+                    if (canUpdateTaskTitle(httpRequest) == false) {
+                        response(HTTP_NOT_FOUND, content, exchange);
+                        break;
+                    }
                 case "DELETE":
                     if (deleteTask(httpRequest.getId())) {
                         content = jsonConverter.tasksToJson(taskRepository.getTaskStore());
@@ -90,7 +92,7 @@ public class MyHttpHandler implements HttpHandler {
             Task newTask = jsonConverter.jsonToTask(httpRequest.hasBody());
             taskRepository.createNewTask(newTask);
 
-            String content = jsonConverter.tasksToJson(taskRepository.getTaskStore()); // content ==> outputStream.toString()을 return한 것
+            String content = jsonConverter.tasksToJson(taskRepository.getTaskStore());
             return content;
         }
         return "POSTCreateNewTask() : content 없음";
@@ -104,7 +106,7 @@ public class MyHttpHandler implements HttpHandler {
         return false;
     }
 
-    private boolean putUpdateTaskTitle(HttpRequest httpRequest) throws IOException {
+    private boolean canUpdateTaskTitle(HttpRequest httpRequest) throws IOException {
         Long idForTaskUpdate = httpRequest.getId();
         if (taskRepository.getTaskStore().containsKey(idForTaskUpdate)) {
             Task updateTask = jsonConverter.jsonToTask(httpRequest.hasBody());
