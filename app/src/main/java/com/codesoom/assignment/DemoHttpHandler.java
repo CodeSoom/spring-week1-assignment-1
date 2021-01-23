@@ -57,7 +57,7 @@ public class DemoHttpHandler implements HttpHandler {
         String content = "";
 
         if (tokenSize <= 1) {
-            if (requestMethod.equals("GET") && path.equals("/tasks")) {
+            if (requestMethod.equals("GET") && (path.equals("/tasks"))) {
                 content = tasksToJson(tasks);
                 this.statusCode = 200;
             }
@@ -78,21 +78,22 @@ public class DemoHttpHandler implements HttpHandler {
             int taskId = Integer.parseInt(id);
 
             if (requestMethod.equals("GET") && path.equals("/tasks/" + taskId)) {
-                if (tasks.size() < taskId) {
+                if (getTask(taskId) == null) {
                     this.statusCode = 404;
                 } else {
-                    Task task = tasks.get(taskId - 1);
+                    Task task = getTask(taskId);
+                    if (task == null) {return;}
                     content = taskToJson(task);
                     this.statusCode = 200;
                 }
             }
 
             if (requestMethod.equals("PUT") && path.equals("/tasks/" + taskId)) {
-                if (tasks.size() < taskId) {
+                if (getTask(taskId) == null) {
                     this.statusCode = 404;
                 } else {
                     if (!requestBody.isBlank()) {
-                        Task task = tasks.get(taskId - 1);
+                        Task task = getTask(taskId);
                         task.setTitle(mapper.readValue(requestBody, Task.class).getTitle());
                         content = taskToJson(task);
                     }
@@ -101,10 +102,11 @@ public class DemoHttpHandler implements HttpHandler {
             }
 
             if (requestMethod.equals("DELETE") && path.equals("/tasks/" + taskId)) {
-                if (tasks.size() < taskId) {
+                if (getTask(taskId) == null) {
                     this.statusCode = 404;
                 } else {
-                    tasks.remove(taskId);
+                    Task task = getTask(taskId);
+                    tasks.remove(task);
                     this.statusCode = 204;
                 }
             }
@@ -133,5 +135,14 @@ public class DemoHttpHandler implements HttpHandler {
 
     private Task toTask(String content) throws JsonProcessingException {
         return mapper.readValue(content, Task.class);
+    }
+
+    private Task getTask(int taskId) {
+        for (Task task : tasks) {
+            if (task.getId() == taskId) {
+                return task;
+            }
+        }
+        return null;
     }
 }
