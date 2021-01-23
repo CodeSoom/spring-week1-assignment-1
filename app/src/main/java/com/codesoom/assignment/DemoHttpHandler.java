@@ -30,10 +30,6 @@ public class DemoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        // REST - CRUD
-        // 1. Method - GET, POST, PUT/PATCH, DELETE, ...
-        // 2. Path - "/", "/tasks", "/tasks/1", ...
-        // 3. Headers, Body(Content)
 
         String requestMethod = exchange.getRequestMethod();
         URI requestURI = exchange.getRequestURI();
