@@ -3,8 +3,9 @@ package com.codesoom.assignment;
 import com.codesoom.assignment.application.user.UserService;
 import com.codesoom.assignment.web.*;
 import com.codesoom.assignment.application.task.TaskService;
-import com.codesoom.assignment.web.task.TaskHttpRequestContext;
-import com.codesoom.assignment.web.user.UserHttpRequestContext;
+import com.codesoom.assignment.web.task.TaskCollectionHttpRequestContext;
+import com.codesoom.assignment.web.task.TaskItemHttpRequestContext;
+import com.codesoom.assignment.web.user.UserCollectionHttpRequestContext;
 
 import java.io.IOException;
 
@@ -16,12 +17,16 @@ public class App {
         TaskService taskService = new TaskService();
         UserService userService = new UserService();
 
-        TaskHttpRequestContext taskRequestContext = new TaskHttpRequestContext(taskService);
-        UserHttpRequestContext userRequestContext = new UserHttpRequestContext(userService);
+        HttpRequestContextBase taskCollectionRequestContext = new TaskCollectionHttpRequestContext("/tasks", taskService);
+        HttpRequestContextBase taskItemRequestContext = new TaskItemHttpRequestContext("/tasks/", taskService);
+        HttpRequestContextBase userCollectionRequestContext = new UserCollectionHttpRequestContext("/users", userService);
+        HttpRequestContextBase userItemRequestContext = new UserCollectionHttpRequestContext("/users/", userService);
 
         MyHandler handler = new MyHandler();
-        handler.addRequestContext(TaskHttpRequestContext.BASE_PATH, taskRequestContext);
-        handler.addRequestContext(UserHttpRequestContext.BASE_PATH, userRequestContext);
+        handler.addRequestContext(taskCollectionRequestContext);
+        handler.addRequestContext(taskItemRequestContext);
+        handler.addRequestContext(userCollectionRequestContext);
+        handler.addRequestContext(userItemRequestContext);
 
         httpServer.addHandler("/", handler);
         httpServer.start();

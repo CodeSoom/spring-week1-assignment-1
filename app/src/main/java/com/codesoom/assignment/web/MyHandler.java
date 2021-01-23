@@ -4,16 +4,16 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class MyHandler implements HttpHandler {
-    private final Map<String, HttpRequestContextBase> requestContextMap = new HashMap<>();
+    private final List<HttpRequestContextBase> requestContextMap = new ArrayList<>();
 
-    public void addRequestContext(String path, HttpRequestContextBase httpRequestContext) {
-        requestContextMap.put(path, httpRequestContext);
-        System.out.println("Added new context at - " + path);
+    public void addRequestContext(HttpRequestContextBase httpRequestContext) {
+        requestContextMap.add(httpRequestContext);
     }
 
     @Override
@@ -26,8 +26,8 @@ public class MyHandler implements HttpHandler {
             return;
         }
 
-        Optional<HttpRequestContextBase> matchedContext = requestContextMap.entrySet().stream()
-                .filter(entry -> httpRequest.getPath().startsWith(entry.getKey())).map(Map.Entry::getValue).findFirst();
+        Optional<HttpRequestContextBase> matchedContext =
+            requestContextMap.stream().filter(e -> e.matchesPath(httpRequest.getPath())).findFirst();
 
         if (matchedContext.isEmpty()) {
             HttpResponseTransfer.sendResponse(HttpStatusCode.NOT_FOUND, exchange);
