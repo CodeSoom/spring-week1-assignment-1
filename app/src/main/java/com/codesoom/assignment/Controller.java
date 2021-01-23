@@ -81,10 +81,10 @@ public class Controller {
             return;
         }
 
-        Task task = jsonToTask(body);
-        task.setId(id++);
-        tasks.add(task);
-        send(exchange, taskToJson(task), HttpStatusCode);
+        Task createTask = jsonToTask(body);
+        createTask.setId(id++);
+        tasks.add(createTask);
+        send(exchange, taskToJson(createTask), HttpStatusCode);
     }
 
     private void handleUpdate(Long idValue, String body, HttpExchange exchange, int HttpStatusCode) throws IOException {
