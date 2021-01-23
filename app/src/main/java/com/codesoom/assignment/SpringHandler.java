@@ -35,7 +35,6 @@ public class SpringHandler implements HttpHandler {
         String path = uri.getPath();
 
         InputStream inputStream = exchange.getRequestBody();
-        inputStream.read();
         String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
@@ -48,21 +47,18 @@ public class SpringHandler implements HttpHandler {
             Task task = toTask(body);
             System.out.println(task);
         }
+
         System.out.println(body);
 
         String content = "매일 매일 달리지기 위한 첫걸음 시작하기!";
 
-
-
         if(method.equals("GET") && path.equals("/tasks")) {
-
             content = tasksToJSON();
         }
 
         if(method.equals("POST") && path.equals("/tasks")) {
-            content = "Create a new task.";
+            content = "과제를 생성했습니다.";
         }
-
 
         exchange.sendResponseHeaders(httpStatus, content.getBytes().length);
 
