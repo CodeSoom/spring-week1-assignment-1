@@ -22,7 +22,6 @@ public class DemoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        String content = "Hello World";
         controller.requestHttp(method, path, body, exchange);
     }
 }

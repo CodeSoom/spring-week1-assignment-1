@@ -26,86 +26,93 @@ public class Controller {
 
     public void requestHttp(String method, String path, String body, HttpExchange exchange) throws IOException {
 
-        if(method.equals("GET")){
-            if(!path.startsWith("/tasks")) {
+        Long idValue = Long.parseLong(path.substring("/tasks/".length()));
+
+        if (method.equals("GET")) {
+            if (!path.startsWith("/tasks")) {
                 send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
                 return;
             }
 
-            if(path.equals("/tasks")) {
+            if (path.equals("/tasks")) {
                 send(exchange, taskToJson(tasks), HttpStatus.OK.getHttpStatus());
                 return;
             }
 
-            Long idValue = Long.parseLong(path.substring("/tasks/".length()));
-            Task getTask = getTask(idValue);
-
-            if(getTask == null) {
-                send(exchange, "", HttpStatus.NOT_FOUND.getHttpStatus());
+            handleGet(idValue, exchange, HttpStatus.OK.getHttpStatus());
+        } else if (method.equals("POST")) {
+            if (!path.startsWith("/tasks")) {
+                send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
                 return;
             }
 
-            send(exchange, taskToJson(getTask), HttpStatus.OK.getHttpStatus());
+            handleCreate(body, exchange, HttpStatus.OK.getHttpStatus());
+        } else if (method.equals("PUT") || method.equals("PATCH")) {
+            if (!path.startsWith("/tasks")) {
+                send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
+                return;
+            }
+
+            handleUpdate(idValue, body, exchange, HttpStatus.OK.getHttpStatus());
+        } else if (method.equals("DELETE")) {
+            if (!path.startsWith("/tasks")) {
+                send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
+                return;
+            }
+
+            handleDelete(idValue, exchange, HttpStatus.NO_CONTENT.getHttpStatus());
+        }
+    }
+
+    private void handleGet(Long idValue, HttpExchange exchange, int HttpStatusCode) throws IOException {
+        Task getTask = getTask(idValue);
+        if (getTask == null) {
+            send(exchange, "", HttpStatus.NOT_FOUND.getHttpStatus());
+            return;
         }
 
-        else if(method.equals("POST")){
-            if(!path.startsWith("/tasks")) {
-                send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
-                return;
-            }
+        send(exchange, taskToJson(getTask), HttpStatusCode);
+    }
 
-            String requestTitle = body.split("\"")[1];
-            if(!requestTitle.equals("title")) {
-                send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
-                return;
-            }
-
-            Task task = jsonToTask(body);
-            task.setId(id++);
-            tasks.add(task);
-            send(exchange, taskToJson(task), HttpStatus.CREATED.getHttpStatus());
+    private void handleCreate(String body, HttpExchange exchange, int HttpStatusCode) throws IOException {
+        String requestTitle = body.split("\"")[1];
+        if (!requestTitle.equals("title")) {
+            send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
+            return;
         }
 
-        else if(method.equals("PUT") || method.equals("PATCH")) {
-            if(!path.startsWith("/tasks")) {
-                send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
-                return;
-            }
+        Task task = jsonToTask(body);
+        task.setId(id++);
+        tasks.add(task);
+        send(exchange, taskToJson(task), HttpStatusCode);
+    }
 
-            Long idValue = Long.parseLong(path.substring("/tasks/".length()));
+    private void handleUpdate(Long idValue, String body, HttpExchange exchange, int HttpStatusCode) throws IOException {
             Task updateTask = getTask(idValue);
-
-            if(updateTask == null) {
+            if (updateTask == null) {
                 send(exchange, "", HttpStatus.NOT_FOUND.getHttpStatus());
                 return;
             }
 
             Task task = jsonToTask(body);
             updateTask.setTitle(task.getTitle());
-            send(exchange, taskToJson(updateTask), HttpStatus.OK.getHttpStatus());
+            send(exchange, taskToJson(updateTask), HttpStatusCode);
+    }
+
+    private void handleDelete(Long idValue, HttpExchange exchange, int StatusCode) throws IOException {
+        Task deleteTask = getTask(idValue);
+
+        if (deleteTask == null) {
+            send(exchange, "", HttpStatus.NOT_FOUND.getHttpStatus());
+            return;
         }
 
-        else if(method.equals("DELETE")) {
-            if(!path.startsWith("/tasks")) {
-                send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
-                return;
-            }
-
-            Long idValue = Long.parseLong(path.substring("/tasks/".length()));
-            Task deleteTask = getTask(idValue);
-
-            if(deleteTask==null) {
-                send(exchange, "", HttpStatus.NOT_FOUND.getHttpStatus());
-                return;
-            }
-
-            tasks.remove(deleteTask);
-            send(exchange, "", HttpStatus.NO_CONTENT.getHttpStatus());
-        }
+        tasks.remove(deleteTask);
+        send(exchange, "", StatusCode);
     }
 
     public void send(HttpExchange exchange, String content, int HttpStatus) throws IOException {
-        exchange.sendResponseHeaders(HttpStatus,content.getBytes().length);
+        exchange.sendResponseHeaders(HttpStatus, content.getBytes().length);
         outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
