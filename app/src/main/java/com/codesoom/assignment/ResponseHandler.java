@@ -14,7 +14,7 @@ import static com.codesoom.assignment.TaskManager.*;
 public class ResponseHandler {
     public String handle(String method, String path, List<Task> tasks, String body) throws IOException, ResponseHandlingException {
         // check wrong path
-        if (!path.matches("/tasks/*[0-9]*")) {
+        if (!path.matches("^/tasks(/[0-9]+$)?")) {
             throw new ResponseHandlingException(ResponseHandlingException.ErrorCode.WRONG_PATH);
         }
 
