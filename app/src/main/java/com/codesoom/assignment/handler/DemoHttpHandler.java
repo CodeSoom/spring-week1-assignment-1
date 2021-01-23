@@ -1,6 +1,7 @@
 package com.codesoom.assignment.handler;
 
 import com.codesoom.assignment.Constant;
+import com.codesoom.assignment.HttpMethod;
 import com.codesoom.assignment.ResponseHandlingException;
 import com.codesoom.assignment.model.Task;
 import com.sun.net.httpserver.HttpExchange;
@@ -35,11 +36,11 @@ public class DemoHttpHandler implements HttpHandler {
             content = new ResponseHandler().handle(method, path, tasks, body);
 
             switch (method) {
-                case "POST":
+                case HttpMethod.POST:
                     statusCode = Constant.HttpStatusCode.CREATED;
                     break;
 
-                case "DELETE":
+                case HttpMethod.DELETE:
                     statusCode = Constant.HttpStatusCode.NO_CONTENT;
                     break;
             }

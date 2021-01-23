@@ -1,5 +1,6 @@
 package com.codesoom.assignment.handler;
 
+import com.codesoom.assignment.HttpMethod;
 import com.codesoom.assignment.ResponseHandlingException;
 import com.codesoom.assignment.model.Task;
 
@@ -24,7 +25,7 @@ public class ResponseHandler {
         Long taskId = extractTaskId(path);
 
         switch (method) {
-            case "GET":
+            case HttpMethod.GET:
                 // fetch task list
                 if (path.equals("/tasks")) {
                     return tasksToJSON(tasks);
@@ -39,14 +40,15 @@ public class ResponseHandler {
 
                 return taskToJSON(selectedTask);
 
-            case "POST":
+            case HttpMethod.POST:
                 if (body.isBlank()) { break; }
 
                 Task newTask = toTask(body, (long) (tasks.size() + 1));
                 tasks.add(newTask);
                 return taskToJSON(tasks.get(tasks.size() - 1));
 
-            case "PUT": case "PATCH":
+            case HttpMethod.PUT:
+            case HttpMethod.PATCH:
                 if (body.isBlank()) { break; }
 
                 Task editableTask = getTask(tasks, taskId);
@@ -58,7 +60,7 @@ public class ResponseHandler {
                 tasks.set(tasks.indexOf(editableTask), toTask(body, editableTask.getId()));
                 return taskToJSON(getTask(tasks, taskId));
 
-            case "DELETE":
+            case HttpMethod.DELETE:
                 if (getTask(tasks, taskId).getId() == null) {
                     throw new ResponseHandlingException(ResponseHandlingException.ErrorCode.WRONG_PATH);
                 }
