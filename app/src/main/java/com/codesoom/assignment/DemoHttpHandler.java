@@ -1,7 +1,6 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
-import com.codesoom.assignment.util.IdGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -11,134 +10,139 @@ import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
 
-    private List<Task> tasks;
-    private IdGenerator idGenerator;
-    private ObjectMapper mapper;
-    private int statusCode = 404;
-
-    public DemoHttpHandler() {
-        tasks = new ArrayList<>();
-        idGenerator = new IdGenerator();
-        mapper = new ObjectMapper();
-
-    }
+    private ObjectMapper objectMapper =  new ObjectMapper();
+    private List<Task> tasks = new ArrayList<>();
+    private Long newId = 0L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
-        String requestMethod = exchange.getRequestMethod();
-        URI requestURI = exchange.getRequestURI();
-        String path = requestURI.getPath();
+        String method = exchange.getRequestMethod();
+        URI uri = exchange.getRequestURI();
+        String path = uri.getPath();
 
+        System.out.println(method + " " + path);
+
+        if (path.equals("/tasks")) {
+            handleCollection(exchange, method);
+            return;
+        }
+
+        if (path.startsWith("/tasks/")) {
+            Long id = Long.parseLong(path.substring("/tasks/".length()));
+            handleItem(exchange, method, id);
+            return;
+        }
+
+        send(exchange, 200, "Hello World");
+    }
+
+    private void handleCollection(HttpExchange exchange, String method) throws IOException {
+        if (method.equals("GET")) {
+            handleList(exchange);
+        }
+
+        if (method.equals("POST")) {
+            handleCreate(exchange);
+        }
+    }
+
+    private void handleItem(HttpExchange exchange, String method, Long id) throws IOException {
+
+        Task task = findTask(id);
+
+        if (task == null) {
+            send(exchange, 404, "");
+            return;
+        }
+
+        if (method.equals("GET")) {
+            handleDetail(exchange, task);
+        }
+
+        if (method.equals("PUT") || method.equals("PATCH")) {
+            handleUpdate(exchange, task);
+        }
+
+        if (method.equals("DELETE")) {
+            handleDelete(exchange, task);
+        }
+    }
+
+    private void handleList(HttpExchange exchange) throws IOException {
+        send(exchange, 200, tasksToJson(tasks));
+    }
+
+    private void handleCreate(HttpExchange exchange) throws IOException {
+        String body = getBody(exchange);
+
+        Task task = toTask(body);
+        task.setId(generatedId());
+        tasks.add(task);
+        send(exchange, 201, toJSON(task));
+    }
+
+    private void handleDetail(HttpExchange exchange, Task task) throws IOException {
+        send(exchange, 200, toJSON(task));
+    }
+
+    private void handleDelete(HttpExchange exchange, Task task) throws IOException {
+        tasks.remove(task);
+        send(exchange, 200, "");
+    }
+
+    private void handleUpdate(HttpExchange exchange, Task task) throws IOException {
+        String body = getBody(exchange);
+        Task source = toTask(body);
+        task.setTitle(source.getTitle());
+        send(exchange, 203, toJSON(task));
+    }
+
+    private String getBody(HttpExchange exchange) {
         InputStream inputStream = exchange.getRequestBody();
-        String requestBody = new BufferedReader(new InputStreamReader(inputStream))
+        return new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
-
-        System.out.println(requestMethod + " " + path);
-
-        StringTokenizer st = new StringTokenizer(path, "/");
-        int tokenSize = st.countTokens();
-
-        String id = "";
-        while(st.hasMoreTokens()) {
-            id = st.nextToken();
-        }
-
-        String content = "";
-
-        if (tokenSize <= 1) {
-            if (requestMethod.equals("GET") && (path.equals("/tasks"))) {
-                content = tasksToJson(tasks);
-                this.statusCode = 200;
-            }
-
-            if (requestMethod.equals("POST") && path.equals("/tasks")) {
-                if (!requestBody.isBlank()) {
-                    Task task = new Task();
-                    task = toTask(requestBody);
-                    task.setId(idGenerator.generate());
-                    tasks.add(task);
-                }
-                content = tasksToJson(tasks);
-                this.statusCode = 201;
-            }
-
-        } else {
-
-            int taskId = Integer.parseInt(id);
-
-            if (requestMethod.equals("GET") && path.equals("/tasks/" + taskId)) {
-                if (getTask(taskId) == null) {
-                    this.statusCode = 404;
-                } else {
-                    Task task = getTask(taskId);
-                    if (task == null) {return;}
-                    content = taskToJson(task);
-                    this.statusCode = 200;
-                }
-            }
-
-            if (requestMethod.equals("PUT") && path.equals("/tasks/" + taskId)) {
-                if (getTask(taskId) == null) {
-                    this.statusCode = 404;
-                } else {
-                    if (!requestBody.isBlank()) {
-                        Task task = getTask(taskId);
-                        task.setTitle(mapper.readValue(requestBody, Task.class).getTitle());
-                        content = taskToJson(task);
-                    }
-                    this.statusCode = 200;
-                }
-            }
-
-            if (requestMethod.equals("DELETE") && path.equals("/tasks/" + taskId)) {
-                if (getTask(taskId) == null) {
-                    this.statusCode = 404;
-                } else {
-                    Task task = getTask(taskId);
-                    tasks.remove(task);
-                    this.statusCode = 204;
-                }
-            }
-
-        }
-        exchange.sendResponseHeaders(this.statusCode, content.getBytes().length);
-        OutputStream responseBody = exchange.getResponseBody();
-        responseBody.write(content.getBytes());
-        responseBody.flush();
-        responseBody.close();
     }
 
-    private String taskToJson(Task task) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        mapper.writeValue(outputStream, task);
+    private void send(HttpExchange exchange, int statusCode, String content) throws IOException {
+        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
 
-        return outputStream.toString();
+        OutputStream outputStream = exchange.getResponseBody();
+
+        outputStream.write(content.getBytes());
+        outputStream.flush();
+        outputStream.close();
     }
 
-    private String tasksToJson(List<Task> tasks) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        mapper.writeValue(outputStream, tasks);
-
-        return outputStream.toString();
+    private Task findTask(Long id) {
+        return tasks.stream()
+                .filter(task -> task.getId().equals(id))
+                .findFirst()
+                .orElse(null);
     }
 
     private Task toTask(String content) throws JsonProcessingException {
-        return mapper.readValue(content, Task.class);
+        return objectMapper.readValue(content, Task.class);
     }
 
-    private Task getTask(int taskId) {
-        for (Task task : tasks) {
-            if (task.getId() == taskId) {
-                return task;
-            }
-        }
-        return null;
+    private String tasksToJson(Object object) throws IOException {
+        return toJSON(tasks);
+    }
+
+    private String toJSON(Object object) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, object);
+
+        return outputStream.toString();
+    }
+
+    private Long generatedId() {
+        newId += 1;
+        return newId;
     }
 }
