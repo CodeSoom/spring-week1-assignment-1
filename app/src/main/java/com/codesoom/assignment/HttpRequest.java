@@ -42,7 +42,7 @@ public class HttpRequest {
 
     @Override
     public String toString() {
-        return "method=" + method + ", path=" + path + ", body=" + body;
+        return String.format("method=%s, path=%s, body=%body", method, path, body);
     }
 
     private Long getIdFromPath(String path) {
