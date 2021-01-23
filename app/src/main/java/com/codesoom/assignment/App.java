@@ -6,6 +6,7 @@ import com.codesoom.assignment.application.task.TaskService;
 import com.codesoom.assignment.web.task.TaskCollectionHttpRequestContext;
 import com.codesoom.assignment.web.task.TaskItemHttpRequestContext;
 import com.codesoom.assignment.web.user.UserCollectionHttpRequestContext;
+import com.codesoom.assignment.web.user.UserItemHttpRequestContext;
 
 import java.io.IOException;
 
@@ -20,7 +21,7 @@ public class App {
         HttpRequestContextBase taskCollectionRequestContext = new TaskCollectionHttpRequestContext("/tasks", taskService);
         HttpRequestContextBase taskItemRequestContext = new TaskItemHttpRequestContext("/tasks/", taskService);
         HttpRequestContextBase userCollectionRequestContext = new UserCollectionHttpRequestContext("/users", userService);
-        HttpRequestContextBase userItemRequestContext = new UserCollectionHttpRequestContext("/users/", userService);
+        HttpRequestContextBase userItemRequestContext = new UserItemHttpRequestContext("/users/", userService);
 
         MyHandler handler = new MyHandler();
         handler.addRequestContext(taskCollectionRequestContext);
