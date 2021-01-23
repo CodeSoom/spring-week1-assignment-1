@@ -20,7 +20,7 @@ public class ResponseHandler {
     TaskManager taskManager = new TaskManager();
 
     public String handle(String method, String path, List<Task> tasks, String body) throws IOException, ResponseHandlingException {
-        if (path.equals("/") && method == HttpMethod.HEAD) {
+        if (path.equals("/") && method.equals(HttpMethod.HEAD)) {
             return "";
         }
 
