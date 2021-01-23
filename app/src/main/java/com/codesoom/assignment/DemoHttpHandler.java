@@ -50,10 +50,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         if(method.equals("POST")) {
-            InputStream requestBody = exchange.getRequestBody();
-            String body = new BufferedReader(new InputStreamReader(requestBody))
-                    .lines()
-                    .collect(Collectors.joining("\n"));
+            String body = getBody(exchange);
 
             Task task = toTask(body);
             tasks.add(task);
@@ -62,6 +59,13 @@ public class DemoHttpHandler implements HttpHandler {
 
             send(exchange, 200, "A task has been created");
         }
+    }
+
+    private String getBody(HttpExchange exchange) {
+        InputStream requestBody = exchange.getRequestBody();
+        return new BufferedReader(new InputStreamReader(requestBody))
+            .lines()
+            .collect(Collectors.joining("\n"));
     }
 
     private Task toTask(String content) throws JsonProcessingException {
