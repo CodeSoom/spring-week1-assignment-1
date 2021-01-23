@@ -41,12 +41,12 @@ public class MyHttpHandler implements HttpHandler {
                     response(HTTP_CREATED, content, exchange);
                     break;
                 case "POST":
-                    content = POSTCreateNewTask(httpRequest);
+                    content = postCreateNewTask(httpRequest);
                     response(HTTP_CREATED, content, exchange);
                     break;
                 case "PUT":
                 case "PATH":
-                    if (PUTUpdateTaskTitle(httpRequest)) {
+                    if (putUpdateTaskTitle(httpRequest)) {
                         content = jsonConverter.tasksToJson(taskRepository.getTaskStore());
                         response(HTTP_OK, content, exchange);
                         break;
@@ -54,7 +54,7 @@ public class MyHttpHandler implements HttpHandler {
                     response(HTTP_NOT_FOUND, content, exchange);
                     break;
                 case "DELETE":
-                    if (DELETETask(httpRequest)) { // id가 있고 정상적일 때
+                    if (deleteTask(httpRequest)) { // id가 있고 정상적일 때
                         content = jsonConverter.tasksToJson(taskRepository.getTaskStore());
                         response(HTTP_OK, content, exchange);
                         break;
@@ -105,7 +105,7 @@ public class MyHttpHandler implements HttpHandler {
         return 0L;
     }
 
-    private String POSTCreateNewTask(HttpRequest httpRequest) throws IOException {
+    private String postCreateNewTask(HttpRequest httpRequest) throws IOException {
         String path = httpRequest.hasPath();
 
         if (path.contains("/tasks")) {
@@ -118,7 +118,7 @@ public class MyHttpHandler implements HttpHandler {
         return "POSTCreateNewTask() : content 없음";
     }
 
-    private boolean DELETETask(HttpRequest httpRequest) throws IOException {
+    private boolean deleteTask(HttpRequest httpRequest) throws IOException {
         Long deleteId = getIdFromPath(httpRequest);
 
         // path의 id가 storeTaks에 있을 때
@@ -129,7 +129,7 @@ public class MyHttpHandler implements HttpHandler {
         return false;
     }
 
-    private boolean PUTUpdateTaskTitle(HttpRequest httpRequest) throws IOException {
+    private boolean putUpdateTaskTitle(HttpRequest httpRequest) throws IOException {
         Long idForTaskUpdate = getIdFromPath(httpRequest);
 
         if (pathExists(httpRequest) && taskRepository.getTaskStore().containsKey(idForTaskUpdate)) {
