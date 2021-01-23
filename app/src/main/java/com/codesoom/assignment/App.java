@@ -13,7 +13,7 @@ public class App {
 
     public static void main(String[] args) {
         try {
-            HttpServer httpServer = HttpServer.create(new InetSocketAddress(Constant.PORT), Constant.BACKLOG);
+            HttpServer httpServer = HttpServer.create(new InetSocketAddress(ServerConfiguration.PORT), ServerConfiguration.BACKLOG);
             httpServer.createContext("/", new DemoHttpHandler());
             httpServer.start();
         } catch (IOException e) {

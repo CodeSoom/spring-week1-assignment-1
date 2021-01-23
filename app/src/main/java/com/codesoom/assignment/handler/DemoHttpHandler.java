@@ -1,6 +1,7 @@
 package com.codesoom.assignment.handler;
 
-import com.codesoom.assignment.Constant;
+import com.codesoom.assignment.HttpStatusCode;
+import com.codesoom.assignment.ServerConfiguration;
 import com.codesoom.assignment.HttpMethod;
 import com.codesoom.assignment.ResponseHandlingException;
 import com.codesoom.assignment.model.Task;
@@ -28,7 +29,7 @@ public class DemoHttpHandler implements HttpHandler {
         String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().getPath();
         String content = "";
-        int statusCode = Constant.HttpStatusCode.OK;
+        int statusCode = HttpStatusCode.OK;
 
         System.out.println(method + " " + path);
 
@@ -37,16 +38,16 @@ public class DemoHttpHandler implements HttpHandler {
 
             switch (method) {
                 case HttpMethod.POST:
-                    statusCode = Constant.HttpStatusCode.CREATED;
+                    statusCode = HttpStatusCode.CREATED;
                     break;
 
                 case HttpMethod.DELETE:
-                    statusCode = Constant.HttpStatusCode.NO_CONTENT;
+                    statusCode = HttpStatusCode.NO_CONTENT;
                     break;
             }
         } catch (ResponseHandlingException e) {
             e.printDescription();
-            statusCode = Constant.HttpStatusCode.NOT_FOUND;
+            statusCode = HttpStatusCode.NOT_FOUND;
         }
 
         exchange.sendResponseHeaders(statusCode, content.getBytes().length);
