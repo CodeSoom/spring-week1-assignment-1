@@ -38,20 +38,23 @@ public class DemoHttpHandler implements HttpHandler {
             System.out.println(body);
         }
 
-        String content = "나는 진정 행복한 부자가 될 것이다.";
-
         if(path.equals("/tasks")) {
-            content = handleCollection(method);
+            String content = handleCollection(method);
+            send(exchange,200, content);
+            return;
         }
 
+        send(exchange, 200, "나는 진정 행복한 부자가 될 것이다.");
+    }
 
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+    private void send(HttpExchange exchange, int statusCode, String content) throws IOException {
+
+        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
 
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.write(content.getBytes());
         responseBody.flush();
         responseBody.close();
-
     }
 
     private String handleCollection(String method) throws IOException {
