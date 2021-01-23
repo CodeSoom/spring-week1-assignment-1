@@ -1,5 +1,8 @@
 package com.codesoom.assignment;
 
+/**
+ *  define exception related with handling response contents
+ */
 public class ResponseHandlingException extends Exception {
     public enum ErrorCode {
         NOT_FOUND, METHOD_NOT_ALLOWED
