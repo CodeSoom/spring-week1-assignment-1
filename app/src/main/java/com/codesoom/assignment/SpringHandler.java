@@ -39,7 +39,9 @@ public class SpringHandler implements HttpHandler {
         String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
+
         System.out.println(method + " " + path);
+
         if( !body.isBlank()) {
             System.out.println(body);
 
