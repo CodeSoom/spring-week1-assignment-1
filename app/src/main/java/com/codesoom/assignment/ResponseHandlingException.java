@@ -2,7 +2,7 @@ package com.codesoom.assignment;
 
 public class ResponseHandlingException extends Exception {
     public enum ErrorCode {
-        WRONG_PATH, UNKNOWN_HTTP_METHOD
+        NOT_FOUND, METHOD_NOT_ALLOWED
     }
 
     private final ErrorCode errorCode;
@@ -13,11 +13,11 @@ public class ResponseHandlingException extends Exception {
 
     public void printDescription() {
         switch (this.errorCode) {
-            case WRONG_PATH:
-                System.out.println("Wrong URI path");
+            case NOT_FOUND:
+                System.out.println("Not Found.");
 
-            case UNKNOWN_HTTP_METHOD:
-                System.out.println("Unknown HTTP method");
+            case METHOD_NOT_ALLOWED:
+                System.out.println("Method Not Allowed.");
         }
     }
 }

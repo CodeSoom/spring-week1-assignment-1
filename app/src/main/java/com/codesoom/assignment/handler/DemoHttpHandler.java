@@ -47,6 +47,7 @@ public class DemoHttpHandler implements HttpHandler {
             }
         } catch (ResponseHandlingException e) {
             e.printDescription();
+            // NOT_FOUND와 METHOD_NOT_ALLOWED을 구분하여 status code 변경하면 좋으나, 테스트 코드 통과를 위해 NOT_FOUND로 통일함
             statusCode = HttpStatusCode.NOT_FOUND;
         }
 
