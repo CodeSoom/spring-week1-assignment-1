@@ -35,7 +35,8 @@ public class ServiceImpl {
         repository.remove(deleteTask);
     }
 
-    public void writeContentWithOutputStream(HttpExchange exchange, String content) throws IOException {
+    public void send(HttpExchange exchange, String content, int HttpStatus) throws IOException {
+        exchange.sendResponseHeaders(HttpStatus,content.getBytes().length);
         outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
@@ -52,9 +53,9 @@ public class ServiceImpl {
         return outputStream.toString();
     }
 
-    public String taskToJson(Task task) throws IOException {
+    public String taskToJson(Object object) throws IOException {
         outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, task);
+        objectMapper.writeValue(outputStream, object);
         return outputStream.toString();
     }
 

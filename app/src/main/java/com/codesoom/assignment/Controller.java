@@ -14,201 +14,84 @@ public class Controller {
 
         if(method.equals("GET")){
             if(!path.startsWith("/tasks")) {
-                exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getHttpStatus(),0);
-                serviceImpl.writeContentWithOutputStream(exchange, "");
+                serviceImpl.send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
                 return;
             }
 
             if(path.equals("/tasks")) {
                 List<Task> tasks = serviceImpl.getAllTasks();
-                content = (tasks == null ) ? "[]" : serviceImpl.tasksToJson(tasks);
-                exchange.sendResponseHeaders(HttpStatus.OK.getHttpStatus(),content.getBytes().length);
-                serviceImpl.writeContentWithOutputStream(exchange, content);
+                content = serviceImpl.taskToJson(tasks);
+                serviceImpl.send(exchange, content, HttpStatus.OK.getHttpStatus());
                 return;
             }
 
-            Long idValue = Long.parseLong(path.substring(7));
+            Long idValue = Long.parseLong(path.substring("/tasks/".length()));
             Task getTask = serviceImpl.getTask(idValue);
 
             if(getTask == null) {
-                exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getHttpStatus(),0);
-                serviceImpl.writeContentWithOutputStream(exchange, "");
+                serviceImpl.send(exchange, "", HttpStatus.NOT_FOUND.getHttpStatus());
                 return;
             }
 
             content = serviceImpl.taskToJson(getTask);
-            exchange.sendResponseHeaders(HttpStatus.OK.getHttpStatus(),content.getBytes().length);
-            serviceImpl.writeContentWithOutputStream(exchange, content);
+            serviceImpl.send(exchange, content, HttpStatus.OK.getHttpStatus());
         }
 
         else if(method.equals("POST")){
             if(!path.startsWith("/tasks")) {
-                exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getHttpStatus(),0);
-                serviceImpl.writeContentWithOutputStream(exchange, "");
+                serviceImpl.send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
                 return;
             }
 
             String requestTitle = body.split("\"")[1];
-
             if(!requestTitle.equals("title")) {
-                exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getHttpStatus(),0);
-                serviceImpl.writeContentWithOutputStream(exchange, "");
+                serviceImpl.send(exchange, content, HttpStatus.BAD_REQUEST.getHttpStatus());
                 return;
             }
 
             Task task = serviceImpl.jsonToTask(body);
             serviceImpl.createTask(task);
             content = serviceImpl.taskToJson(task);
-            exchange.sendResponseHeaders(HttpStatus.CREATED.getHttpStatus(),content.getBytes().length);
-            serviceImpl.writeContentWithOutputStream(exchange, content);
+            serviceImpl.send(exchange, content, HttpStatus.CREATED.getHttpStatus());
         }
 
         else if(method.equals("PUT") || method.equals("PATCH")) {
             if(!path.startsWith("/tasks")) {
-                exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getHttpStatus(),0);
-                serviceImpl.writeContentWithOutputStream(exchange, "");
+                serviceImpl.send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
                 return;
             }
 
-            Long idValue = Long.parseLong(path.substring(7));
+            Long idValue = Long.parseLong(path.substring("/tasks/".length()));
             Task updateTask = serviceImpl.getTask(idValue);
 
             if(updateTask == null) {
-                exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getHttpStatus(), 0);
-                serviceImpl.writeContentWithOutputStream(exchange, content);
+                serviceImpl.send(exchange, "", HttpStatus.NOT_FOUND.getHttpStatus());
                 return;
             }
 
             Task task = serviceImpl.jsonToTask(body);
             serviceImpl.updateTask(updateTask, task.getTitle());
             content = serviceImpl.taskToJson(updateTask);
-            exchange.sendResponseHeaders(HttpStatus.OK.getHttpStatus(),content.getBytes().length);
-            serviceImpl.writeContentWithOutputStream(exchange, content);
+            serviceImpl.send(exchange, content, HttpStatus.OK.getHttpStatus());
         }
 
         else if(method.equals("DELETE")) {
             if(!path.startsWith("/tasks")) {
-                exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getHttpStatus(),0);
-                serviceImpl.writeContentWithOutputStream(exchange, "");
+                serviceImpl.send(exchange, "", HttpStatus.BAD_REQUEST.getHttpStatus());
                 return;
             }
 
-            Long idValue = Long.parseLong(path.substring(7));
+            Long idValue = Long.parseLong(path.substring("/tasks/".length()));
             Task deleteTask = serviceImpl.getTask(idValue);
 
             if(deleteTask==null) {
-                exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getHttpStatus(), 0);
-                serviceImpl.writeContentWithOutputStream(exchange, content);
+                serviceImpl.send(exchange, "", HttpStatus.NOT_FOUND.getHttpStatus());
                 return;
             }
 
             serviceImpl.deleteTask(deleteTask);
-            content = "";
-            exchange.sendResponseHeaders(HttpStatus.NO_CONTENT.getHttpStatus(),0);
-            serviceImpl.writeContentWithOutputStream(exchange, content);
+            serviceImpl.send(exchange, "", HttpStatus.NO_CONTENT.getHttpStatus());
         }
     }
-
-
-//    public void requestForGet(String path, HttpExchange exchange) throws IOException {
-//        String content= "";
-//        if(!path.startsWith("/tasks")) {
-//            exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getHttpStatus(),0);
-//            serviceImpl.writeContentWithOutputStream(exchange, "");
-//            return;
-//        }
-//
-//        if(path.equals("/tasks")) {
-//            List<Task> tasks = serviceImpl.getAllTasks();
-//            content = (tasks == null ) ? "[]" : serviceImpl.tasksToJson(tasks);
-//            exchange.sendResponseHeaders(HttpStatus.OK.getHttpStatus(),content.getBytes().length);
-//            serviceImpl.writeContentWithOutputStream(exchange, content);
-//            return;
-//        }
-//
-//        Long idValue = Long.parseLong(path.substring(7));
-//        Task getTask = serviceImpl.getTask(idValue);
-//
-//        if(getTask == null) {
-//            exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getHttpStatus(),0);
-//            serviceImpl.writeContentWithOutputStream(exchange, "");
-//            return;
-//        }
-//
-//        content = serviceImpl.taskToJson(getTask);
-//        exchange.sendResponseHeaders(HttpStatus.OK.getHttpStatus(),content.getBytes().length);
-//        serviceImpl.writeContentWithOutputStream(exchange, content);
-//    }
-//
-//    public void requestForPost(String path, String body, HttpExchange exchange) throws IOException {
-//        String content = "";
-//        if(!path.startsWith("/tasks")) {
-//            exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getHttpStatus(),0);
-//            serviceImpl.writeContentWithOutputStream(exchange, "");
-//            return;
-//        }
-//
-//        String requestTitle = body.split("\"")[1];
-//
-//        if(!requestTitle.equals("title")) {
-//            exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getHttpStatus(),0);
-//            serviceImpl.writeContentWithOutputStream(exchange, "");
-//            return;
-//        }
-//
-//        Task task = serviceImpl.jsonToTask(body);
-//        serviceImpl.createTask(task);
-//        content = serviceImpl.taskToJson(task);
-//        exchange.sendResponseHeaders(HttpStatus.CREATED.getHttpStatus(),content.getBytes().length);
-//        serviceImpl.writeContentWithOutputStream(exchange, content);
-//    }
-//
-//    public void requestForPutOrPatch(String path, String body, HttpExchange exchange) throws IOException {
-//        String content = "";
-//        if(!path.startsWith("/tasks")) {
-//            exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getHttpStatus(),0);
-//            serviceImpl.writeContentWithOutputStream(exchange, "");
-//            return;
-//        }
-//
-//        Long idValue = Long.parseLong(path.substring(7));
-//        Task updateTask = serviceImpl.getTask(idValue);
-//
-//        if(updateTask == null) {
-//            exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getHttpStatus(), 0);
-//            serviceImpl.writeContentWithOutputStream(exchange, content);
-//            return;
-//        }
-//
-//        Task task = serviceImpl.jsonToTask(body);
-//        serviceImpl.updateTask(updateTask, task.getTitle());
-//        content = serviceImpl.taskToJson(updateTask);
-//        exchange.sendResponseHeaders(HttpStatus.OK.getHttpStatus(),content.getBytes().length);
-//        serviceImpl.writeContentWithOutputStream(exchange, content);
-//    }
-//
-//    public void requestForDelete(String path, HttpExchange exchange) throws IOException {
-//        String content = "";
-//        if(!path.startsWith("/tasks")) {
-//            exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getHttpStatus(),0);
-//            serviceImpl.writeContentWithOutputStream(exchange, "");
-//            return;
-//        }
-//
-//        Long idValue = Long.parseLong(path.substring(7));
-//        Task deleteTask = serviceImpl.getTask(idValue);
-//
-//        if(deleteTask==null) {
-//            exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getHttpStatus(), 0);
-//            serviceImpl.writeContentWithOutputStream(exchange, content);
-//            return;
-//        }
-//
-//        serviceImpl.deleteTask(deleteTask);
-//        content = "";
-//        exchange.sendResponseHeaders(HttpStatus.NO_CONTENT.getHttpStatus(),0);
-//        serviceImpl.writeContentWithOutputStream(exchange, content);
-//    }
-
 
 }
