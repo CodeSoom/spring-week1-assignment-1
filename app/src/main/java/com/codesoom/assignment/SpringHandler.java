@@ -18,15 +18,8 @@ public class SpringHandler implements HttpHandler {
     static final int httpStatus = 200;
 
     private List<Task> tasks = new ArrayList<>();
+    private Long newId = 0L;
 
-    public SpringHandler() {
-        Task task = new Task();
-        task.setId(1L);
-        task.setTitle("Do nothing....");
-
-        tasks.add(task);
-
-    }
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
@@ -34,33 +27,55 @@ public class SpringHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
-        InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
+
 
         System.out.println(method + " " + path);
 
-        if( !body.isBlank()) {
-            System.out.println(body);
-
-            Task task = toTask(body);
-            System.out.println(task);
+        if(path.startsWith("/tasks")) {
+            handleCollection(exchange, method);
+            return;
         }
 
-        System.out.println(body);
+        send(exchange, httpStatus, "매일 매일 달리지기 위한 첫걸음 시작하기!");
+    }
 
-        String content = "매일 매일 달리지기 위한 첫걸음 시작하기!";
-
-        if(method.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJSON();
+    private void handleCollection(HttpExchange exchange, String method) throws IOException {
+        if(method.equals("GET")) {
+            send(exchange, httpStatus, toJSON(tasks));
         }
 
-        if(method.equals("POST") && path.equals("/tasks")) {
-            content = "과제를 생성했습니다.";
-        }
+        if(method.equals("POST")) {
+//
+            String body = getBody(exchange);
+            if( !body.isBlank()) {
 
-        exchange.sendResponseHeaders(httpStatus, content.getBytes().length);
+                Task task = toTask(body);
+                task.setId(generateId());
+                tasks.add(task);
+
+                send(exchange, httpStatus, toJSON(task));
+            }
+
+        }
+    }
+
+
+
+    private Long generateId() {
+        newId = 1L;
+        return newId;
+    }
+
+    private String getBody(HttpExchange exchange) {
+        InputStream inputStream = exchange.getRequestBody();
+        return new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
+    }
+
+
+    private void send(HttpExchange exchange, int statusCode, String content) throws IOException {
+        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
 
@@ -70,14 +85,18 @@ public class SpringHandler implements HttpHandler {
 
     }
 
+
     private Task toTask(String content) throws JsonProcessingException {
        return objectMapper.readValue(content, Task.class);
 
     }
 
     private String tasksToJSON() throws IOException {
+        return toJSON(tasks);
 
+    }
 
+    private String toJSON(Object object) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
 
