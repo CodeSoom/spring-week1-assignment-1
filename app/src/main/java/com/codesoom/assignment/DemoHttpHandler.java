@@ -27,8 +27,7 @@ public class DemoHttpHandler implements HttpHandler {
         System.out.println(method + " " + path);
 
         if(path.equals("/tasks")) {
-            String content = handleCollection(exchange, method);
-            send(exchange,200, content);
+            handleCollection(exchange, method);
             return;
         }
 
@@ -45,9 +44,9 @@ public class DemoHttpHandler implements HttpHandler {
         responseBody.close();
     }
 
-    private String handleCollection(HttpExchange exchange, String method) throws IOException {
+    private void handleCollection(HttpExchange exchange, String method) throws IOException {
         if(method.equals("GET")) {
-            return tasksToJSON();
+            send(exchange, 200, tasksToJSON());
         }
 
         if(method.equals("POST")) {
@@ -61,10 +60,8 @@ public class DemoHttpHandler implements HttpHandler {
 
             System.out.println(body);
 
-            return "A task has been created";
+            send(exchange, 200, "A task has been created");
         }
-
-        return "e: invalid method";
     }
 
     private Task toTask(String content) throws JsonProcessingException {
