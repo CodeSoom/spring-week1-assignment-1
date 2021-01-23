@@ -17,8 +17,6 @@ public class MyHttpHandler implements HttpHandler {
     private Long notFoundId = 0L;
     private int minimunMethodLength = 1;
 
-    private
-
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
