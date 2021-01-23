@@ -9,10 +9,10 @@ import java.util.Map;
 
 public class TaskRepository {
 
-    private static Map<Long, Task> taskStore = new HashMap<>();
-    private static long sequence = 1L;
+    private Map<Long, Task> taskStore = new HashMap<>();
+    private long sequence = 1L;
 
-    public static Map<Long, Task> getTaskStore() {
+    public Map<Long, Task> getTaskStore() {
         return taskStore;
     }
 

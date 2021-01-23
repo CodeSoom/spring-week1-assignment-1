@@ -29,14 +29,14 @@ public class MyHttpHandler implements HttpHandler {
                     // /tasks만 입력했을 경우 (아이디로 검색하지 않고 전체 목록 얻을 때)
                     if (httpRequest.hasPath().equals("/tasks")) {
                         GETAllTaskList();
-                        content = JSONConverter.tasksToJSON(TaskRepository.getTaskStore());
+                        content = jsonConverter.tasksToJSON(taskRepository.getTaskStore());
                         response(HTTP_OK, content, exchange);
                         break;
                     }
                     // tasks/{id}를 입력했을 경우 (입력한 아이디에 해당하는 할일만 보여줌)
                     Long id = getIdFromPath(httpRequest);
                     findOne(id);
-                    content = JSONConverter.taskToJSON(findOne(id));
+                    content = jsonConverter.taskToJSON(findOne(id));
                     System.out.println("content2 : " + content);
                     response(HTTP_CREATED, content, exchange);
                     break;
@@ -47,7 +47,7 @@ public class MyHttpHandler implements HttpHandler {
                 case "PUT":
                 case "PATH":
                     if (PUTUpdateTaskTitle(httpRequest)) {
-                        content = JSONConverter.tasksToJSON(TaskRepository.getTaskStore());
+                        content = jsonConverter.tasksToJSON(taskRepository.getTaskStore());
                         response(HTTP_OK, content, exchange);
                         break;
                     }
@@ -55,7 +55,7 @@ public class MyHttpHandler implements HttpHandler {
                     break;
                 case "DELETE":
                     if (DELETETask(httpRequest)) { // id가 있고 정상적일 때
-                        content = JSONConverter.tasksToJSON(TaskRepository.getTaskStore());
+                        content = jsonConverter.tasksToJSON(taskRepository.getTaskStore());
                         response(HTTP_OK, content, exchange);
                         break;
                     }
@@ -112,7 +112,7 @@ public class MyHttpHandler implements HttpHandler {
             Task newTask = jsonConverter.JSONToTask(httpRequest.hasBody());
             taskRepository.createNewTask(newTask);
 
-            String content = JSONConverter.tasksToJSON(TaskRepository.getTaskStore()); // content ==> outputStream.toString()을 return한 것
+            String content = jsonConverter.tasksToJSON(taskRepository.getTaskStore()); // content ==> outputStream.toString()을 return한 것
             return content;
         }
         return "POSTCreateNewTask() : content 없음";
