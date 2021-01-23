@@ -29,14 +29,14 @@ public class MyHttpHandler implements HttpHandler {
                     // /tasks만 입력했을 경우 (아이디로 검색하지 않고 전체 목록 얻을 때)
                     if (httpRequest.hasPath().equals("/tasks")) {
                         GETAllTaskList();
-                        content = jsonConverter.tasksToJSON(taskRepository.getTaskStore());
+                        content = jsonConverter.tasksToJson(taskRepository.getTaskStore());
                         response(HTTP_OK, content, exchange);
                         break;
                     }
                     // tasks/{id}를 입력했을 경우 (입력한 아이디에 해당하는 할일만 보여줌)
                     Long id = getIdFromPath(httpRequest);
                     findOne(id);
-                    content = jsonConverter.taskToJSON(findOne(id));
+                    content = jsonConverter.taskToJson(findOne(id));
                     System.out.println("content2 : " + content);
                     response(HTTP_CREATED, content, exchange);
                     break;
@@ -47,7 +47,7 @@ public class MyHttpHandler implements HttpHandler {
                 case "PUT":
                 case "PATH":
                     if (PUTUpdateTaskTitle(httpRequest)) {
-                        content = jsonConverter.tasksToJSON(taskRepository.getTaskStore());
+                        content = jsonConverter.tasksToJson(taskRepository.getTaskStore());
                         response(HTTP_OK, content, exchange);
                         break;
                     }
@@ -55,7 +55,7 @@ public class MyHttpHandler implements HttpHandler {
                     break;
                 case "DELETE":
                     if (DELETETask(httpRequest)) { // id가 있고 정상적일 때
-                        content = jsonConverter.tasksToJSON(taskRepository.getTaskStore());
+                        content = jsonConverter.tasksToJson(taskRepository.getTaskStore());
                         response(HTTP_OK, content, exchange);
                         break;
                     }
@@ -109,10 +109,10 @@ public class MyHttpHandler implements HttpHandler {
         String path = httpRequest.hasPath();
 
         if (path.contains("/tasks")) {
-            Task newTask = jsonConverter.JSONToTask(httpRequest.hasBody());
+            Task newTask = jsonConverter.jsonToTask(httpRequest.hasBody());
             taskRepository.createNewTask(newTask);
 
-            String content = jsonConverter.tasksToJSON(taskRepository.getTaskStore()); // content ==> outputStream.toString()을 return한 것
+            String content = jsonConverter.tasksToJson(taskRepository.getTaskStore()); // content ==> outputStream.toString()을 return한 것
             return content;
         }
         return "POSTCreateNewTask() : content 없음";
@@ -133,7 +133,7 @@ public class MyHttpHandler implements HttpHandler {
         Long idForTaskUpdate = getIdFromPath(httpRequest);
 
         if (pathExists(httpRequest) && taskRepository.getTaskStore().containsKey(idForTaskUpdate)) {
-            Task updateTask = jsonConverter.JSONToTask(httpRequest.hasBody());
+            Task updateTask = jsonConverter.jsonToTask(httpRequest.hasBody());
             updateTask.setId(idForTaskUpdate);
             taskRepository.updateTaskTitle(idForTaskUpdate, updateTask);
             return true;

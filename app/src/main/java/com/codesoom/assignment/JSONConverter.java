@@ -16,7 +16,7 @@ public class JSONConverter {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    public String tasksToJSON(Map<Long, Task> taskStore) throws IOException {
+    public String tasksToJson(Map<Long, Task> taskStore) throws IOException {
 
         // ByteArrayOutputStream() : 바이트 배열 출력 시 사용되는 스트림
         OutputStream outputStream = new ByteArrayOutputStream();
@@ -28,12 +28,12 @@ public class JSONConverter {
         return outputStream.toString();
     }
 
-    public Task JSONToTask(String json) throws JsonProcessingException {
+    public Task jsonToTask(String json) throws JsonProcessingException {
         // json 데이터를 task의 클래스로 변환
         return objectMapper.readValue(json, Task.class);
     }
 
-    public String taskToJSON(Task task) throws IOException {
+    public String taskToJson(Task task) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
 
         // Java Object to JSON
