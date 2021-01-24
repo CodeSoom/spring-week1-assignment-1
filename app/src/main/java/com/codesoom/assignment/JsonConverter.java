@@ -29,9 +29,4 @@ public class JsonConverter {
         objectMapper.writeValue(outputStream, tasks.getTasks());
         return outputStream.toString();
     }
-
-    public String extractTitle(String content) throws JsonProcessingException {
-        Task task = objectMapper.readValue(content, Task.class);
-        return task.getTitle();
-    }
 }

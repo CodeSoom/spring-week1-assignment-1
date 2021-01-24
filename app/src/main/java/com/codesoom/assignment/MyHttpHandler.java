@@ -48,6 +48,28 @@ public class MyHttpHandler implements HttpHandler {
         }
     }
 
+    private void handleItem(HttpExchange exchange, String path) throws IOException {
+        String method = exchange.getRequestMethod();
+        String body = getBody(exchange);
+
+        Task task = tasks.findByPath(path);
+        if (task == null) {
+            handleResponse(exchange, HttpStatus.NOT_FOUND.getCode(), "");
+            return;
+        }
+        if (method.equals("GET")) {
+            handleDetail(exchange, task);
+            return;
+        }
+        if (method.equals("PUT") || method.equals("PATCH")) {
+            handlePut(exchange, body, task);
+            return;
+        }
+        if (method.equals("DELETE")) {
+            handleDelete(exchange, task);
+        }
+    }
+
     private void handleCreate(HttpExchange exchange) throws IOException {
         String body = getBody(exchange);
         if (Objects.isNull(body)) {
@@ -72,36 +94,6 @@ public class MyHttpHandler implements HttpHandler {
         handleResponse(exchange, 200, content);
     }
 
-    private void handleResponse(HttpExchange exchange, int statusCode, String content) throws IOException {
-        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-        OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
-    }
-
-    private void handleItem(HttpExchange exchange, String path) throws IOException {
-        String method = exchange.getRequestMethod();
-        String body = getBody(exchange);
-
-        Task task = findTask(path);
-        if (task == null) {
-            handleResponse(exchange, HttpStatus.NOT_FOUND.getCode(), "");
-            return;
-        }
-        if (method.equals("GET")) {
-            handleDetail(exchange, task);
-            return;
-        }
-        if (method.equals("PUT") || method.equals("PATCH")) {
-            handlePut(exchange, body, task);
-            return;
-        }
-        if (method.equals("DELETE")) {
-            handleDelete(exchange, task);
-        }
-    }
-
     private void handleDetail(HttpExchange exchange, Task task) throws IOException {
         handleResponse(exchange, HttpStatus.OK.getCode(), jsonConverter.taskToJson(task));
     }
@@ -110,18 +102,14 @@ public class MyHttpHandler implements HttpHandler {
         if (Objects.isNull(body)) {
             handleResponse(exchange, HttpStatus.BAD_REQUEST.getCode(), "");
         }
-        task.setTitle(jsonConverter.extractTitle(body));
+        Task source = jsonConverter.toTask(body);
+        task.setTitle(source.getTitle());
         handleResponse(exchange, HttpStatus.OK.getCode(), jsonConverter.taskToJson(task));
     }
 
     private void handleDelete(HttpExchange exchange, Task task) throws IOException {
         tasks.remove(task);
         handleResponse(exchange, HttpStatus.NO_CONTENT.getCode(), "");
-    }
-
-    private Task findTask(String path) {
-        Long pathVariable = extractPathVariable(path);
-        return tasks.findTask(pathVariable).orElse(null);
     }
 
     private String getBody(HttpExchange exchange) {
@@ -131,7 +119,11 @@ public class MyHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
     }
 
-    private Long extractPathVariable(String path) {
-        return Long.parseUnsignedLong(path.substring(path.lastIndexOf("/") + 1));
+    private void handleResponse(HttpExchange exchange, int statusCode, String content) throws IOException {
+        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
+        OutputStream outputStream = exchange.getResponseBody();
+        outputStream.write(content.getBytes());
+        outputStream.flush();
+        outputStream.close();
     }
 }
