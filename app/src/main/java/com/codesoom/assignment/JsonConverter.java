@@ -30,7 +30,7 @@ public class JsonConverter {
         return outputStream.toString();
     }
 
-    public String extractValue(String content) throws JsonProcessingException {
+    public String extractTitle(String content) throws JsonProcessingException {
         Task task = objectMapper.readValue(content, Task.class);
         return task.getTitle();
     }

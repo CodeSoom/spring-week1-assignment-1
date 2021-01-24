@@ -16,7 +16,7 @@ public class MyHttpHandler implements HttpHandler {
     private IdGenerator idGenerator;
 
     public MyHttpHandler() {
-        this.tasks = new Tasks();;
+        this.tasks = new Tasks();
         this.pattern = Pattern.compile("/tasks/\\d+");
         this.jsonConverter = new JsonConverter();
         this.idGenerator = new IdGenerator();
@@ -61,55 +61,55 @@ public class MyHttpHandler implements HttpHandler {
         if (method.equals("GET") && pattern.matcher(path).matches()) {
             Long pathVariable = extractPathVariable(path);
             Optional<Task> task = tasks.findTask(pathVariable);
+
             if (task.isEmpty()) {
                 exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
                 return content;
             }
-
             exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
             return jsonConverter.taskToJson(task.get());
         }
 
         if (method.equals("POST") && path.equals("/tasks")) {
-            if (Objects.nonNull(body)) {
-                Task task = jsonConverter.toTask(body);
-                task.setId(idGenerator.generate());
-                tasks.addTask(task);
-
-                exchange.sendResponseHeaders(HttpStatus.CREATE.getCode(), content.getBytes().length);
-                return jsonConverter.taskToJson(task);
+            if (Objects.isNull(body)) {
+                exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getCode(), 0);
             }
+            Task task = jsonConverter.toTask(body);
+            task.setId(idGenerator.generate());
+            tasks.addTask(task);
+            exchange.sendResponseHeaders(HttpStatus.CREATE.getCode(), content.getBytes().length);
+            return jsonConverter.taskToJson(task);
+
         }
 
         if (method.equals("PUT") && pattern.matcher(path).matches()) {
             Long pathVariable = extractPathVariable(path);
+            if (Objects.isNull(body)) {
+                exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getCode(), 0);
+            }
             Optional<Task> task = tasks.findTask(pathVariable);
-
             if (task.isEmpty()) {
                 exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
                 return content;
             }
-            if (Objects.nonNull(body)) {
-                task.get().setTitle(jsonConverter.extractValue(body));
-                exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
-                return jsonConverter.taskToJson(task.get());
-            }
+            task.get().setTitle(jsonConverter.extractTitle(body));
+            exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
+            return jsonConverter.taskToJson(task.get());
         }
 
         if (method.equals("DELETE") && pattern.matcher(path).matches()) {
             content = "delete a task";
             Long pathVariable = extractPathVariable(path);
-
             Optional<Task> task = tasks.findTask(pathVariable);
+
             if (task.isEmpty()) {
                 exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
                 return content;
             }
-            if (task.isPresent()) {
-                tasks.remove(task.get());
-                exchange.sendResponseHeaders(HttpStatus.NO_CONTENT.getCode(), content.getBytes().length);
-                return content;
-            }
+
+            tasks.remove(task.get());
+            exchange.sendResponseHeaders(HttpStatus.NO_CONTENT.getCode(), content.getBytes().length);
+            return content;
         }
 
         return content;
