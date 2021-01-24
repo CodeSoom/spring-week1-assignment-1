@@ -3,8 +3,7 @@ package com.codesoom.assignment.handler;
 import com.codesoom.assignment.HttpMethod;
 import com.codesoom.assignment.HttpStatusCode;
 import com.codesoom.assignment.ResponseHandlingException;
-import com.codesoom.assignment.helper.JSONParser;
-import com.codesoom.assignment.helper.TaskManager;
+import com.codesoom.assignment.helper.TaskParser;
 import com.codesoom.assignment.model.Task;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -17,8 +16,7 @@ import java.util.Objects;
  * TODO: if possible, change switch statement to hashmap.
  */
 public class ResponseHandler {
-    JSONParser jsonParser = new JSONParser();
-    TaskManager taskManager = new TaskManager();
+    TaskParser taskParser = new TaskParser();
 
     public String handle(String method, String path, List<Task> tasks, String body) throws IOException, ResponseHandlingException {
         if (path.equals("/") && HttpMethod.valueOf(method).equals(HttpMethod.HEAD)) {
@@ -36,40 +34,40 @@ public class ResponseHandler {
             case GET:
                 // fetch task list
                 if (path.equals("/tasks")) {
-                    return jsonParser.tasksToJSON(tasks);
+                    return taskParser.tasksToJSON(tasks);
                 }
 
                 // fetch a task
-                Task selectedTask = taskManager.getTask(tasks, taskId);
+                Task selectedTask = taskParser.getTask(tasks, taskId);
                 // TODO: getTask에서 아래의 로직을 처리할 수 있도록 함
                 if (selectedTask.getId() == null) {
                     throw new ResponseHandlingException(HttpStatusCode.NOT_FOUND);
                 }
 
-                return jsonParser.taskToJSON(selectedTask);
+                return taskParser.taskToJSON(selectedTask);
 
             case POST:
                 if (body.isBlank()) { break; }
 
-                Task newTask = taskManager.toTask(body, (long) (tasks.size() + 1));
+                Task newTask = taskParser.toTask(body, (long) (tasks.size() + 1));
                 tasks.add(newTask);
-                return jsonParser.taskToJSON(tasks.get(tasks.size() - 1));
+                return taskParser.taskToJSON(tasks.get(tasks.size() - 1));
 
             case PUT:
             case PATCH:
                 if (body.isBlank()) { break; }
 
-                Task editableTask = taskManager.getTask(tasks, taskId);
+                Task editableTask = taskParser.getTask(tasks, taskId);
                 // TODO: getTask에서 아래의 로직을 처리할 수 있도록 함
                 if (editableTask.getId() == null) {
                     throw new ResponseHandlingException(HttpStatusCode.NOT_FOUND);
                 }
 
-                tasks.set(tasks.indexOf(editableTask), taskManager.toTask(body, editableTask.getId()));
-                return jsonParser.taskToJSON(taskManager.getTask(tasks, taskId));
+                tasks.set(tasks.indexOf(editableTask), taskParser.toTask(body, editableTask.getId()));
+                return taskParser.taskToJSON(taskParser.getTask(tasks, taskId));
 
             case DELETE:
-                if (taskManager.getTask(tasks, taskId).getId() == null) {
+                if (taskParser.getTask(tasks, taskId).getId() == null) {
                     throw new ResponseHandlingException(HttpStatusCode.NOT_FOUND);
                 }
 
