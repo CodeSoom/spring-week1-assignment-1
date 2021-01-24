@@ -11,8 +11,10 @@ public class ResourceFactory {
             case POST:
                 return new PostTaskResource();
             case PUT:
+            case PATCH:
                 return new PutTaskResource();
             case DELETE:
+                return new DeleteTaskResource();
         }
         return new GetTaskResource();
     }

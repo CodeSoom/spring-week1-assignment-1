@@ -5,11 +5,13 @@ import com.codesoom.assignment.models.Response;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import java.util.List;
+
 public class PostTaskResource extends TaskResource
     implements ResourceHandler {
 
     @Override
-    public Response handleRequest(String path, String body) throws JsonProcessingException {
+    public Response handleRequest(List<Task> tasks, String path, String body) throws JsonProcessingException {
 
         if (body.isBlank()) {
             return new Response("Body is empty, nothing to add", HttpStatusCode.OK);

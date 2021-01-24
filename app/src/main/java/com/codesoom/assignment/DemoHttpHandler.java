@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Response;
+import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.resources.ResourceFactory;
 import com.codesoom.assignment.resources.TaskResource;
 import com.sun.net.httpserver.HttpExchange;
@@ -8,9 +9,16 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
+
+    private final List<Task> tasks;
+
+    public DemoHttpHandler(List<Task> tasks) {
+        this.tasks = tasks;
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -39,16 +47,12 @@ public class DemoHttpHandler implements HttpHandler {
             throws IOException {
 
         HttpMethod httpMethod = HttpMethod.valueOf(method);
-        if (HttpMethod.isProperMethod(httpMethod) && isProperPath(path)) {
+        if (HttpMethod.isProperMethod(httpMethod)) {
             ResourceFactory factory = new ResourceFactory();
             TaskResource resource = factory.createResource(httpMethod);
-            return resource.handleRequest(path, body);
+            return resource.handleRequest(tasks, path, body);
         }
 
         return new Response(HttpStatusCode.BAD_REQUEST.getStatus(), HttpStatusCode.BAD_REQUEST);
-    }
-
-    public boolean isProperPath(String path) {
-        return path.startsWith(URLs.TASKS);
     }
 }

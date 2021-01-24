@@ -15,25 +15,24 @@ import java.util.Optional;
 public abstract class TaskResource implements ResourceHandler {
 
     private final ObjectMapper mapper = new ObjectMapper();
-    protected static final List<Task> tasks = new ArrayList<>();
+    public final String TASKS = "/tasks";
+    public final String TASKS_ID = "/tasks/";
 
     protected Task toTask(String content) throws JsonProcessingException {
         return mapper.readValue(content, Task.class);
     }
 
-    protected String tasksToJSON() throws IOException {
-
-        OutputStream outputStream = new ByteArrayOutputStream();
-        mapper.writeValue(outputStream, tasks);
-
-        return outputStream.toString();
+    protected String tasksToJSON(List<Task> tasks) throws IOException {
+        return objectToJSON(tasks);
     }
 
     protected String taskToJSON(Task task) throws IOException {
+        return objectToJSON(task);
+    }
 
+    protected String objectToJSON(Object object) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        mapper.writeValue(outputStream, task);
-
+        mapper.writeValue(outputStream, object);
         return outputStream.toString();
     }
 
@@ -44,7 +43,7 @@ public abstract class TaskResource implements ResourceHandler {
         return Long.parseLong(param);
     }
 
-    protected Optional<Task> getTaskById(Long id) {
+    protected Optional<Task> getTaskById(List<Task> tasks, Long id) {
         return tasks.stream()
                 .filter(i -> i.getId() == id)
                 .reduce((i, v) -> {
