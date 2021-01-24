@@ -47,6 +47,10 @@ public class DemoHttpHandler implements HttpHandler {
             throws IOException {
 
         HttpMethod httpMethod = HttpMethod.valueOf(method);
+        if (httpMethod.equals(HttpMethod.HEAD)) {
+            return new Response("", HttpStatusCode.OK);
+        }
+
         if (HttpMethod.isProperMethod(httpMethod)) {
             ResourceFactory factory = new ResourceFactory();
             TaskResource resource = factory.createResource(httpMethod);

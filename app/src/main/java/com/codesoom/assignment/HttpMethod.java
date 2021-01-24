@@ -2,7 +2,7 @@ package com.codesoom.assignment;
 
 public enum HttpMethod {
 
-    GET, POST, PUT, PATCH, DELETE;
+    GET, POST, PUT, PATCH, DELETE, HEAD;
 
     public static boolean isProperMethod(HttpMethod method) {
         return method.equals(HttpMethod.GET) ||
