@@ -39,9 +39,10 @@ public class TaskService {
         String uri = String.valueOf(httpExchange.getRequestURI());
         int id = getId(uri);
 
-        tasks.get(id-1).updateTitle(title);
+        Task task = findTaskById(id);
+        task.updateTitle(title);
 
-        return tasksToJSONById(tasks.get(id-1));
+        return tasksToJSONById(task);
     }
 
     public String deleteTask(HttpExchange httpExchange) throws IOException {
@@ -50,10 +51,11 @@ public class TaskService {
 
         for (Task task : tasks){
             if (task.getId() == id){
-                return tasksToJSONById(tasks.remove(id-1));
+                tasks.remove(task);
+                return tasksToJSONById(task);
             }
         }
-        return "";
+        return "null";
     }
 
     public Long plusId(){

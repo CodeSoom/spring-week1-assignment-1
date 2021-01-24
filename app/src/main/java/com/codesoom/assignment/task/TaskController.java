@@ -64,9 +64,8 @@ public class TaskController {
 
         if (uri.length() >= 8) {
             int id = taskService.getId(uri);
-            System.out.println(id);
 
-            if (id <= taskService.tasks.size() && id >= 1) {
+            if (id >= 1) {
                 String body = taskService.updateTask(httpExchange);
                 httpExchange.sendResponseHeaders(OK.getStatus(), body.getBytes().length);
                 taskService.processBody(httpExchange, body);
@@ -110,10 +109,18 @@ public class TaskController {
 
         if (uri.length() >= 8) {
             int id = taskService.getId(uri);
-            System.out.println(id);
 
-            if (id <= taskService.tasks.size() && id >= 1){
+            if (id >= 1){
                 String body = taskService.deleteTask(httpExchange);
+
+                System.out.println(body);
+
+                if (body.equals("null")){
+                    System.out.println("check");
+                    errorController(httpExchange);
+                    return;
+                }
+
                 httpExchange.sendResponseHeaders(OK.getStatus(), body.getBytes().length);
                 taskService.processBody(httpExchange, body);
                 return;
