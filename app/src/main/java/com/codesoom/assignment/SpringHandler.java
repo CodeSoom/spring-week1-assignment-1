@@ -86,10 +86,15 @@ public class SpringHandler implements HttpHandler {
 
             Task source = toTask(body);
             task.setTitle(source.getTitle());
-            tasks.add(task);
+
             send(exchange, 200, toJSON(tasks));
         }
 
+        if(method.equals("DELETE")) {
+            tasks.remove(task);
+            send(exchange, 200, "");
+
+        }
     }
 
 
