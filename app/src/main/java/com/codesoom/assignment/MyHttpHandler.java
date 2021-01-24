@@ -29,6 +29,7 @@ public class MyHttpHandler implements HttpHandler {
 
         if (path.equals("/")) {
             handleHealthCheck(exchange, method);
+            return;
         }
         if (path.equals("/tasks")) {
             handleCollection(exchange, method);
@@ -51,8 +52,8 @@ public class MyHttpHandler implements HttpHandler {
     private void handleItem(HttpExchange exchange, String path) throws IOException {
         String method = exchange.getRequestMethod();
         String body = getBody(exchange);
+        Task task = tasks.findTask(extractPathVariable(path)).orElse(null);
 
-        Task task = tasks.findByPath(path);
         if (task == null) {
             handleResponse(exchange, HttpStatus.NOT_FOUND.getCode(), "");
             return;
@@ -125,5 +126,9 @@ public class MyHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private Long extractPathVariable(String path) {
+        return Long.parseUnsignedLong(path.substring(path.lastIndexOf("/") + 1));
     }
 }

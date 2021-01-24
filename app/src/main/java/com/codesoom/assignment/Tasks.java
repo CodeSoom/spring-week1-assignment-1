@@ -29,20 +29,11 @@ public class Tasks {
                 .findFirst();
     }
 
-    public Task findByPath(String path) {
-        Long pathVariable = extractPathVariable(path);
-        return this.findTask(pathVariable).orElse(null);
-    }
-
     public List<Task> getTasks() {
         return new ArrayList<>(tasks);
     }
 
     public int size() {
         return tasks.size();
-    }
-
-    private Long extractPathVariable(String path) {
-        return Long.parseUnsignedLong(path.substring(path.lastIndexOf("/") + 1));
     }
 }
