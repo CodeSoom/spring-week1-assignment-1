@@ -3,9 +3,19 @@ package com.codesoom.assignment;
 /**
  * http status codes
  */
-public class HttpStatusCode {
-    public static final int OK = 200;
-    public static final int CREATED = 201;
-    public static final int NO_CONTENT = 204;
-    public static final int NOT_FOUND = 404;
+public enum HttpStatusCode {
+    OK(200),
+    CREATED(201),
+    NO_CONTENT(204),
+    NOT_FOUND(404);
+
+    private int rawValue;
+
+    HttpStatusCode(int rawValue) {
+        this.rawValue = rawValue;
+    }
+
+    public int getRawValue() {
+        return this.rawValue;
+    }
 }

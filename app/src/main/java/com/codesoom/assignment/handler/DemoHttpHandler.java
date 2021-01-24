@@ -28,7 +28,7 @@ public class DemoHttpHandler implements HttpHandler {
         String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().getPath();
         String content = "";
-        int statusCode = HttpStatusCode.OK;
+        HttpStatusCode statusCode = HttpStatusCode.OK;
 
         System.out.println(method + " " + path);
 
@@ -49,7 +49,7 @@ public class DemoHttpHandler implements HttpHandler {
             statusCode = HttpStatusCode.NOT_FOUND;
         }
 
-        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
+        exchange.sendResponseHeaders(statusCode.getRawValue(), content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
