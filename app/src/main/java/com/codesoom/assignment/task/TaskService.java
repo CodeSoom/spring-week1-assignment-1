@@ -20,7 +20,8 @@ public class TaskService {
     }
 
     public String getTaskById(int id) throws IOException {
-        return tasksToJSONById(tasks.get(id-1));
+        Task task = findTaskById(id);
+        return tasksToJSONById(task);
     }
 
     public String createTask(HttpExchange httpExchange) throws IOException {
@@ -47,10 +48,12 @@ public class TaskService {
         String uri = String.valueOf(httpExchange.getRequestURI());
         int id = getId(uri);
 
-        Task task = tasks.get(id-1);
-        tasks.remove(id-1);
-
-        return tasksToJSONById(task);
+        for (Task task : tasks){
+            if (task.getId() == id){
+                return tasksToJSONById(tasks.remove(id-1));
+            }
+        }
+        return "";
     }
 
     public Long plusId(){
@@ -67,6 +70,7 @@ public class TaskService {
                 .lines()
                 .collect(Collectors.joining("\n"));
     }
+
 
     private String tasksToJSON() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
@@ -95,4 +99,14 @@ public class TaskService {
         outputStream.flush();
         outputStream.close();
     }
+
+    public Task findTaskById(int id){
+        for (Task task : tasks){
+            if (task.getId() == Long.valueOf(id)){
+                return task;
+            }
+        }
+        return null;
+    }
+
 }
