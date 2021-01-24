@@ -1,7 +1,6 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
-import com.codesoom.assignment.service.ToGet;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -10,124 +9,95 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
-    private static final int OK = 200;
-    private static final int CREATED = 201;
-    private static final int NOT_FOUND = 404;
-    private static final String OK_PATH = "tasks";
-
-    private ObjectMapper objectMapper = new ObjectMapper();
-    private List<Task> tasks = new ArrayList<>();
-    private Long id = 1L;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final List<Task> tasks = new ArrayList<>();
+    private Long newId = 0L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
-
-        InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
-
         System.out.println("method : " + method + " path : " + path);
 
-        Map<String, Handle> methodMap = new HashMap<>();
-        String[] pathSplit = path.split("/");
-
-//        methodMap.put("GET", new ToGet());
-//        methodMap.put("POST", new ToPost());
-//        methodMap.put("PUT", new ToPut());
-//        methodMap.put("DELETE", new ToDelete());
-//        methodMap.get(method).check(pathSplit, body, exchange);
-
         switch (method) {
-            case "GET"      : toGet(pathSplit, body, exchange);
+            case "GET"      : handleGet(path, exchange);
                               break;
-            case "POST"     : toPost(pathSplit, body, exchange);
+            case "POST"     : handlePost(exchange);
                               break;
-            case "PUT"      : toPut(pathSplit, body, exchange);
+            case "PUT"      : handlePut(path, exchange);
                               break;
-            case "DELETE"   : toDelete(pathSplit, body, exchange);
+            case "DELETE"   : handleDelete(path, exchange);
                               break;
+            default         : responseSend(HttpStatusCode.NOT_FOUND.getCode(), "method error", exchange);
         }
     }
 
-    private void toGet(String[] path, String body, HttpExchange exchange) throws IOException {
-        if (path.length == 0) {
-            responseOutput(OK, "Hello World", exchange);
-            return;
+    private void handleGet(String path, HttpExchange exchange)
+            throws IOException {
+        if (path.equals("/tasks")) {
+            responseSend(HttpStatusCode.OK.getCode(), tasksToJSON(), exchange);
         }
 
-        if (!path[1].equals(OK_PATH)) {
-            responseOutput(NOT_FOUND, "GET Path Error", exchange);
-            return;
-        }
-
-        if (path.length >= 3) {
-            int getNumber = Integer.parseInt(path[2]);
-            if (!(tasks.size() <= getNumber -1)) {
-                responseOutput(OK, tasks.get(getNumber -1).toString(), exchange);
+        if (path.startsWith("/tasks/")) {
+            Long id = Long.parseLong(path.substring("/tasks/".length()));
+            Task task = findTask(id);
+            if (task == null) {
+                responseSend(HttpStatusCode.NOT_FOUND.getCode(), "id error", exchange);
                 return;
             }
-            responseOutput(NOT_FOUND, "해당 ID는 존재하지 않습니다.", exchange);
-            return;
+            responseSend(HttpStatusCode.OK.getCode(), toJSON(task), exchange);
         }
-        responseOutput(OK, tasksToJSON(), exchange);
     }
 
-    private void toPost(String[] path, String body, HttpExchange exchange) throws IOException {
-        if (!path[1].equals(OK_PATH)) {
-            responseOutput(NOT_FOUND, "POST Path Error", exchange);
-            return;
-        }
-        Task task = toTask(body);
-        task.setId(id++);
+    private void handlePost(HttpExchange exchange) throws IOException {
+        Task task = toTask(getBody(exchange));
+        task.setId(generateId());
         tasks.add(task);
-        responseOutput(CREATED, "Create a new Task.", exchange);
+        responseSend(HttpStatusCode.CREATED.getCode(), toJSON(task), exchange);
     }
 
-    private void toPut(String[] path, String body, HttpExchange exchange) throws IOException {
-        if (!path[1].equals(OK_PATH) || body.isEmpty() || path.length < 3) {
-            responseOutput(NOT_FOUND, "PUT Path or body Error", exchange);
-            return;
-        }
-        int getNumber = Integer.parseInt(path[2]);
-
-        if (!(tasks.size() <= getNumber -1)) {
-            System.out.println("tasks Size : " + tasks.size() + "  search : " + (getNumber -1));
-            Task task = toTask(body);
-            tasks.get(getNumber -1).setTitle(task.getTitle());
-            responseOutput(OK, tasks.get(getNumber -1).toString(), exchange);
-            return;
-        }
-        responseOutput(OK, "id error", exchange);
-    }
-
-    private void toDelete(String[] path, String body, HttpExchange exchange) throws IOException {
-        if (!path[1].equals(OK_PATH) || !body.isEmpty() || path.length < 3) {
-            responseOutput(NOT_FOUND, "PUT Path or id Error", exchange);
-            return;
-        }
-        Long getNumber1 = Long.parseLong(path[2]);
-
-        for(Task task : tasks) {
-            if(task.getId() == getNumber1){
-                tasks.remove(task);
-                responseOutput(OK, "delete success", exchange);
+    private void handlePut(String path, HttpExchange exchange) throws IOException {
+        if (path.startsWith("/tasks/")) {
+            Long id = Long.parseLong(path.substring("/tasks/".length()));
+            Task task = findTask(id);
+            System.out.println("zz " + task);
+            if (task == null) {
+                responseSend(HttpStatusCode.NOT_FOUND.getCode(), "id error", exchange);
                 return;
             }
+            Task source = toTask(getBody(exchange));
+            task.setTitle(source.getTitle());
+            responseSend(HttpStatusCode.OK.getCode(), toJSON(task), exchange);
         }
-        responseOutput(NOT_FOUND, "해당하는 ID가 없습니다.", exchange);
     }
 
-    private void responseOutput(int statusCode, String content, HttpExchange exchange) throws IOException {
+    private void handleDelete(String path, HttpExchange exchange) throws IOException {
+        if (path.startsWith("/tasks/")) {
+            Long id = Long.parseLong(path.substring("/tasks/".length()));
+            Task task = findTask(id);
+            if (task == null) {
+                responseSend(HttpStatusCode.NOT_FOUND.getCode(), "id error", exchange);
+                return;
+            }
+            tasks.remove(task);
+            responseSend(HttpStatusCode.OK.getCode(), toJSON(task), exchange);
+        }
+    }
+
+    private Task findTask(Long id) {
+        return tasks.stream()
+                .filter(task -> task.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void responseSend(int statusCode, String content, HttpExchange exchange)
+            throws IOException {
         exchange.sendResponseHeaders(statusCode, content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
 
@@ -145,5 +115,23 @@ public class DemoHttpHandler implements HttpHandler {
         objectMapper.writeValue(outputStream, tasks);
 
         return outputStream.toString();
+    }
+
+    private String toJSON(Object object) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, object);
+
+        return outputStream.toString();
+    }
+
+    private Long generateId() {
+        return newId += 1;
+    }
+
+    private String getBody(HttpExchange exchange) {
+        InputStream inputStream = exchange.getRequestBody();
+        return new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
     }
 }

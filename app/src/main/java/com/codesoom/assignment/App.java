@@ -3,6 +3,8 @@ package com.codesoom.assignment;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
@@ -13,6 +15,13 @@ public class App {
     }
 
     public static void main(String[] args) {
+        File[] hiddenFiles = new File(".").listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                return file.isHidden();
+            }
+        });
+
         System.out.println(new App().getGreeting());
 
         try {
