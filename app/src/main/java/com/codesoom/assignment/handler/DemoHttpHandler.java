@@ -34,13 +34,12 @@ public class DemoHttpHandler implements HttpHandler {
 
         try {
             content = new ResponseHandler().handle(method, path, tasks, body);
-
-            switch (method) {
-                case HttpMethod.POST:
+            switch (HttpMethod.valueOf(method)) {
+                case POST:
                     statusCode = HttpStatusCode.CREATED;
                     break;
 
-                case HttpMethod.DELETE:
+                case DELETE:
                     statusCode = HttpStatusCode.NO_CONTENT;
                     break;
             }

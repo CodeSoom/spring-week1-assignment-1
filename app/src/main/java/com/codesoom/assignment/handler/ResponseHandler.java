@@ -20,7 +20,7 @@ public class ResponseHandler {
     TaskManager taskManager = new TaskManager();
 
     public String handle(String method, String path, List<Task> tasks, String body) throws IOException, ResponseHandlingException {
-        if (path.equals("/") && method.equals(HttpMethod.HEAD)) {
+        if (path.equals("/") && HttpMethod.valueOf(method).equals(HttpMethod.HEAD)) {
             return "";
         }
 
@@ -31,8 +31,8 @@ public class ResponseHandler {
 
         Long taskId = extractTaskId(path);
 
-        switch (method) {
-            case HttpMethod.GET:
+        switch (HttpMethod.valueOf(method)) {
+            case GET:
                 // fetch task list
                 if (path.equals("/tasks")) {
                     return jsonParser.tasksToJSON(tasks);
@@ -47,15 +47,15 @@ public class ResponseHandler {
 
                 return jsonParser.taskToJSON(selectedTask);
 
-            case HttpMethod.POST:
+            case POST:
                 if (body.isBlank()) { break; }
 
                 Task newTask = taskManager.toTask(body, (long) (tasks.size() + 1));
                 tasks.add(newTask);
                 return jsonParser.taskToJSON(tasks.get(tasks.size() - 1));
 
-            case HttpMethod.PUT:
-            case HttpMethod.PATCH:
+            case PUT:
+            case PATCH:
                 if (body.isBlank()) { break; }
 
                 Task editableTask = taskManager.getTask(tasks, taskId);
@@ -67,7 +67,7 @@ public class ResponseHandler {
                 tasks.set(tasks.indexOf(editableTask), taskManager.toTask(body, editableTask.getId()));
                 return jsonParser.taskToJSON(taskManager.getTask(tasks, taskId));
 
-            case HttpMethod.DELETE:
+            case DELETE:
                 if (taskManager.getTask(tasks, taskId).getId() == null) {
                     throw new ResponseHandlingException(ResponseHandlingException.ErrorCode.NOT_FOUND);
                 }
