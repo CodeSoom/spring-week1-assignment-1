@@ -1,0 +1,49 @@
+###
+
+GET {{host}}/tasks
+
+###
+
+POST {{host}}/tasks
+Content-Type: application/json
+
+{
+ "title": "homework"
+}
+
+###
+
+
+GET {{host}}/tasks
+
+###
+
+GET {{host}}/tasks/a
+
+###
+
+
+GET {{host}}/tasks/0
+
+###
+
+PUT {{host}}/tasks/0
+Content-Type: application/json
+
+{
+  "title": "rest"
+}
+
+###
+
+GET {{host}}/tasks
+
+###
+
+DELETE  {{host}}/tasks/0
+
+###
+
+GET {{host}}/tasks
+
+###
