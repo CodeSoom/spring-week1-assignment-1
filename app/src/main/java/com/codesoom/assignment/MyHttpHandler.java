@@ -30,10 +30,21 @@ public class MyHttpHandler implements HttpHandler {
 
         System.out.println(method + " " + path);
 
-        if (path.equals("/") || path.startsWith("/tasks")) {
+        if (path.equals("/")) {
+            handleHealthCheck(exchange, method);
+        }
+
+        if (path.startsWith("/tasks")) {
             content = methodHandler(exchange, path);
         }
         handleResponse(exchange, content);
+    }
+
+    private void handleHealthCheck(HttpExchange exchange, String method) throws IOException {
+        if (method.equals("HEAD")) {
+            exchange.sendResponseHeaders(HttpStatus.OK.getCode(), 0);
+            return;
+        }
     }
 
     private void handleResponse(HttpExchange exchange, String content) throws IOException {
@@ -47,11 +58,6 @@ public class MyHttpHandler implements HttpHandler {
         String method = exchange.getRequestMethod();
         String body = getBody(exchange);
         String content = "";
-
-        if (method.equals("HEAD")) {
-            exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
-            return content;
-        }
 
         if (method.equals("GET") && path.equals("/tasks")) {
             exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
@@ -73,6 +79,7 @@ public class MyHttpHandler implements HttpHandler {
         if (method.equals("POST") && path.equals("/tasks")) {
             if (Objects.isNull(body)) {
                 exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getCode(), 0);
+                return content;
             }
             Task task = jsonConverter.toTask(body);
             task.setId(idGenerator.generate());
@@ -86,6 +93,7 @@ public class MyHttpHandler implements HttpHandler {
             Long pathVariable = extractPathVariable(path);
             if (Objects.isNull(body)) {
                 exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getCode(), 0);
+                return content;
             }
             Optional<Task> task = tasks.findTask(pathVariable);
             if (task.isEmpty()) {
