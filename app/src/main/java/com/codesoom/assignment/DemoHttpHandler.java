@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
-    private Long id = 0L;
+    private Long newId = 0L;
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
 
@@ -64,8 +64,8 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private Long generateId() {
-        id++;
-        return id;
+        newId++;
+        return newId;
     }
 
     private String getBody(HttpExchange exchange) {
