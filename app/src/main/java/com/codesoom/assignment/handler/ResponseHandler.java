@@ -26,7 +26,7 @@ public class ResponseHandler {
         }
 
         // check wrong path
-        if (!path.matches("^/tasks(/[0-9]+$)?")) {
+        if (!path.matches("^/tasks(?:/[0-9]+)?$")) {
             throw new ResponseHandlingException(HttpStatusCode.NOT_FOUND);
         }
 
