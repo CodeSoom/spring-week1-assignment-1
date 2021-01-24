@@ -88,8 +88,10 @@ public class ResponseHandler {
         String[] splitPath = path.split("/");
 
         // return Longs.tryParse(splitPath[splitPath.length - 1])으로 대체 가능
-        return splitPath[splitPath.length - 1].matches("^[0-9]+$")
-                ? Long.valueOf(splitPath[splitPath.length - 1])
-                : null;
+        if (splitPath.length > 0 && splitPath[splitPath.length - 1].matches("^[0-9]+$")) {
+            return Long.valueOf(splitPath[splitPath.length - 1]);
+        }
+
+        return null;
     }
 }
