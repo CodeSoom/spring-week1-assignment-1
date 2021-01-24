@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 public class SpringHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
-    static final int httpStatus = 200;
 
     private List<Task> tasks = new ArrayList<>();
     private Long newId = 0L;
@@ -33,13 +32,17 @@ public class SpringHandler implements HttpHandler {
         System.out.println(method + " " + path);
 
         if(path.startsWith("/tasks")) {
+            handleCollection(exchange, method);
+            return;
+        }
+
+        if(path.startsWith("/tasks/")) {
             Long id = Long.parseLong(path.substring("/tasks/".length()));
-            System.out.println(id);
             handleItem(exchange, method, id);
             return;
         }
 
-        send(exchange, httpStatus, "매일 매일 달리지기 위한 첫걸음 시작하기!");
+        send(exchange, 200, "매일 매일 달리지기 위한 첫걸음 시작하기!");
     }
 
 
@@ -47,7 +50,7 @@ public class SpringHandler implements HttpHandler {
 
     private void handleCollection(HttpExchange exchange, String method) throws IOException {
         if(method.equals("GET")) {
-            send(exchange, httpStatus, toJSON(tasks));
+            send(exchange, 200, toJSON(tasks));
         }
 
         if(method.equals("POST")) {
@@ -58,34 +61,33 @@ public class SpringHandler implements HttpHandler {
             task.setId(generateId());
             tasks.add(task);
 
-            send(exchange, httpStatus, toJSON(task));
+            send(exchange, 201, toJSON(task));
 
         }
     }
 
     private void handleItem(HttpExchange exchange, String method, Long id) throws IOException {
+        Task task = findTask(id);
+
+
+        if(task == null) {
+            send(exchange, 404, "");
+            return;
+        }
+
         if(method.equals("GET")) {
-            Task task = findTask(id);
-
-
-            if(task == null) {
-                send(exchange, 404, "");
-                return;
-            }
-            send(exchange, httpStatus, toJSON(tasks));
+            send(exchange, 200, toJSON(tasks));
 
         }
 
         if(method.equals("PUT") || method.equals("PATCH")) {
-            Task task = findTask(id);
 
+            String body = getBody(exchange);
 
-            if(task == null) {
-                send(exchange, 404, "");
-                return;
-            }
-            send(exchange, httpStatus, toJSON(tasks));
-
+            Task source = toTask(body);
+            task.setTitle(source.getTitle());
+            tasks.add(task);
+            send(exchange, 200, toJSON(tasks));
         }
 
     }
@@ -93,7 +95,7 @@ public class SpringHandler implements HttpHandler {
 
 
     private Long generateId() {
-        newId = 1L;
+        newId += 1;
         return newId;
     }
 
@@ -137,7 +139,7 @@ public class SpringHandler implements HttpHandler {
 
     private String toJSON(Object object) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
+        objectMapper.writeValue(outputStream, object);
 
         return outputStream.toString();
     }
