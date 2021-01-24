@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
+    private Long id = 0L;
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
 
@@ -53,12 +54,18 @@ public class DemoHttpHandler implements HttpHandler {
             String body = getBody(exchange);
 
             Task task = toTask(body);
+            task.setId(generateId());
             tasks.add(task);
 
             System.out.println(body);
 
             send(exchange, 200, "A task has been created");
         }
+    }
+
+    private Long generateId() {
+        id++;
+        return id;
     }
 
     private String getBody(HttpExchange exchange) {
