@@ -59,7 +59,7 @@ public class DemoHttpHandler implements HttpHandler {
 
             System.out.println(body);
 
-            send(exchange, 200, "New task is added : " + toJSON(task));
+            send(exchange, 201, "New task is added : " + toJSON(task));
         }
     }
 
