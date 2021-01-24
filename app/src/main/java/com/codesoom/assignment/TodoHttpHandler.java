@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.models.*;
+import com.codesoom.assignment.models.Path;
+import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.models.response.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,7 +12,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.OptionalLong;
 import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
@@ -21,8 +21,8 @@ public class TodoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String path = exchange.getRequestURI().getPath();
-        if (path.equals("/") || path.startsWith("/tasks")) {
+        Path path = new Path(exchange.getRequestURI().getPath());
+        if (path.checkUrl()) {
             Response response = processRequest(exchange);
             response.sendResponse(exchange);
             return;
@@ -50,11 +50,11 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private Response processDeleteRequest(HttpExchange exchange) {
-        String path = exchange.getRequestURI().getPath();
-        if (!hasNumberParameter(path)) {
+        Path path = new Path(exchange.getRequestURI().getPath());
+        if (!path.hasNumberParameter()) {
             return new ResponseNotFound("");
         }
-        long inputId = extractNumber(path);
+        long inputId = path.extractNumber();
         if (!hasId(inputId)) {
             return new ResponseNotFound("");
         }
@@ -62,18 +62,13 @@ public class TodoHttpHandler implements HttpHandler {
         return new ResponseNoContent("");
     }
 
-    private long extractNumber(String path) {
-        path = path.replace("/tasks/", "");
-        return OptionalLong.of(Long.parseLong(path)).getAsLong();
-    }
-
     private Response processPutAndPatchRequest(HttpExchange exchange) throws IOException {
         String body = getStringBody(exchange);
-        String path = exchange.getRequestURI().getPath();
-        if (!hasNumberParameter(path)) {
-            return new ResponseNotFound( "");
+        Path path = new Path(exchange.getRequestURI().getPath());
+        if (!path.hasNumberParameter()) {
+            return new ResponseNotFound("");
         }
-        long inputId = extractNumber(path);
+        long inputId = path.extractNumber();
         if (!hasId(inputId)) {
             return new ResponseNotFound("");
         }
@@ -97,11 +92,11 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private Response processGetRequest(HttpExchange exchange) throws IOException {
-        String path = exchange.getRequestURI().getPath();
-        if (!hasNumberParameter(path)) {
+        Path path = new Path(exchange.getRequestURI().getPath());
+        if (!path.hasNumberParameter()) {
             return new ResponseSuccess(taskToJson());
         }
-        long inputId = extractNumber(path);
+        long inputId = path.extractNumber();
         if (!hasId(inputId)) {
             return new ResponseNotFound("");
         }
@@ -111,11 +106,6 @@ public class TodoHttpHandler implements HttpHandler {
 
     private boolean hasId(long id) {
         return taskMap.containsKey(id);
-    }
-
-    private boolean hasNumberParameter(String path) {
-        path = path.replace("/tasks/", "");
-        return path.matches("^[0-9]+$");
     }
 
     private Task jsonToTask(String content) throws JsonProcessingException {
