@@ -47,7 +47,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     private void handleCollection(HttpExchange exchange, String method) throws IOException {
         if(method.equals("GET")) {
-            send(exchange, 200, tasksToJSON());
+            send(exchange, 200, toJSON(tasks));
         }
 
         if(method.equals("POST")) {
@@ -59,7 +59,7 @@ public class DemoHttpHandler implements HttpHandler {
 
             System.out.println(body);
 
-            send(exchange, 200, "A task has been created");
+            send(exchange, 200, "New task is added : " + toJSON(task));
         }
     }
 
@@ -79,9 +79,9 @@ public class DemoHttpHandler implements HttpHandler {
         return objectMapper.readValue(content, Task.class);
     }
 
-    private String tasksToJSON() throws IOException {
+    private String toJSON(Object object) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
+        objectMapper.writeValue(outputStream, object);
 
         return outputStream.toString();
     }
