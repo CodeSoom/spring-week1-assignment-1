@@ -60,11 +60,9 @@ public class MyHttpHandler implements HttpHandler {
         }
         if (method.equals("GET")) {
             handleDetail(exchange, task);
-            return;
         }
         if (method.equals("PUT") || method.equals("PATCH")) {
             handlePut(exchange, body, task);
-            return;
         }
         if (method.equals("DELETE")) {
             handleDelete(exchange, task);
@@ -86,7 +84,6 @@ public class MyHttpHandler implements HttpHandler {
     private void handleHealthCheck(HttpExchange exchange, String method) throws IOException {
         if (method.equals("HEAD")) {
             exchange.sendResponseHeaders(HttpStatus.OK.getCode(), 0);
-            return;
         }
     }
 
