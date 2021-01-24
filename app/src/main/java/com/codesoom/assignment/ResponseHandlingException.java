@@ -4,18 +4,14 @@ package com.codesoom.assignment;
  *  define exception related with handling response contents
  */
 public class ResponseHandlingException extends Exception {
-    public enum ErrorCode {
-        NOT_FOUND, METHOD_NOT_ALLOWED
-    }
+    private final HttpStatusCode httpStatusCode;
 
-    private final ErrorCode errorCode;
-
-    public ResponseHandlingException(ErrorCode errorCode) {
-        this.errorCode = errorCode;
+    public ResponseHandlingException(HttpStatusCode httpStatusCode) {
+        this.httpStatusCode = httpStatusCode;
     }
 
     public void printDescription() {
-        switch (this.errorCode) {
+        switch (this.httpStatusCode) {
             case NOT_FOUND:
                 System.out.println("Not Found.");
 

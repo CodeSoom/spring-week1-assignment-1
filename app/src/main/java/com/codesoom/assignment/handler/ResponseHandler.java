@@ -1,6 +1,7 @@
 package com.codesoom.assignment.handler;
 
 import com.codesoom.assignment.HttpMethod;
+import com.codesoom.assignment.HttpStatusCode;
 import com.codesoom.assignment.ResponseHandlingException;
 import com.codesoom.assignment.helper.JSONParser;
 import com.codesoom.assignment.helper.TaskManager;
@@ -26,7 +27,7 @@ public class ResponseHandler {
 
         // check wrong path
         if (!path.matches("^/tasks(/[0-9]+$)?")) {
-            throw new ResponseHandlingException(ResponseHandlingException.ErrorCode.NOT_FOUND);
+            throw new ResponseHandlingException(HttpStatusCode.NOT_FOUND);
         }
 
         Long taskId = extractTaskId(path);
@@ -42,7 +43,7 @@ public class ResponseHandler {
                 Task selectedTask = taskManager.getTask(tasks, taskId);
                 // TODO: getTask에서 아래의 로직을 처리할 수 있도록 함
                 if (selectedTask.getId() == null) {
-                    throw new ResponseHandlingException(ResponseHandlingException.ErrorCode.NOT_FOUND);
+                    throw new ResponseHandlingException(HttpStatusCode.NOT_FOUND);
                 }
 
                 return jsonParser.taskToJSON(selectedTask);
@@ -61,7 +62,7 @@ public class ResponseHandler {
                 Task editableTask = taskManager.getTask(tasks, taskId);
                 // TODO: getTask에서 아래의 로직을 처리할 수 있도록 함
                 if (editableTask.getId() == null) {
-                    throw new ResponseHandlingException(ResponseHandlingException.ErrorCode.NOT_FOUND);
+                    throw new ResponseHandlingException(HttpStatusCode.NOT_FOUND);
                 }
 
                 tasks.set(tasks.indexOf(editableTask), taskManager.toTask(body, editableTask.getId()));
@@ -69,17 +70,17 @@ public class ResponseHandler {
 
             case DELETE:
                 if (taskManager.getTask(tasks, taskId).getId() == null) {
-                    throw new ResponseHandlingException(ResponseHandlingException.ErrorCode.NOT_FOUND);
+                    throw new ResponseHandlingException(HttpStatusCode.NOT_FOUND);
                 }
 
                 tasks.removeIf(task -> Objects.equals(taskId, task.getId()));
                 return "";
 
             default:
-                throw new ResponseHandlingException(ResponseHandlingException.ErrorCode.METHOD_NOT_ALLOWED);
+                throw new ResponseHandlingException(HttpStatusCode.METHOD_NOT_ALLOWED);
         }
 
-        throw new ResponseHandlingException(ResponseHandlingException.ErrorCode.NOT_FOUND);
+        throw new ResponseHandlingException(HttpStatusCode.NOT_FOUND);
     }
 
     @Nullable
