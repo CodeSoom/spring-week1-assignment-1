@@ -27,17 +27,43 @@ public class MyHttpHandler implements HttpHandler {
         String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().getPath();
         String content = "";
-
         System.out.println(method + " " + path);
 
         if (path.equals("/")) {
             handleHealthCheck(exchange, method);
         }
 
+        if (path.equals("/tasks")) {
+            handleCollection(exchange, method);
+            return;
+        }
+
         if (path.startsWith("/tasks")) {
             content = methodHandler(exchange, path);
         }
         handleResponse(exchange, content);
+    }
+
+    private void handleCollection(HttpExchange exchange, String method) throws IOException {
+        if (method.equals("GET")) {
+            handleList(exchange);
+        }
+
+        if (method.equals("POST")) {
+            handleCreate(exchange);
+        }
+    }
+
+    private void handleCreate(HttpExchange exchange) throws IOException {
+        String body = getBody(exchange);
+        if (Objects.isNull(body)) {
+            exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getCode(), 0);
+            return;
+        }
+        Task task = jsonConverter.toTask(body);
+        task.setId(idGenerator.generate());
+        tasks.addTask(task);
+        send(exchange, 201, jsonConverter.taskToJson(task));
     }
 
     private void handleHealthCheck(HttpExchange exchange, String method) throws IOException {
@@ -47,7 +73,20 @@ public class MyHttpHandler implements HttpHandler {
         }
     }
 
+    private void handleList(HttpExchange exchange) throws IOException {
+        String content = jsonConverter.tasksToJSON(tasks);
+        send(exchange, 200, content);
+    }
+
     private void handleResponse(HttpExchange exchange, String content) throws IOException {
+        OutputStream outputStream = exchange.getResponseBody();
+        outputStream.write(content.getBytes());
+        outputStream.flush();
+        outputStream.close();
+    }
+
+    private void send(HttpExchange exchange, int statusCode, String content) throws IOException {
+        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
@@ -59,11 +98,6 @@ public class MyHttpHandler implements HttpHandler {
         String body = getBody(exchange);
         String content = "";
 
-        if (method.equals("GET") && path.equals("/tasks")) {
-            exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
-            return jsonConverter.tasksToJSON(tasks);
-        }
-
         if (method.equals("GET") && pattern.matcher(path).matches()) {
             Long pathVariable = extractPathVariable(path);
             Optional<Task> task = tasks.findTask(pathVariable);
@@ -74,19 +108,6 @@ public class MyHttpHandler implements HttpHandler {
             }
             exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
             return jsonConverter.taskToJson(task.get());
-        }
-
-        if (method.equals("POST") && path.equals("/tasks")) {
-            if (Objects.isNull(body)) {
-                exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getCode(), 0);
-                return content;
-            }
-            Task task = jsonConverter.toTask(body);
-            task.setId(idGenerator.generate());
-            tasks.addTask(task);
-            exchange.sendResponseHeaders(HttpStatus.CREATE.getCode(), content.getBytes().length);
-            return jsonConverter.taskToJson(task);
-
         }
 
         if (method.equals("PUT") && pattern.matcher(path).matches()) {
