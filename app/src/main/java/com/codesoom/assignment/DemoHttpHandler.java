@@ -14,14 +14,11 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 public class DemoHttpHandler implements HttpHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -50,7 +47,7 @@ public class DemoHttpHandler implements HttpHandler {
         String path = uri.getPath();
 
         InputStream inputStream = exchange.getRequestBody();
-        String  body = new BufferedReader(new InputStreamReader(inputStream))
+        String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
 
@@ -58,7 +55,6 @@ public class DemoHttpHandler implements HttpHandler {
         if (!body.isEmpty()) {
             Task task = toTask(body);
             tasks.add(task);
-
         }
 
         String content = "Hello, World!";
@@ -86,10 +82,10 @@ public class DemoHttpHandler implements HttpHandler {
 
     private String tasksToJSON() throws IOException {
 
-            try (OutputStream outputStream = new ByteArrayOutputStream()) {
-                objectMapper.writeValue(outputStream, tasks);
+        try (OutputStream outputStream = new ByteArrayOutputStream()) {
+            objectMapper.writeValue(outputStream, tasks);
 
-                return outputStream.toString();
-            }
+            return outputStream.toString();
         }
+    }
 }
