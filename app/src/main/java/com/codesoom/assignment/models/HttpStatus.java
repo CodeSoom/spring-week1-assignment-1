@@ -6,6 +6,7 @@ public enum HttpStatus {
     NO_CONTENT(204),
     NOT_FOUND(404),
     METHOD_NOT_ALLOWED(405);
+
     private int value;
 
     HttpStatus(int value) {

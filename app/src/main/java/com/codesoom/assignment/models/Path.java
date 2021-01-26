@@ -3,8 +3,8 @@ package com.codesoom.assignment.models;
 import java.util.OptionalLong;
 
 public class Path {
-    String path;
-    String target = "/tasks/";
+    private String path;
+    private String target = "/tasks/";
     public Path(String path) {
         this.path = path;
     }
