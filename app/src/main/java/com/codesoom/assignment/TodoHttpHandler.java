@@ -1,6 +1,6 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.models.Path;
+import com.codesoom.assignment.models.TasksPath;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.models.response.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,7 +21,7 @@ public class TodoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        Path path = new Path(exchange.getRequestURI().getPath());
+        TasksPath path = new TasksPath(exchange.getRequestURI().getPath());
         if (path.checkUrl()) {
             Response response = processRequest(exchange);
             response.sendResponse(exchange);
@@ -50,7 +50,7 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private Response processDeleteRequest(HttpExchange exchange) {
-        Path path = new Path(exchange.getRequestURI().getPath());
+        TasksPath path = new TasksPath(exchange.getRequestURI().getPath());
         if (!path.hasNumberParameter()) {
             return new ResponseNotFound("");
         }
@@ -64,7 +64,7 @@ public class TodoHttpHandler implements HttpHandler {
 
     private Response processPutAndPatchRequest(HttpExchange exchange) throws IOException {
         String body = getStringBody(exchange);
-        Path path = new Path(exchange.getRequestURI().getPath());
+        TasksPath path = new TasksPath(exchange.getRequestURI().getPath());
         if (!path.hasNumberParameter()) {
             return new ResponseNotFound("");
         }
@@ -92,7 +92,7 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private Response processGetRequest(HttpExchange exchange) throws IOException {
-        Path path = new Path(exchange.getRequestURI().getPath());
+        TasksPath path = new TasksPath(exchange.getRequestURI().getPath());
         if (!path.hasNumberParameter()) {
             return new ResponseSuccess(taskToJson());
         }
