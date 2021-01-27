@@ -13,7 +13,7 @@ public class TasksPath {
         String replace = path.replace(TASKS, "");
         return OptionalLong.of(Long.parseLong(replace)).getAsLong();
     }
-    public boolean checkUrl(){
+    public boolean isValidUrl(){
         return path.equals("/") || path.startsWith("/tasks");
     }
 
