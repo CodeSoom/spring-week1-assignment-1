@@ -4,9 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+<<<<<<< HEAD
     "test": "jest",
     "lint": "eslint .",
     "ci": "start-server-and-test '../gradlew run -p ../' http://localhost:8000 test"
+=======
+    "test": "jest --runInBand",
+    "lint": "eslint .",
+    "ci": "start-server-and-test '../gradlew run -p ../' http-get://localhost:8000/tasks test"
+>>>>>>> First commit
   },
   "author": "",
   "license": "ISC",

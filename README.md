@@ -6,11 +6,19 @@ Java를 이용해서 ToDo REST API를 만들어봅니다.
 
 ![API](https://user-images.githubusercontent.com/14071105/103476206-0456f280-4df7-11eb-89c4-d61845ef45ec.png)
 
+<<<<<<< HEAD
 - ToDo 목록 얻기
 - ToDo 상세 조회하기
 - ToDo 생성하기
 - ToDo 제목 수정하기
 - ToDo 삭제하기
+=======
+- ToDo 목록 얻기 - `GET /tasks`
+- ToDo 상세 조회하기 - `GET /tasks/{id}`
+- ToDo 생성하기 - `POST /tasks`
+- ToDo 제목 수정하기 - `PUT/PATCH /tasks/{id}`
+- ToDo 삭제하기 - `DELETE /tasks/{id}`
+>>>>>>> First commit
 
 ## 요구 사항
 
@@ -28,7 +36,11 @@ Java를 이용해서 ToDo REST API를 만들어봅니다.
 
 ```bash
 $ cd tests
+<<<<<<< HEAD
 $ npm run test
+=======
+$ npm install
+>>>>>>> First commit
 ```
 
 ### 테스트 실행하기
@@ -38,6 +50,9 @@ $ npm run test
 ```bash
 $ npm run test
 ```
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> First commit
