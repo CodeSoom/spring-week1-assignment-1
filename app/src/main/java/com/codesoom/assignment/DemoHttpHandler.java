@@ -15,21 +15,13 @@ public class DemoHttpHandler implements HttpHandler {
 
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
+    private Long id = 0L;
 
     public DemoHttpHandler() {
-        Task task = new Task();
-        task.setId(1L);
-        task.setTitle("Do nothing...");
-
-        tasks.add(task);
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        // 1. Method - GET, POST, PUT/PATCH, DELETE, ...
-        // 2. Path - "/", "/tasks", "/tasks/1", ...
-        // 3. Header, Body(Content)
-
         String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().getPath();
 
@@ -45,19 +37,21 @@ public class DemoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        if (!body.isBlank()) {
-            Task task = JsonToTask(body);
-            tasks.add(task);
-        }
-
-
         String content = "RESPONSE";
 
-        if ("GET".equals(method) && "/tasks".equals(path))
+        if ("GET".equals(method) && "/tasks".equals(path)) {
             content = tasksToJson();
+        }
 
-        if ("POST".equals(method) && "/tasks".equals(path))
+        if ("POST".equals(method) && "/tasks".equals(path)) {
             content = "CREATE A NEW TASK";
+
+            if (!body.isBlank()) {
+                Task task = JsonToTask(body);
+                task.setId(id + 1);
+                tasks.add(task);
+            }
+        }
 
         byte[] responseBytes = content.getBytes();
 
@@ -67,7 +61,6 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.write(responseBytes);
         outputStream.flush();
         outputStream.close();
-
     }
 
     private Task JsonToTask(String content) throws JsonProcessingException {
@@ -75,6 +68,7 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private String tasksToJson() throws IOException {
+        if (tasks.size() == 0) return "[]";
 
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
