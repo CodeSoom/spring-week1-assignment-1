@@ -15,9 +15,11 @@ import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
 
-    final int HTTP_STATUS_CREATE = 201;
     final int HTTP_STATUS_OK = 200;
-    final int HTTP_STATUS_FAIL = 400;
+    final int HTTP_STATUS_CREATE = 201;
+    final int HTTP_STATUS_DELETE = 204;
+
+    final int HTTP_STATUS_FAIL = 404;
 
     private static Long taskIdSeq = 0L;
 
@@ -87,7 +89,7 @@ public class DemoHttpHandler implements HttpHandler {
                 content = toJsonStr(rqTask);
                 httpStatus = HTTP_STATUS_CREATE;
 
-            } else if(method.equals("PUT") && path.equals("/tasks") ){ // Task 수정
+            } else if((method.equals("PUT") || method.equals("PATCH")) && path.equals("/tasks") ){ // Task 수정
 
                 String newTitle = rqTask.getTitle();
 
@@ -100,6 +102,7 @@ public class DemoHttpHandler implements HttpHandler {
             } else if(method.equals("DELETE") && path.equals("/tasks")){ // Task 삭제
 
                 tasks.remove(taskIndex);
+                httpStatus = HTTP_STATUS_DELETE;
 
             } else {
 
@@ -121,7 +124,7 @@ public class DemoHttpHandler implements HttpHandler {
         } finally {
 
             httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
-
+            System.out.println("response = " + content);
             OutputStream outputStream = httpExchange.getResponseBody();
             outputStream.write(content.getBytes());
             outputStream.flush();
