@@ -15,7 +15,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
-    private Long id = 0L;
+    private Long id = 1L;
 
     public DemoHttpHandler() {
     }
@@ -37,25 +37,39 @@ public class DemoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        String content = "RESPONSE";
+        int responseCode = 200;
+        String content = "";
 
         if ("GET".equals(method) && "/tasks".equals(path)) {
             content = tasksToJson();
         }
 
         if ("POST".equals(method) && "/tasks".equals(path)) {
-            content = "CREATE A NEW TASK";
 
             if (!body.isBlank()) {
                 Task task = JsonToTask(body);
-                task.setId(id + 1);
+                task.setId(id++);
                 tasks.add(task);
+
+                responseCode = 201;
+                content = taskToJson(task);
+            }
+        }
+
+        if ("GET".equals(method) && path.startsWith("/tasks/")) {
+            Long fetchId = Long.parseLong(path.substring("/tasks/".length()));
+
+            if (fetchId == 0) responseCode = 404;
+
+            if (responseCode == 200 && isExistTask(fetchId)) {
+                Task task = fetchOneTask(fetchId);
+                content = taskToJson(task);
             }
         }
 
         byte[] responseBytes = content.getBytes();
 
-        exchange.sendResponseHeaders(200, responseBytes.length);
+        exchange.sendResponseHeaders(responseCode, responseBytes.length);
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(responseBytes);
@@ -74,5 +88,25 @@ public class DemoHttpHandler implements HttpHandler {
         objectMapper.writeValue(outputStream, tasks);
 
         return outputStream.toString();
+    }
+
+    private String taskToJson(Task task) throws IOException {
+        if (task == null) return "{}";
+
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, task);
+
+        return outputStream.toString();
+    }
+
+    private boolean isExistTask(Long id) {
+        return tasks.stream().anyMatch(t -> t.getId() == id);
+    }
+
+    private Task fetchOneTask(Long id) {
+        return tasks.stream()
+                .filter((t) -> t.getId() == id)
+                .findFirst()
+                .get();
     }
 }
