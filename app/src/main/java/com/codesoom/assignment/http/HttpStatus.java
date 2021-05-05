@@ -20,8 +20,8 @@ public enum HttpStatus {
     // 500: Server Error
     INTERNAL_SERVER_ERROR(500, "Internal Server Error");
 
-    private int code;
-    private String message;
+    final private int code;
+    final private String message;
 
     HttpStatus(int code, String message) {
         this.code = code;
