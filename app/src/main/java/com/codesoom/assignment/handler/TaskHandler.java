@@ -31,13 +31,14 @@ public class TaskHandler implements HttpHandler {
         String[] pathVariables = path.split("/");
         final int apiTasksLength = 2; // /tasks => "", "tasks"
         if (pathVariables.length > apiTasksLength) {
-            handleRequestByID(exchange, method, path);
+            handleRequest(exchange, method, path);
             return;
         }
-        handleRequest(exchange, method, path);
+
+        handleRequest(exchange, method);
     }
 
-    private void handleRequest(HttpExchange exchange, HttpMethod method, String path) throws IOException {
+    private void handleRequest(HttpExchange exchange, HttpMethod method) throws IOException {
         if (method.equals(HttpMethod.GET)) {
             listTasks(exchange);
             return;
@@ -55,15 +56,13 @@ public class TaskHandler implements HttpHandler {
             tasks.add(task);
 
             HttpResponse.json(exchange, HttpStatus.CREATE.code(), taskToJSON(task));
+            return;
         }
+
         HttpResponse.text(exchange, HttpStatus.BAD_REQUEST);
     }
 
-    private void listTasks(HttpExchange exchange) throws IOException {
-        HttpResponse.json(exchange, HttpStatus.OK.code(), tasksListToJSON(tasks));
-    }
-
-    private void handleRequestByID(HttpExchange exchange, HttpMethod method, String path) throws IOException {
+    private void handleRequest(HttpExchange exchange, HttpMethod method, String path) throws IOException {
         final String taskID = path.split("/")[2];
 
         if (method.equals(HttpMethod.GET)) {
@@ -74,7 +73,9 @@ public class TaskHandler implements HttpHandler {
 
             if (task == null) {
                 HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
+                return;
             }
+
             HttpResponse.json(exchange, HttpStatus.OK.code(), taskToJSON(task));
         }
 
@@ -92,7 +93,6 @@ public class TaskHandler implements HttpHandler {
 
             String newTitle = toTask(body).getTitle();
             task.setTitle(newTitle);
-
             HttpResponse.json(exchange, HttpStatus.OK.code(), taskToJSON(task));
         }
 
@@ -123,13 +123,16 @@ public class TaskHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
     }
 
+    private void listTasks(HttpExchange exchange) throws IOException {
+        HttpResponse.json(exchange, HttpStatus.OK.code(), tasksListToJSON(tasks));
+    }
+
     private Task toTask(String json) throws JsonProcessingException {
         return objectMapper.readValue(json, Task.class);
     }
 
     private String taskToJSON(Task task) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.writeValue(outputStream, task);
         return outputStream.toString();
     }
