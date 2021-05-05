@@ -36,7 +36,6 @@ public class DemoHttpHandler implements HttpHandler {
         System.out.println(method + " " + path);
 
         Long pathValue = null; // PathValue로 넘겨받은 값
-        int taskIndex = -1; // PathValue로 List에서 찾을 Task의 인덱스
         String content = null; // 최종 반환할 데이터
         int httpStatus = HTTP_STATUS_OK; // Http 상태코드
 
@@ -62,52 +61,44 @@ public class DemoHttpHandler implements HttpHandler {
                 path = "/" + splitArr[1]; // API 경로
                 pathValue = Long.valueOf(splitArr[2]); // PathValue(taskId)
 
-                // PathValue에 해당하는 Task의 인덱스를 구함
-                taskIndex = findTaskIndex(tasks, pathValue);
-
-                // 해당하는 Task가 없을 경우 예외 발생
-                if(taskIndex < 0){
-                    throw new NotFoundTaskException(pathValue);
-                }
-
             }
 
             if(method.equals("GET") && path.equals("/tasks")){ // Task List 조회 & 단건조회
 
                 if(pathValue == null){
-                    content = toJsonStr(tasks);
+                    tasksGET(httpExchange);
                 } else {
-                    Task findTask = tasks.get(taskIndex);
-                    content = toJsonStr(findTask);
+                    tasksGET(httpExchange, pathValue);
                 }
+
 
             } else if(method.equals("POST") && path.equals("/tasks")){ // Task 등록
 
-                rqTask.setId(taskIdSeq++);
-                tasks.add(rqTask);
+                tasksPOST(httpExchange, rqTask);
 
-                content = toJsonStr(rqTask);
-                httpStatus = HTTP_STATUS_CREATE;
+            } else if( method.equals("PUT") && path.equals("/tasks") ){ // Task 수정
 
-            } else if((method.equals("PUT") || method.equals("PATCH")) && path.equals("/tasks") ){ // Task 수정
+                tasksPUT(httpExchange, pathValue, rqTask);
 
-                String newTitle = rqTask.getTitle();
+            } else if( method.equals("PATCH") && path.equals("/tasks") ){ // Task 수정
 
-                Task modifiedTask = tasks.get(taskIndex);
-                modifiedTask.setTitle(newTitle);
-
-                content = toJsonStr(modifiedTask);
-
+                tasksPATCH(httpExchange, pathValue, rqTask);
 
             } else if(method.equals("DELETE") && path.equals("/tasks")){ // Task 삭제
 
-                tasks.remove(taskIndex);
-                httpStatus = HTTP_STATUS_DELETE;
+                tasksDELETE(httpExchange, pathValue);
 
             } else {
 
                 httpStatus = HTTP_STATUS_FAIL;
                 content = "잘못된 요청입니다.";
+
+                httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
+                System.out.println("response = " + content);
+                OutputStream outputStream = httpExchange.getResponseBody();
+                outputStream.write(content.getBytes());
+                outputStream.flush();
+                outputStream.close();
 
             }
 
@@ -116,12 +107,17 @@ public class DemoHttpHandler implements HttpHandler {
             httpStatus = HTTP_STATUS_FAIL;
             content = "해당하는 Task를 찾을 수 없습니다.";
 
+            httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
+            System.out.println("response = " + content);
+            OutputStream outputStream = httpExchange.getResponseBody();
+            outputStream.write(content.getBytes());
+            outputStream.flush();
+            outputStream.close();
+            e.printStackTrace();
         } catch (Exception e) {
 
             httpStatus = HTTP_STATUS_FAIL;
             content = "통신에 실패했습니다.";
-
-        } finally {
 
             httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
             System.out.println("response = " + content);
@@ -129,6 +125,7 @@ public class DemoHttpHandler implements HttpHandler {
             outputStream.write(content.getBytes());
             outputStream.flush();
             outputStream.close();
+            e.printStackTrace();
 
         }
 
@@ -175,6 +172,179 @@ public class DemoHttpHandler implements HttpHandler {
      */
     private Task jsonStrToTask(String content) throws JsonProcessingException {
         return objectMapper.readValue(content, Task.class);
+    }
+
+    /**
+     * Task List 조회
+     * @param httpExchange
+     * @throws IOException
+     */
+    private void tasksGET(HttpExchange httpExchange) throws IOException {
+
+        String content = null;
+        int httpStatus = HTTP_STATUS_OK;
+
+        content = toJsonStr(tasks);
+
+        httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
+        System.out.println("response = " + content);
+        OutputStream outputStream = httpExchange.getResponseBody();
+        outputStream.write(content.getBytes());
+        outputStream.flush();
+        outputStream.close();
+    }
+
+    /**
+     * Task 단건 조회
+     * @param httpExchange
+     * @param pathValue
+     * @throws IOException
+     */
+    private void tasksGET(HttpExchange httpExchange, Long pathValue) throws IOException {
+
+        String content = null;
+        int httpStatus = HTTP_STATUS_OK;
+
+        int taskIndex = findTaskIndex(tasks, pathValue);// PathValue에 해당하는 Task의 인덱스를 구함
+
+        if(pathValue == null){
+            content = toJsonStr(tasks);
+        } else {
+            Task findTask = tasks.get(taskIndex);
+            content = toJsonStr(findTask);
+        }
+
+        httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
+        System.out.println("response = " + content);
+        OutputStream outputStream = httpExchange.getResponseBody();
+        outputStream.write(content.getBytes());
+        outputStream.flush();
+        outputStream.close();
+    }
+
+    /**
+     * Task 등록
+     * @param httpExchange
+     * @param rqTask
+     * @throws IOException
+     */
+    private void tasksPOST(HttpExchange httpExchange, Task rqTask) throws IOException {
+
+        String content = null;
+        int httpStatus = HTTP_STATUS_CREATE;
+
+        rqTask.setId(taskIdSeq++);
+        tasks.add(rqTask);
+
+        content = toJsonStr(rqTask);
+
+        httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
+        System.out.println("response = " + content);
+        OutputStream outputStream = httpExchange.getResponseBody();
+        outputStream.write(content.getBytes());
+        outputStream.flush();
+        outputStream.close();
+
+    }
+
+    /**
+     * Task 수정
+     * @param httpExchange
+     * @param pathValue
+     * @param rqTask
+     * @throws IOException
+     */
+    private void tasksPUT(HttpExchange httpExchange,  Long pathValue, Task rqTask) throws IOException {
+
+        String content = null;
+        int httpStatus = HTTP_STATUS_OK;
+
+        int taskIndex = findTaskIndex(tasks, pathValue);// PathValue에 해당하는 Task의 인덱스를 구함
+
+        // 해당하는 Task가 없을 경우 예외 발생
+        if(taskIndex < 0){
+            throw new NotFoundTaskException(pathValue);
+        }
+
+        String newTitle = rqTask.getTitle();
+
+        Task modifiedTask = tasks.get(taskIndex);
+        modifiedTask.setTitle(newTitle);
+
+        content = toJsonStr(modifiedTask);
+
+        httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
+        System.out.println("response = " + content);
+        OutputStream outputStream = httpExchange.getResponseBody();
+        outputStream.write(content.getBytes());
+        outputStream.flush();
+        outputStream.close();
+
+    }
+
+    /**
+     * Task 수정
+     * @param httpExchange
+     * @param pathValue
+     * @param rqTask
+     * @throws IOException
+     */
+    private void tasksPATCH(HttpExchange httpExchange,  Long pathValue, Task rqTask) throws IOException {
+
+        String content = null;
+        int httpStatus = HTTP_STATUS_OK;
+
+        int taskIndex = findTaskIndex(tasks, pathValue);// PathValue에 해당하는 Task의 인덱스를 구함
+
+        // 해당하는 Task가 없을 경우 예외 발생
+        if(taskIndex < 0){
+            throw new NotFoundTaskException(pathValue);
+        }
+
+        String newTitle = rqTask.getTitle();
+
+        Task modifiedTask = tasks.get(taskIndex);
+        modifiedTask.setTitle(newTitle);
+
+        content = toJsonStr(modifiedTask);
+
+        httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
+        System.out.println("response = " + content);
+        OutputStream outputStream = httpExchange.getResponseBody();
+        outputStream.write(content.getBytes());
+        outputStream.flush();
+        outputStream.close();
+
+    }
+
+
+    /**
+     * Task 삭제
+     * @param httpExchange
+     * @param pathValue
+     * @throws IOException
+     */
+    private void tasksDELETE(HttpExchange httpExchange, Long pathValue) throws IOException {
+
+        String content = "";
+        int httpStatus = HTTP_STATUS_DELETE;
+
+        int taskIndex = findTaskIndex(tasks, pathValue);// PathValue에 해당하는 Task의 인덱스를 구함
+
+        // 해당하는 Task가 없을 경우 예외 발생
+        if(taskIndex < 0){
+            throw new NotFoundTaskException(pathValue);
+        }
+
+        tasks.remove(taskIndex);
+
+        httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
+        System.out.println("response = " + content);
+        OutputStream outputStream = httpExchange.getResponseBody();
+        outputStream.write(content.getBytes());
+        outputStream.flush();
+        outputStream.close();
+
     }
 
 
