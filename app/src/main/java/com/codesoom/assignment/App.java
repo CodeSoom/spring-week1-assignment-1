@@ -9,10 +9,12 @@ import java.net.InetSocketAddress;
 
 public class App {
     public static void main(String[] args) {
-        System.out.println("Running Codesoom server...");
+        final int PORT_NUMBER = 8000;
+        final InetSocketAddress address = new InetSocketAddress(PORT_NUMBER);
+
+        System.out.println("Codesoom HTTP server started on :" + address.getPort());
 
         try {
-            InetSocketAddress address = new InetSocketAddress(8000);
             HttpServer httpServer = HttpServer.create(address, 0);
 
             httpServer.createContext("/", new BaseHandler());
