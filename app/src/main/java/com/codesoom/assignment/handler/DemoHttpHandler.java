@@ -29,13 +29,13 @@ public class DemoHttpHandler implements HttpHandler {
         String method = httpExchange.getRequestMethod(); // Method
         URI uri = httpExchange.getRequestURI(); // URI
         String path = uri.getPath(); // Path
-        System.out.println(method + " " + path);
-
         Long pathValue = null; // PathValue로 넘겨받은 값
+
+        System.out.println(method + " " + path);
 
         try {
 
-            Task rqTask = new Task(); // Request에서 받은 데이터를 담을 객체
+            Task rqBody = new Task(); // Request에서 받은 데이터를 담을 객체
 
             // 입력값 가져오기
             InputStream inputStream = httpExchange.getRequestBody();
@@ -44,7 +44,7 @@ public class DemoHttpHandler implements HttpHandler {
                     .collect(Collectors.joining("\n"));
 
             if(!body.isBlank()){ // Request에서 받은 데이터가 있다면 Task 객체에 넣음
-                rqTask = jsonStrToTask(body);
+                rqBody = jsonStrToTask(body);
             }
 
             // PathVariable이 있는지 검사한다.
@@ -68,15 +68,15 @@ public class DemoHttpHandler implements HttpHandler {
 
             } else if(method.equals(HttpMethod.POST.name()) && path.equals("/tasks")){ // Task 등록
 
-                tasksPOST(httpExchange, rqTask);
+                tasksPOST(httpExchange, rqBody);
 
             } else if( method.equals(HttpMethod.PUT.name()) && path.equals("/tasks") ){ // Task 수정
 
-                tasksPUT(httpExchange, pathValue, rqTask);
+                tasksPUT(httpExchange, pathValue, rqBody);
 
             } else if( method.equals(HttpMethod.PATCH.name()) && path.equals("/tasks") ){ // Task 수정
 
-                tasksPATCH(httpExchange, pathValue, rqTask);
+                tasksPATCH(httpExchange, pathValue, rqBody);
 
             } else if(method.equals(HttpMethod.DELETE.name()) && path.equals("/tasks")){ // Task 삭제
 
@@ -206,18 +206,18 @@ public class DemoHttpHandler implements HttpHandler {
     /**
      * Task 등록
      * @param httpExchange
-     * @param rqTask
+     * @param rqBody
      * @throws IOException
      */
-    private void tasksPOST(HttpExchange httpExchange, Task rqTask) throws IOException {
+    private void tasksPOST(HttpExchange httpExchange, Task rqBody) throws IOException {
 
         String content = null;
         int httpStatus = HttpStatus.CREARE.getCodeNo();
 
-        rqTask.setId(taskIdSeq++);
-        tasks.add(rqTask);
+        rqBody.setId(taskIdSeq++);
+        tasks.add(rqBody);
 
-        content = toJsonStr(rqTask);
+        content = toJsonStr(rqBody);
 
         sendResponse(httpExchange, httpStatus, content);
 
@@ -227,10 +227,10 @@ public class DemoHttpHandler implements HttpHandler {
      * Task 수정
      * @param httpExchange
      * @param pathValue
-     * @param rqTask
+     * @param rqBody
      * @throws IOException
      */
-    private void tasksPUT(HttpExchange httpExchange,  Long pathValue, Task rqTask) throws IOException {
+    private void tasksPUT(HttpExchange httpExchange,  Long pathValue, Task rqBody) throws IOException {
 
         String content = null;
         int httpStatus = HttpStatus.OK.getCodeNo();
@@ -242,7 +242,7 @@ public class DemoHttpHandler implements HttpHandler {
             throw new NotFoundTaskException(pathValue);
         }
 
-        String newTitle = rqTask.getTitle();
+        String newTitle = rqBody.getTitle();
 
         Task modifiedTask = tasks.get(taskIndex);
         modifiedTask.setTitle(newTitle);
