@@ -7,7 +7,16 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class BaseHandler implements HttpHandler {
+/**
+ * 루트 경로("/")의 핸들러입니다. 이 외의 경로로 요청이 들어오면
+ * {@link com.codesoom.assignment.http.HttpStatus#NOT_FOUND}를 반환합니다.
+ *
+ * @see com.codesoom.assignment.App
+ * @since 0.1.0
+ * @date 2021-05-05
+ * @author Changsu Im
+ */
+public class ContextRootHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         final String method = exchange.getRequestMethod();
@@ -18,6 +27,7 @@ public class BaseHandler implements HttpHandler {
             exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.code(), 0);
             OutputStream outputStream = exchange.getResponseBody();
             outputStream.close();
+            return;
         }
 
         final String content = "Hello, World!";

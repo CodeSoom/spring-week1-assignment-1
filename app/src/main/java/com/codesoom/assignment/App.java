@@ -1,6 +1,6 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.handler.BaseHandler;
+import com.codesoom.assignment.handler.ContextRootHandler;
 import com.codesoom.assignment.handler.TaskHandler;
 import com.sun.net.httpserver.HttpServer;
 
@@ -17,7 +17,7 @@ public class App {
         try {
             HttpServer httpServer = HttpServer.create(address, 0);
 
-            httpServer.createContext("/", new BaseHandler());
+            httpServer.createContext("/", new ContextRootHandler());
             httpServer.createContext("/tasks", new TaskHandler());
 
             httpServer.start();
