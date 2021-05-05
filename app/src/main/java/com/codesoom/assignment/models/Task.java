@@ -1,5 +1,10 @@
 package com.codesoom.assignment.models;
 
+/**
+ * @author Changsu Im
+ * @date 2021-05-05
+ * @since 0.1.0
+ */
 public class Task {
     private Long id;
     private String title;

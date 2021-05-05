@@ -15,6 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * @author Changsu Im
+ * @date 2021-05-05
+ * @since 0.1.0
+ */
 public class TaskHandler implements HttpHandler {
     final private ObjectMapper objectMapper = new ObjectMapper();
 

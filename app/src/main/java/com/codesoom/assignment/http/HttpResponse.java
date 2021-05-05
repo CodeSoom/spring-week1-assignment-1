@@ -6,6 +6,31 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * 응답 형식을 결정합니다. 만약 <a href="https://tools.ietf.org/html/rfc7231#section-6.3.5">204
+ * No Content</a>처럼 바디를 응답하지 않는다면 아래와 같이 작성할 수 있습니다.
+ *
+ * <pre>
+ *     HttpResponse.code(exchange, HttpStatus.OK);
+ * </pre>
+ *
+ * 플레인 텍스트로 응답한다면 아래와 같이 작성할 수 있습니다.
+ *
+ * <pre>
+ *     HttpResponse.text(exchange, HttpStatus.OK);
+ *     HttpResponse.text(exchange, HttpStatus.OK.code(), HttpStatus.OK.message());
+ * </pre>
+ *
+ * JSON과 함께 응답한다면 아래와 같이 작성할 수 있습니다.
+ *
+ * <pre>
+ *     HttpResponse.json(exchange, HttpStatus.OK.code(), jsonObject);
+ * </pre>
+ *
+ * @author Changsu Im
+ * @date 2021-05-05
+ * @since 0.1.0
+ */
 public class HttpResponse {
     final static public String charset = "charset=" + StandardCharsets.UTF_8.name();
 

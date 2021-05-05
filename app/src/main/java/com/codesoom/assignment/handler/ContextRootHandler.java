@@ -11,10 +11,9 @@ import java.io.OutputStream;
  * 루트 경로("/")의 핸들러입니다. 이 외의 경로로 요청이 들어오면
  * {@link com.codesoom.assignment.http.HttpStatus#NOT_FOUND}를 반환합니다.
  *
- * @see com.codesoom.assignment.App
- * @since 0.1.0
- * @date 2021-05-05
  * @author Changsu Im
+ * @date 2021-05-05
+ * @since 0.1.0
  */
 public class ContextRootHandler implements HttpHandler {
     @Override
