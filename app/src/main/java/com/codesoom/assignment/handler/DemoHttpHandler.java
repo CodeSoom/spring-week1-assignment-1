@@ -36,8 +36,6 @@ public class DemoHttpHandler implements HttpHandler {
         System.out.println(method + " " + path);
 
         Long pathValue = null; // PathValue로 넘겨받은 값
-        String content = null; // 최종 반환할 데이터
-        int httpStatus = HTTP_STATUS_OK; // Http 상태코드
 
         try {
 
@@ -90,42 +88,19 @@ public class DemoHttpHandler implements HttpHandler {
 
             } else {
 
-                httpStatus = HTTP_STATUS_FAIL;
-                content = "잘못된 요청입니다.";
-
-                httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
-                System.out.println("response = " + content);
-                OutputStream outputStream = httpExchange.getResponseBody();
-                outputStream.write(content.getBytes());
-                outputStream.flush();
-                outputStream.close();
+                sendResponse(httpExchange, HTTP_STATUS_FAIL, "잘못된 요청입니다.");
 
             }
 
         } catch (NotFoundTaskException e) {
 
-            httpStatus = HTTP_STATUS_FAIL;
-            content = "해당하는 Task를 찾을 수 없습니다.";
-
-            httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
-            System.out.println("response = " + content);
-            OutputStream outputStream = httpExchange.getResponseBody();
-            outputStream.write(content.getBytes());
-            outputStream.flush();
-            outputStream.close();
             e.printStackTrace();
+            sendResponse(httpExchange, HTTP_STATUS_FAIL, "해당하는 Task를 찾을 수 없습니다.");
+
         } catch (Exception e) {
 
-            httpStatus = HTTP_STATUS_FAIL;
-            content = "통신에 실패했습니다.";
-
-            httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
-            System.out.println("response = " + content);
-            OutputStream outputStream = httpExchange.getResponseBody();
-            outputStream.write(content.getBytes());
-            outputStream.flush();
-            outputStream.close();
             e.printStackTrace();
+            sendResponse(httpExchange, HTTP_STATUS_FAIL, "통신에 실패했습니다.");
 
         }
 
@@ -175,6 +150,24 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     /**
+     * Response를 전송 메서드
+     * @param httpExchange
+     * @param httpStatus
+     * @param resBody
+     * @throws IOException
+     */
+    private void sendResponse(HttpExchange httpExchange, int httpStatus, String resBody) throws IOException {
+
+        httpExchange.sendResponseHeaders(httpStatus, resBody.getBytes().length );
+        System.out.println("response = " + resBody);
+        OutputStream outputStream = httpExchange.getResponseBody();
+        outputStream.write(resBody.getBytes());
+        outputStream.flush();
+        outputStream.close();
+
+    }
+
+    /**
      * Task List 조회
      * @param httpExchange
      * @throws IOException
@@ -186,12 +179,8 @@ public class DemoHttpHandler implements HttpHandler {
 
         content = toJsonStr(tasks);
 
-        httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
-        System.out.println("response = " + content);
-        OutputStream outputStream = httpExchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
+        sendResponse(httpExchange, httpStatus, content);
+
     }
 
     /**
@@ -214,12 +203,8 @@ public class DemoHttpHandler implements HttpHandler {
             content = toJsonStr(findTask);
         }
 
-        httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
-        System.out.println("response = " + content);
-        OutputStream outputStream = httpExchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
+        sendResponse(httpExchange, httpStatus, content);
+
     }
 
     /**
@@ -238,12 +223,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         content = toJsonStr(rqTask);
 
-        httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
-        System.out.println("response = " + content);
-        OutputStream outputStream = httpExchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
+        sendResponse(httpExchange, httpStatus, content);
 
     }
 
@@ -273,12 +253,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         content = toJsonStr(modifiedTask);
 
-        httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
-        System.out.println("response = " + content);
-        OutputStream outputStream = httpExchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
+        sendResponse(httpExchange, httpStatus, content);
 
     }
 
@@ -308,12 +283,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         content = toJsonStr(modifiedTask);
 
-        httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
-        System.out.println("response = " + content);
-        OutputStream outputStream = httpExchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
+        sendResponse(httpExchange, httpStatus, content);
 
     }
 
@@ -338,12 +308,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         tasks.remove(taskIndex);
 
-        httpExchange.sendResponseHeaders(httpStatus, content.getBytes().length );
-        System.out.println("response = " + content);
-        OutputStream outputStream = httpExchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
+        sendResponse(httpExchange, httpStatus, content);
 
     }
 
