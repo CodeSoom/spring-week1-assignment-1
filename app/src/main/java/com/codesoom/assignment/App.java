@@ -15,9 +15,10 @@ public class App {
     public static void main(String[] args) {
 
         try {
+            final int port = 8000;
 
-            InetSocketAddress address = new InetSocketAddress(8000);
-            HttpServer httpServer = HttpServer.create(address,0);
+            InetSocketAddress address = new InetSocketAddress(port);
+            HttpServer httpServer = HttpServer.create(address, 0);
             HttpHandler httpHandler =new AppHttpHandler();
             httpServer.createContext("/",httpHandler);
             httpServer.start();
