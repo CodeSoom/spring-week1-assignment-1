@@ -27,6 +27,12 @@ public enum HttpStatus {
 
     NOT_FOUND(404, "Not Found"),
 
+    /**
+     * 서버가 알고 있는 요청 메서드이지만 대상 리소스에서 지원되지 않습니다.
+     * @see <a href="https://tools.ietf.org/html/rfc7231#section-6.5.5">RFC7231 - 405 Method Not Allowed</a>
+     */
+    METHOD_NOT_ALLOWED(405, "Method Not Allowed"),
+
     INTERNAL_SERVER_ERROR(500, "Internal Server Error");
 
     final private int code;

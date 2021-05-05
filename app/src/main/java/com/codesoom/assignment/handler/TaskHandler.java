@@ -56,69 +56,32 @@ public class TaskHandler implements HttpHandler {
         }
 
         if (method.equals(HttpMethod.POST)) {
-            Task task = toTask(body);
-            task.setId(newTaskID++);
-            tasks.add(task);
-
-            HttpResponse.json(exchange, HttpStatus.CREATE.code(), taskToJSON(task));
+            createTask(exchange, body);
             return;
         }
 
-        HttpResponse.text(exchange, HttpStatus.BAD_REQUEST);
+        HttpResponse.text(exchange, HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     private void handleRequest(HttpExchange exchange, HttpMethod method, String path) throws IOException {
-        final String taskID = path.split("/")[2];
+        final Long taskID = Long.parseLong(path.split("/")[2]);
 
         if (method.equals(HttpMethod.GET)) {
-            Task task = tasks.stream()
-                    .filter(t -> t.getId() == Long.parseLong(taskID))
-                    .findFirst()
-                    .orElse(null);
-
-            if (task == null) {
-                HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
-                return;
-            }
-
-            HttpResponse.json(exchange, HttpStatus.OK.code(), taskToJSON(task));
+            getTask(exchange, taskID);
+            return;
         }
 
         if (method.equals(HttpMethod.PUT)) {
-            final String body = readRequestBody(exchange);
-            Task task = tasks.stream()
-                    .filter(t -> t.getId() == Long.parseLong(taskID))
-                    .findFirst()
-                    .orElse(null);
-
-            if (task == null) {
-                HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
-                return;
-            }
-
-            String newTitle = toTask(body).getTitle();
-            task.setTitle(newTitle);
-            HttpResponse.json(exchange, HttpStatus.OK.code(), taskToJSON(task));
+            updateTask(exchange, taskID);
+            return;
         }
 
         if (method.equals(HttpMethod.DELETE)) {
-            Task task = tasks.stream()
-                    .filter(t -> t.getId() == Long.parseLong(taskID))
-                    .findFirst()
-                    .orElse(null);
-
-            if (task == null) {
-                HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
-                return;
-            }
-
-            if (tasks.remove(task)) {
-                HttpResponse.code(exchange, HttpStatus.NO_CONTENT);
-                return;
-            }
-
-            HttpResponse.text(exchange, HttpStatus.INTERNAL_SERVER_ERROR);
+            deleteTask(exchange, taskID);
+            return;
         }
+
+        HttpResponse.text(exchange, HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     private String readRequestBody(HttpExchange exchange) {
@@ -128,8 +91,66 @@ public class TaskHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
     }
 
+    private void createTask(HttpExchange exchange, String body) throws IOException {
+        Task task = toTask(body);
+        task.setId(newTaskID++);
+        tasks.add(task);
+
+        HttpResponse.json(exchange, HttpStatus.CREATE.code(), taskToJSON(task));
+    }
+
     private void listTasks(HttpExchange exchange) throws IOException {
         HttpResponse.json(exchange, HttpStatus.OK.code(), tasksListToJSON(tasks));
+    }
+
+    private void getTask(HttpExchange exchange, Long taskID) throws IOException {
+        Task task = tasks.stream()
+                .filter(t -> t.getId() == taskID)
+                .findFirst()
+                .orElse(null);
+
+        if (task == null) {
+            HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
+            return;
+        }
+
+        HttpResponse.json(exchange, HttpStatus.OK.code(), taskToJSON(task));
+    }
+
+    private void updateTask(HttpExchange exchange, Long taskID) throws IOException {
+        final String body = readRequestBody(exchange);
+        Task task = tasks.stream()
+                .filter(t -> t.getId() == taskID)
+                .findFirst()
+                .orElse(null);
+
+        if (task == null) {
+            HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
+            return;
+        }
+
+        String newTitle = toTask(body).getTitle();
+        task.setTitle(newTitle);
+        HttpResponse.json(exchange, HttpStatus.OK.code(), taskToJSON(task));
+    }
+
+    private void deleteTask(HttpExchange exchange, Long taskID) throws IOException {
+        Task task = tasks.stream()
+                .filter(t -> t.getId() == taskID)
+                .findFirst()
+                .orElse(null);
+
+        if (task == null) {
+            HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
+            return;
+        }
+
+        if (tasks.remove(task)) {
+            HttpResponse.code(exchange, HttpStatus.NO_CONTENT);
+            return;
+        }
+
+        HttpResponse.text(exchange, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private Task toTask(String json) throws JsonProcessingException {
