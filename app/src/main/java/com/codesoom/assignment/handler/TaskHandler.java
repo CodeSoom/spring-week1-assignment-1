@@ -1,6 +1,7 @@
 package com.codesoom.assignment.handler;
 
 import com.codesoom.assignment.http.HttpMethod;
+import com.codesoom.assignment.http.HttpResponse;
 import com.codesoom.assignment.http.HttpStatus;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -45,7 +46,7 @@ public class TaskHandler implements HttpHandler {
 
         final String body = readRequestBody(exchange);
         if (body.isBlank()) {
-            responseText(exchange, HttpStatus.BAD_REQUEST.code(), HttpStatus.BAD_REQUEST.toString());
+            HttpResponse.text(exchange, HttpStatus.BAD_REQUEST);
             return;
         }
 
@@ -54,13 +55,13 @@ public class TaskHandler implements HttpHandler {
             task.setId(newTaskID++);
             tasks.add(task);
 
-            responseJSON(exchange, HttpStatus.CREATE.code(), taskToJSON(task));
+            HttpResponse.json(exchange, HttpStatus.CREATE.code(), taskToJSON(task));
         }
-        responseText(exchange, HttpStatus.BAD_REQUEST.code(), HttpStatus.BAD_REQUEST.toString());
+        HttpResponse.text(exchange, HttpStatus.BAD_REQUEST);
     }
 
     private void listTasks(HttpExchange exchange) throws IOException {
-        responseJSON(exchange, HttpStatus.OK.code(), tasksToJSON(tasks));
+        HttpResponse.json(exchange, HttpStatus.OK.code(), tasksListToJSON(tasks));
     }
 
     private void handleRequestByID(HttpExchange exchange, HttpMethod method, String path) throws IOException {
@@ -73,9 +74,9 @@ public class TaskHandler implements HttpHandler {
                     .orElse(null);
 
             if (task == null) {
-                responseText(exchange, HttpStatus.NOT_FOUND.code(), HttpStatus.NOT_FOUND.toString());
+                HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
             }
-            responseJSON(exchange, HttpStatus.OK.code(), taskToJSON(task));
+            HttpResponse.json(exchange, HttpStatus.OK.code(), taskToJSON(task));
         }
 
         if (method.equals(HttpMethod.PUT)) {
@@ -86,14 +87,14 @@ public class TaskHandler implements HttpHandler {
                     .orElse(null);
 
             if (task == null) {
-                responseText(exchange, HttpStatus.NOT_FOUND.code(), HttpStatus.NOT_FOUND.toString());
+                HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
                 return;
             }
 
             String newTitle = toTask(body).getTitle();
             task.setTitle(newTitle);
 
-            responseJSON(exchange, HttpStatus.OK.code(), taskToJSON(task));
+            HttpResponse.json(exchange, HttpStatus.OK.code(), taskToJSON(task));
         }
 
         if (method.equals(HttpMethod.DELETE)) {
@@ -103,16 +104,16 @@ public class TaskHandler implements HttpHandler {
                     .orElse(null);
 
             if (task == null) {
-                responseText(exchange, HttpStatus.NOT_FOUND.code(), HttpStatus.NOT_FOUND.toString());
+                HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
                 return;
             }
 
             if (tasks.remove(task)) {
-                responseText(exchange, HttpStatus.NO_CONTENT.code(), HttpStatus.NO_CONTENT.toString());
+                HttpResponse.code(exchange, HttpStatus.NO_CONTENT);
                 return;
             }
 
-            responseText(exchange, HttpStatus.INTERNAL_SERVER_ERROR.code(), HttpStatus.INTERNAL_SERVER_ERROR.toString());
+            HttpResponse.text(exchange, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -123,8 +124,8 @@ public class TaskHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
     }
 
-    private Task toTask(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
+    private Task toTask(String json) throws JsonProcessingException {
+        return objectMapper.readValue(json, Task.class);
     }
 
     private String taskToJSON(Task task) throws IOException {
@@ -134,37 +135,9 @@ public class TaskHandler implements HttpHandler {
         return outputStream.toString();
     }
 
-    private String tasksToJSON(List<Task> tasks) throws IOException {
+    private String tasksListToJSON(List<Task> tasks) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
         return outputStream.toString();
-    }
-
-    private void responseText(HttpExchange exchange, int code, String content) throws IOException {
-        final String contentType = "text/html";
-        final String charset = "charset=" + StandardCharsets.UTF_8.name();
-        exchange.getResponseHeaders().set("Content-type", String.join("; ", contentType, charset));
-
-        exchange.sendResponseHeaders(code, content.getBytes().length);
-
-        OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-
-        outputStream.close();
-    }
-
-    private void responseJSON(HttpExchange exchange, int code, String content) throws IOException {
-        final String contentType = "application/json";
-        final String charset = "charset=" + StandardCharsets.UTF_8.name();
-        exchange.getResponseHeaders().set("Content-type", String.join("; ", contentType, charset));
-
-        exchange.sendResponseHeaders(code, content.getBytes().length);
-
-        OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-
-        outputStream.close();
     }
 }
