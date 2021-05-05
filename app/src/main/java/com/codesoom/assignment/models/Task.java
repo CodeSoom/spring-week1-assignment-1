@@ -1,11 +1,5 @@
 package com.codesoom.assignment.models;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-
 public class Task {
     private Long id;
     private String title;
@@ -32,12 +26,5 @@ public class Task {
                 "id=" + id +
                 ", title='" + title + '\'' +
                 '}';
-    }
-
-    public String toJSON() throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.writeValue(outputStream, this);
-        return outputStream.toString();
     }
 }

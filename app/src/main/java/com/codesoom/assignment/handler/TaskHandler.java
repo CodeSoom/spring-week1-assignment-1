@@ -5,7 +5,6 @@ import com.codesoom.assignment.http.HttpStatus;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationConfig;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -55,7 +54,7 @@ public class TaskHandler implements HttpHandler {
             task.setId(newTaskID++);
             tasks.add(task);
 
-            responseJSON(exchange, HttpStatus.CREATE.code(), task.toJSON());
+            responseJSON(exchange, HttpStatus.CREATE.code(), taskToJSON(task));
         }
         responseText(exchange, HttpStatus.BAD_REQUEST.code(), HttpStatus.BAD_REQUEST.toString());
     }
@@ -76,7 +75,7 @@ public class TaskHandler implements HttpHandler {
             if (task == null) {
                 responseText(exchange, HttpStatus.NOT_FOUND.code(), HttpStatus.NOT_FOUND.toString());
             }
-            responseJSON(exchange, HttpStatus.OK.code(), task.toJSON());
+            responseJSON(exchange, HttpStatus.OK.code(), taskToJSON(task));
         }
 
         if (method.equals(HttpMethod.PUT)) {
@@ -94,7 +93,7 @@ public class TaskHandler implements HttpHandler {
             String newTitle = toTask(body).getTitle();
             task.setTitle(newTitle);
 
-            responseJSON(exchange, HttpStatus.OK.code(), task.toJSON());
+            responseJSON(exchange, HttpStatus.OK.code(), taskToJSON(task));
         }
 
         if (method.equals(HttpMethod.DELETE)) {
@@ -126,6 +125,13 @@ public class TaskHandler implements HttpHandler {
 
     private Task toTask(String content) throws JsonProcessingException {
         return objectMapper.readValue(content, Task.class);
+    }
+
+    private String taskToJSON(Task task) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.writeValue(outputStream, task);
+        return outputStream.toString();
     }
 
     private String tasksToJSON(List<Task> tasks) throws IOException {

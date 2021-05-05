@@ -1,10 +1,11 @@
 import frisby from 'frisby';
 
+const title1 = 'Reading books';
+const title2 = 'Eating lunch';
+
 frisby.baseUrl('http://localhost:8000');
 
 describe('tasks', () => {
-  const title = '책 읽기';
-
   beforeEach(async () => {
     const res = await frisby.get('/tasks');
     const tasks = JSON.parse(res.body);
@@ -24,13 +25,13 @@ describe('tasks', () => {
 
     context('when tasks is exist', () => {
       beforeEach(async () => {
-        await frisby.post('/tasks', { title });
+        await frisby.post('/tasks', { title: title1 });
       });
 
       it('responses tasks', async () => {
         await frisby.get('/tasks')
           .expect('status', 200)
-          .expect('bodyContains', `${title}`);
+          .expect('bodyContains', `${title1}`);
       });
     });
   });
@@ -40,7 +41,7 @@ describe('tasks', () => {
 
     context('with existing task id', () => {
       beforeEach(async () => {
-        const res = await frisby.post('/tasks', { title });
+        const res = await frisby.post('/tasks', { title: title1 });
         const task = JSON.parse(res.body);
         id = task.id;
       });
@@ -48,7 +49,7 @@ describe('tasks', () => {
       it('responses task', async () => {
         await frisby.get(`/tasks/${id}`)
           .expect('status', 200)
-          .expect('bodyContains', title);
+          .expect('bodyContains', title1);
       });
     });
 
@@ -66,7 +67,7 @@ describe('tasks', () => {
 
   describe('POST /tasks', () => {
     it('responses 201 Created', async () => {
-      await frisby.post('/tasks', { title })
+      await frisby.post('/tasks', { title: title1 })
         .expect('status', 201);
     });
   });
@@ -76,17 +77,17 @@ describe('tasks', () => {
 
     context('with existing task id', () => {
       beforeEach(async () => {
-        const res = await frisby.post('/tasks', { title });
+        const res = await frisby.post('/tasks', { title: title1 });
         const task = JSON.parse(res.body);
         id = task.id;
       });
 
       it('responses updated task', async () => {
-        const res = await frisby.put(`/tasks/${id}`, { title: '밥 먹기' })
+        const res = await frisby.put(`/tasks/${id}`, { title: title2 })
           .expect('status', 200);
         const task = JSON.parse(res.body);
 
-        expect(task.title).toBe('밥 먹기');
+        expect(task.title).toBe(title2);
       });
     });
 
@@ -96,7 +97,7 @@ describe('tasks', () => {
       });
 
       it('responses 404 Not Found error', async () => {
-        await frisby.put(`/tasks/${id}`, { title: '밥 먹기' })
+        await frisby.put(`/tasks/${id}`, { title: title2 })
           .expect('status', 404);
       });
     });
@@ -107,17 +108,17 @@ describe('tasks', () => {
 
     context('with existing task id', () => {
       beforeEach(async () => {
-        const res = await frisby.post('/tasks', { title });
+        const res = await frisby.post('/tasks', { title: title1 });
         const task = JSON.parse(res.body);
         id = task.id;
       });
 
       it('responses updated task', async () => {
-        const res = await frisby.put(`/tasks/${id}`, { title: '밥 먹기' })
+        const res = await frisby.put(`/tasks/${id}`, { title: title2 })
           .expect('status', 200);
         const task = JSON.parse(res.body);
 
-        expect(task.title).toBe('밥 먹기');
+        expect(task.title).toBe(title2);
       });
     });
 
@@ -127,7 +128,7 @@ describe('tasks', () => {
       });
 
       it('responses 404 Not Found error', async () => {
-        await frisby.put(`/tasks/${id}`, { title: '밥 먹기' })
+        await frisby.put(`/tasks/${id}`, { title: title2 })
           .expect('status', 404);
       });
     });
@@ -138,7 +139,7 @@ describe('tasks', () => {
 
     context('with existing task id', () => {
       beforeEach(async () => {
-        const res = await frisby.post('/tasks', { title });
+        const res = await frisby.post('/tasks', { title: title1 });
         const task = JSON.parse(res.body);
         id = task.id;
       });
