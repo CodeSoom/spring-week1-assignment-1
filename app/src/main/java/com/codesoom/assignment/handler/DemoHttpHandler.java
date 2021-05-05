@@ -4,6 +4,7 @@ import com.codesoom.assignment.enums.HttpMethod;
 import com.codesoom.assignment.enums.HttpStatus;
 import com.codesoom.assignment.exceptions.NotFoundTaskException;
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -18,8 +19,6 @@ import java.util.stream.Collectors;
 public class DemoHttpHandler implements HttpHandler {
 
     private static Long taskIdSeq = 0L;
-
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     private List<Task> tasks = new ArrayList<>();
 
@@ -44,7 +43,7 @@ public class DemoHttpHandler implements HttpHandler {
                     .collect(Collectors.joining("\n"));
 
             if(!body.isBlank()){ // Request에서 받은 데이터가 있다면 Task 객체에 넣음
-                rqBody = jsonStrToTask(body);
+                rqBody = JsonUtil.jsonStrToTask(body);
             }
 
             // PathVariable이 있는지 검사한다.
@@ -121,31 +120,6 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     /**
-     * JsonString으로 변환한다.
-     * @param obj
-     * @return
-     * @throws IOException
-     */
-    private String toJsonStr(Object obj) throws IOException {
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, obj);
-
-        return outputStream.toString();
-
-    }
-
-    /**
-     * JsonString을 Task 객체로 변환한다.
-     * @param content
-     * @return
-     * @throws JsonProcessingException
-     */
-    private Task jsonStrToTask(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
-    }
-
-    /**
      * Response를 전송 메서드
      * @param httpExchange
      * @param httpStatus
@@ -173,7 +147,7 @@ public class DemoHttpHandler implements HttpHandler {
         String content = null;
         int httpStatus = HttpStatus.OK.getCodeNo();
 
-        content = toJsonStr(tasks);
+        content = JsonUtil.toJsonStr(tasks);
 
         sendResponse(httpExchange, httpStatus, content);
 
@@ -193,10 +167,10 @@ public class DemoHttpHandler implements HttpHandler {
         int taskIndex = findTaskIndex(tasks, pathValue);// PathValue에 해당하는 Task의 인덱스를 구함
 
         if(pathValue == null){
-            content = toJsonStr(tasks);
+            content = JsonUtil.toJsonStr(tasks);
         } else {
             Task findTask = tasks.get(taskIndex);
-            content = toJsonStr(findTask);
+            content = JsonUtil.toJsonStr(findTask);
         }
 
         sendResponse(httpExchange, httpStatus, content);
@@ -217,7 +191,7 @@ public class DemoHttpHandler implements HttpHandler {
         rqBody.setId(taskIdSeq++);
         tasks.add(rqBody);
 
-        content = toJsonStr(rqBody);
+        content = JsonUtil.toJsonStr(rqBody);
 
         sendResponse(httpExchange, httpStatus, content);
 
@@ -247,7 +221,7 @@ public class DemoHttpHandler implements HttpHandler {
         Task modifiedTask = tasks.get(taskIndex);
         modifiedTask.setTitle(newTitle);
 
-        content = toJsonStr(modifiedTask);
+        content = JsonUtil.toJsonStr(modifiedTask);
 
         sendResponse(httpExchange, httpStatus, content);
 
@@ -277,7 +251,7 @@ public class DemoHttpHandler implements HttpHandler {
         Task modifiedTask = tasks.get(taskIndex);
         modifiedTask.setTitle(newTitle);
 
-        content = toJsonStr(modifiedTask);
+        content = JsonUtil.toJsonStr(modifiedTask);
 
         sendResponse(httpExchange, httpStatus, content);
 
