@@ -31,6 +31,9 @@ public class MyHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
+        Todo todo = new Todo();
+
+
         String method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
@@ -41,10 +44,17 @@ public class MyHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
         System.out.println("body: " + body); // 객체 형태로 나오지만 사실은 String
         System.out.println("body Type: " + body.getClass().getTypeName());
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> map = new HashMap<String, String>();
-        map = mapper.readValue(body, new TypeReference<Map<String, String>>(){});
-        System.out.println("map: " + map + " map type: " + map.getClass().getTypeName());
+
+        // 1차 시도 실패 -> 주소 값이 todos 에 저장됨
+        if(exchange.getRequestMethod().equals("POST")) {
+            todo.setId(todos.size() + 1L);
+            todo.setTodos(body);
+            todos.add(todo);
+            System.out.println("todos : " + todos);
+        }
+
+
+
     }
 
 }
