@@ -2,6 +2,8 @@ package com.codesoom.assignment;
 
 import com.codesoom.assignment.controller.Controller;
 import com.codesoom.assignment.controller.TaskController;
+import com.codesoom.assignment.handler.TaskHandler;
+import com.codesoom.assignment.repository.TaskRepository;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
@@ -11,19 +13,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class App {
-    public String getGreeting() {
-        return "Hello World!";
-    }
-
     public static void main(String[] args) throws IOException{
-        InetSocketAddress address = new InetSocketAddress("localhost", 8080);
+        InetSocketAddress address = new InetSocketAddress("localhost", 8000);
         HttpServer httpServer = HttpServer.create(address,0);
-        TaskController taskController = new TaskController();
+        TaskRepository taskRepository = new TaskRepository();
+        TaskController taskController = new TaskController(taskRepository);
         List<Controller> controllers = new ArrayList<>();
         controllers.add(taskController);
         HttpHandler handler = new TaskHandler(controllers);
 
-        httpServer.createContext("/", handler); // 주어진 경로로 들어오는 요청을 handler에서 처리하겠다.
+        httpServer.createContext("/", handler);
         httpServer.start();
     }
 }
