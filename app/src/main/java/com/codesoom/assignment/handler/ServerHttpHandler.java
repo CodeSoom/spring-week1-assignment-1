@@ -6,12 +6,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.lang.Integer.parseInt;
+import static java.lang.Long.parseLong;
 
 public class ServerHttpHandler implements HttpHandler {
 
@@ -19,7 +24,7 @@ public class ServerHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
 
-    private int idCount = 1;
+    private long idCount = 1L;
 
 
     @Override
@@ -34,7 +39,7 @@ public class ServerHttpHandler implements HttpHandler {
                 .lines().collect(Collectors.joining("\n"));
 
         // Response 내용 초기화
-        int response = 400;
+        int response = Code.BadRequest.getCode();
 
         // 출력 내용 초기화
         String content = "";
@@ -42,21 +47,20 @@ public class ServerHttpHandler implements HttpHandler {
         // GET method 설정
         if (method.equals("GET") && path.matches("/tasks")) {
             content = tasksToJSON();
-            response = 200;
+            response = Code.OK.getCode();
         }
 
         // GET method 상세조회 설정
-        // 문자열 매칭, 후 마지막 매칭 지점에서 부터 숫자 확인(9번까지만), 그 후 숫자 따오기
         else if(method.equals("GET") && path.contains("/tasks/")) {
 
-            int num = parseInt(path.substring("/tasks/".length()));
+            Long num = checkID(path);
 
             Task task = tasks.stream()
                     .filter((t) -> t.getId() == num)
                     .findFirst()
                     .get();
 
-            response = 200;
+            response = Code.OK.getCode();
             content = tasksToJSON(task);
         }
 
@@ -68,32 +72,47 @@ public class ServerHttpHandler implements HttpHandler {
 
             tasks.add(task);
 
-            content = tasksToJSON();
-            response = 201;
+            content = tasksToJSON(task);
+            response = Code.Created.getCode();
         }
 
-        // PUT method 설정
+        // PUT/PATCH method 설정
         else if ((method.equals("PUT") || method.equals("PATCH")) && path.contains("/tasks/") && !body.isBlank()) {
 
-            int num = parseInt(path.substring("/tasks/".length()));
+            Long num = checkID(path);
 
-            System.out.println(tasks);
+            if(tasks.stream().anyMatch((t) -> t.getId() == num)) {
+                Task task = tasks.stream()
+                        .filter((t) -> t.getId() == num)
+                        .findFirst()
+                        .get();
 
-            Task task = tasks.stream()
-                    .filter((t) -> t.getId() == num)
-                    .findFirst()
-                    .get();
+                content = taskChange(task, toTask(body).getTitle());
+                response = Code.OK.getCode();
+            } else {
+                content = "적합한 내용이 없습니다.";
+                response = Code.BadRequest.getCode();
+            }
+        }
 
-            System.out.println(task);
+        // DELETE method 설정
+        else if(method.equals("DELETE") && path.contains("/tasks/")) {
 
+            Long num = checkID(path);
 
+            if(tasks.stream().anyMatch((t) -> t.getId() == num)) {
+                Task task = tasks.stream()
+                        .filter((t) -> t.getId() == num)
+                        .findFirst().get();
 
-            content = taskChange(task, toTask(body).getTitle());
-
-            response = 200;
-
+                tasks.remove(task);
+                response = Code.OK.getCode();
+            } else {
+                content = "적합한 내용이 없습니다.";
+                response = Code.BadRequest.getCode();
+            }
         } else {
-            System.out.println("ERROR");
+            content = "잘못된 접근 입니다.";
         }
 
         // 통신 결과 보고
@@ -108,8 +127,6 @@ public class ServerHttpHandler implements HttpHandler {
     }
 
     String taskChange(Task task, String temp) throws IOException {
-
-        System.out.println(temp);
 
         task.setTitle(temp);
 
@@ -142,6 +159,10 @@ public class ServerHttpHandler implements HttpHandler {
             return outputStream.toString();
         } else { return "[]"; }
 
+    }
+
+    Long checkID(String path) {
+        return parseLong(path.substring("/tasks/".length()));
     }
 
 }

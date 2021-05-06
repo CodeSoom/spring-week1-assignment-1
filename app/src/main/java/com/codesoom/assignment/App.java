@@ -14,9 +14,6 @@ public class App {
 
     public static void main(String[] args) throws IOException {
 
-
-
-
         InetSocketAddress address = new InetSocketAddress("localhost", 8000);
         HttpServer server = HttpServer.create(address, 0);
 
