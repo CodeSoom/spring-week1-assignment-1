@@ -44,44 +44,34 @@ public class TaskHandler implements HttpHandler {
     }
 
     private void handleRequest(HttpExchange exchange, HttpMethod method) throws IOException {
-        if (method.equals(HttpMethod.GET)) {
-            listTasks(exchange);
-            return;
+        switch (method) {
+            case GET:
+                listTasks(exchange);
+                break;
+            case POST:
+                createTask(exchange);
+                break;
+            default:
+                HttpResponse.text(exchange, HttpStatus.METHOD_NOT_ALLOWED);
         }
-
-        final String body = readRequestBody(exchange);
-        if (body.isBlank()) {
-            HttpResponse.text(exchange, HttpStatus.BAD_REQUEST);
-            return;
-        }
-
-        if (method.equals(HttpMethod.POST)) {
-            createTask(exchange, body);
-            return;
-        }
-
-        HttpResponse.text(exchange, HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     private void handleRequest(HttpExchange exchange, HttpMethod method, String path) throws IOException {
         final Long taskID = Long.parseLong(path.split("/")[2]);
 
-        if (method.equals(HttpMethod.GET)) {
-            getTask(exchange, taskID);
-            return;
+        switch (method) {
+            case GET:
+                getTask(exchange, taskID);
+                break;
+            case PUT:
+                updateTask(exchange, taskID);
+                break;
+            case DELETE:
+                deleteTask(exchange, taskID);
+                break;
+            default:
+                HttpResponse.text(exchange, HttpStatus.METHOD_NOT_ALLOWED);
         }
-
-        if (method.equals(HttpMethod.PUT)) {
-            updateTask(exchange, taskID);
-            return;
-        }
-
-        if (method.equals(HttpMethod.DELETE)) {
-            deleteTask(exchange, taskID);
-            return;
-        }
-
-        HttpResponse.text(exchange, HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     private String readRequestBody(HttpExchange exchange) {
@@ -91,7 +81,13 @@ public class TaskHandler implements HttpHandler {
             .collect(Collectors.joining("\n"));
     }
 
-    private void createTask(HttpExchange exchange, String body) throws IOException {
+    private void createTask(HttpExchange exchange) throws IOException {
+        final String body = readRequestBody(exchange);
+        if (body.isBlank()) {
+            HttpResponse.text(exchange, HttpStatus.BAD_REQUEST);
+            return;
+        }
+
         Task task = toTask(body);
         task.setId(newTaskID++);
         tasks.add(task);
