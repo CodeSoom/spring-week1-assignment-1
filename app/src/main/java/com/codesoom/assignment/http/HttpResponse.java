@@ -13,23 +13,19 @@ import java.nio.charset.StandardCharsets;
  * <pre>
  *     HttpResponse.code(exchange, HttpStatus.OK);
  * </pre>
- *
+ * <p>
  * 플레인 텍스트로 응답한다면 아래와 같이 작성할 수 있습니다.
  *
  * <pre>
  *     HttpResponse.text(exchange, HttpStatus.OK);
  *     HttpResponse.text(exchange, HttpStatus.OK.code(), HttpStatus.OK.message());
  * </pre>
- *
+ * <p>
  * JSON과 함께 응답한다면 아래와 같이 작성할 수 있습니다.
  *
  * <pre>
  *     HttpResponse.json(exchange, HttpStatus.OK.code(), jsonObject);
  * </pre>
- *
- * @author Changsu Im
- * @date 2021-05-05
- * @since 0.1.0
  */
 public class HttpResponse {
     final static public String charset = "charset=" + StandardCharsets.UTF_8.name();

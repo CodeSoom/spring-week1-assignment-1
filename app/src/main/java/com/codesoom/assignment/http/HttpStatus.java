@@ -11,10 +11,7 @@ package com.codesoom.assignment.http;
  *     <li>5xx (Server Error): 서버가 유효한 요청을 수행하지 못했습니다.</li>
  * </ol>
  *
- * @author Changsu Im
- * @date 2021-05-05
  * @see <a href="https://tools.ietf.org/html/rfc7231#section-6">RFC7231 - Response Status Codes</a>
- * @since 0.1.0
  */
 public enum HttpStatus {
     OK(200, "OK"),
@@ -29,6 +26,7 @@ public enum HttpStatus {
 
     /**
      * 서버가 알고 있는 요청 메서드이지만 대상 리소스에서 지원되지 않습니다.
+     *
      * @see <a href="https://tools.ietf.org/html/rfc7231#section-6.5.5">RFC7231 - 405 Method Not Allowed</a>
      */
     METHOD_NOT_ALLOWED(405, "Method Not Allowed"),

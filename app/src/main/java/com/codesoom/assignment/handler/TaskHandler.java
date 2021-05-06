@@ -9,17 +9,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * @author Changsu Im
- * @date 2021-05-05
- * @since 0.1.0
- */
 public class TaskHandler implements HttpHandler {
     final private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -87,8 +87,8 @@ public class TaskHandler implements HttpHandler {
     private String readRequestBody(HttpExchange exchange) {
         InputStream inputStream = exchange.getRequestBody();
         return new BufferedReader(new InputStreamReader(inputStream, Charset.forName("EUC-KR")))
-                .lines()
-                .collect(Collectors.joining("\n"));
+            .lines()
+            .collect(Collectors.joining("\n"));
     }
 
     private void createTask(HttpExchange exchange, String body) throws IOException {
@@ -105,9 +105,9 @@ public class TaskHandler implements HttpHandler {
 
     private void getTask(HttpExchange exchange, Long taskID) throws IOException {
         Task task = tasks.stream()
-                .filter(t -> t.getId() == taskID)
-                .findFirst()
-                .orElse(null);
+            .filter(t -> t.getId() == taskID)
+            .findFirst()
+            .orElse(null);
 
         if (task == null) {
             HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
@@ -120,9 +120,9 @@ public class TaskHandler implements HttpHandler {
     private void updateTask(HttpExchange exchange, Long taskID) throws IOException {
         final String body = readRequestBody(exchange);
         Task task = tasks.stream()
-                .filter(t -> t.getId() == taskID)
-                .findFirst()
-                .orElse(null);
+            .filter(t -> t.getId() == taskID)
+            .findFirst()
+            .orElse(null);
 
         if (task == null) {
             HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
@@ -136,9 +136,9 @@ public class TaskHandler implements HttpHandler {
 
     private void deleteTask(HttpExchange exchange, Long taskID) throws IOException {
         Task task = tasks.stream()
-                .filter(t -> t.getId() == taskID)
-                .findFirst()
-                .orElse(null);
+            .filter(t -> t.getId() == taskID)
+            .findFirst()
+            .orElse(null);
 
         if (task == null) {
             HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
