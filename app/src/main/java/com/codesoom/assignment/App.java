@@ -8,10 +8,15 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class App {
+    public String getGreeting() {
+        return "Hello World!";
+    }
+
     public static void main(String[] args) {
         final int PORT_NUMBER = 8000;
         final InetSocketAddress address = new InetSocketAddress(PORT_NUMBER);
 
+        System.out.println(new App().getGreeting());
         System.out.println("Codesoom HTTP server started on :" + address.getPort());
 
         try {

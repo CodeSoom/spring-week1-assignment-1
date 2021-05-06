@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+# chmod +x .githooks/pre-push
+# git config core.hookspath .githooks
+gradle test
