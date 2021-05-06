@@ -186,7 +186,7 @@ public class DemoHttpHandler implements HttpHandler {
     private void tasksPOST(HttpExchange httpExchange, Task rqBody) throws IOException {
 
         String content = null;
-        int httpStatus = HttpStatus.CREARE.getCodeNo();
+        int httpStatus = HttpStatus.CREATE.getCodeNo();
 
         rqBody.setId(taskIdSeq++);
         tasks.add(rqBody);
