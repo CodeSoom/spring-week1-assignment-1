@@ -1,13 +1,21 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Todo;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class MyHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -23,6 +31,20 @@ public class MyHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        System.out.println(todos);
+        String method = exchange.getRequestMethod();
+        URI uri = exchange.getRequestURI();
+        String path = uri.getPath();
+        System.out.println("path: " + path);
+        InputStream inputStream = exchange.getRequestBody();
+        String body = new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
+        System.out.println("body: " + body); // 객체 형태로 나오지만 사실은 String
+        System.out.println("body Type: " + body.getClass().getTypeName());
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, String> map = new HashMap<String, String>();
+        map = mapper.readValue(body, new TypeReference<Map<String, String>>(){});
+        System.out.println("map: " + map + " map type: " + map.getClass().getTypeName());
     }
+
 }
