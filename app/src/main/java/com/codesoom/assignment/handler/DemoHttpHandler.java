@@ -56,6 +56,8 @@ public class DemoHttpHandler implements HttpHandler {
 
             }
 
+            // 각 HTTP Method 별로 로직 분기
+
             if(method.equals(HttpMethod.GET.name()) && path.equals("/tasks")){ // Task List 조회 & 단건조회
 
                 if(pathValue == null){
@@ -63,29 +65,38 @@ public class DemoHttpHandler implements HttpHandler {
                 } else {
                     tasksGET(httpExchange, pathValue);
                 }
-
-
-            } else if(method.equals(HttpMethod.POST.name()) && path.equals("/tasks")){ // Task 등록
-
-                tasksPOST(httpExchange, rqBody);
-
-            } else if( method.equals(HttpMethod.PUT.name()) && path.equals("/tasks") ){ // Task 수정
-
-                tasksPUT(httpExchange, pathValue, rqBody);
-
-            } else if( method.equals(HttpMethod.PATCH.name()) && path.equals("/tasks") ){ // Task 수정
-
-                tasksPATCH(httpExchange, pathValue, rqBody);
-
-            } else if(method.equals(HttpMethod.DELETE.name()) && path.equals("/tasks")){ // Task 삭제
-
-                tasksDELETE(httpExchange, pathValue);
-
-            } else {
-
-                sendResponse(httpExchange, HttpStatus.NOT_FOUND.getCodeNo(), "잘못된 요청입니다.");
+                return;
 
             }
+
+            if(method.equals(HttpMethod.POST.name()) && path.equals("/tasks")){ // Task 등록
+
+                tasksPOST(httpExchange, rqBody);
+                return;
+
+            }
+
+            if( method.equals(HttpMethod.PUT.name()) && path.equals("/tasks") ){ // Task 수정
+
+                tasksPUT(httpExchange, pathValue, rqBody);
+                return;
+
+            }
+
+            if( method.equals(HttpMethod.PATCH.name()) && path.equals("/tasks") ){ // Task 수정
+
+                tasksPATCH(httpExchange, pathValue, rqBody);
+                return;
+            }
+
+            if(method.equals(HttpMethod.DELETE.name()) && path.equals("/tasks")){ // Task 삭제
+
+                tasksDELETE(httpExchange, pathValue);
+                return;
+
+            }
+
+            sendResponse(httpExchange, HttpStatus.NOT_FOUND.getCodeNo(), "잘못된 요청입니다.");
 
         } catch (NotFoundTaskException e) {
 
@@ -110,10 +121,13 @@ public class DemoHttpHandler implements HttpHandler {
     private int findTaskIndex(List<Task> tasks, Long taskId) {
 
         int findTaskIndex = -1;
+
         for(int i = 0 ; i < tasks.size() ; i++){
+
             if(taskId == tasks.get(i).getId()){
                 findTaskIndex = i;
             }
+
         }
 
         return findTaskIndex;
