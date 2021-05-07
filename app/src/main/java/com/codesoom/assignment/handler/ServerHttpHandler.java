@@ -39,7 +39,7 @@ public class ServerHttpHandler implements HttpHandler {
                 .lines().collect(Collectors.joining("\n"));
 
         // Response 내용 초기화
-        int response = Code.BadRequest.getCode();
+        int response = HttpStatusCode.BadRequest.getCode();
 
         // 출력 내용 초기화
         String content = "";
@@ -47,25 +47,26 @@ public class ServerHttpHandler implements HttpHandler {
         // GET method 설정
         if (method.equals("GET") && path.matches("/tasks")) {
             content = tasksToJSON();
-            response = Code.OK.getCode();
-        }
+            response = HttpStatusCode.OK.getCode();
 
-        // GET method 상세조회 설정
-        else if(method.equals("GET") && path.contains("/tasks/")) {
+        } else if(method.equals("GET") && path.contains("/tasks/")) {
 
             Long num = checkID(path);
 
-            Task task = tasks.stream()
-                    .filter((t) -> t.getId() == num)
-                    .findFirst()
-                    .get();
+            if(tasks.stream().anyMatch((t) -> t.getId() == num)) {
+                Task task = tasks.stream()
+                        .filter((t) -> t.getId() == num)
+                        .findFirst()
+                        .get();
 
-            response = Code.OK.getCode();
-            content = tasksToJSON(task);
-        }
+                response = HttpStatusCode.OK.getCode();
+                content = tasksToJSON(task);
+            } else {
+                content = "적합한 내용이 없습니다.";
+                response = HttpStatusCode.NotFoundError.getCode();
+            }
 
-        // POST method 설정
-        else if (method.equals("POST") && path.matches("/tasks") && !body.isBlank()) {
+        } else if (method.equals("POST") && path.matches("/tasks") && !body.isBlank()) {
             Task task = toTask(body);
             task.setId(idCount);
             idCount++;
@@ -73,11 +74,9 @@ public class ServerHttpHandler implements HttpHandler {
             tasks.add(task);
 
             content = tasksToJSON(task);
-            response = Code.Created.getCode();
-        }
+            response = HttpStatusCode.Created.getCode();
 
-        // PUT/PATCH method 설정
-        else if ((method.equals("PUT") || method.equals("PATCH")) && path.contains("/tasks/") && !body.isBlank()) {
+        } else if ((method.equals("PUT") || method.equals("PATCH")) && path.contains("/tasks/") && !body.isBlank()) {
 
             Long num = checkID(path);
 
@@ -88,15 +87,13 @@ public class ServerHttpHandler implements HttpHandler {
                         .get();
 
                 content = taskChange(task, toTask(body).getTitle());
-                response = Code.OK.getCode();
+                response = HttpStatusCode.OK.getCode();
             } else {
                 content = "적합한 내용이 없습니다.";
-                response = Code.BadRequest.getCode();
+                response = HttpStatusCode.NotFoundError.getCode();
             }
-        }
 
-        // DELETE method 설정
-        else if(method.equals("DELETE") && path.contains("/tasks/")) {
+        } else if(method.equals("DELETE") && path.contains("/tasks/")) {
 
             Long num = checkID(path);
 
@@ -106,10 +103,10 @@ public class ServerHttpHandler implements HttpHandler {
                         .findFirst().get();
 
                 tasks.remove(task);
-                response = Code.OK.getCode();
+                response = HttpStatusCode.NoContent.getCode();
             } else {
                 content = "적합한 내용이 없습니다.";
-                response = Code.BadRequest.getCode();
+                response = HttpStatusCode.NotFoundError.getCode();
             }
         } else {
             content = "잘못된 접근 입니다.";
@@ -163,6 +160,10 @@ public class ServerHttpHandler implements HttpHandler {
 
     Long checkID(String path) {
         return parseLong(path.substring("/tasks/".length()));
+    }
+
+    private void doGET() {
+
     }
 
 }
