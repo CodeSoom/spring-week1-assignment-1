@@ -1,16 +1,16 @@
 package com.codesoom.assignment;
 
 public class Response {
-    private final int status;
+    private final int code;
     private final String body;
 
-    public Response(int status, String body) {
-        this.status = status;
+    public Response(HttpStatus status, String body) {
+        this.code = status.getCode();
         this.body = body;
     }
 
     public int getStatus() {
-        return status;
+        return code;
     }
 
     public String getBody() {

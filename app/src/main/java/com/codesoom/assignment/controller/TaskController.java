@@ -1,5 +1,6 @@
 package com.codesoom.assignment.controller;
 
+import com.codesoom.assignment.HttpStatus;
 import com.codesoom.assignment.Response;
 import com.codesoom.assignment.dto.Task;
 import com.codesoom.assignment.repository.TaskRepository;
@@ -55,9 +56,9 @@ public class TaskController extends Controller {
         Long id = getId(path);
         Task task = taskRepository.findById(id);
         if (task == null) {
-            return new Response(404, this.toJSON(null));
+            return new Response(HttpStatus.NOT_FOUND, this.toJSON(null));
         }
-        return new Response(200, this.toJSON(task));
+        return new Response(HttpStatus.OK, this.toJSON(task));
     }
 
     private Response getAllTask() throws IOException {
@@ -66,7 +67,7 @@ public class TaskController extends Controller {
         for(Long key: tasks.keySet()) {
             ret.add(tasks.get(key));
         }
-        return new Response(200, this.toJSON(ret));
+        return new Response(HttpStatus.OK, this.toJSON(ret));
     }
 
     private Response createTask(HttpExchange exchange) throws IOException {
@@ -74,7 +75,7 @@ public class TaskController extends Controller {
         String content = this.getContent(inputStream);
         Task task = this.toTask(content);
         taskRepository.addTask(task);
-        return new Response(201, this.toJSON(task));
+        return new Response(HttpStatus.CREATED, this.toJSON(task));
     }
 
     private Response updateTask(HttpExchange exchange) throws IOException {
@@ -85,9 +86,9 @@ public class TaskController extends Controller {
         Map<String, String> data = this.mapper.readValue(content, Map.class);
         Task task = taskRepository.updateTask(id, data.get("title"));
         if (task == null) {
-            return new Response(404, this.toJSON(null));
+            return new Response(HttpStatus.NOT_FOUND, this.toJSON(null));
         }
-        return new Response(200, toJSON(task));
+        return new Response(HttpStatus.OK, toJSON(task));
     }
 
     private Response deleteTask(HttpExchange exchange) {
@@ -95,9 +96,9 @@ public class TaskController extends Controller {
         Long id = getId(path);
         Task task = taskRepository.deleteTask(id);
         if (task == null) {
-            return new Response(404, "");
+            return new Response(HttpStatus.NOT_FOUND, "");
         }
-        return new Response(204, "");
+        return new Response(HttpStatus.NO_CONTENT, "");
     }
 
     private Long getId(String path) {
