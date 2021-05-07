@@ -1,6 +1,5 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.AppHttpHandler;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 

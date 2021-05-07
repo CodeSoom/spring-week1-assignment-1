@@ -1,28 +1,20 @@
 package com.codesoom.assignment.model;
 
 public class AppResponseEntity {
-    private int httpStatusCode;
+    private HttpStatusCode httpStatusCode;
     private String contents;
 
-    public AppResponseEntity(int httpStatusCode, String contents) {
+    public AppResponseEntity(HttpStatusCode httpStatusCode, String contents) {
         this.httpStatusCode = httpStatusCode;
         this.contents = contents;
     }
 
-    public int getHttpStatusCode() {
+    public HttpStatusCode getHttpStatusCode() {
         return httpStatusCode;
-    }
-
-    public void setHttpStatusCode(int httpStatusCode) {
-        this.httpStatusCode = httpStatusCode;
     }
 
     public String getContents() {
         return contents;
-    }
-
-    public void setContents(String contents) {
-        this.contents = contents;
     }
 
     @Override

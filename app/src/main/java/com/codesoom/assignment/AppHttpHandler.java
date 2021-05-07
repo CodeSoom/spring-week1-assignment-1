@@ -1,6 +1,8 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.exception.NotFoundTaskIdException;
 import com.codesoom.assignment.model.AppResponseEntity;
+import com.codesoom.assignment.model.HttpMethod;
 import com.codesoom.assignment.model.HttpStatusCode;
 import com.codesoom.assignment.model.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,7 +25,6 @@ import java.util.List;
 import java.util.ArrayList;
 
 
-import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -59,19 +60,19 @@ public class AppHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
         logger.info("method : " + method + " /  uriPath : " + uriPath + " / body : " + body);
 
-        int httpStatusCode = HttpStatusCode.OK.getStatusCode();
+        HttpStatusCode httpStatusCode = HttpStatusCode.OK;
         try {
             if (taskPath.equals(rootPath)) {
                 AppResponseEntity appResponseEntity = requestProcessor(method, body, taskId);
                 contents = appResponseEntity.getContents();
                 httpStatusCode = appResponseEntity.getHttpStatusCode();
             }
-        } catch (NoSuchElementException ne) {
-            httpStatusCode = HttpStatusCode.NOT_FOUND.getStatusCode();
+        } catch (NotFoundTaskIdException ne) {
+            httpStatusCode = HttpStatusCode.NOT_FOUND;
         }
 
 
-        exchange.sendResponseHeaders(httpStatusCode, contents.getBytes().length);
+        exchange.sendResponseHeaders(httpStatusCode.getStatusCode(), contents.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(contents.getBytes());
         outputStream.flush();
@@ -80,28 +81,31 @@ public class AppHttpHandler implements HttpHandler {
 
     private AppResponseEntity requestProcessor(String method, String body, String taskId) throws IOException {
         String contents = "";
-        int httpStatusCode = HttpStatusCode.OK.getStatusCode();
-        switch (method) {
-            case "GET":
+        HttpStatusCode httpStatusCode = HttpStatusCode.OK;
+
+        HttpMethod httpMethod = HttpMethod.valueOf(method);
+
+        switch (httpMethod) {
+            case GET:
                 contents = tasksToJSONByPath(taskId);
-                httpStatusCode = HttpStatusCode.OK.getStatusCode();
+                httpStatusCode = HttpStatusCode.OK;
                 break;
-            case "POST":
+            case POST:
                 if (!body.isBlank()) {
                     Task task = toTask(body);
                     task.setId(getTaskMaxId());
                     tasks.add(task);
-                    httpStatusCode = HttpStatusCode.CREATED.getStatusCode();
+                    httpStatusCode = HttpStatusCode.CREATED;
                     contents = tasksToJSON(task);
                 }
                 break;
-            case "DELETE":
+            case DELETE:
                 deleteTask(taskId);
-                httpStatusCode = HttpStatusCode.NO_CONTENT.getStatusCode();
+                httpStatusCode = HttpStatusCode.NO_CONTENT;
                 break;
-            case "PUT":
+            case PUT:
                 contents = modifyTask(taskId, body);
-                httpStatusCode = HttpStatusCode.OK.getStatusCode();
+                httpStatusCode = HttpStatusCode.OK;
                 break;
             default:
                 break;
@@ -113,31 +117,32 @@ public class AppHttpHandler implements HttpHandler {
 
         String contents = "";
         if (!"".equals(taskId)) {
-            Task findTask = findTask(taskId);
-            int tasksIdx = tasks.indexOf(findTask);
-
-            Task task = toTask(body);
-            task.setId(findTask.getId());
-            tasks.set(tasksIdx, task);
-            contents = tasksToJSON(task);
-
+            return " ";
         }
+        Task findTask = findTask(taskId);
+        int tasksIdx = tasks.indexOf(findTask);
+        Task task = toTask(body);
+        task.setId(findTask.getId());
+        tasks.set(tasksIdx, task);
+        contents = tasksToJSON(task);
         return contents;
     }
 
     private Task findTask(String taskId) {
+        Long longTaskId = Long.parseLong(taskId);
         return tasks.stream()
-                .filter(t -> t.getId() == Long.parseLong(taskId))
+                .filter(t -> t.getId() == longTaskId)
                 .findFirst()
-                .orElseThrow(NoSuchElementException::new);
+                .orElseThrow(NotFoundTaskIdException::new);
     }
 
 
     private void deleteTask(String taskId) {
         if (!"".equals(taskId)) {
-            Task task = findTask(taskId);
-            tasks.remove(task);
+            return;
         }
+        Task task = findTask(taskId);
+        tasks.remove(task);
     }
 
     private String tasksToJSONByPath(String taskId) throws IOException {
@@ -179,7 +184,7 @@ public class AppHttpHandler implements HttpHandler {
             Comparator<Task> comparator = Comparator.comparingLong(Task::getId);
             maxId = tasks.stream()
                     .max(comparator)
-                    .orElseThrow(NoSuchElementException::new)
+                    .orElseThrow(NotFoundTaskIdException::new)
                     .getId() + 1;
         }
         return maxId;
