@@ -12,7 +12,6 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
@@ -26,18 +25,18 @@ public class TaskHandler implements HttpHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final String serverTimeZone = "Asia/Seoul";
 
-    private List<Task> tasks = new ArrayList<>();
+    private final List<Task> tasks = new ArrayList<>();
     private Long newTaskID = 1L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         final String requestMethod = exchange.getRequestMethod();
-        HttpMethod method = HttpMethod.valueOf(requestMethod);
+        var method = HttpMethod.valueOf(requestMethod);
         final String path = exchange.getRequestURI().getPath();
         System.out.println(method + " " + path);
 
         String[] pathVariables = path.split("/");
-        final int apiTasksLength = 2; // /tasks => "", "tasks"
+        final var apiTasksLength = 2; // /tasks => "", "tasks"
         if (pathVariables.length > apiTasksLength) {
             handleRequest(exchange, method, path);
             return;
@@ -78,7 +77,7 @@ public class TaskHandler implements HttpHandler {
     }
 
     private String readRequestBody(HttpExchange exchange) {
-        InputStream inputStream = exchange.getRequestBody();
+        var inputStream = exchange.getRequestBody();
         return new BufferedReader(new InputStreamReader(inputStream, Charset.forName("EUC-KR")))
             .lines()
             .collect(Collectors.joining("\n"));
@@ -91,7 +90,7 @@ public class TaskHandler implements HttpHandler {
             return;
         }
 
-        Task task = toTask(body);
+        var task = toTask(body);
         task.setId(newTaskID++);
         var currentLocalTimeInSeoul = LocalDateTime.now(ZoneId.of(serverTimeZone));
         task.setCreatedAt(currentLocalTimeInSeoul);
@@ -106,10 +105,7 @@ public class TaskHandler implements HttpHandler {
     }
 
     private void getTask(HttpExchange exchange, Long taskID) throws IOException {
-        Task task = tasks.stream()
-            .filter(t -> t.getId() == taskID)
-            .findFirst()
-            .orElse(null);
+        var task = findTaskByID(taskID);
 
         if (task == null) {
             HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
@@ -121,10 +117,7 @@ public class TaskHandler implements HttpHandler {
 
     private void updateTask(HttpExchange exchange, Long taskID) throws IOException {
         final String body = readRequestBody(exchange);
-        Task task = tasks.stream()
-            .filter(t -> t.getId() == taskID)
-            .findFirst()
-            .orElse(null);
+        var task = findTaskByID(taskID);
 
         if (task == null) {
             HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
@@ -139,10 +132,7 @@ public class TaskHandler implements HttpHandler {
     }
 
     private void deleteTask(HttpExchange exchange, Long taskID) throws IOException {
-        Task task = tasks.stream()
-            .filter(t -> t.getId() == taskID)
-            .findFirst()
-            .orElse(null);
+        var task = findTaskByID(taskID);
 
         if (task == null) {
             HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
@@ -155,6 +145,13 @@ public class TaskHandler implements HttpHandler {
         }
 
         HttpResponse.text(exchange, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private Task findTaskByID(Long taskID) {
+        return tasks.stream()
+            .filter(t -> t.getId() == taskID)
+            .findFirst()
+            .orElse(null);
     }
 
     private Task toTask(String json) throws JsonProcessingException {

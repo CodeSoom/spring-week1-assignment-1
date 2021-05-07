@@ -8,20 +8,20 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class App {
-    public static final int PORT_NUMBER = 8000;
+    private static final int PORT_NUMBER = 8000;
 
     public String getGreeting() {
         return "Hello World!";
     }
 
     public static void main(String[] args) {
-        final InetSocketAddress address = new InetSocketAddress(PORT_NUMBER);
+        final var address = new InetSocketAddress(PORT_NUMBER);
 
         System.out.println(new App().getGreeting());
         System.out.println("Codesoom HTTP server started on :" + address.getPort());
 
         try {
-            HttpServer httpServer = HttpServer.create(address, 0);
+            var httpServer = HttpServer.create(address, 0);
 
             httpServer.createContext("/", new ContextRootHandler());
             httpServer.createContext("/tasks", new TaskHandler());

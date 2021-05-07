@@ -3,7 +3,6 @@ package com.codesoom.assignment.http;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -48,7 +47,7 @@ public class HttpResponse {
      * @throws IOException
      */
     public static void text(HttpExchange exchange, final int code, final String content) throws IOException {
-        final String contentType = "text/html";
+        final var contentType = "text/html";
         exchange.getResponseHeaders().set("Content-type", String.join("; ", contentType, CHARSET));
         send(exchange, code, content);
     }
@@ -62,7 +61,7 @@ public class HttpResponse {
      * @throws IOException
      */
     public static void json(HttpExchange exchange, final int code, final String content) throws IOException {
-        final String contentType = "application/json";
+        final var contentType = "application/json";
         exchange.getResponseHeaders().set("Content-type", String.join("; ", contentType, CHARSET));
         send(exchange, code, content);
     }
@@ -73,7 +72,7 @@ public class HttpResponse {
             return;
         }
         exchange.sendResponseHeaders(code, content.getBytes().length);
-        OutputStream outputStream = exchange.getResponseBody();
+        var outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
