@@ -16,12 +16,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class TaskHandler implements HttpHandler {
-    final private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final String serverTimeZone = "Asia/Seoul";
 
     private List<Task> tasks = new ArrayList<>();
     private Long newTaskID = 1L;
@@ -90,6 +93,9 @@ public class TaskHandler implements HttpHandler {
 
         Task task = toTask(body);
         task.setId(newTaskID++);
+        var currentLocalTimeInSeoul = LocalDateTime.now(ZoneId.of(serverTimeZone));
+        task.setCreatedAt(currentLocalTimeInSeoul);
+        task.setLastUpdatedAt(currentLocalTimeInSeoul);
         tasks.add(task);
 
         HttpResponse.json(exchange, HttpStatus.CREATE.code(), taskToJSON(task));
@@ -127,6 +133,8 @@ public class TaskHandler implements HttpHandler {
 
         String newTitle = toTask(body).getTitle();
         task.setTitle(newTitle);
+        var currentLocalTimeInSeoul = LocalDateTime.now(ZoneId.of(serverTimeZone));
+        task.setLastUpdatedAt(currentLocalTimeInSeoul);
         HttpResponse.json(exchange, HttpStatus.OK.code(), taskToJSON(task));
     }
 
