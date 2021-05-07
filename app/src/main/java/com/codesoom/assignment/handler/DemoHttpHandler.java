@@ -127,7 +127,7 @@ public class DemoHttpHandler implements HttpHandler {
      * 할 일 목록에서 주어진 할 일 id에 해당하는 할 일의 인덱스 넘버를 찾아 리턴합니다.
      * @param tasks 할 일 목록
      * @param taskId 찾으려 하는 할 일의 아이디
-     * @return findTaskIndex
+     * @return 찾아낸 할 일의 인덱스 넘버
      */
     private int findTaskIndex(List<Task> tasks, Long taskId) {
 
@@ -145,7 +145,7 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     /**
-     * Response를 전송 메서드
+     * 주어진 메서드 상태코드와 데이터를 Response에 담아서 전송합니다.
      * @param httpExchange
      * @param httpStatus 전송할 Response의 Http 상태 코드
      * @param resBody Response에 담아서 전송할 데이터
