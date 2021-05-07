@@ -7,46 +7,63 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 /**
- * 응답 형식을 결정합니다. 만약 <a href="https://tools.ietf.org/html/rfc7231#section-6.3.5">204
- * No Content</a>처럼 바디를 응답하지 않는다면 아래와 같이 작성할 수 있습니다.
- *
- * <pre>
- *     HttpResponse.code(exchange, HttpStatus.OK);
- * </pre>
- * <p>
- * 플레인 텍스트로 응답한다면 아래와 같이 작성할 수 있습니다.
- *
- * <pre>
- *     HttpResponse.text(exchange, HttpStatus.OK);
- *     HttpResponse.text(exchange, HttpStatus.OK.code(), HttpStatus.OK.message());
- * </pre>
- * <p>
- * JSON과 함께 응답한다면 아래와 같이 작성할 수 있습니다.
- *
- * <pre>
- *     HttpResponse.json(exchange, HttpStatus.OK.code(), jsonObject);
- * </pre>
+ * 클라이언트에 응답할 메시지를 생성합니다.
  */
 public class HttpResponse {
-    final static public String charset = "charset=" + StandardCharsets.UTF_8.name();
+    private static final String CHARSET = "charset=" + StandardCharsets.UTF_8.name();
 
+    private HttpResponse() {
+        throw new IllegalStateException();
+    }
+
+    /**
+     * 바디 없이 응답합니다.
+     *
+     * @param exchange
+     * @param status
+     * @throws IOException
+     * @see <a href="https://tools.ietf.org/html/rfc7231#section-6.3.5">204 No Content</a>
+     */
     public static void code(HttpExchange exchange, final HttpStatus status) throws IOException {
         send(exchange, status.code(), null);
     }
 
+    /**
+     * 플레인 텍스트(text/html) 형식으로 응답합니다.
+     *
+     * @param exchange
+     * @param status
+     * @throws IOException
+     */
     public static void text(HttpExchange exchange, final HttpStatus status) throws IOException {
         text(exchange, status.code(), status.message());
     }
 
+    /**
+     * 플레인 텍스트(text/html) 형식으로 응답합니다.
+     *
+     * @param exchange
+     * @param code
+     * @param content
+     * @throws IOException
+     */
     public static void text(HttpExchange exchange, final int code, final String content) throws IOException {
         final String contentType = "text/html";
-        exchange.getResponseHeaders().set("Content-type", String.join("; ", contentType, charset));
+        exchange.getResponseHeaders().set("Content-type", String.join("; ", contentType, CHARSET));
         send(exchange, code, content);
     }
 
+    /**
+     * JSON(application/json) 형식으로 응답합니다.
+     *
+     * @param exchange
+     * @param code
+     * @param content
+     * @throws IOException
+     */
     public static void json(HttpExchange exchange, final int code, final String content) throws IOException {
         final String contentType = "application/json";
-        exchange.getResponseHeaders().set("Content-type", String.join("; ", contentType, charset));
+        exchange.getResponseHeaders().set("Content-type", String.join("; ", contentType, CHARSET));
         send(exchange, code, content);
     }
 
