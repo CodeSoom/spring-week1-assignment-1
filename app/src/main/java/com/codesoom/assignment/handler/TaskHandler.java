@@ -10,10 +10,8 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -90,11 +88,13 @@ public class TaskHandler implements HttpHandler {
             return;
         }
 
-        var task = toTask(body);
+        var task = jsonToTask(body);
         task.setId(newTaskID++);
+
         var currentLocalTimeInSeoul = LocalDateTime.now(ZoneId.of(serverTimeZone));
         task.setCreatedAt(currentLocalTimeInSeoul);
         task.setLastUpdatedAt(currentLocalTimeInSeoul);
+
         tasks.add(task);
 
         HttpResponse.json(exchange, HttpStatus.CREATE.code(), taskToJSON(task));
@@ -124,10 +124,12 @@ public class TaskHandler implements HttpHandler {
             return;
         }
 
-        String newTitle = toTask(body).getTitle();
-        task.setTitle(newTitle);
+        var updatedTask = jsonToTask(body);
+        task.setTitle(updatedTask.getTitle());
+
         var currentLocalTimeInSeoul = LocalDateTime.now(ZoneId.of(serverTimeZone));
         task.setLastUpdatedAt(currentLocalTimeInSeoul);
+
         HttpResponse.json(exchange, HttpStatus.OK.code(), taskToJSON(task));
     }
 
@@ -154,19 +156,15 @@ public class TaskHandler implements HttpHandler {
             .orElse(null);
     }
 
-    private Task toTask(String json) throws JsonProcessingException {
+    private Task jsonToTask(String json) throws JsonProcessingException {
         return objectMapper.readValue(json, Task.class);
     }
 
-    private String taskToJSON(Task task) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, task);
-        return outputStream.toString();
+    private String taskToJSON(Task task) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(task);
     }
 
-    private String tasksListToJSON(List<Task> tasks) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
-        return outputStream.toString();
+    private String tasksListToJSON(List<Task> tasks) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(tasks);
     }
 }
