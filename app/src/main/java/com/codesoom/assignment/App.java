@@ -9,7 +9,7 @@ import java.net.InetSocketAddress;
 
 public class App {
 
-    final static int SERVER_PORT = 8000;
+    final static int SERVER_PORT = 8000; // 서버 포트 번호
 
     public static void main(String[] args) {
 

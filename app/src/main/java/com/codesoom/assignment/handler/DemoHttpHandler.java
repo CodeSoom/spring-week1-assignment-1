@@ -5,8 +5,6 @@ import com.codesoom.assignment.enums.HttpStatus;
 import com.codesoom.assignment.exceptions.NotFoundTaskException;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.util.JsonUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -16,12 +14,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 수신받은 Request에 대해 적절한 Response를 송신하는 클래스입니다.
+ *
+ * @author DevRunner21
+ * @version 1.0
+ * @since 2021.05.07
+ */
 public class DemoHttpHandler implements HttpHandler {
 
     private static Long taskIdSeq = 0L;
 
     private List<Task> tasks = new ArrayList<>();
 
+    /**
+     * Request가 들어 왔을 떄, HttpMethod와 URL에 따라 적절한 Response를 전송합니다.
+     * @param httpExchange
+     * @throws IOException
+     */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
 
@@ -78,7 +88,7 @@ public class DemoHttpHandler implements HttpHandler {
 
             if( method.equals(HttpMethod.PUT.name()) && path.equals("/tasks") ){ // Task 수정
 
-                tasksPUT(httpExchange, pathValue, rqBody);
+                tasksPUT(httpExchange, pathValue, rqBody.getTitle());
                 return;
 
             }
@@ -87,6 +97,7 @@ public class DemoHttpHandler implements HttpHandler {
 
                 tasksPATCH(httpExchange, pathValue, rqBody);
                 return;
+
             }
 
             if(method.equals(HttpMethod.DELETE.name()) && path.equals("/tasks")){ // Task 삭제
@@ -113,10 +124,10 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     /**
-     * Task List에서 ID에 해당하는 Task의 Index를 찾음
-     * @param tasks
-     * @param taskId
-     * @return
+     * 할 일 목록에서 주어진 할 일 id에 해당하는 할 일의 인덱스 넘버를 찾아 리턴합니다.
+     * @param tasks 할 일 목록
+     * @param taskId 찾으려 하는 할 일의 아이디
+     * @return findTaskIndex
      */
     private int findTaskIndex(List<Task> tasks, Long taskId) {
 
@@ -136,8 +147,8 @@ public class DemoHttpHandler implements HttpHandler {
     /**
      * Response를 전송 메서드
      * @param httpExchange
-     * @param httpStatus
-     * @param resBody
+     * @param httpStatus 전송할 Response의 Http 상태 코드
+     * @param resBody Response에 담아서 전송할 데이터
      * @throws IOException
      */
     private void sendResponse(HttpExchange httpExchange, int httpStatus, String resBody) throws IOException {
@@ -152,7 +163,7 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     /**
-     * Task List 조회
+     * 할 일의 전체 목록을 조회합니다.
      * @param httpExchange
      * @throws IOException
      */
@@ -168,19 +179,19 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     /**
-     * Task 단건 조회
+     * 주어진 할 일 id에 해당하는 할 일 데이터를 조회합니다.
      * @param httpExchange
-     * @param pathValue
+     * @param taskId 조회할 할 일 Id
      * @throws IOException
      */
-    private void tasksGET(HttpExchange httpExchange, Long pathValue) throws IOException {
+    private void tasksGET(HttpExchange httpExchange, Long taskId) throws IOException {
 
         String content = null;
         int httpStatus = HttpStatus.OK.getCodeNo();
 
-        int taskIndex = findTaskIndex(tasks, pathValue);// PathValue에 해당하는 Task의 인덱스를 구함
+        int taskIndex = findTaskIndex(tasks, taskId);// taskId에 해당하는 Task의 인덱스를 구함
 
-        if(pathValue == null){
+        if(taskId == null){
             content = JsonUtil.toJsonStr(tasks);
         } else {
             Task findTask = tasks.get(taskIndex);
@@ -192,45 +203,43 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     /**
-     * Task 등록
+     * 새로운 할 일을 할 일 목록에 등록합니다.
      * @param httpExchange
-     * @param rqBody
+     * @param newTask 새로 등록할 할 일
      * @throws IOException
      */
-    private void tasksPOST(HttpExchange httpExchange, Task rqBody) throws IOException {
+    private void tasksPOST(HttpExchange httpExchange, Task newTask) throws IOException {
 
         String content = null;
         int httpStatus = HttpStatus.CREATE.getCodeNo();
 
-        rqBody.setId(taskIdSeq++);
-        tasks.add(rqBody);
+        newTask.setId(taskIdSeq++);
+        tasks.add(newTask);
 
-        content = JsonUtil.toJsonStr(rqBody);
+        content = JsonUtil.toJsonStr(newTask);
 
         sendResponse(httpExchange, httpStatus, content);
 
     }
 
     /**
-     * Task 수정
+     * 주어진 할 일 Id에 해당하는 할 일의 제목을 수정한다.
      * @param httpExchange
-     * @param pathValue
-     * @param rqBody
+     * @param taskId 수정 대상인 할 일의 Id
+     * @param newTitle 수정할 할 일 제목
      * @throws IOException
      */
-    private void tasksPUT(HttpExchange httpExchange,  Long pathValue, Task rqBody) throws IOException {
+    private void tasksPUT(HttpExchange httpExchange,  Long taskId, String newTitle) throws IOException {
 
         String content = null;
         int httpStatus = HttpStatus.OK.getCodeNo();
 
-        int taskIndex = findTaskIndex(tasks, pathValue);// PathValue에 해당하는 Task의 인덱스를 구함
+        int taskIndex = findTaskIndex(tasks, taskId);// PathValue에 해당하는 Task의 인덱스를 구함
 
         // 해당하는 Task가 없을 경우 예외 발생
         if(taskIndex < 0){
-            throw new NotFoundTaskException(pathValue);
+            throw new NotFoundTaskException(taskId);
         }
-
-        String newTitle = rqBody.getTitle();
 
         Task modifiedTask = tasks.get(taskIndex);
         modifiedTask.setTitle(newTitle);
@@ -242,7 +251,7 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     /**
-     * Task 수정
+     * 주어진 할 일 Id에 해당하는 할 일을 수정합니다.
      * @param httpExchange
      * @param pathValue
      * @param rqTask
@@ -273,21 +282,21 @@ public class DemoHttpHandler implements HttpHandler {
 
 
     /**
-     * Task 삭제
+     * 주어진 할 일 Id에 해당하는 할 일을 목록에서 삭제합니다.
      * @param httpExchange
-     * @param pathValue
+     * @param taskId 삭제할 할 일의 Id
      * @throws IOException
      */
-    private void tasksDELETE(HttpExchange httpExchange, Long pathValue) throws IOException {
+    private void tasksDELETE(HttpExchange httpExchange, Long taskId) throws IOException {
 
         String content = "";
         int httpStatus = HttpStatus.NO_CONTENT.getCodeNo();
 
-        int taskIndex = findTaskIndex(tasks, pathValue);// PathValue에 해당하는 Task의 인덱스를 구함
+        int taskIndex = findTaskIndex(tasks, taskId);// PathValue에 해당하는 Task의 인덱스를 구함
 
         // 해당하는 Task가 없을 경우 예외 발생
         if(taskIndex < 0){
-            throw new NotFoundTaskException(pathValue);
+            throw new NotFoundTaskException(taskId);
         }
 
         tasks.remove(taskIndex);
