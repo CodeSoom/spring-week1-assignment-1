@@ -3,7 +3,7 @@ import frisby from 'frisby';
 frisby.baseUrl('http://localhost:8000');
 
 describe('tasks', () => {
-  const title = '책 읽기';
+  const title = 'Read Book';
 
   beforeEach(async () => {
     const res = await frisby.get('/tasks');
@@ -82,11 +82,11 @@ describe('tasks', () => {
       });
 
       it('responses updated task', async () => {
-        const res = await frisby.put(`/tasks/${id}`, { title: '밥 먹기' })
+        const res = await frisby.put(`/tasks/${id}`, { title: 'Eat Meal' })
           .expect('status', 200);
         const task = JSON.parse(res.body);
 
-        expect(task.title).toBe('밥 먹기');
+        expect(task.title).toBe('Eat Meal');
       });
     });
 
@@ -96,7 +96,7 @@ describe('tasks', () => {
       });
 
       it('responses 404 Not Found error', async () => {
-        await frisby.put(`/tasks/${id}`, { title: '밥 먹기' })
+        await frisby.put(`/tasks/${id}`, { title: 'Eat Meal' })
           .expect('status', 404);
       });
     });
@@ -113,11 +113,11 @@ describe('tasks', () => {
       });
 
       it('responses updated task', async () => {
-        const res = await frisby.put(`/tasks/${id}`, { title: '밥 먹기' })
+        const res = await frisby.put(`/tasks/${id}`, { title: 'Eat Meal' })
           .expect('status', 200);
         const task = JSON.parse(res.body);
 
-        expect(task.title).toBe('밥 먹기');
+        expect(task.title).toBe('Eat Meal');
       });
     });
 
@@ -127,7 +127,7 @@ describe('tasks', () => {
       });
 
       it('responses 404 Not Found error', async () => {
-        await frisby.put(`/tasks/${id}`, { title: '밥 먹기' })
+        await frisby.put(`/tasks/${id}`, { title: 'Eat Meal' })
           .expect('status', 404);
       });
     });
