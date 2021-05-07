@@ -1,7 +1,6 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -73,6 +72,8 @@ public class DemoHttpHandler implements HttpHandler {
                 setIndex(task);
                 System.out.println(task);
                 tasks.add(task);
+            }else{
+                throw new IOException("Plz fill body");
             }
             content = "create new tasks";
             rCode = 201;
