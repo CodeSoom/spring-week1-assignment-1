@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class MyHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Todo> todos = new ArrayList<>();
+    private Long ID = 1L;
 
     // constructor
     public MyHttpHandler() {
@@ -37,15 +38,11 @@ public class MyHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
         System.out.println("path: " + path);
+        System.out.println("getID: " + getID(path));
         InputStream inputStream = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
-        System.out.println("body: " + body); // 객체 형태로 나오지만 사실은 String
-        System.out.println("body Type: " + body.getClass().getTypeName());
-
-        // 1차 시도 실패 -> 주소 값이 todos 에 저장됨
-        TodoRepository todoRepository = new TodoRepository();
 
         if(exchange.getRequestMethod().equals("POST")) {
             todo.setId(todos.size() + 1L);
@@ -53,5 +50,11 @@ public class MyHttpHandler implements HttpHandler {
             todos.add(todo);
             System.out.println("todos : " + todos);
         }
+    }
+
+    // path의 id값 분리
+    Long getID(String path){
+        String[] splitPath = path.split("/");
+        return Long.parseLong(splitPath[2]);
     }
 }
