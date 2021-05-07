@@ -3,8 +3,7 @@ package com.codesoom.assignment.models;
 public class Todo {
 
     private Long id;
-    private String todos;
-
+    private String todo;
 
     public void setId(Long id) {
         this.id = id;
@@ -13,10 +12,10 @@ public class Todo {
         return id;
     }
 
-    public String getTodos() {
-        return todos;
+    public String getTodo() {
+        return todo;
     }
-    public void setTodos(String todos) {
-        this.todos = todos;
+    public void setTodos(String todo) {
+        this.todo = todo;
     }
 }

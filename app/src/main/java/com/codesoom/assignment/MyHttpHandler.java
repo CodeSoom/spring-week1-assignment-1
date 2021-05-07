@@ -33,7 +33,6 @@ public class MyHttpHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         Todo todo = new Todo();
 
-
         String method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
@@ -46,15 +45,13 @@ public class MyHttpHandler implements HttpHandler {
         System.out.println("body Type: " + body.getClass().getTypeName());
 
         // 1차 시도 실패 -> 주소 값이 todos 에 저장됨
+        TodoRepository todoRepository = new TodoRepository();
+
         if(exchange.getRequestMethod().equals("POST")) {
             todo.setId(todos.size() + 1L);
             todo.setTodos(body);
             todos.add(todo);
             System.out.println("todos : " + todos);
         }
-
-
-
     }
-
 }
