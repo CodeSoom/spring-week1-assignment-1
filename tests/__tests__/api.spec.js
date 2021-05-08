@@ -1,7 +1,7 @@
 import frisby from 'frisby';
 
-const title1 = 'Reading books';
-const title2 = 'Eating lunch';
+const title1 = '책 읽기';
+const title2 = '밥 먹기';
 
 frisby.baseUrl('http://localhost:8000');
 

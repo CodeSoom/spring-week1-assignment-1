@@ -6,16 +6,22 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * 루트 경로("/")의 핸들러입니다.
  */
 public class ContextRootHandler implements HttpHandler {
+    private static final Logger logger = Logger.getGlobal();
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         final String method = exchange.getRequestMethod();
         final String path = exchange.getRequestURI().getPath();
-        System.out.println(method + " " + path);
+
+        // RSPEC-3457:Printf-style format strings should be used correctly
+        logger.log(Level.FINE, () -> method + " " + path);
 
         if (!path.equals("/")) {
             HttpResponse.text(exchange, HttpStatus.NOT_FOUND);

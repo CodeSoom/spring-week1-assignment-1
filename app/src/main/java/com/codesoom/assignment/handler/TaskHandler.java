@@ -12,16 +12,19 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class TaskHandler implements HttpHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final String serverTimeZone = "Asia/Seoul";
+    private static final Logger logger = Logger.getGlobal();
 
     private final List<Task> tasks = new ArrayList<>();
     private Long newTaskID = 1L;
@@ -31,7 +34,7 @@ public class TaskHandler implements HttpHandler {
         final String requestMethod = exchange.getRequestMethod();
         var method = HttpMethod.valueOf(requestMethod);
         final String path = exchange.getRequestURI().getPath();
-        System.out.println(method + " " + path);
+        logger.log(Level.FINE, () -> method + " " + path);
 
         String[] pathVariables = path.split("/");
         final var apiTasksLength = 2; // /tasks => "", "tasks"
@@ -72,13 +75,6 @@ public class TaskHandler implements HttpHandler {
             default:
                 HttpResponse.text(exchange, HttpStatus.METHOD_NOT_ALLOWED);
         }
-    }
-
-    private String readRequestBody(HttpExchange exchange) {
-        var inputStream = exchange.getRequestBody();
-        return new BufferedReader(new InputStreamReader(inputStream, Charset.forName("EUC-KR")))
-            .lines()
-            .collect(Collectors.joining("\n"));
     }
 
     private void createTask(HttpExchange exchange) throws IOException {
@@ -149,9 +145,17 @@ public class TaskHandler implements HttpHandler {
         HttpResponse.text(exchange, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    private String readRequestBody(HttpExchange exchange) {
+        var inputStream = exchange.getRequestBody();
+        var inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+        return new BufferedReader(inputStreamReader)
+            .lines()
+            .collect(Collectors.joining(System.lineSeparator()));
+    }
+
     private Task findTaskByID(Long taskID) {
         return tasks.stream()
-            .filter(t -> t.getId() == taskID)
+            .filter(t -> t.getId().equals(taskID))
             .findFirst()
             .orElse(null);
     }
