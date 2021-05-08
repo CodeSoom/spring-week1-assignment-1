@@ -13,8 +13,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -90,17 +88,12 @@ public class TaskHandler implements HttpHandler {
         var task = jsonToTask(body);
         task.setId(newTaskID++);
 
-        var currentLocalTimeInSeoul = LocalDateTime.now(ZoneId.of(serverTimeZone));
-        task.setCreatedAt(currentLocalTimeInSeoul);
-        task.setLastUpdatedAt(currentLocalTimeInSeoul);
-
         tasks.put(task.getId(), task);
 
         HttpResponse.json(exchange, HttpStatus.CREATE.code(), taskToJSON(task));
     }
 
     private void listTasks(HttpExchange exchange) throws IOException {
-        logger.log(Level.FINE, tasksListToJSON(tasks));
         HttpResponse.json(exchange, HttpStatus.OK.code(), tasksListToJSON(tasks));
     }
 
@@ -125,11 +118,7 @@ public class TaskHandler implements HttpHandler {
         }
 
         var updatedTask = jsonToTask(body);
-        task.setTitle(updatedTask.getTitle());
-
-        var currentLocalTimeInSeoul = LocalDateTime.now(ZoneId.of(serverTimeZone));
-        task.setLastUpdatedAt(currentLocalTimeInSeoul);
-
+        task = task.update(updatedTask);
         HttpResponse.json(exchange, HttpStatus.OK.code(), taskToJSON(task));
     }
 

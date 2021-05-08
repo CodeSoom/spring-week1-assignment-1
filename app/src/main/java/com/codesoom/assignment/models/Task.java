@@ -1,12 +1,27 @@
 package com.codesoom.assignment.models;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 public class Task {
     private Long id;
     private String title;
     private LocalDateTime createdAt;
     private LocalDateTime lastUpdatedAt;
+
+    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+    public Task(@JsonProperty("id") Long id, @JsonProperty("title") String title) {
+        this.id = id;
+        this.title = title;
+
+        final var serverTimeZone = "Asia/Seoul";
+        var currentLocalTimeInSeoul = LocalDateTime.now(ZoneId.of(serverTimeZone));
+        this.createdAt = currentLocalTimeInSeoul;
+        this.lastUpdatedAt = currentLocalTimeInSeoul;
+    }
 
     public Long getId() {
         return id;
@@ -20,26 +35,6 @@ public class Task {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getLastUpdatedAt() {
-        return lastUpdatedAt;
-    }
-
-    public void setLastUpdatedAt(LocalDateTime lastUpdatedAt) {
-        this.lastUpdatedAt = lastUpdatedAt;
-    }
-
     @Override
     public String toString() {
         return "Task{" +
@@ -48,5 +43,14 @@ public class Task {
             ", createdAt=" + createdAt +
             ", lastUpdatedAt=" + lastUpdatedAt +
             '}';
+    }
+
+    public Task update(Task updatedTask) {
+        this.title = updatedTask.title;
+
+        final var serverTimeZone = "Asia/Seoul";
+        var currentLocalTimeInSeoul = LocalDateTime.now(ZoneId.of(serverTimeZone));
+        this.lastUpdatedAt = currentLocalTimeInSeoul;
+        return this;
     }
 }
