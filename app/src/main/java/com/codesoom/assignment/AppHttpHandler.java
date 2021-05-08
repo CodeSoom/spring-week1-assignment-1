@@ -1,10 +1,11 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.exception.NotFoundTaskIdException;
-import com.codesoom.assignment.model.AppResponseEntity;
+import com.codesoom.assignment.model.RequestProcessEntity;
 import com.codesoom.assignment.model.HttpMethod;
-import com.codesoom.assignment.model.HttpStatusCode;
+import com.codesoom.assignment.model.AppResponseEntity;
 import com.codesoom.assignment.model.Task;
+import com.codesoom.assignment.model.HttpStatusCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -40,18 +41,23 @@ public class AppHttpHandler implements HttpHandler {
         logger.setLevel(Level.INFO);
     }
 
+    /**
+     *  Http Request URL에 대한 요청 처리 후 OutpustStream으로 Response
+     * @param exchange
+     * @throws IOException
+     */
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
-        final int taskIdIdx = 2;
+        final int taskIdIndex = 2;
         String uriPath = uri.getPath();
         String[] uriPaths = uriPath.split("/");
         String rootPath = uriPaths[1];
         String taskId = "";
         String contents = "";
-        if (uriPaths.length > taskIdIdx) {
-            taskId = uriPaths[taskIdIdx];
+        if (uriPaths.length > taskIdIndex) {
+            taskId = uriPaths[taskIdIndex];
         }
 
         InputStream inputStream = exchange.getRequestBody();
@@ -63,7 +69,12 @@ public class AppHttpHandler implements HttpHandler {
         HttpStatusCode httpStatusCode = HttpStatusCode.OK;
         try {
             if (taskPath.equals(rootPath)) {
-                AppResponseEntity appResponseEntity = requestProcessor(method, body, taskId);
+                RequestProcessEntity requestProcessEntity = new RequestProcessEntity
+                        .RequestProcessEntityBuilder()
+                        .setBody(body)
+                        .setMethod(method)
+                        .setTaskId(taskId).build();
+                AppResponseEntity appResponseEntity = requestProcessor(requestProcessEntity);
                 contents = appResponseEntity.getContents();
                 httpStatusCode = appResponseEntity.getHttpStatusCode();
             }
@@ -79,10 +90,19 @@ public class AppHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
-    private AppResponseEntity requestProcessor(String method, String body, String taskId) throws IOException {
+    /**
+     * GET, POST, PUT, DELETE 에 대한 요청에 대한 HttpStatusCode 값과  ResponseBody 리턴
+     * @param requestProcessEntity
+     * @return AppResponseEntity
+     * @throws IOException
+     */
+    private AppResponseEntity requestProcessor(RequestProcessEntity requestProcessEntity) throws IOException {
         String contents = "";
         HttpStatusCode httpStatusCode = HttpStatusCode.OK;
-
+        String taskId = requestProcessEntity.getTaskId();
+        String body = requestProcessEntity.getBody();
+        String method = requestProcessEntity.getMethod();
+        boolean isBody = requestProcessEntity.isBodyBlank();
         HttpMethod httpMethod = HttpMethod.valueOf(method);
 
         switch (httpMethod) {
@@ -91,20 +111,22 @@ public class AppHttpHandler implements HttpHandler {
                 httpStatusCode = HttpStatusCode.OK;
                 break;
             case POST:
-                if (!body.isBlank()) {
-                    Task task = toTask(body);
-                    task.setId(getTaskMaxId());
-                    tasks.add(task);
-                    httpStatusCode = HttpStatusCode.CREATED;
-                    contents = tasksToJSON(task);
+                if (isBody) {
+                    break;
                 }
+
+                Task task = toTask(body);
+                task.setId(getTaskMaxId());
+                tasks.add(task);
+                httpStatusCode = HttpStatusCode.CREATED;
+                contents = tasksToJSON(task);
                 break;
             case DELETE:
                 deleteTask(taskId);
                 httpStatusCode = HttpStatusCode.NO_CONTENT;
                 break;
             case PUT:
-                contents = modifyTask(taskId, body);
+                contents = modifyTask(requestProcessEntity);
                 httpStatusCode = HttpStatusCode.OK;
                 break;
             default:
@@ -113,10 +135,18 @@ public class AppHttpHandler implements HttpHandler {
         return new AppResponseEntity(httpStatusCode, contents);
     }
 
-    private String modifyTask(String taskId, String body) throws IOException {
+    /**
+     *  Task ID에 해당하는 내용을 수정
+     * @param requestProcessEntity
+     * @return String(JSON)
+     * @throws IOException
+     */
 
+    private String modifyTask(RequestProcessEntity requestProcessEntity) throws IOException {
         String contents = "";
-        if (!"".equals(taskId)) {
+        String taskId = requestProcessEntity.getTaskId();
+        String body = requestProcessEntity.getBody();
+        if ("".equals(taskId)) {
             return " ";
         }
         Task findTask = findTask(taskId);
@@ -128,6 +158,13 @@ public class AppHttpHandler implements HttpHandler {
         return contents;
     }
 
+    /**
+     * 요청 Task ID를 가자고 Task를 찾음
+     * 만약 Task ID가 없다면 NotFoundTaskIdException Throw
+     * @param taskId
+     * @return Task
+     * @Exception NotFoundTaskIdException
+     */
     private Task findTask(String taskId) {
         Long longTaskId = Long.parseLong(taskId);
         return tasks.stream()
@@ -136,15 +173,25 @@ public class AppHttpHandler implements HttpHandler {
                 .orElseThrow(NotFoundTaskIdException::new);
     }
 
-
+    /**
+     * 요청한 Task ID에 해당하는 내용 삭제
+     * @param taskId
+     */
     private void deleteTask(String taskId) {
-        if (!"".equals(taskId)) {
+        if ("".equals(taskId)) {
             return;
         }
         Task task = findTask(taskId);
         tasks.remove(task);
     }
 
+    /**
+     * 요청한 Task ID에 해당하는 Task를 찾은 이후 JSON 변환
+     * 만약 Task ID가 없다면 모든 Task JSON 변환
+     * @param taskId
+     * @return String(JSON)
+     * @throws IOException
+     */
     private String tasksToJSONByPath(String taskId) throws IOException {
         String contents = "";
         if (!"".equals(taskId)) {
@@ -156,21 +203,44 @@ public class AppHttpHandler implements HttpHandler {
         return contents;
     }
 
+    /**
+     * 응답 내용을 Task 형식의  JSON으로변환
+     * @param contents
+     * @return Task
+     * @throws JsonProcessingException
+     */
     private Task toTask(String contents) throws JsonProcessingException {
         return objectMapper.readValue(contents, Task.class);
     }
 
+    /**
+     * 전체 Task를 JSON으로 변환
+     * @return String(JSON)
+     * @throws IOException
+     */
     private String tasksToJSON() throws IOException {
         return tasksToJSON(tasks);
     }
 
 
+    /**
+     * List<Task> 를 JSON Array String으로로 변환
+     * @param tasks
+     * @return String(JSON Array)
+     * @throws IOException
+     */
     private String tasksToJSON(List<Task> tasks) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
         return outputStream.toString();
     }
 
+    /**
+     * Task를 JSON으로 변환
+     * @param task
+     * @return String(JSON)
+     * @throws IOException
+     */
     private String tasksToJSON(Task task) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, task);
@@ -178,6 +248,10 @@ public class AppHttpHandler implements HttpHandler {
     }
 
 
+    /**
+     * Task ID 최대값을 리턴
+     * @return Long(Task ID)
+     */
     private Long getTaskMaxId() {
         Long maxId = 1L;
         if (tasks.size() > 0) {
