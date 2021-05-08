@@ -85,7 +85,8 @@ public class TaskHandler implements HttpHandler {
         logger.log(Level.FINE, task.toString());
         tasks.put(task.getId(), task);
 
-        HttpResponse.json(exchange, HttpStatus.CREATED, objectMapper.writeValueAsString(task));
+        var createdTaskJSON = objectMapper.writeValueAsString(task);
+        HttpResponse.json(exchange, HttpStatus.CREATED, createdTaskJSON);
     }
 
     private void listTasks(HttpExchange exchange) throws IOException {
@@ -101,7 +102,8 @@ public class TaskHandler implements HttpHandler {
             return;
         }
 
-        HttpResponse.json(exchange, HttpStatus.OK, objectMapper.writeValueAsString(task));
+        var taskJSON = objectMapper.writeValueAsString(task);
+        HttpResponse.json(exchange, HttpStatus.OK, taskJSON);
     }
 
     private void updateTask(HttpExchange exchange, Long taskID) throws IOException {
@@ -119,7 +121,9 @@ public class TaskHandler implements HttpHandler {
 
         var updatedTask = objectMapper.readValue(json, Task.class);
         task = task.update(updatedTask);
-        HttpResponse.json(exchange, HttpStatus.OK, objectMapper.writeValueAsString(task));
+
+        var updatedTaskJSON = objectMapper.writeValueAsString(task);
+        HttpResponse.json(exchange, HttpStatus.OK, updatedTaskJSON);
     }
 
     private void deleteTask(HttpExchange exchange, Long taskID) throws IOException {
