@@ -9,6 +9,7 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,113 +23,130 @@ public class TaskHttpHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         URI requestURI = exchange.getRequestURI();
-        String requestMethod = exchange.getRequestMethod();
         String path = requestURI.getPath();
-
-        InputStream inputStream = exchange.getRequestBody();
-        String requestBody = new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
 
         String content = "";
         int statusCode = 200;
 
-        System.out.println(requestMethod + " " + requestURI + " " + requestBody);
-
         try {
-            //TODO: 리팩토링
-            if (requestMethod.equals("GET") && path.equals("/tasks")) {
-                content = tasksToJSON();
-                exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-            } else if (requestMethod.equals("GET") && path.startsWith("/tasks/")) {
-                long id = Long.parseLong(path.substring(7));
-
-                Task task = findTaskById(id);
-                if (task == null) {
-                    throw new TaskNotFoundException();
-                }
-
-                statusCode = 200;
-                content = toJson(task);
-                exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-            } else if (requestMethod.equals("POST") && path.equals("/tasks")) {
-                if (requestBody.isBlank()) {
-                    throw new IllegalArgumentException("requestBody가 비었습니다.");
-                }
-
-                Task task = toTask(requestBody);
-                task.setId(taskId);
-                taskId++;
-                this.tasks.add(task);
-                statusCode = 201;
-                content = toJson(task);
-                exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-            } else if (requestMethod.equals("PUT") && path.startsWith("/tasks")) {
-                long id = Long.parseLong(path.substring(7));
-
-                Task task = findTaskById(id);
-                if (task == null) {
-                    throw new TaskNotFoundException();
-                } else {
-                    Task updateTask = toTask(requestBody);
-                    //TODO: id도 업데이트 필요??
-                    task.setTitle(updateTask.getTitle());
-                    content = toJson(task);
-                    exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-                }
-            } else if (requestMethod.equals("PATCH") && path.startsWith("/tasks")) {
-                long id = Long.parseLong(path.substring(7));
-
-                Task task = findTaskById(id);
-                if (task == null) {
-                    throw new TaskNotFoundException();
-                } else {
-                    Task updateTask = toTask(requestBody);
-                    task.setTitle(updateTask.getTitle());
-                    content = toJson(task);
-                    exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-                }
-            } else if (requestMethod.equals("DELETE") && path.startsWith("/tasks")) {
-                long id = Long.parseLong(path.substring(7));
-                boolean found = false;
-
-                for (Task task : tasks) {
-                    if (task.getId() == id) {
-                        found = true;
-                        System.out.println("id: " + id);
-                        boolean remove = tasks.remove(task);
-                        System.out.println("remove " + remove);
-                        statusCode = 204;
-                        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-                        break;
-                    }
-                }
-                if (!found) {
-                    throw new TaskNotFoundException();
-                }
+            if (path.equals("/tasks")) {
+                doRequestedActionOfTasksAndSendResponse(exchange);
+            } else if (path.startsWith("/tasks/")) {
+                doRequestedActionOfTaskAndSendResponse(exchange);
             }
-
         } catch (TaskNotFoundException e) {
             System.out.println("Exception: " + e.getMessage());
             statusCode = 404;
             content = e.getMessage();
             exchange.sendResponseHeaders(statusCode, content.getBytes().length);
+            sendResponseBody(exchange, content);
         } catch (IllegalArgumentException e) {
             System.out.println("Exception: " + e.getMessage());
             statusCode = 400;
             content = e.getMessage();
             exchange.sendResponseHeaders(statusCode, content.getBytes().length);
+            sendResponseBody(exchange, content);
         } catch (Exception e) {
             System.out.println("Exception: " + e.getMessage());
             statusCode = 400;
             content = e.getMessage();
             exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-        } finally {
-            OutputStream responseBody = exchange.getResponseBody();
-            responseBody.write(content.getBytes());
-            responseBody.flush();
-            responseBody.close();
+            sendResponseBody(exchange, content);
         }
+    }
+
+    private void doRequestedActionOfTaskAndSendResponse(HttpExchange exchange) throws IOException {
+        URI requestURI = exchange.getRequestURI();
+        String path = requestURI.getPath();
+        long taskId = Long.parseLong(path.substring(7));
+        Task task = findTaskById(taskId);
+        if (task == null) {
+            throw new TaskNotFoundException();
+        }
+
+        int statusCode = 200;
+        String content = "";
+        Task updateRequestedContent;
+
+        String requestMethod = exchange.getRequestMethod();
+        switch (requestMethod) {
+            case "GET":
+                content = toJson(task);
+                break;
+            case "PUT":
+                updateRequestedContent = toTask(parseRequestBody(exchange));
+                if (updateRequestedContent.getId() != null) {
+                    task.setId(updateRequestedContent.getId());
+                }
+                task.setTitle(updateRequestedContent.getTitle());
+                content = toJson(task);
+                break;
+            case "PATCH":
+                updateRequestedContent = toTask(parseRequestBody(exchange));
+                task.setTitle(updateRequestedContent.getTitle());
+                content = toJson(task);
+                break;
+            case "DELETE":
+                tasks.remove(task);
+                statusCode = 204;
+                content = "";
+                break;
+            default:
+                break;
+        }
+        // "WARNING: sendResponseHeaders: rCode = 204: forcing contentLen = -1" 경고 제거 위해, 204 상태코드일 때의 분기 추가
+        long contentLength = statusCode == 204 ? -1 : content.getBytes().length;
+        exchange.sendResponseHeaders(statusCode, contentLength);
+        sendResponseBody(exchange, content);
+    }
+
+    private void doRequestedActionOfTasksAndSendResponse(HttpExchange exchange) throws IOException {
+        String requestMethod = exchange.getRequestMethod();
+        int statusCode = 200;
+        String content = "";
+
+        switch (requestMethod) {
+            case "GET":
+                content = tasksToJSON();
+                break;
+            case "POST":
+                Task task = addTask(parseRequestBody(exchange));
+                statusCode = 201;
+                content = toJson(task);
+                break;
+            default:
+                break;
+        }
+        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
+        sendResponseBody(exchange, content);
+    }
+
+    private void sendResponseBody(HttpExchange exchange, String content) throws IOException {
+        OutputStream responseBody = exchange.getResponseBody();
+        responseBody.write(content.getBytes());
+        responseBody.flush();
+        responseBody.close();
+    }
+
+    private String parseRequestBody(HttpExchange exchange) {
+        InputStream inputStream = exchange.getRequestBody();
+        String requestBody = new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
+        return requestBody;
+    }
+
+    private Task addTask(String requestBody) throws JsonProcessingException {
+        if (requestBody.isBlank()) {
+            throw new IllegalArgumentException("requestBody가 비었습니다.");
+        }
+
+        Task task = toTask(requestBody);
+        task.setId(taskId);
+        taskId++;
+        this.tasks.add(task);
+
+        return task;
     }
 
     private Task findTaskById(long id) {
