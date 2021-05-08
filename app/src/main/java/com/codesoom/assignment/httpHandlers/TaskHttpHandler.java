@@ -9,7 +9,6 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,20 +37,17 @@ public class TaskHttpHandler implements HttpHandler {
             System.out.println("Exception: " + e.getMessage());
             statusCode = 404;
             content = e.getMessage();
-            exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-            sendResponseBody(exchange, content);
+            sendResponse(exchange, statusCode, content);
         } catch (IllegalArgumentException e) {
             System.out.println("Exception: " + e.getMessage());
             statusCode = 400;
             content = e.getMessage();
-            exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-            sendResponseBody(exchange, content);
+            sendResponse(exchange, statusCode, content);
         } catch (Exception e) {
             System.out.println("Exception: " + e.getMessage());
-            statusCode = 400;
+            statusCode = 409;
             content = e.getMessage();
-            exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-            sendResponseBody(exchange, content);
+            sendResponse(exchange, statusCode, content);
         }
     }
 
@@ -74,13 +70,6 @@ public class TaskHttpHandler implements HttpHandler {
                 content = toJson(task);
                 break;
             case "PUT":
-                updateRequestedContent = toTask(parseRequestBody(exchange));
-                if (updateRequestedContent.getId() != null) {
-                    task.setId(updateRequestedContent.getId());
-                }
-                task.setTitle(updateRequestedContent.getTitle());
-                content = toJson(task);
-                break;
             case "PATCH":
                 updateRequestedContent = toTask(parseRequestBody(exchange));
                 task.setTitle(updateRequestedContent.getTitle());
@@ -89,22 +78,18 @@ public class TaskHttpHandler implements HttpHandler {
             case "DELETE":
                 tasks.remove(task);
                 statusCode = 204;
-                content = "";
                 break;
             default:
                 break;
         }
-        // "WARNING: sendResponseHeaders: rCode = 204: forcing contentLen = -1" 경고 제거 위해, 204 상태코드일 때의 분기 추가
-        long contentLength = statusCode == 204 ? -1 : content.getBytes().length;
-        exchange.sendResponseHeaders(statusCode, contentLength);
-        sendResponseBody(exchange, content);
+        sendResponse(exchange, statusCode, content);
     }
 
     private void doRequestedActionOfTasksAndSendResponse(HttpExchange exchange) throws IOException {
-        String requestMethod = exchange.getRequestMethod();
         int statusCode = 200;
         String content = "";
 
+        String requestMethod = exchange.getRequestMethod();
         switch (requestMethod) {
             case "GET":
                 content = tasksToJSON();
@@ -117,7 +102,13 @@ public class TaskHttpHandler implements HttpHandler {
             default:
                 break;
         }
-        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
+        sendResponse(exchange, statusCode, content);
+    }
+
+    private void sendResponse(HttpExchange exchange, int statusCode, String content) throws IOException {
+        // "WARNING: sendResponseHeaders: rCode = 204: forcing contentLen = -1" 경고 제거 위해, 204 상태코드일 때의 분기 추가
+        long contentLength = statusCode == 204 ? -1 : content.getBytes().length;
+        exchange.sendResponseHeaders(statusCode, contentLength);
         sendResponseBody(exchange, content);
     }
 
