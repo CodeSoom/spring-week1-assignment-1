@@ -8,8 +8,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class App {
-    final static int PORT = 8000;
-    final static String ROOT_PATH = "/";
+    final private static int PORT = 8000;
+    final private static String ROOT_PATH = "/";
 
     public static void main(String[] args) {
         System.out.println(">> API server start!");

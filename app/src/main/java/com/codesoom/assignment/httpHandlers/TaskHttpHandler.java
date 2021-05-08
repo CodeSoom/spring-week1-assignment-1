@@ -1,5 +1,6 @@
 package com.codesoom.assignment.httpHandlers;
 
+import com.codesoom.assignment.enums.HttpStatus;
 import com.codesoom.assignment.httpHandlers.exceptions.TaskNotFoundException;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -7,7 +8,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,9 +30,6 @@ public class TaskHttpHandler implements HttpHandler {
         URI requestURI = exchange.getRequestURI();
         String path = requestURI.getPath();
 
-        String content = "";
-        int statusCode = 200;
-
         try {
             if (path.equals("/tasks")) {
                 doRequestedActionOfTasksAndSendResponse(exchange);
@@ -34,20 +37,11 @@ public class TaskHttpHandler implements HttpHandler {
                 doRequestedActionOfTaskAndSendResponse(exchange);
             }
         } catch (TaskNotFoundException e) {
-            System.out.println("Exception: " + e.getMessage());
-            statusCode = 404;
-            content = e.getMessage();
-            sendResponse(exchange, statusCode, content);
+            sendResponse(exchange, HttpStatus.NOT_FOUND, e.getMessage());
         } catch (IllegalArgumentException e) {
-            System.out.println("Exception: " + e.getMessage());
-            statusCode = 400;
-            content = e.getMessage();
-            sendResponse(exchange, statusCode, content);
+            sendResponse(exchange, HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
-            System.out.println("Exception: " + e.getMessage());
-            statusCode = 409;
-            content = e.getMessage();
-            sendResponse(exchange, statusCode, content);
+            sendResponse(exchange, HttpStatus.CONFLICT, e.getMessage());
         }
     }
 
@@ -60,7 +54,7 @@ public class TaskHttpHandler implements HttpHandler {
             throw new TaskNotFoundException();
         }
 
-        int statusCode = 200;
+        HttpStatus status = HttpStatus.OK;
         String content = "";
         Task updateRequestedContent;
 
@@ -77,16 +71,17 @@ public class TaskHttpHandler implements HttpHandler {
                 break;
             case "DELETE":
                 tasks.remove(task);
-                statusCode = 204;
+                status = HttpStatus.NO_CONTENT;
                 break;
             default:
+                //TODO: 구현안된 메서드 예외 발생시키기
                 break;
         }
-        sendResponse(exchange, statusCode, content);
+        sendResponse(exchange, status, content);
     }
 
     private void doRequestedActionOfTasksAndSendResponse(HttpExchange exchange) throws IOException {
-        int statusCode = 200;
+        HttpStatus status = HttpStatus.OK;
         String content = "";
 
         String requestMethod = exchange.getRequestMethod();
@@ -96,19 +91,20 @@ public class TaskHttpHandler implements HttpHandler {
                 break;
             case "POST":
                 Task task = addTask(parseRequestBody(exchange));
-                statusCode = 201;
+                status = HttpStatus.CREATED;
                 content = toJson(task);
                 break;
             default:
+                //TODO: 구현안된 메서드 예외 발생시키기
                 break;
         }
-        sendResponse(exchange, statusCode, content);
+        sendResponse(exchange, status, content);
     }
 
-    private void sendResponse(HttpExchange exchange, int statusCode, String content) throws IOException {
+    private void sendResponse(HttpExchange exchange, HttpStatus status, String content) throws IOException {
         // "WARNING: sendResponseHeaders: rCode = 204: forcing contentLen = -1" 경고 제거 위해, 204 상태코드일 때의 분기 추가
-        long contentLength = statusCode == 204 ? -1 : content.getBytes().length;
-        exchange.sendResponseHeaders(statusCode, contentLength);
+        long contentLength = status == HttpStatus.NO_CONTENT ? -1 : content.getBytes().length;
+        exchange.sendResponseHeaders(status.getCode(), contentLength);
         sendResponseBody(exchange, content);
     }
 
