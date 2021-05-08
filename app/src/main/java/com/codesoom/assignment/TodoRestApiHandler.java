@@ -14,8 +14,11 @@ public class TodoRestApiHandler implements HttpHandler {
         URI url = exchange.getRequestURI();
         String path = url.getPath();
 
+        String content = "Todo List";
+
         System.out.println((method));
         System.out.println((path));
 
+        exchange.sendResponseHeaders(200, content.getBytes().length);
     }
 }
