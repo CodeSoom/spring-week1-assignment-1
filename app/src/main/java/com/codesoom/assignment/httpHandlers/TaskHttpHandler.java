@@ -1,5 +1,6 @@
 package com.codesoom.assignment.httpHandlers;
 
+import com.codesoom.assignment.enums.HttpMethod;
 import com.codesoom.assignment.enums.HttpStatus;
 import com.codesoom.assignment.httpHandlers.exceptions.TaskNotFoundException;
 import com.codesoom.assignment.models.Task;
@@ -58,23 +59,22 @@ public class TaskHttpHandler implements HttpHandler {
         String content = "";
         Task updateRequestedContent;
 
-        String requestMethod = exchange.getRequestMethod();
-        switch (requestMethod) {
-            case "GET":
+        HttpMethod method = HttpMethod.valueOf(exchange.getRequestMethod());
+        switch (method) {
+            case GET:
                 content = toJson(task);
                 break;
-            case "PUT":
-            case "PATCH":
+            case PUT:
+            case PATCH:
                 updateRequestedContent = toTask(parseRequestBody(exchange));
                 task.setTitle(updateRequestedContent.getTitle());
                 content = toJson(task);
                 break;
-            case "DELETE":
+            case DELETE:
                 tasks.remove(task);
                 status = HttpStatus.NO_CONTENT;
                 break;
             default:
-                //TODO: 구현안된 메서드 예외 발생시키기
                 break;
         }
         sendResponse(exchange, status, content);
@@ -84,18 +84,17 @@ public class TaskHttpHandler implements HttpHandler {
         HttpStatus status = HttpStatus.OK;
         String content = "";
 
-        String requestMethod = exchange.getRequestMethod();
-        switch (requestMethod) {
-            case "GET":
+        HttpMethod method = HttpMethod.valueOf(exchange.getRequestMethod());
+        switch (method) {
+            case GET:
                 content = tasksToJSON();
                 break;
-            case "POST":
+            case POST:
                 Task task = addTask(parseRequestBody(exchange));
                 status = HttpStatus.CREATED;
                 content = toJson(task);
                 break;
             default:
-                //TODO: 구현안된 메서드 예외 발생시키기
                 break;
         }
         sendResponse(exchange, status, content);
