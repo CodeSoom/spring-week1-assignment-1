@@ -40,9 +40,9 @@ public class TaskHandler implements HttpHandler {
     }
 
     private Controller getControllerByPath(String path) throws ControllerNotFoundException {
-        for (Controller controller: controllers) {
-            if (controller.handleResource(path)) return controller;
-        }
-        throw new ControllerNotFoundException();
+        return this.controllers.stream()
+                .filter((controller) -> controller.handleResource(path))
+                .findFirst()
+                .orElseThrow(ControllerNotFoundException::new);
     }
 }
