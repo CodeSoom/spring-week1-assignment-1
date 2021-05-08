@@ -14,23 +14,39 @@ package com.codesoom.assignment.http;
  * @see <a href="https://tools.ietf.org/html/rfc7231#section-6">RFC7231 - Response Status Codes</a>
  */
 public enum HttpStatus {
+    /**
+     * @see <a href="https://tools.ietf.org/html/rfc7231#section-6.3.1">RFC7231 - 200 OK</a>
+     */
     OK(200, "OK"),
 
-    CREATE(201, "Create"),
+    /**
+     * @see <a href="https://tools.ietf.org/html/rfc7231#section-6.3.2">RFC7231 - 201 Created</a>
+     */
+    CREATED(201, "Created"),
 
+    /**
+     * @see <a href="https://tools.ietf.org/html/rfc7231#section-6.3.5">RFC7231 - 204 No Content</a>
+     */
     NO_CONTENT(204, "No Content"),
 
+    /**
+     * @see <a href="https://tools.ietf.org/html/rfc7231#section-6.5.1">RFC7231 - 400 Bad Request</a>
+     */
     BAD_REQUEST(400, "Bad Request"),
 
+    /**
+     * @see <a href="https://tools.ietf.org/html/rfc7231#section-6.5.4">RFC7231 - 404 Not Found</a>
+     */
     NOT_FOUND(404, "Not Found"),
 
     /**
-     * 서버가 알고 있는 요청 메서드이지만 대상 리소스에서 지원되지 않습니다.
-     *
      * @see <a href="https://tools.ietf.org/html/rfc7231#section-6.5.5">RFC7231 - 405 Method Not Allowed</a>
      */
     METHOD_NOT_ALLOWED(405, "Method Not Allowed"),
 
+    /**
+     * @see <a href="https://tools.ietf.org/html/rfc7231#section-6.6.1">RFC7231 - 500 Internal Server Error</a>
+     */
     INTERNAL_SERVER_ERROR(500, "Internal Server Error");
 
     private final int code;

@@ -85,7 +85,7 @@ public class TaskHandler implements HttpHandler {
         logger.log(Level.FINE, task.toString());
         tasks.put(task.getId(), task);
 
-        HttpResponse.json(exchange, HttpStatus.CREATE, objectMapper.writeValueAsString(task));
+        HttpResponse.json(exchange, HttpStatus.CREATED, objectMapper.writeValueAsString(task));
     }
 
     private void listTasks(HttpExchange exchange) throws IOException {
