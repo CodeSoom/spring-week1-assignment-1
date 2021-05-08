@@ -2,6 +2,7 @@ package com.codesoom.assignment.httpHandlers;
 
 import com.codesoom.assignment.enums.HttpMethod;
 import com.codesoom.assignment.enums.HttpStatus;
+import com.codesoom.assignment.httpHandlers.datas.HttpResponseData;
 import com.codesoom.assignment.httpHandlers.exceptions.TaskNotFoundException;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -30,13 +31,15 @@ public class TaskHttpHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         URI requestURI = exchange.getRequestURI();
         String path = requestURI.getPath();
+        HttpResponseData response = new HttpResponseData(HttpStatus.OK, "초기화 값");
 
         try {
             if (path.equals("/tasks")) {
-                doRequestedActionOfTasksAndSendResponse(exchange);
+                response = processTasks(exchange);
             } else if (path.startsWith("/tasks/")) {
-                doRequestedActionOfTaskAndSendResponse(exchange);
+                response = processTask(exchange);
             }
+            sendResponse(exchange, response.getStatus(), response.getContent());
         } catch (TaskNotFoundException e) {
             sendResponse(exchange, HttpStatus.NOT_FOUND, e.getMessage());
         } catch (IllegalArgumentException e) {
@@ -46,15 +49,8 @@ public class TaskHttpHandler implements HttpHandler {
         }
     }
 
-    private void doRequestedActionOfTaskAndSendResponse(HttpExchange exchange) throws IOException {
-        URI requestURI = exchange.getRequestURI();
-        String path = requestURI.getPath();
-        long taskId = Long.parseLong(path.substring(7));
-        Task task = findTaskById(taskId);
-        if (task == null) {
-            throw new TaskNotFoundException();
-        }
-
+    private HttpResponseData processTask(HttpExchange exchange) throws IOException {
+        Task task = getTask(exchange);
         HttpStatus status = HttpStatus.OK;
         String content = "";
         Task updateRequestedContent;
@@ -77,10 +73,21 @@ public class TaskHttpHandler implements HttpHandler {
             default:
                 break;
         }
-        sendResponse(exchange, status, content);
+        return new HttpResponseData(status, content);
     }
 
-    private void doRequestedActionOfTasksAndSendResponse(HttpExchange exchange) throws IOException {
+    private Task getTask(HttpExchange exchange) throws TaskNotFoundException {
+        URI requestURI = exchange.getRequestURI();
+        String path = requestURI.getPath();
+        long taskId = Long.parseLong(path.substring(7));
+        Task task = findTaskById(taskId);
+        if (task == null) {
+            throw new TaskNotFoundException();
+        }
+        return task;
+    }
+
+    private HttpResponseData processTasks(HttpExchange exchange) throws IOException {
         HttpStatus status = HttpStatus.OK;
         String content = "";
 
@@ -97,7 +104,7 @@ public class TaskHttpHandler implements HttpHandler {
             default:
                 break;
         }
-        sendResponse(exchange, status, content);
+        return new HttpResponseData(status, content);
     }
 
     private void sendResponse(HttpExchange exchange, HttpStatus status, String content) throws IOException {
