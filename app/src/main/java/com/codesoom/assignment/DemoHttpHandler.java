@@ -28,6 +28,11 @@ public class DemoHttpHandler implements HttpHandler {
         String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().getPath();
 
+        InputStream inputStream = exchange.getRequestBody();
+        String body = new BufferedReader(new InputStreamReader((inputStream)))
+                .lines()
+                .collect(Collectors.joining("\n"));
+
         System.out.println(
                 String.format("%s %s Something requests...",
                         method,
@@ -39,19 +44,27 @@ public class DemoHttpHandler implements HttpHandler {
         String responseContent = "";
 
         try {
-            InputStream inputStream = exchange.getRequestBody();
-            String body = new BufferedReader(new InputStreamReader((inputStream)))
-                    .lines()
-                    .collect(Collectors.joining("\n"));
-
             if (method.equals(HttpMethod.GET.name()) && path.matches(TodoURI.TASKS.uri())) {
                 responseContent = tasksToJson();
+            }
+
+            if (method.equals(HttpMethod.GET.name()) && path.matches(TodoURI.TASKS_ID.uri())) {
+                Long fetchId = Long.parseLong(getTaskId(path));
+                System.out.println(">>>>> " + fetchId);
+
+                if (fetchId == 0L || !isExistTask(fetchId)) {
+                    responseCode = HttpStatus.NOT_FOUND.code();
+                    throw new IllegalArgumentException("404 Not Found error");
+                }
+
+                Task task = fetchOneTask(fetchId);
+                responseContent = taskToJson(task);
             }
 
             if (method.equals(HttpMethod.POST.name()) && path.matches(TodoURI.TASKS.uri())) {
                 if (body.isBlank()) {
                     responseCode = HttpStatus.BAD_REQUEST.code();
-                    throw new IllegalArgumentException("Illegal Argument Exception");
+                    throw new IllegalArgumentException("400 Bad request");
                 }
 
                 Task task = JsonToTask(body);
@@ -62,34 +75,33 @@ public class DemoHttpHandler implements HttpHandler {
                 responseContent = taskToJson(task);
             }
 
-            if (method.equals(HttpMethod.GET.name()) && path.matches(TodoURI.PUT_TASKS.uri())) {
-                Long fetchId = Long.parseLong(path.substring("/tasks/".length()));
+            if (method.equals(HttpMethod.DELETE.name()) && path.matches(TodoURI.TASKS_ID.uri())) {
+                Long deleteId = Long.parseLong(getTaskId(path));
 
-                if (fetchId == 0) {
+                if (deleteId == 0 || !isExistTask(deleteId)) {
                     responseCode = HttpStatus.NOT_FOUND.code();
+                    throw new IllegalArgumentException("404 Not Found error");
                 }
 
-                if (responseCode == HttpStatus.OK.code() && isExistTask(fetchId)) {
-                    Task task = fetchOneTask(fetchId);
-                    responseContent = taskToJson(task);
+                if (deleteOneTask(deleteId)) {
+                    responseCode = HttpStatus.NO_CONTENT.code();
+                    responseContent = tasksToJson();
                 }
             }
 
-        } catch (IOException io) {
-            io.fillInStackTrace();
         } catch (IllegalArgumentException iae) {
-            iae.fillInStackTrace();
+            iae.getMessage();
         } finally {
             byte[] responseBytes = responseContent.getBytes();
 
             exchange.sendResponseHeaders(responseCode, responseBytes.length);
+            System.out.println(String.format("%d, %d", responseCode, responseBytes.length));
 
             OutputStream outputStream = exchange.getResponseBody();
             outputStream.write(responseBytes);
             outputStream.flush();
             outputStream.close();
         }
-
     }
 
     private Task JsonToTask(String content) throws JsonProcessingException {
@@ -122,10 +134,18 @@ public class DemoHttpHandler implements HttpHandler {
         return tasks.stream().anyMatch(t -> t.getId() == id);
     }
 
+    private String getTaskId(String path) {
+        return path.replaceAll("[^0-9]", "");
+    }
+
     private Task fetchOneTask(Long id) {
         return tasks.stream()
                 .filter((t) -> t.getId() == id)
                 .findFirst()
                 .get();
+    }
+
+    private boolean deleteOneTask(Long id) {
+        return tasks.removeIf(task -> task.getId() == id);
     }
 }
