@@ -1,5 +1,7 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.enums.HttpMethod;
+import com.codesoom.assignment.enums.HttpStatus;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,31 +39,32 @@ public class DemoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        int responseCode = 200;
+        int responseCode = HttpStatus.OK.code();
         String content = "";
 
-        if ("GET".equals(method) && "/tasks".equals(path)) {
+        if (method.equals(HttpMethod.GET) && "/tasks".equals(path)) {
             content = tasksToJson();
         }
 
-        if ("POST".equals(method) && "/tasks".equals(path)) {
+        if (method.equals(HttpMethod.POST) && "/tasks".equals(path)) {
 
             if (!body.isBlank()) {
                 Task task = JsonToTask(body);
                 task.setId(id++);
                 tasks.add(task);
 
-                responseCode = 201;
+                responseCode = HttpStatus.CREATED.code();
                 content = taskToJson(task);
             }
         }
 
-        if ("GET".equals(method) && path.startsWith("/tasks/")) {
+        // TODO: 정규식 적용하면 좋을 듯!
+        if (method.equals(HttpMethod.GET) && path.startsWith("/tasks/")) {
             Long fetchId = Long.parseLong(path.substring("/tasks/".length()));
 
-            if (fetchId == 0) responseCode = 404;
+            if (fetchId == 0) responseCode = HttpStatus.NOT_FOUND.code();;
 
-            if (responseCode == 200 && isExistTask(fetchId)) {
+            if (responseCode == HttpStatus.OK.code() && isExistTask(fetchId)) {
                 Task task = fetchOneTask(fetchId);
                 content = taskToJson(task);
             }
@@ -82,7 +85,9 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private String tasksToJson() throws IOException {
-        if (tasks.size() == 0) return "[]";
+        if (tasks.size() == 0) {
+            return "[]";
+        }
 
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
@@ -91,7 +96,9 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private String taskToJson(Task task) throws IOException {
-        if (task == null) return "{}";
+        if (task == null) {
+            return "{}";
+        }
 
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, task);
