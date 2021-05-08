@@ -2,10 +2,6 @@ package com.codesoom.assignment.models;
 
 /**
  * 할 일
- *
- * @author DevRunner21
- * @version 1.0
- * @since 2021.05.07
  */
 public class Task {
 

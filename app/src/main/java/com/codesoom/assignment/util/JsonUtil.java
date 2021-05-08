@@ -10,9 +10,6 @@ import java.io.IOException;
 /**
  * Json 관련 Util 메소드를 모아놓은 클래스 입니다.
  *
- * @author DevRunner21
- * @version 1.0
- * @since 2021.05.07
  */
 public class JsonUtil {
 

@@ -15,11 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 수신받은 Request에 대해 적절한 Response를 송신하는 클래스입니다.
- *
- * @author DevRunner21
- * @version 1.0
- * @since 2021.05.07
+ * 수신받은 Request에 대해 반환받은 Response를 송신하는 클래스입니다.
  */
 public class DemoHttpHandler implements HttpHandler {
 
@@ -28,7 +24,7 @@ public class DemoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
 
     /**
-     * Request가 들어 왔을 떄, HttpMethod와 URL에 따라 적절한 Response를 전송합니다.
+     * 수신받은 Request에 대해 반환받은 Response를 송신합니다.
      * @param httpExchange
      * @throws IOException
      */
@@ -95,7 +91,7 @@ public class DemoHttpHandler implements HttpHandler {
 
             if( method.equals(HttpMethod.PATCH.name()) && path.equals("/tasks") ){ // Task 수정
 
-                tasksPATCH(httpExchange, pathValue, rqBody);
+                tasksPATCH(httpExchange, pathValue, rqBody.getTitle());
                 return;
 
             }
@@ -253,23 +249,21 @@ public class DemoHttpHandler implements HttpHandler {
     /**
      * 주어진 할 일 Id에 해당하는 할 일을 수정합니다.
      * @param httpExchange
-     * @param pathValue
-     * @param rqTask
+     * @param taskId 수정 대상인 할 일의 Id
+     * @param newTitle 수정할 할 일 제목
      * @throws IOException
      */
-    private void tasksPATCH(HttpExchange httpExchange,  Long pathValue, Task rqTask) throws IOException {
+    private void tasksPATCH(HttpExchange httpExchange,  Long taskId, String newTitle ) throws IOException {
 
         String content = null;
         int httpStatus = HttpStatus.OK.getCodeNo();
 
-        int taskIndex = findTaskIndex(tasks, pathValue);// PathValue에 해당하는 Task의 인덱스를 구함
+        int taskIndex = findTaskIndex(tasks, taskId);// taskId에 해당하는 Task의 인덱스를 구함
 
         // 해당하는 Task가 없을 경우 예외 발생
         if(taskIndex < 0){
-            throw new NotFoundTaskException(pathValue);
+            throw new NotFoundTaskException(taskId);
         }
-
-        String newTitle = rqTask.getTitle();
 
         Task modifiedTask = tasks.get(taskIndex);
         modifiedTask.setTitle(newTitle);
