@@ -15,8 +15,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -26,7 +26,7 @@ public class TaskHandler implements HttpHandler {
     private final String serverTimeZone = "Asia/Seoul";
     private static final Logger logger = Logger.getGlobal();
 
-    private final List<Task> tasks = new ArrayList<>();
+    private final Map<Long, Task> tasks = new HashMap<>();
     private Long newTaskID = 1L;
 
     @Override
@@ -91,17 +91,18 @@ public class TaskHandler implements HttpHandler {
         task.setCreatedAt(currentLocalTimeInSeoul);
         task.setLastUpdatedAt(currentLocalTimeInSeoul);
 
-        tasks.add(task);
+        tasks.put(task.getId(), task);
 
         HttpResponse.json(exchange, HttpStatus.CREATE.code(), taskToJSON(task));
     }
 
     private void listTasks(HttpExchange exchange) throws IOException {
+        logger.log(Level.FINE, tasksListToJSON(tasks));
         HttpResponse.json(exchange, HttpStatus.OK.code(), tasksListToJSON(tasks));
     }
 
     private void getTask(HttpExchange exchange, Long taskID) throws IOException {
-        var task = findTaskByID(taskID);
+        var task = tasks.get(taskID);
 
         if (task == null) {
             HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
@@ -113,7 +114,7 @@ public class TaskHandler implements HttpHandler {
 
     private void updateTask(HttpExchange exchange, Long taskID) throws IOException {
         final String body = readRequestBody(exchange);
-        var task = findTaskByID(taskID);
+        var task = tasks.get(taskID);
 
         if (task == null) {
             HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
@@ -130,19 +131,16 @@ public class TaskHandler implements HttpHandler {
     }
 
     private void deleteTask(HttpExchange exchange, Long taskID) throws IOException {
-        var task = findTaskByID(taskID);
+        var task = tasks.get(taskID);
 
         if (task == null) {
             HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
             return;
         }
 
-        if (tasks.remove(task)) {
-            HttpResponse.code(exchange, HttpStatus.NO_CONTENT);
-            return;
-        }
-
-        HttpResponse.text(exchange, HttpStatus.INTERNAL_SERVER_ERROR);
+        var deletedTask = tasks.remove(task.getId());
+        logger.log(Level.FINE, "Deleted task: {0}", deletedTask.getTitle());
+        HttpResponse.code(exchange, HttpStatus.NO_CONTENT);
     }
 
     private String readRequestBody(HttpExchange exchange) {
@@ -153,13 +151,6 @@ public class TaskHandler implements HttpHandler {
             .collect(Collectors.joining(System.lineSeparator()));
     }
 
-    private Task findTaskByID(Long taskID) {
-        return tasks.stream()
-            .filter(t -> t.getId().equals(taskID))
-            .findFirst()
-            .orElse(null);
-    }
-
     private Task jsonToTask(String json) throws JsonProcessingException {
         return objectMapper.readValue(json, Task.class);
     }
@@ -168,7 +159,7 @@ public class TaskHandler implements HttpHandler {
         return objectMapper.writeValueAsString(task);
     }
 
-    private String tasksListToJSON(List<Task> tasks) throws JsonProcessingException {
+    private String tasksListToJSON(Map<Long, Task> tasks) throws JsonProcessingException {
         return objectMapper.writeValueAsString(tasks);
     }
 }
