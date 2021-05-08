@@ -3,7 +3,7 @@ package com.codesoom.assignment.handler;
 import com.codesoom.assignment.http.HttpMethod;
 import com.codesoom.assignment.http.HttpResponse;
 import com.codesoom.assignment.http.HttpStatus;
-import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.model.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
  */
 public class TaskHandler implements HttpHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final String serverTimeZone = "Asia/Seoul";
     private static final Logger logger = Logger.getGlobal();
 
     private final Map<Long, Task> tasks = new HashMap<>();
