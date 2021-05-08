@@ -50,14 +50,15 @@ public class DemoHttpHandler implements HttpHandler {
 
             if (method.equals(HttpMethod.GET.name()) && path.matches(TodoURI.TASKS_ID.uri())) {
                 Long fetchId = Long.parseLong(getTaskId(path));
-                System.out.println(">>>>> " + fetchId);
 
-                if (fetchId == 0L || !isExistTask(fetchId)) {
+                if (fetchId == 0 || !isExistTask(fetchId)) {
                     responseCode = HttpStatus.NOT_FOUND.code();
                     throw new IllegalArgumentException("404 Not Found error");
                 }
 
                 Task task = fetchOneTask(fetchId);
+                System.out.println(task.toString());
+
                 responseContent = taskToJson(task);
             }
 
@@ -83,7 +84,9 @@ public class DemoHttpHandler implements HttpHandler {
                     throw new IllegalArgumentException("404 Not Found error");
                 }
 
-                Task task = updateOneTask(JsonToTask(body));
+                String fetchTitle = JsonToTask(body).getTitle();
+                Task task = updateOneTask(fetchId, fetchTitle);
+
                 responseContent = taskToJson(task);
             }
 
@@ -95,19 +98,18 @@ public class DemoHttpHandler implements HttpHandler {
                     throw new IllegalArgumentException("404 Not Found error");
                 }
 
-                if (deleteOneTask(deleteId)) {
-                    responseCode = HttpStatus.NO_CONTENT.code();
-                    responseContent = tasksToJson();
-                }
+                deleteOneTask(deleteId);
+
+                responseCode = HttpStatus.NO_CONTENT.code();
             }
 
         } catch (IllegalArgumentException iae) {
             iae.getMessage();
         } finally {
             byte[] responseBytes = responseContent.getBytes();
+            int responseLength = (responseCode != HttpStatus.NO_CONTENT.code()) ? responseBytes.length : -1;
 
-            exchange.sendResponseHeaders(responseCode, responseBytes.length);
-            System.out.println(String.format("%d, %d", responseCode, responseBytes.length));
+            exchange.sendResponseHeaders(responseCode, responseLength);
 
             OutputStream outputStream = exchange.getResponseBody();
             outputStream.write(responseBytes);
@@ -157,12 +159,12 @@ public class DemoHttpHandler implements HttpHandler {
                 .get();
     }
 
-    private Task updateOneTask(Task task) {
+    private Task updateOneTask(Long fetchId, String fetchTitle) {
         Task findTask = tasks.stream()
-                .filter((t) -> t.getId() == id)
+                .filter((t) -> t.getId() == fetchId)
                 .findFirst()
                 .get();
-        findTask.setTitle(task.getTitle());
+        findTask.setTitle(fetchTitle);
         return findTask;
     }
 
