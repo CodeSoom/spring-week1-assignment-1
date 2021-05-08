@@ -1,5 +1,6 @@
 package com.codesoom.assignment.httpHandlers;
 
+import com.codesoom.assignment.httpHandlers.exceptions.TaskNotFoundException;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,7 +9,6 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,32 +31,31 @@ public class TaskHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         String content = "";
-
         int statusCode = 200;
 
         System.out.println(requestMethod + " " + requestURI + " " + requestBody);
 
-        //TODO: 리팩토링
-        if (requestMethod.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJSON();
-            exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-        } else if (requestMethod.equals("GET") && path.startsWith("/tasks/")) {
-            long id = Long.parseLong(path.substring(7));
-
-            Task task = findTaskById(id);
-            if (task == null) {
-                // TODO: 에러 던지도록 리팩토링
-                statusCode = 404;
-                content = "Task를 찾을 수 없습니다!";
-                System.out.println(content);
+        try {
+            //TODO: 리팩토링
+            if (requestMethod.equals("GET") && path.equals("/tasks")) {
+                content = tasksToJSON();
                 exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-            } else {
+            } else if (requestMethod.equals("GET") && path.startsWith("/tasks/")) {
+                long id = Long.parseLong(path.substring(7));
+
+                Task task = findTaskById(id);
+                if (task == null) {
+                    throw new TaskNotFoundException();
+                }
+
                 statusCode = 200;
                 content = toJson(task);
                 exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-            }
-        } else if (requestMethod.equals("POST") && path.equals("/tasks")) {
-            if (!requestBody.isBlank()) {
+            } else if (requestMethod.equals("POST") && path.equals("/tasks")) {
+                if (requestBody.isBlank()) {
+                    throw new IllegalArgumentException("requestBody가 비었습니다.");
+                }
+
                 Task task = toTask(requestBody);
                 task.setId(taskId);
                 taskId++;
@@ -64,70 +63,72 @@ public class TaskHttpHandler implements HttpHandler {
                 statusCode = 201;
                 content = toJson(task);
                 exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-            } else {
-                statusCode = 400;
-                content = "잘못된 요청입니다!";
-                System.out.println(content);
-                exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-            }
-        } else if (requestMethod.equals("PUT") && path.startsWith("/tasks")) {
-            long id = Long.parseLong(path.substring(7));
+            } else if (requestMethod.equals("PUT") && path.startsWith("/tasks")) {
+                long id = Long.parseLong(path.substring(7));
 
-            Task task = findTaskById(id);
-            if (task == null) {
-                statusCode = 404;
-                content = "Task를 찾을 수 없습니다!";
-                System.out.println(content);
-                exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-            } else {
-                Task updateTask = toTask(requestBody);
-                //TODO: id도 업데이트 필요??
-                task.setTitle(updateTask.getTitle());
-                content = toJson(task);
-                exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-            }
-        } else if (requestMethod.equals("PATCH") && path.startsWith("/tasks")) {
-            long id = Long.parseLong(path.substring(7));
-
-            Task task = findTaskById(id);
-            if (task == null) {
-                statusCode = 404;
-                content = "Task를 찾을 수 없습니다!";
-                System.out.println(content);
-                exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-            } else {
-                Task updateTask = toTask(requestBody);
-                task.setTitle(updateTask.getTitle());
-                content = toJson(task);
-                exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-            }
-        } else if (requestMethod.equals("DELETE") && path.startsWith("/tasks")) {
-            long id = Long.parseLong(path.substring(7));
-            boolean found = false;
-
-            for (Task task: tasks) {
-                if (task.getId() == id) {
-                    found = true;
-                    System.out.println("id: " + id);
-                    boolean remove = tasks.remove(task);
-                    System.out.println("remove " + remove);
-                    statusCode = 204;
+                Task task = findTaskById(id);
+                if (task == null) {
+                    throw new TaskNotFoundException();
+                } else {
+                    Task updateTask = toTask(requestBody);
+                    //TODO: id도 업데이트 필요??
+                    task.setTitle(updateTask.getTitle());
+                    content = toJson(task);
                     exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-                    break;
+                }
+            } else if (requestMethod.equals("PATCH") && path.startsWith("/tasks")) {
+                long id = Long.parseLong(path.substring(7));
+
+                Task task = findTaskById(id);
+                if (task == null) {
+                    throw new TaskNotFoundException();
+                } else {
+                    Task updateTask = toTask(requestBody);
+                    task.setTitle(updateTask.getTitle());
+                    content = toJson(task);
+                    exchange.sendResponseHeaders(statusCode, content.getBytes().length);
+                }
+            } else if (requestMethod.equals("DELETE") && path.startsWith("/tasks")) {
+                long id = Long.parseLong(path.substring(7));
+                boolean found = false;
+
+                for (Task task : tasks) {
+                    if (task.getId() == id) {
+                        found = true;
+                        System.out.println("id: " + id);
+                        boolean remove = tasks.remove(task);
+                        System.out.println("remove " + remove);
+                        statusCode = 204;
+                        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
+                        break;
+                    }
+                }
+                if (!found) {
+                    throw new TaskNotFoundException();
                 }
             }
-            if (!found) {
-                statusCode = 404;
-                content = "Task를 찾지 못했습니다!";
-                System.out.println(content);
-                exchange.sendResponseHeaders(statusCode, content.getBytes().length);
-            }
-        }
 
-        OutputStream responseBody = exchange.getResponseBody();
-        responseBody.write(content.getBytes());
-        responseBody.flush();
-        responseBody.close();
+        } catch (TaskNotFoundException e) {
+            System.out.println("Exception: " + e.getMessage());
+            statusCode = 404;
+            content = e.getMessage();
+            exchange.sendResponseHeaders(statusCode, content.getBytes().length);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Exception: " + e.getMessage());
+            statusCode = 400;
+            content = e.getMessage();
+            exchange.sendResponseHeaders(statusCode, content.getBytes().length);
+        } catch (Exception e) {
+            System.out.println("Exception: " + e.getMessage());
+            statusCode = 400;
+            content = e.getMessage();
+            exchange.sendResponseHeaders(statusCode, content.getBytes().length);
+        } finally {
+            OutputStream responseBody = exchange.getResponseBody();
+            responseBody.write(content.getBytes());
+            responseBody.flush();
+            responseBody.close();
+        }
     }
 
     private Task findTaskById(long id) {
