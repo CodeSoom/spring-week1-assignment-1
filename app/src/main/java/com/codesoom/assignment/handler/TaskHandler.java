@@ -1,7 +1,9 @@
 package com.codesoom.assignment.handler;
 
+import com.codesoom.assignment.HttpStatus;
 import com.codesoom.assignment.Response;
 import com.codesoom.assignment.controller.Controller;
+import com.codesoom.assignment.exception.ControllerNotFoundException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -20,20 +22,27 @@ public class TaskHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        Controller controller = getControllerByPath(exchange.getRequestURI().getPath());
+        try {
+            Controller controller = getControllerByPath(exchange.getRequestURI().getPath());
+            Response response = controller.resolve(exchange);
+            sendResponse(exchange, response);
+        } catch (ControllerNotFoundException e) {
+            Response response = new Response(HttpStatus.NOT_FOUND);
+            sendResponse(exchange, response);
+        }
+    }
 
-        assert controller != null;
-        Response res = controller.resolve(exchange);
-        exchange.sendResponseHeaders(res.getStatus(), res.getBody().getBytes(StandardCharsets.UTF_8).length);
+    private void sendResponse(HttpExchange exchange, Response response) throws IOException {
+        exchange.sendResponseHeaders(response.getStatus(), response.getBody().getBytes(StandardCharsets.UTF_8).length);
         OutputStream responseBody = exchange.getResponseBody();
-        responseBody.write(res.getBody().getBytes(StandardCharsets.UTF_8));
+        responseBody.write(response.getBody().getBytes(StandardCharsets.UTF_8));
         responseBody.close();
     }
 
-    private Controller getControllerByPath(String path) {
+    private Controller getControllerByPath(String path) throws ControllerNotFoundException {
         for (Controller controller: controllers) {
             if (controller.handleResource(path)) return controller;
         }
-        return null;
+        throw new ControllerNotFoundException();
     }
 }

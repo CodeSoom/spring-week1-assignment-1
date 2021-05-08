@@ -1,6 +1,7 @@
 package com.codesoom.assignment.repository;
 
 import com.codesoom.assignment.dto.Task;
+import com.codesoom.assignment.exception.DoesNotExistException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,27 +13,29 @@ public class TaskRepository {
         this.tasks = new HashMap<>();
     }
 
-    public Task findById(Long id) {
-        return this.tasks.get(id);
+    public Task findById(Long id) throws DoesNotExistException {
+        Task task = this.tasks.get(id);
+        if (task == null) throw new DoesNotExistException();
+        return task;
     }
 
     public void addTask(Task task) {
         this.tasks.put(task.getId(), task);
     }
 
-    public Task deleteTask(Long id) {
-        return this.tasks.remove(id);
+    public void deleteTask(Long id) throws DoesNotExistException {
+        Task task = this.tasks.remove(id);
+        if (task == null) throw new DoesNotExistException();
     }
 
     public Map<Long, Task> findAll() {
         return this.tasks;
     }
 
-    public Task updateTask(Long id, String title) {
+    public Task updateTask(Long id, String title) throws DoesNotExistException {
         Task task = this.tasks.get(id);
-        if (task != null) {
-            task.setTitle(title);
-        }
+        if (task == null) throw new DoesNotExistException();
+        task.setTitle(title);
         return this.tasks.get(id);
     }
 }

@@ -3,6 +3,7 @@ package com.codesoom.assignment.controller;
 import com.codesoom.assignment.HttpStatus;
 import com.codesoom.assignment.Response;
 import com.codesoom.assignment.dto.Task;
+import com.codesoom.assignment.exception.DoesNotExistException;
 import com.codesoom.assignment.repository.TaskRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,32 +34,18 @@ public class TaskController extends Controller {
     public Response resolve(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
         String method = exchange.getRequestMethod();
-        Response result = null;
-        if (path.matches("^/(tasks)$")) {
-            result = switch (method) {
-                case "GET" -> this.getAllTask();
-                case "POST" -> this.createTask(exchange);
-                default -> null;
-            };
-        } else if (path.matches("^/(tasks)/([0-9])*$")) {
-            result = switch (method) {
-                case "GET" -> this.getOneTask(exchange);
-                case "PUT", "PATCH" -> this.updateTask(exchange);
-                case "DELETE" -> this.deleteTask(exchange);
-                default -> null;
-            };
-        }
-        return result;
+        return this.route(exchange, path, method);
     }
 
     private Response getOneTask(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
         Long id = getId(path);
-        Task task = taskRepository.findById(id);
-        if (task == null) {
-            return new Response(HttpStatus.NOT_FOUND, this.toJSON(null));
+        try {
+            Task task = taskRepository.findById(id);
+            return new Response(HttpStatus.OK, this.toJSON(task));
+        } catch (DoesNotExistException e) {
+            return new Response(HttpStatus.NOT_FOUND);
         }
-        return new Response(HttpStatus.OK, this.toJSON(task));
     }
 
     private Response getAllTask() throws IOException {
@@ -84,21 +71,23 @@ public class TaskController extends Controller {
         InputStream inputStream = exchange.getRequestBody();
         String content = this.getContent(inputStream);
         Map<String, String> data = this.mapper.readValue(content, Map.class);
-        Task task = taskRepository.updateTask(id, data.get("title"));
-        if (task == null) {
-            return new Response(HttpStatus.NOT_FOUND, this.toJSON(null));
+        try {
+            Task task = taskRepository.updateTask(id, data.get("title"));
+            return new Response(HttpStatus.OK, toJSON(task));
+        } catch (DoesNotExistException e) {
+            return new Response(HttpStatus.NOT_FOUND);
         }
-        return new Response(HttpStatus.OK, toJSON(task));
     }
 
     private Response deleteTask(HttpExchange exchange) {
         String path = exchange.getRequestURI().getPath();
         Long id = getId(path);
-        Task task = taskRepository.deleteTask(id);
-        if (task == null) {
-            return new Response(HttpStatus.NOT_FOUND, "");
+        try {
+            taskRepository.deleteTask(id);
+            return new Response(HttpStatus.NO_CONTENT);
+        } catch (DoesNotExistException e) {
+            return new Response(HttpStatus.NOT_FOUND);
         }
-        return new Response(HttpStatus.NO_CONTENT, "");
     }
 
     private Long getId(String path) {
@@ -120,6 +109,26 @@ public class TaskController extends Controller {
 
     private Task toTask(String content) throws JsonProcessingException {
         return this.mapper.readValue(content, Task.class);
+    }
+
+    private Response route(HttpExchange exchange, String path, String method) throws IOException {
+        Response result;
+        if (path.matches("^/(tasks)$")) {
+            return switch (method) {
+                case "GET" -> this.getAllTask();
+                case "POST" -> this.createTask(exchange);
+                default -> new Response(HttpStatus.NOT_FOUND);
+            };
+        } else if (path.matches("^/(tasks)/([0-9])*$")) {
+            return switch (method) {
+                case "GET" -> this.getOneTask(exchange);
+                case "PUT", "PATCH" -> this.updateTask(exchange);
+                case "DELETE" -> this.deleteTask(exchange);
+                default -> new Response(HttpStatus.NOT_FOUND);
+            };
+        }
+        result = new Response(HttpStatus.NOT_FOUND);
+        return result;
     }
 
 }

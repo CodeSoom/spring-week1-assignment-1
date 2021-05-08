@@ -4,6 +4,11 @@ public class Response {
     private final int code;
     private final String body;
 
+    public Response(HttpStatus status) {
+        this.code = status.getCode();
+        this.body = "";
+    }
+
     public Response(HttpStatus status, String body) {
         this.code = status.getCode();
         this.body = body;
