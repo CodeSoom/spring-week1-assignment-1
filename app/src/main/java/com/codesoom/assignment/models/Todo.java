@@ -15,7 +15,7 @@ public class Todo {
     public String getTodo() {
         return todo;
     }
-    public void setTodos(String todo) {
+    public void setTodo(String todo) {
         this.todo = todo;
     }
 }
