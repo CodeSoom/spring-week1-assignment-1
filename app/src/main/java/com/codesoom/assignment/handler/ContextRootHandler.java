@@ -10,7 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * 루트 경로("/")의 핸들러입니다.
+ * 루트 경로("/")의 HTTP 요청을 처리합니다.
  */
 public class ContextRootHandler implements HttpHandler {
     private static final Logger logger = Logger.getGlobal();

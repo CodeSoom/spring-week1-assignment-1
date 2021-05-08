@@ -21,6 +21,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * "/tasks" 경로의 HTTP 요청을 처리합니다.
+ */
 public class TaskHandler implements HttpHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final String serverTimeZone = "Asia/Seoul";
