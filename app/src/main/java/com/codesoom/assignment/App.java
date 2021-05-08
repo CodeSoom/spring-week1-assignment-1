@@ -8,21 +8,17 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class App {
-    private int port = 8000;
-
-    public String getGreeting() {
-        return "Hello World!";
-    }
+    final static int PORT = 8000;
+    final static String ROOT_PATH = "/";
 
     public static void main(String[] args) {
+        System.out.println(">> API server start!");
 
-        System.out.println(new App().getGreeting());
-
-        InetSocketAddress inetSocketAddress = new InetSocketAddress(8000);
+        InetSocketAddress inetSocketAddress = new InetSocketAddress(PORT);
         try {
             HttpServer httpServer = HttpServer.create(inetSocketAddress, 0);
             HttpHandler handler = new TaskHttpHandler();
-            httpServer.createContext("/", handler);
+            httpServer.createContext(ROOT_PATH, handler);
             httpServer.start();
         } catch (IOException e) {
             e.printStackTrace();
