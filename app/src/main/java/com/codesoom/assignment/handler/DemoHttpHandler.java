@@ -12,6 +12,7 @@ import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 /**
@@ -21,7 +22,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     private static Long taskIdSeq = 0L;
 
-    private List<Task> tasks = new ArrayList<>();
+    private TreeMap<Long, Task> tasksMap = new TreeMap<>();
 
     /**
      * 수신받은 Request에 대해 반환받은 Response를 송신합니다.
@@ -120,24 +121,16 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     /**
-     * 할 일 목록에서 주어진 할 일 id에 해당하는 할 일의 인덱스 넘버를 찾아 리턴합니다.
+     * 할 일 목록에서 주어진 할 일 id에 해당하는 할 일을 찾아 리턴합니다.
      * @param tasks 할 일 목록
      * @param taskId 찾으려 하는 할 일의 아이디
-     * @return 찾아낸 할 일의 인덱스 넘버
+     * @return 찾아낸 할 일
      */
-    private int findTaskIndex(List<Task> tasks, Long taskId) {
+    private Task findTask(TreeMap<Long,Task> tasks, Long taskId) {
 
-        int findTaskIndex = -1;
+        Task findTask = tasks.get(taskId);
+        return findTask;
 
-        for(int i = 0 ; i < tasks.size() ; i++){
-
-            if(taskId == tasks.get(i).getId()){
-                findTaskIndex = i;
-            }
-
-        }
-
-        return findTaskIndex;
     }
 
     /**
@@ -168,7 +161,11 @@ public class DemoHttpHandler implements HttpHandler {
         String content = null;
         int httpStatus = HttpStatus.OK.getCodeNo();
 
-        content = JsonUtil.toJsonStr(tasks);
+        // Task TreeMap -> Task List
+        List<Task> taskList = tasksMap.values().stream()
+                .collect(Collectors.toList());
+
+        content = JsonUtil.toJsonStr(taskList);
 
         sendResponse(httpExchange, httpStatus, content);
 
@@ -185,14 +182,13 @@ public class DemoHttpHandler implements HttpHandler {
         String content = null;
         int httpStatus = HttpStatus.OK.getCodeNo();
 
-        int taskIndex = findTaskIndex(tasks, taskId);// taskId에 해당하는 Task의 인덱스를 구함
+        Task findTask = findTask(tasksMap, taskId);// taskId에 해당하는 Task를 구함
 
-        if(taskId == null){
-            content = JsonUtil.toJsonStr(tasks);
-        } else {
-            Task findTask = tasks.get(taskIndex);
-            content = JsonUtil.toJsonStr(findTask);
+        if( findTask == null ) {
+            throw new NotFoundTaskException(taskId);
         }
+
+        content = JsonUtil.toJsonStr(findTask);
 
         sendResponse(httpExchange, httpStatus, content);
 
@@ -210,7 +206,7 @@ public class DemoHttpHandler implements HttpHandler {
         int httpStatus = HttpStatus.CREATE.getCodeNo();
 
         newTask.setId(taskIdSeq++);
-        tasks.add(newTask);
+        tasksMap.put(newTask.getId(), newTask);
 
         content = JsonUtil.toJsonStr(newTask);
 
@@ -230,18 +226,16 @@ public class DemoHttpHandler implements HttpHandler {
         String content = null;
         int httpStatus = HttpStatus.OK.getCodeNo();
 
-        int taskIndex = findTaskIndex(tasks, taskId);// PathValue에 해당하는 Task의 인덱스를 구함
+        Task findTask = findTask(tasksMap, taskId);// taskId에 해당하는 Task를 구함
 
         // 해당하는 Task가 없을 경우 예외 발생
-        if(taskIndex < 0){
+        if(findTask == null){
             throw new NotFoundTaskException(taskId);
         }
 
-        Task modifiedTask = tasks.get(taskIndex);
-        modifiedTask.setTitle(newTitle);
+        findTask.setTitle(newTitle);
 
-        content = JsonUtil.toJsonStr(modifiedTask);
-
+        content = JsonUtil.toJsonStr(findTask);
         sendResponse(httpExchange, httpStatus, content);
 
     }
@@ -258,18 +252,16 @@ public class DemoHttpHandler implements HttpHandler {
         String content = null;
         int httpStatus = HttpStatus.OK.getCodeNo();
 
-        int taskIndex = findTaskIndex(tasks, taskId);// taskId에 해당하는 Task의 인덱스를 구함
+        Task findTask = findTask(tasksMap, taskId);// taskId에 해당하는 Task를 구함
 
         // 해당하는 Task가 없을 경우 예외 발생
-        if(taskIndex < 0){
+        if(findTask == null){
             throw new NotFoundTaskException(taskId);
         }
 
-        Task modifiedTask = tasks.get(taskIndex);
-        modifiedTask.setTitle(newTitle);
+        findTask.setTitle(newTitle);
 
-        content = JsonUtil.toJsonStr(modifiedTask);
-
+        content = JsonUtil.toJsonStr(findTask);
         sendResponse(httpExchange, httpStatus, content);
 
     }
@@ -286,14 +278,14 @@ public class DemoHttpHandler implements HttpHandler {
         String content = "";
         int httpStatus = HttpStatus.NO_CONTENT.getCodeNo();
 
-        int taskIndex = findTaskIndex(tasks, taskId);// PathValue에 해당하는 Task의 인덱스를 구함
+        Task findTask = findTask(tasksMap, taskId);// taskId에 해당하는 Task를 구함
 
         // 해당하는 Task가 없을 경우 예외 발생
-        if(taskIndex < 0){
+        if(findTask == null){
             throw new NotFoundTaskException(taskId);
         }
 
-        tasks.remove(taskIndex);
+        tasksMap.remove(taskId);
 
         sendResponse(httpExchange, httpStatus, content);
 
