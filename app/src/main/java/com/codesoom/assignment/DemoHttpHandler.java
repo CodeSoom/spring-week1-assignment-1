@@ -2,6 +2,7 @@ package com.codesoom.assignment;
 
 import com.codesoom.assignment.enums.HttpMethod;
 import com.codesoom.assignment.enums.HttpStatus;
+import com.codesoom.assignment.enums.TodoURI;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,50 +35,61 @@ public class DemoHttpHandler implements HttpHandler {
                 )
         );
 
-        InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader((inputStream)))
-                .lines()
-                .collect(Collectors.joining("\n"));
-
         int responseCode = HttpStatus.OK.code();
-        String content = "";
+        String responseContent = "";
 
-        if (method.equals(HttpMethod.GET) && "/tasks".equals(path)) {
-            content = tasksToJson();
-        }
+        try {
+            InputStream inputStream = exchange.getRequestBody();
+            String body = new BufferedReader(new InputStreamReader((inputStream)))
+                    .lines()
+                    .collect(Collectors.joining("\n"));
 
-        if (method.equals(HttpMethod.POST) && "/tasks".equals(path)) {
+            if (method.equals(HttpMethod.GET.name()) && path.matches(TodoURI.TASKS.uri())) {
+                responseContent = tasksToJson();
+            }
 
-            if (!body.isBlank()) {
+            if (method.equals(HttpMethod.POST.name()) && path.matches(TodoURI.TASKS.uri())) {
+                if (body.isBlank()) {
+                    responseCode = HttpStatus.BAD_REQUEST.code();
+                    throw new IllegalArgumentException("Illegal Argument Exception");
+                }
+
                 Task task = JsonToTask(body);
                 task.setId(id++);
                 tasks.add(task);
 
                 responseCode = HttpStatus.CREATED.code();
-                content = taskToJson(task);
+                responseContent = taskToJson(task);
             }
+
+            if (method.equals(HttpMethod.GET.name()) && path.matches(TodoURI.PUT_TASKS.uri())) {
+                Long fetchId = Long.parseLong(path.substring("/tasks/".length()));
+
+                if (fetchId == 0) {
+                    responseCode = HttpStatus.NOT_FOUND.code();
+                }
+
+                if (responseCode == HttpStatus.OK.code() && isExistTask(fetchId)) {
+                    Task task = fetchOneTask(fetchId);
+                    responseContent = taskToJson(task);
+                }
+            }
+
+        } catch (IOException io) {
+            io.fillInStackTrace();
+        } catch (IllegalArgumentException iae) {
+            iae.fillInStackTrace();
+        } finally {
+            byte[] responseBytes = responseContent.getBytes();
+
+            exchange.sendResponseHeaders(responseCode, responseBytes.length);
+
+            OutputStream outputStream = exchange.getResponseBody();
+            outputStream.write(responseBytes);
+            outputStream.flush();
+            outputStream.close();
         }
 
-        // TODO: 정규식 적용하면 좋을 듯!
-        if (method.equals(HttpMethod.GET) && path.startsWith("/tasks/")) {
-            Long fetchId = Long.parseLong(path.substring("/tasks/".length()));
-
-            if (fetchId == 0) responseCode = HttpStatus.NOT_FOUND.code();;
-
-            if (responseCode == HttpStatus.OK.code() && isExistTask(fetchId)) {
-                Task task = fetchOneTask(fetchId);
-                content = taskToJson(task);
-            }
-        }
-
-        byte[] responseBytes = content.getBytes();
-
-        exchange.sendResponseHeaders(responseCode, responseBytes.length);
-
-        OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(responseBytes);
-        outputStream.flush();
-        outputStream.close();
     }
 
     private Task JsonToTask(String content) throws JsonProcessingException {
