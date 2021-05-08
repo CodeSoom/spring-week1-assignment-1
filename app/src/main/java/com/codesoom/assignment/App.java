@@ -11,9 +11,11 @@ public class App {
         return "Hello World!";
     }
 
+    public static final int PORT_NUMBER = 9090;
+
     public static void main(String[] args) {
         try {
-            InetSocketAddress address = new InetSocketAddress("localhost",8080);
+            InetSocketAddress address = new InetSocketAddress("localhost",PORT_NUMBER);
             HttpServer httpServer = HttpServer.create(address,0);
 
             HttpHandler handler = new DemoHttpHandler();

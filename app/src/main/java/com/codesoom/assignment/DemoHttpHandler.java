@@ -42,13 +42,13 @@ public class DemoHttpHandler implements HttpHandler {
 
         // System.out.println("---start---");
         System.out.println(method +" " + path);
-        int rCode = 500;
+        int statusCode = 500;
         String content = "Hello world!";
 
         // GET
         if (method.equals("GET") && path.equals("/")){
             content = tasksToJSON();
-            rCode = 200;
+            statusCode = 200;
         }
 
         // GET
@@ -62,21 +62,21 @@ public class DemoHttpHandler implements HttpHandler {
             }
 
             content = tasksToJSON();
-            rCode = 200;
+            statusCode = 200;
         }
 
         // POST
         if (method.equals("POST") && path.equals("/tasks")){
-            if(!body.isEmpty()){
-                Task task = toTask(body);
-                setIndex(task);
-                System.out.println(task);
-                tasks.add(task);
-            }else{
+            if(body.isEmpty()){
                 throw new IOException("Plz fill body");
             }
+
+            Task task = toTask(body);
+            setIndex(task);
+            tasks.add(task);
+
             content = "create new tasks";
-            rCode = 201;
+            statusCode = 201;
         }
 
         // PUT/PATCH
@@ -96,7 +96,7 @@ public class DemoHttpHandler implements HttpHandler {
             System.out.println("validate = " + tasks.get(Integer.parseInt(String.valueOf(idx))-1));  // validate
 
             content = tasksToJSON();
-            rCode = 200;
+            statusCode = 200;
         }
 
         // DELETE
@@ -109,10 +109,10 @@ public class DemoHttpHandler implements HttpHandler {
             tasks.remove(Integer.parseInt(String.valueOf(idx))-1);
 
             content = tasksToJSON();
-            rCode = 200;
+            statusCode = 200;
         }
 
-        exchange.sendResponseHeaders(rCode,content.getBytes().length);
+        exchange.sendResponseHeaders(statusCode,content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
 
