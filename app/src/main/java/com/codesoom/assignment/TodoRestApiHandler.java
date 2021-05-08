@@ -63,6 +63,17 @@ public class TodoRestApiHandler implements HttpHandler {
             }
         }
 
+        if(method.equals("DELETE") && path.contains("/tasks/")) {
+            String id = getId(path);
+
+            for (Task task : tasks) {
+                if (task.getId().toString().equals(id)) {
+                    tasks.remove(task);
+                    content = "";
+                }
+            }
+        }
+
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
