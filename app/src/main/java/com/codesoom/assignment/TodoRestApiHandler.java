@@ -9,6 +9,8 @@ public class TodoRestApiHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        System.out.println("TodoRestApiHandler");
+        String method = exchange.getRequestMethod();
+
+        System.out.println((method));
     }
 }
