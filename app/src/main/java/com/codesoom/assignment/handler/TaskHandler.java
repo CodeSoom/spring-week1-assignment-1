@@ -1,23 +1,19 @@
 package com.codesoom.assignment.handler;
 
 import com.codesoom.assignment.http.HttpMethod;
+import com.codesoom.assignment.http.HttpRequest;
 import com.codesoom.assignment.http.HttpResponse;
 import com.codesoom.assignment.http.HttpStatus;
 import com.codesoom.assignment.model.Task;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * "/tasks" 경로의 HTTP 요청을 처리합니다.
@@ -78,23 +74,23 @@ public class TaskHandler implements HttpHandler {
     }
 
     private void createTask(HttpExchange exchange) throws IOException {
-        final String body = readRequestBody(exchange);
-        if (body.isBlank()) {
+        final String json = HttpRequest.readBody(exchange);
+        if (json.isBlank()) {
             HttpResponse.text(exchange, HttpStatus.BAD_REQUEST);
             return;
         }
 
-        var task = jsonToTask(body);
+        var task = objectMapper.readValue(json, Task.class);
         task.setId(newTaskID++);
         logger.log(Level.FINE, task.toString());
-
         tasks.put(task.getId(), task);
 
-        HttpResponse.json(exchange, HttpStatus.CREATE, taskToJSON(task));
+        HttpResponse.json(exchange, HttpStatus.CREATE, objectMapper.writeValueAsString(task));
     }
 
     private void listTasks(HttpExchange exchange) throws IOException {
-        HttpResponse.json(exchange, HttpStatus.OK, tasksListToJSON(tasks));
+        var tasksListJSON = objectMapper.writeValueAsString(tasks);
+        HttpResponse.json(exchange, HttpStatus.OK, tasksListJSON);
     }
 
     private void getTask(HttpExchange exchange, Long taskID) throws IOException {
@@ -105,21 +101,25 @@ public class TaskHandler implements HttpHandler {
             return;
         }
 
-        HttpResponse.json(exchange, HttpStatus.OK, taskToJSON(task));
+        HttpResponse.json(exchange, HttpStatus.OK, objectMapper.writeValueAsString(task));
     }
 
     private void updateTask(HttpExchange exchange, Long taskID) throws IOException {
-        final String body = readRequestBody(exchange);
-        var task = tasks.get(taskID);
+        final String json = HttpRequest.readBody(exchange);
+        if (json.isBlank()) {
+            HttpResponse.text(exchange, HttpStatus.BAD_REQUEST);
+            return;
+        }
 
+        var task = tasks.get(taskID);
         if (task == null) {
             HttpResponse.text(exchange, HttpStatus.NOT_FOUND);
             return;
         }
 
-        var updatedTask = jsonToTask(body);
+        var updatedTask = objectMapper.readValue(json, Task.class);
         task = task.update(updatedTask);
-        HttpResponse.json(exchange, HttpStatus.OK, taskToJSON(task));
+        HttpResponse.json(exchange, HttpStatus.OK, objectMapper.writeValueAsString(task));
     }
 
     private void deleteTask(HttpExchange exchange, Long taskID) throws IOException {
@@ -133,25 +133,5 @@ public class TaskHandler implements HttpHandler {
         var deletedTask = tasks.remove(task.getId());
         logger.log(Level.FINE, "Deleted task: {0}", deletedTask.getTitle());
         HttpResponse.code(exchange, HttpStatus.NO_CONTENT);
-    }
-
-    private String readRequestBody(HttpExchange exchange) {
-        var inputStream = exchange.getRequestBody();
-        var inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-        return new BufferedReader(inputStreamReader)
-            .lines()
-            .collect(Collectors.joining(System.lineSeparator()));
-    }
-
-    private Task jsonToTask(String json) throws JsonProcessingException {
-        return objectMapper.readValue(json, Task.class);
-    }
-
-    private String taskToJSON(Task task) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(task);
-    }
-
-    private String tasksListToJSON(Map<Long, Task> tasks) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(tasks);
     }
 }

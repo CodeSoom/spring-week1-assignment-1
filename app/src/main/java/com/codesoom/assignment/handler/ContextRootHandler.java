@@ -28,6 +28,6 @@ public class ContextRootHandler implements HttpHandler {
             return;
         }
 
-        HttpResponse.text(exchange, HttpStatus.OK, "Hello, World!");
+        HttpResponse.text(exchange, HttpStatus.OK, "<h1>Hello, World!</h1>");
     }
 }

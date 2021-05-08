@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+/**
+ * 사용자가 등록한 할 일을 나타냅니다.
+ */
 public class Task {
     private Long id;
     private String title;

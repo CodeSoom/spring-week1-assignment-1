@@ -31,7 +31,8 @@ public class App {
         logger.log(Level.FINE, "Codesoom HTTP server started on : {0}", Long.toString(address.getPort()));
 
         try {
-            var httpServer = HttpServer.create(address, 0);
+            var httpServer = HttpServer.create();
+            httpServer.bind(address, 0);
 
             httpServer.createContext("/", new ContextRootHandler());
             httpServer.createContext("/tasks", new TaskHandler());
