@@ -24,7 +24,7 @@ public class HttpResponse {
      * @see <a href="https://tools.ietf.org/html/rfc7231#section-6.3.5">204 No Content</a>
      */
     public static void code(HttpExchange exchange, final HttpStatus status) throws IOException {
-        send(exchange, status.code(), null);
+        send(exchange, status, null);
     }
 
     /**
@@ -35,43 +35,44 @@ public class HttpResponse {
      * @throws IOException
      */
     public static void text(HttpExchange exchange, final HttpStatus status) throws IOException {
-        text(exchange, status.code(), status.message());
+        text(exchange, status, status.message());
     }
 
     /**
      * 플레인 텍스트(text/html) 형식으로 응답합니다.
      *
      * @param exchange
-     * @param code
+     * @param status
      * @param content
      * @throws IOException
      */
-    public static void text(HttpExchange exchange, final int code, final String content) throws IOException {
+    public static void text(HttpExchange exchange, final HttpStatus status, final String content) throws IOException {
         final var contentType = "text/html";
         exchange.getResponseHeaders().set("Content-type", String.join("; ", contentType, CHARSET));
-        send(exchange, code, content);
+        send(exchange, status, content);
     }
 
     /**
      * JSON(application/json) 형식으로 응답합니다.
      *
      * @param exchange
-     * @param code
+     * @param status
      * @param content
      * @throws IOException
      */
-    public static void json(HttpExchange exchange, final int code, final String content) throws IOException {
+    public static void json(HttpExchange exchange, final HttpStatus status, final String content) throws IOException {
         final var contentType = "application/json";
         exchange.getResponseHeaders().set("Content-type", String.join("; ", contentType, CHARSET));
-        send(exchange, code, content);
+        send(exchange, status, content);
     }
 
-    private static void send(HttpExchange exchange, final int code, final String content) throws IOException {
+    private static void send(HttpExchange exchange, final HttpStatus status, final String content) throws IOException {
         if (content == null) {
-            exchange.sendResponseHeaders(code, -1);
+            exchange.sendResponseHeaders(status.code(), -1);
             return;
         }
-        exchange.sendResponseHeaders(code, content.getBytes().length);
+
+        exchange.sendResponseHeaders(status.code(), content.getBytes().length);
         var outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();

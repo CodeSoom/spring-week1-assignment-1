@@ -90,11 +90,11 @@ public class TaskHandler implements HttpHandler {
 
         tasks.put(task.getId(), task);
 
-        HttpResponse.json(exchange, HttpStatus.CREATE.code(), taskToJSON(task));
+        HttpResponse.json(exchange, HttpStatus.CREATE, taskToJSON(task));
     }
 
     private void listTasks(HttpExchange exchange) throws IOException {
-        HttpResponse.json(exchange, HttpStatus.OK.code(), tasksListToJSON(tasks));
+        HttpResponse.json(exchange, HttpStatus.OK, tasksListToJSON(tasks));
     }
 
     private void getTask(HttpExchange exchange, Long taskID) throws IOException {
@@ -105,7 +105,7 @@ public class TaskHandler implements HttpHandler {
             return;
         }
 
-        HttpResponse.json(exchange, HttpStatus.OK.code(), taskToJSON(task));
+        HttpResponse.json(exchange, HttpStatus.OK, taskToJSON(task));
     }
 
     private void updateTask(HttpExchange exchange, Long taskID) throws IOException {
@@ -119,7 +119,7 @@ public class TaskHandler implements HttpHandler {
 
         var updatedTask = jsonToTask(body);
         task = task.update(updatedTask);
-        HttpResponse.json(exchange, HttpStatus.OK.code(), taskToJSON(task));
+        HttpResponse.json(exchange, HttpStatus.OK, taskToJSON(task));
     }
 
     private void deleteTask(HttpExchange exchange, Long taskID) throws IOException {
