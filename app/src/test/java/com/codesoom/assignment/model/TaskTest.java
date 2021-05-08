@@ -17,7 +17,7 @@ class TaskTest {
     }
 
     @Test
-    void testUnmarshallingJSONtoTask() throws JsonProcessingException {
+    void testUnmarshallingJSONIntoTask() throws JsonProcessingException {
         var json = "{\"title\":\"test\"}";
         var unmarshalledTask = objectMapper.readValue(json, Task.class);
 
@@ -26,7 +26,7 @@ class TaskTest {
     }
 
     @Test
-    void testUnmarshallingEmptyJSONtoTask() throws JsonProcessingException {
+    void testUnmarshallingEmptyJSONIntoTask() throws JsonProcessingException {
         var json = "{}";
         var unmarshalledTask = objectMapper.readValue(json, Task.class);
 

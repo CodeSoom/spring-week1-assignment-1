@@ -35,14 +35,23 @@ public class Task {
         return title;
     }
 
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getLastUpdatedAt() {
+        return lastUpdatedAt;
+    }
+
     @Override
     public String toString() {
-        return "Task{" +
-            "id=" + id +
-            ", title='" + title + '\'' +
-            ", createdAt=" + createdAt +
-            ", lastUpdatedAt=" + lastUpdatedAt +
-            '}';
+        return String.format(
+            "Task {id=%s, title=%s, createdAt=%s, lastUpdatedAt=%s}",
+            id,
+            title,
+            createdAt,
+            lastUpdatedAt
+        );
     }
 
     public Task update(Task updatedTask) {

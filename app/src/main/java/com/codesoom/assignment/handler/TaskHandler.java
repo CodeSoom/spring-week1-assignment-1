@@ -86,6 +86,7 @@ public class TaskHandler implements HttpHandler {
 
         var task = jsonToTask(body);
         task.setId(newTaskID++);
+        logger.log(Level.FINE, task.toString());
 
         tasks.put(task.getId(), task);
 
