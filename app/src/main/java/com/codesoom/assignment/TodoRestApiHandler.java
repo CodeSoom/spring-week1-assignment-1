@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 
 public class TodoRestApiHandler implements HttpHandler {
@@ -16,9 +17,12 @@ public class TodoRestApiHandler implements HttpHandler {
 
         String content = "Todo List";
 
-        System.out.println((method));
-        System.out.println((path));
-
         exchange.sendResponseHeaders(200, content.getBytes().length);
+
+        OutputStream outputStream = exchange.getResponseBody();
+        outputStream.write(content.getBytes());
+        outputStream.flush();
+
+        outputStream.close();
     }
 }
