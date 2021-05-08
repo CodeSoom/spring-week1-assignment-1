@@ -34,8 +34,7 @@ public class TodoRestApiHandler implements HttpHandler {
         }
 
         if(method.equals("GET") && path.contains("/tasks/")) {
-            String[] splitPath = path.split("/");
-            String id = splitPath[splitPath.length - 1];
+            String id = getId(path);
 
             for (Task task : tasks) {
                 if (task.getId().toString().equals(id)) {
@@ -50,6 +49,17 @@ public class TodoRestApiHandler implements HttpHandler {
                 task.setId((long) tasks.size() + 1);
                 tasks.add(task);
                 content = taskToJSON(task);
+            }
+        }
+
+        if(method.equals("PUT") && path.contains("/tasks/")) {
+            String id = getId(path);
+
+            for (Task task : tasks) {
+                if (task.getId().toString().equals(id)) {
+                    task.setTitle(toTask(body).getTitle());
+                    content = taskToJSON(task);
+                }
             }
         }
 
@@ -78,5 +88,10 @@ public class TodoRestApiHandler implements HttpHandler {
 
     private Task toTask(String content) throws JsonProcessingException {
         return objectMapper.readValue(content, Task.class);
+    }
+
+    private String getId(String path) {
+        String[] splitPath = path.split("/");
+        return splitPath[splitPath.length - 1];
     }
 }
