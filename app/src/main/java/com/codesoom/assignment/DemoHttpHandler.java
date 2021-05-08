@@ -75,6 +75,18 @@ public class DemoHttpHandler implements HttpHandler {
                 responseContent = taskToJson(task);
             }
 
+            if (method.equals(HttpMethod.PUT.name()) && path.matches(TodoURI.TASKS_ID.uri())) {
+                Long fetchId = Long.parseLong(getTaskId(path));
+
+                if (fetchId == 0 || !isExistTask(fetchId)) {
+                    responseCode = HttpStatus.NOT_FOUND.code();
+                    throw new IllegalArgumentException("404 Not Found error");
+                }
+
+                Task task = updateOneTask(JsonToTask(body));
+                responseContent = taskToJson(task);
+            }
+
             if (method.equals(HttpMethod.DELETE.name()) && path.matches(TodoURI.TASKS_ID.uri())) {
                 Long deleteId = Long.parseLong(getTaskId(path));
 
@@ -143,6 +155,15 @@ public class DemoHttpHandler implements HttpHandler {
                 .filter((t) -> t.getId() == id)
                 .findFirst()
                 .get();
+    }
+
+    private Task updateOneTask(Task task) {
+        Task findTask = tasks.stream()
+                .filter((t) -> t.getId() == id)
+                .findFirst()
+                .get();
+        findTask.setTitle(task.getTitle());
+        return findTask;
     }
 
     private boolean deleteOneTask(Long id) {
