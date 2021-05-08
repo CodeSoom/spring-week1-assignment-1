@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.config.Config;
 import com.codesoom.assignment.controller.Controller;
 import com.codesoom.assignment.controller.TaskController;
 import com.codesoom.assignment.handler.TaskHandler;
@@ -14,15 +15,15 @@ import java.util.List;
 
 public class App {
     public static void main(String[] args) throws IOException{
-        InetSocketAddress address = new InetSocketAddress("localhost", 8000);
-        HttpServer httpServer = HttpServer.create(address,0);
+        InetSocketAddress address = new InetSocketAddress(Config.HOST_NAME, Config.PORT_NUMBER);
+        HttpServer httpServer = HttpServer.create(address,Config.BACKLOG);
         TaskRepository taskRepository = new TaskRepository();
         TaskController taskController = new TaskController(taskRepository);
         List<Controller> controllers = new ArrayList<>();
         controllers.add(taskController);
         HttpHandler handler = new TaskHandler(controllers);
 
-        httpServer.createContext("/", handler);
+        httpServer.createContext(Config.ROOT_CONTEXT_PATH, handler);
         httpServer.start();
     }
 }
