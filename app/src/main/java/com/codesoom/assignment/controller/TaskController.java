@@ -78,10 +78,9 @@ public class TaskController extends Controller {
     private Response deleteTask(HttpExchange exchange) {
         String path = exchange.getRequestURI().getPath();
         Long id = getId(path);
-        try {
-            taskRepository.deleteTask(id);
+        if (taskRepository.deleteTask(id)) {
             return new Response(HttpStatus.NO_CONTENT);
-        } catch (DoesNotExistException e) {
+        } else {
             return new Response(HttpStatus.NOT_FOUND);
         }
     }

@@ -7,8 +7,13 @@ public class Task {
     private final Long id;
     private String title;
 
+    public Task(Long id, String title) {
+        this.id = id;
+        this.title = title;
+    }
+
     public Task() {
-        this.id = count.getAndIncrement();
+        this(count.getAndIncrement(), null);
     }
 
     public Long getId() {

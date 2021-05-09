@@ -4,50 +4,41 @@ import com.codesoom.assignment.dto.Task;
 import com.codesoom.assignment.exception.DoesNotExistException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class TaskRepository {
-    private final Map<Long, Task> tasks;
+    private final List<Task> tasks;
 
     public TaskRepository() {
-        this.tasks = new HashMap<>();
+        this.tasks = new ArrayList<>();
     }
 
     public Task findById(Long id) throws DoesNotExistException {
-        Task task = this.tasks.get(id);
-        if (task == null) {
-            throw new DoesNotExistException();
-        }
-        return task;
+        return this.tasks.stream()
+                .filter((task) -> task.getId().equals(id))
+                .findFirst()
+                .orElseThrow(DoesNotExistException::new);
     }
 
     public void addTask(Task task) {
-        this.tasks.put(task.getId(), task);
+        this.tasks.add(task);
     }
 
-    public void deleteTask(Long id) throws DoesNotExistException {
-        Task task = this.tasks.remove(id);
-        if (task == null) {
-            throw new DoesNotExistException();
-        }
+    public Boolean deleteTask(Long id) {
+        return this.tasks.removeIf((task) -> task.getId().equals(id));
     }
 
     public List<Task> findAll() {
-        List<Task> ret = new ArrayList<>();
-        for(Long key: this.tasks.keySet()) {
-            ret.add(this.tasks.get(key));
-        }
-        return ret;
+        return this.tasks;
     }
 
     public Task updateTask(Long id, String title) throws DoesNotExistException {
-        Task task = this.tasks.get(id);
-        if (task == null) {
+        if (this.tasks.removeIf((task) -> task.getId().equals(id))) {
+            Task task = new Task(id, title);
+            this.tasks.add(task);
+            return task;
+        } else {
             throw new DoesNotExistException();
         }
-        task.setTitle(title);
-        return this.tasks.get(id);
     }
 }
