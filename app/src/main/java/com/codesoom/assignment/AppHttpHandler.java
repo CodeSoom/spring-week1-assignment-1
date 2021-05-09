@@ -42,7 +42,7 @@ public class AppHttpHandler implements HttpHandler {
     }
 
     /**
-     *  Http Request URL에 대한 요청 처리 후 OutpustStream으로 Response
+     *  Http Request URL에 대한 요청 처리 후 HTTP 응답을 보낸다.
      * @param exchange
      * @throws IOException
      */
@@ -91,9 +91,8 @@ public class AppHttpHandler implements HttpHandler {
     }
 
     /**
-     * GET, POST, PUT, DELETE 에 대한 요청에 대한 HttpStatusCode 값과  ResponseBody 리턴
-     * @param requestProcessEntity
-     * @return AppResponseEntity
+     * HTTP 요청에 대한 HttpStatusCode 값과  ResponseBody 리턴한다.
+     * @param requestProcessEntity Task 처리에 관한 HTTP 요청
      * @throws IOException
      */
     private AppResponseEntity requestProcessor(RequestProcessEntity requestProcessEntity) throws IOException {
@@ -114,7 +113,6 @@ public class AppHttpHandler implements HttpHandler {
                 if (isBody) {
                     break;
                 }
-
                 Task task = toTask(body);
                 task.setId(getTaskMaxId());
                 tasks.add(task);
@@ -136,9 +134,9 @@ public class AppHttpHandler implements HttpHandler {
     }
 
     /**
-     *  Task ID에 해당하는 내용을 수정
-     * @param requestProcessEntity
-     * @return String(JSON)
+     *  요청한 Task ID에  해당 하는  Task를 수정 하고, JSON 문자열로 리턴합니다.
+     * @param requestProcessEntity 수정할 Task 요청 정보
+     * @return String  JSON 형식의 수정한 Task 정보
      * @throws IOException
      */
 
@@ -159,11 +157,11 @@ public class AppHttpHandler implements HttpHandler {
     }
 
     /**
-     * 요청 Task ID를 가자고 Task를 찾음
-     * 만약 Task ID가 없다면 NotFoundTaskIdException Throw
-     * @param taskId
-     * @return Task
-     * @Exception NotFoundTaskIdException
+     * 요청 Task ID를 가자고 Task를 찾는다.
+     * 만약 Task ID가 없다면 Exception Throw  한다.
+     * @param taskId  Task 정보를 요청
+     * @return Task  Task Class 형식의 Task 정보
+     * @Exception NotFoundTaskIdException : Task ID에 해당하는 Task가 없을 경우에 Throw
      */
     private Task findTask(String taskId) {
         Long longTaskId = Long.parseLong(taskId);
@@ -174,8 +172,8 @@ public class AppHttpHandler implements HttpHandler {
     }
 
     /**
-     * 요청한 Task ID에 해당하는 내용 삭제
-     * @param taskId
+     * 요청한 Task ID에 해당하는 Task를 삭제한다.
+     * @param taskId 삭제할 Task 정보
      */
     private void deleteTask(String taskId) {
         if ("".equals(taskId)) {
@@ -186,10 +184,10 @@ public class AppHttpHandler implements HttpHandler {
     }
 
     /**
-     * 요청한 Task ID에 해당하는 Task를 찾은 이후 JSON 변환
-     * 만약 Task ID가 없다면 모든 Task JSON 변환
-     * @param taskId
-     * @return String(JSON)
+     * 요청한 Task ID에 해당하는 Task를 찾은 이후 JSON 변환 한다.
+     * 만약 Task ID가  없다면 저장된 모든 Task를 JSONArray로 변환 힌다.
+     * @param taskId : JSON 변환을 요청한 Task ID
+     * @return String :  요청한 Task ID의 Task정보 또는 저장된 모든 Task 정보
      * @throws IOException
      */
     private String tasksToJSONByPath(String taskId) throws IOException {
@@ -204,9 +202,9 @@ public class AppHttpHandler implements HttpHandler {
     }
 
     /**
-     * 응답 내용을 Task 형식의  JSON으로변환
-     * @param contents
-     * @return Task
+     * 응답 내용을 Task 형식의  JSON으로 변환한다.
+     * @param contents  JSON 변환을 요청한 정보
+     * @return Task  Task Class 형식으로 변환한 정보
      * @throws JsonProcessingException
      */
     private Task toTask(String contents) throws JsonProcessingException {
@@ -215,42 +213,28 @@ public class AppHttpHandler implements HttpHandler {
 
     /**
      * 전체 Task를 JSON으로 변환
-     * @return String(JSON)
+     * @return String 저장된 모든 Task에 대한 JSON 정보
      * @throws IOException
      */
     private String tasksToJSON() throws IOException {
         return tasksToJSON(tasks);
     }
 
-
     /**
-     * List<Task> 를 JSON Array String으로로 변환
-     * @param tasks
-     * @return String(JSON Array)
+     * 다수의 Task 정보를 JSON Array String으로 변환한다.
+     * @param tasks JSON 형식으로 변환할 Task 정보
+     * @return String Task JSON정보
      * @throws IOException
      */
-    private String tasksToJSON(List<Task> tasks) throws IOException {
+    private String tasksToJSON(Object tasks) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
         return outputStream.toString();
     }
 
     /**
-     * Task를 JSON으로 변환
-     * @param task
-     * @return String(JSON)
-     * @throws IOException
-     */
-    private String tasksToJSON(Task task) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, task);
-        return outputStream.toString();
-    }
-
-
-    /**
-     * Task ID 최대값을 리턴
-     * @return Long(Task ID)
+     * Task ID 최대값을 리턴 한다.
+     * @return Long Task ID의 최대값
      */
     private Long getTaskMaxId() {
         Long maxId = 1L;
