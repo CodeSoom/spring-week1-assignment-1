@@ -79,7 +79,7 @@ public class TaskHttpHandler implements HttpHandler {
     private Task getTask(HttpExchange exchange) throws TaskNotFoundException {
         URI requestURI = exchange.getRequestURI();
         String path = requestURI.getPath();
-        long taskId = Long.parseLong(path.substring(7));
+        long taskId = Long.parseLong(path.substring("/tasks/".length()));
         Task task = findTaskById(taskId);
         if (task == null) {
             throw new TaskNotFoundException();
@@ -143,7 +143,7 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private Task findTaskById(long id) {
-        for (Task task : tasks) {
+        for (Task task : this.tasks) {
             if (task.getId() == id) {
                 return task;
             }
