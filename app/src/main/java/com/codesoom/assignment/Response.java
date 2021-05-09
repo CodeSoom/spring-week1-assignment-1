@@ -5,8 +5,7 @@ public class Response {
     private final String body;
 
     public Response(HttpStatus status) {
-        this.code = status.getCode();
-        this.body = "";
+        this(status, "");
     }
 
     public Response(HttpStatus status, String body) {
