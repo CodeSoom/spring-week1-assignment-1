@@ -10,13 +10,14 @@ import java.net.InetSocketAddress;
 public class App {
     final private static int PORT = 8000;
     final private static String ROOT_PATH = "/";
+    final private static int SOCKET_BACKLOG = 0;
 
     public static void main(String[] args) {
         System.out.println(">> API server start!");
 
         InetSocketAddress inetSocketAddress = new InetSocketAddress(PORT);
         try {
-            HttpServer httpServer = HttpServer.create(inetSocketAddress, 0);
+            HttpServer httpServer = HttpServer.create(inetSocketAddress, SOCKET_BACKLOG);
             HttpHandler handler = new TaskHttpHandler();
             httpServer.createContext(ROOT_PATH, handler);
             httpServer.start();
