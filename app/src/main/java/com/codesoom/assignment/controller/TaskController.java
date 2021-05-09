@@ -49,12 +49,8 @@ public class TaskController extends Controller {
     }
 
     private Response getAllTask() throws IOException {
-        List<Task> ret = new ArrayList<>();
-        Map<Long, Task> tasks = taskRepository.findAll();
-        for(Long key: tasks.keySet()) {
-            ret.add(tasks.get(key));
-        }
-        return new Response(HttpStatus.OK, this.toJSON(ret));
+        List<Task> tasks = taskRepository.findAll();
+        return new Response(HttpStatus.OK, this.toJSON(tasks));
     }
 
     private Response createTask(HttpExchange exchange) throws IOException {

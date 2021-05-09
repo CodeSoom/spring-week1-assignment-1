@@ -3,7 +3,9 @@ package com.codesoom.assignment.repository;
 import com.codesoom.assignment.dto.Task;
 import com.codesoom.assignment.exception.DoesNotExistException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TaskRepository {
@@ -28,8 +30,12 @@ public class TaskRepository {
         if (task == null) throw new DoesNotExistException();
     }
 
-    public Map<Long, Task> findAll() {
-        return this.tasks;
+    public List<Task> findAll() {
+        List<Task> ret = new ArrayList<>();
+        for(Long key: this.tasks.keySet()) {
+            ret.add(this.tasks.get(key));
+        }
+        return ret;
     }
 
     public Task updateTask(Long id, String title) throws DoesNotExistException {
