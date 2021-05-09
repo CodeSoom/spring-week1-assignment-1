@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,6 +18,7 @@ public class TaskController extends Controller {
 
     private final TaskRepository taskRepository;
     private final ObjectMapper mapper;
+    private Long newId = -1L;
 
     public TaskController(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
@@ -57,6 +57,7 @@ public class TaskController extends Controller {
         InputStream inputStream = exchange.getRequestBody();
         String content = this.getContent(inputStream);
         Task task = this.toTask(content);
+        task.setId(generateId());
         taskRepository.addTask(task);
         return new Response(HttpStatus.CREATED, this.toJSON(task));
     }
@@ -126,4 +127,8 @@ public class TaskController extends Controller {
         return result;
     }
 
+    private Long generateId() {
+        newId += 1;
+        return newId;
+    }
 }

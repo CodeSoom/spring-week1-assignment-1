@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class Task {
     private static final AtomicLong count = new AtomicLong(0);
-    private final Long id;
+    private Long id;
     private String title;
 
     public Task(Long id, String title) {
@@ -13,11 +13,15 @@ public class Task {
     }
 
     public Task() {
-        this(count.getAndIncrement(), null);
+
     }
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getTitle() {
