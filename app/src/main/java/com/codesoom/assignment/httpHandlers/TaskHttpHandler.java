@@ -133,12 +133,19 @@ public class TaskHttpHandler implements HttpHandler {
             throw new IllegalArgumentException("requestBody가 비었습니다.");
         }
 
-        Task task = toTask(requestBody);
-        task.setId(taskId);
-        taskId++;
+        Task task = generateTask(requestBody);
         this.tasks.add(task);
-
         return task;
+    }
+
+    private Task generateTask(String requestBody) throws JsonProcessingException {
+        Task task = toTask(requestBody);
+        task.setId(generateTaskId());
+        return task;
+    }
+
+    private Long generateTaskId() {
+        return this.taskId++;
     }
 
     private Task findTaskById(long id) {
