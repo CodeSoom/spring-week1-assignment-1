@@ -12,6 +12,7 @@ package com.codesoom.assignment.http;
  * </ol>
  *
  * @see <a href="https://tools.ietf.org/html/rfc7231#section-6">RFC7231 - Response Status Codes</a>
+ * @see <a href="https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml">IANA - HTTP Status Code Registry</a>
  */
 public enum HttpStatus {
     /**
