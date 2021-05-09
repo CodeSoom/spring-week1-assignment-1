@@ -145,7 +145,7 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private Long generateTaskId() {
-        return this.taskId++;
+        return this.taskId += 1;
     }
 
     private Task findTaskById(long id) {
