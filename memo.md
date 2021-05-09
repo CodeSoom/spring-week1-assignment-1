@@ -53,3 +53,19 @@ Long getId(String path) {
         return Long.parseLong(splitPath[2]);
         }
 ```
+
+
+## Spring boot setup
+build.gradle
+```java
+
+// plugin과 dependency 추가
+    id 'org.springframework.boot' version '2.4.3'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+
+    // Spring web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+```
+
+
+기존 MyHttpHandler의 역할을 TaskController로 옮겼다.
