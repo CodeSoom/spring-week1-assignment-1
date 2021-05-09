@@ -7,9 +7,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 /**
- * 사용자가 등록한 할 일을 나타냅니다.
+ * 할 일.
  */
 public class Task {
+    private final String serverTimeZone = "Asia/Seoul";
+
     private Long id;
     private String title;
     private LocalDateTime createdAt;
@@ -20,7 +22,6 @@ public class Task {
         this.id = id;
         this.title = title;
 
-        final var serverTimeZone = "Asia/Seoul";
         var currentLocalTimeInSeoul = LocalDateTime.now(ZoneId.of(serverTimeZone));
         this.createdAt = currentLocalTimeInSeoul;
         this.lastUpdatedAt = currentLocalTimeInSeoul;
@@ -60,7 +61,6 @@ public class Task {
     public Task update(Task updatedTask) {
         this.title = updatedTask.title;
 
-        final var serverTimeZone = "Asia/Seoul";
         var currentLocalTimeInSeoul = LocalDateTime.now(ZoneId.of(serverTimeZone));
         this.lastUpdatedAt = currentLocalTimeInSeoul;
         return this;
