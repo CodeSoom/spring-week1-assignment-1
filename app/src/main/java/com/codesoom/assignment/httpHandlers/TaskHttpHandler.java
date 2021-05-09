@@ -149,12 +149,9 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private Task findTaskById(long id) {
-        for (Task task : this.tasks) {
-            if (task.getId() == id) {
-                return task;
-            }
-        }
-        return null;
+        return this.tasks.stream()
+                .filter(task -> task.getId().equals(id))
+                .findFirst().orElse(null);
     }
 
 
