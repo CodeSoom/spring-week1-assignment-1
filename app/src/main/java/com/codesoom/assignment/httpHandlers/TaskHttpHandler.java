@@ -94,7 +94,7 @@ public class TaskHttpHandler implements HttpHandler {
         HttpMethod method = HttpMethod.valueOf(exchange.getRequestMethod());
         switch (method) {
             case GET:
-                content = tasksToJSON();
+                content = toJson(this.tasks);
                 break;
             case POST:
                 Task task = addTask(parseRequestBody(exchange));
@@ -161,13 +161,6 @@ public class TaskHttpHandler implements HttpHandler {
     private String toJson(Object object) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, object);
-
-        return outputStream.toString();
-    }
-
-    private String tasksToJSON() throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, this.tasks);
 
         return outputStream.toString();
     }
