@@ -154,8 +154,6 @@ public class TaskHttpHandler implements HttpHandler {
                 .findFirst().orElse(null);
     }
 
-
-    // TODO: objectMapper 메서드들 확인할 것.
     private Task toTask(String content) throws JsonProcessingException {
         return objectMapper.readValue(content, Task.class);
     }
