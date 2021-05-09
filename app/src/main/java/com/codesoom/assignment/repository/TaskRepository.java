@@ -17,7 +17,9 @@ public class TaskRepository {
 
     public Task findById(Long id) throws DoesNotExistException {
         Task task = this.tasks.get(id);
-        if (task == null) throw new DoesNotExistException();
+        if (task == null) {
+            throw new DoesNotExistException();
+        }
         return task;
     }
 
@@ -27,7 +29,9 @@ public class TaskRepository {
 
     public void deleteTask(Long id) throws DoesNotExistException {
         Task task = this.tasks.remove(id);
-        if (task == null) throw new DoesNotExistException();
+        if (task == null) {
+            throw new DoesNotExistException();
+        }
     }
 
     public List<Task> findAll() {
@@ -40,7 +44,9 @@ public class TaskRepository {
 
     public Task updateTask(Long id, String title) throws DoesNotExistException {
         Task task = this.tasks.get(id);
-        if (task == null) throw new DoesNotExistException();
+        if (task == null) {
+            throw new DoesNotExistException();
+        }
         task.setTitle(title);
         return this.tasks.get(id);
     }
