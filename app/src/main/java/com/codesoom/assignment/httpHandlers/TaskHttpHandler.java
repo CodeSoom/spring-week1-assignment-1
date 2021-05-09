@@ -123,10 +123,9 @@ public class TaskHttpHandler implements HttpHandler {
 
     private String parseRequestBody(HttpExchange exchange) {
         InputStream inputStream = exchange.getRequestBody();
-        String requestBody = new BufferedReader(new InputStreamReader(inputStream))
+        return new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
-        return requestBody;
     }
 
     private Task addTask(String requestBody) throws JsonProcessingException {
