@@ -37,11 +37,8 @@ public class TaskController {
         tasks.add(task);
         return task;
     }
-
     private Long generateId(){
         newId += 1;
         return newId;
     }
-
-
 }
