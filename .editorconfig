@@ -1,0 +1,17 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+trim_trailing_whitespace = true
+insert_final_newline = true
+max_line_length = 85
+
+[*.java]
+indent_size = 4
+tab_width = 4
+
+[*.{md, js}]
+indent_size = 2
+tab_width = 2
