@@ -1,10 +1,28 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.httpHandlers.TaskHttpHandler;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+
 public class App {
-    public String getGreeting() {
-        return "Hello World!";
-    }
+    final private static int PORT = 8000;
+    final private static String ROOT_PATH = "/";
+    final private static int SOCKET_BACKLOG = 0;
 
     public static void main(String[] args) {
+        System.out.println(">> API server start!");
+
+        InetSocketAddress inetSocketAddress = new InetSocketAddress(PORT);
+        try {
+            HttpServer httpServer = HttpServer.create(inetSocketAddress, SOCKET_BACKLOG);
+            HttpHandler handler = new TaskHttpHandler();
+            httpServer.createContext(ROOT_PATH, handler);
+            httpServer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
