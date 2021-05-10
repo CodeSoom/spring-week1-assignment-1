@@ -9,6 +9,7 @@ import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
@@ -24,80 +25,81 @@ public class TodoHttpHandler implements HttpHandler {
         String requestMethod = httpExchange.getRequestMethod();
         URI requestURI = httpExchange.getRequestURI();
         String path = requestURI.getPath();
-        String content = "";
 
-        InputStream inputStream = httpExchange.getRequestBody();
-        String requestBody = new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
+        String requestBody = getRequestBody(httpExchange);
 
-        sendResponse(httpExchange, requestMethod, path, requestBody, content);
+        handleTask(httpExchange, requestMethod, path, requestBody);
     }
 
-    private void sendResponse(HttpExchange httpExchange, String requestMethod, String path, String requestBody, String content) throws IOException {
-        // Get TaskList
-        if (requestMethod.equals(HttpMethod.GET.getName()) && path.equals("/tasks")) {
-            content = toJson(taskList);
-            httpExchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
-        }
+    private String getRequestBody(HttpExchange httpExchange) {
+        InputStream inputStream = httpExchange.getRequestBody();
+        return new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
+    }
 
-        // Get Task
-        if (requestMethod.equals(HttpMethod.GET.getName()) && path.startsWith("/tasks/")) {
-            Long taskId = Long.parseLong(path.substring(7));
-            Task searchTask = taskList.stream()
-                                      .filter(task -> task.getId().equals(taskId))
-                                      .findAny()
-                                      .orElse(null);
-            if (searchTask == null) {
-                httpExchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
-            } else {
-                content = toJson(searchTask);
-                httpExchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
+    private void handleTask(HttpExchange httpExchange, String requestMethod, String path, String requestBody) throws IOException {
+        String content = "";
+
+        if (path.equals("/tasks")) {
+            // Get TaskList
+            if (requestMethod.equals(HttpMethod.GET.getName())) {
+                content = toJson(taskList);
+                sendResponse(httpExchange, HttpStatus.OK.getCode(), content);
+            }
+
+            // Create Task
+            if (requestMethod.equals(HttpMethod.POST.getName())) {
+                Task task = JsonToTask(requestBody);
+                task.setId(newTaskId);
+                newTaskId = newTaskId + 1;
+                taskList.add(task);
+                content = toJson(task);
+                sendResponse(httpExchange, HttpStatus.CREATED.getCode(), content);
             }
         }
 
-        // Create Task
-        if (requestMethod.equals(HttpMethod.POST.getName()) && path.equals("/tasks")) {
-            Task task = JsonToTask(requestBody);
-            task.setId(newTaskId);
-            newTaskId++;
-            taskList.add(task);
-            content = toJson(task);
-            httpExchange.sendResponseHeaders(HttpStatus.CREATED.getCode(), content.getBytes().length);
-        }
+        if (path.startsWith("/tasks/")) {
+            Long taskId = Long.parseLong(path.substring("/tasks/".length()));
+            Optional<Task> searchTask = taskList.stream()
+                                                .filter(task -> task.getId().equals(taskId))
+                                                .findAny();
+            // Get Task
+            if (requestMethod.equals(HttpMethod.GET.getName())) {
+                if (!searchTask.isPresent()) {
+                    sendResponse(httpExchange, HttpStatus.NOT_FOUND.getCode(), "");
+                    return;
+                }
+                content = toJson(searchTask.get());
+                sendResponse(httpExchange, HttpStatus.OK.getCode(), content);
+            }
 
-        // Update Task
-        if ((requestMethod.equals(HttpMethod.PUT.getName()) || requestMethod.equals(HttpMethod.PATCH.getName())) && path.startsWith("/tasks/")) {
-            Task requestTask = JsonToTask(requestBody);
-            Long taskId = Long.parseLong(path.substring(7));
-            Task searchTask = taskList.stream()
-                                      .filter(task -> task.getId().equals(taskId))
-                                      .findAny()
-                                      .orElse(null);
-            if (searchTask == null) {
-                httpExchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
-            } else {
-                searchTask.setTitle(requestTask.getTitle());
-                content = toJson(searchTask);
-                httpExchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
+            // Update Task
+            if ((requestMethod.equals(HttpMethod.PUT.getName()) || requestMethod.equals(HttpMethod.PATCH.getName()))) {
+                Task requestTask = JsonToTask(requestBody);
+                if (!searchTask.isPresent()) {
+                    sendResponse(httpExchange, HttpStatus.NOT_FOUND.getCode(), "");
+                    return;
+                }
+                searchTask.get().setTitle(requestTask.getTitle());
+                content = toJson(searchTask.get());
+                sendResponse(httpExchange, HttpStatus.OK.getCode(), content);
+            }
+
+            // Delete Task
+            if (requestMethod.equals(HttpMethod.DELETE.getName())) {
+                if (!searchTask.isPresent()) {
+                    sendResponse(httpExchange, HttpStatus.NOT_FOUND.getCode(), "");
+                    return;
+                }
+                taskList.remove(searchTask.get());
+                sendResponse(httpExchange, HttpStatus.NO_CONTENT.getCode(), "");
             }
         }
+    }
 
-        // Delete Task
-        if (requestMethod.equals(HttpMethod.DELETE.getName()) && path.startsWith("/tasks/")) {
-            Long taskId = Long.parseLong(path.substring(7));
-            Task searchTask = taskList.stream()
-                                      .filter(task -> task.getId().equals(taskId))
-                                      .findAny()
-                                      .orElse(null);
-            if (searchTask == null) {
-                httpExchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
-            } else {
-                taskList.remove(searchTask);
-                httpExchange.sendResponseHeaders(HttpStatus.NO_CONTENT.getCode(), content.getBytes().length);
-            }
-        }
-
+    private void sendResponse(HttpExchange httpExchange, int statusCode, String content) throws IOException {
+        httpExchange.sendResponseHeaders(statusCode, content.getBytes().length);
         OutputStream responseBody = httpExchange.getResponseBody();
         responseBody.write(content.getBytes());
         responseBody.flush();
