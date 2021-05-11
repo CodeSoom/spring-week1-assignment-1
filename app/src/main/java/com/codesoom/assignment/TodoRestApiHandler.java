@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 public class TodoRestApiHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
+    private Long newId = 0L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -65,8 +66,9 @@ public class TodoRestApiHandler implements HttpHandler {
 
             if(!body.isBlank()) {
                 Task task = toTask(body);
-                task.setId((long) tasks.size() + 1);
+                task.setId(generateId());
                 tasks.add(task);
+
                 send(exchange, 201, taskToJSON(task));
             }
         }
@@ -116,5 +118,10 @@ public class TodoRestApiHandler implements HttpHandler {
 
     private Long getId(String path) {
         return Long.parseLong(path.substring("/tasks/".length()));
+    }
+
+    private Long generateId() {
+        newId += 1;
+        return newId;
     }
 }
