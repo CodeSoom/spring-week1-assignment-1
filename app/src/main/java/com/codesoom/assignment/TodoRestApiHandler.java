@@ -26,46 +26,34 @@ public class TodoRestApiHandler implements HttpHandler {
             handleCollection(exchange, method, path);
         }
 
-        if(path.startsWith("/tasks")) {
-            handleItem(exchange, method, path);
+        if(path.startsWith("/tasks/")) {
+            Long id = getId(path);
+            handleItem(exchange, method, path, id);
         }
     }
 
-    private void handleItem(HttpExchange exchange, String method, String path) throws IOException {
+    private void handleItem(HttpExchange exchange, String method, String path, Long id) throws IOException {
         if(method.equals("GET")) {
-            String id = getId(path);
+            Task task = findTask(id);
 
-            for (Task task : tasks) {
-                if (task.getId().toString().equals(id)) {
-                    send(exchange, 200, taskToJSON(task));
-                }
-            }
+            send(exchange, 200, taskToJSON(task));
         }
 
         if(method.equals("PUT")) {
             String body = getBody(exchange);
-            String id = getId(path);
+            Task task = findTask(id);
 
-            for (Task task : tasks) {
-                if (task.getId().toString().equals(id)) {
-                    task.setTitle(toTask(body).getTitle());
-                    send(exchange, 200, taskToJSON(task));
-                }
-            }
+            task.setTitle(toTask(body).getTitle());
+            send(exchange, 200, taskToJSON(task));
         }
 
         if(method.equals("DELETE")) {
-            String id = getId(path);
+            Task task = findTask(id);
 
-            for (Task task : tasks) {
-                if (task.getId().toString().equals(id)) {
-                    tasks.remove(task);
-                    send(exchange, 404, "");
-                }
-            }
+            tasks.remove(task);
+            send(exchange, 404, "");
         }
     }
-
 
     private void handleCollection(HttpExchange exchange, String method, String path) throws IOException {
         if(method.equals("GET")) {
@@ -84,6 +72,12 @@ public class TodoRestApiHandler implements HttpHandler {
         }
     }
 
+    private Task findTask(Long id) {
+        return tasks.stream()
+                .filter(task -> task.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
 
     private String getBody(HttpExchange exchange) {
         InputStream inputStream = exchange.getRequestBody();
@@ -120,8 +114,7 @@ public class TodoRestApiHandler implements HttpHandler {
         return objectMapper.readValue(content, Task.class);
     }
 
-    private String getId(String path) {
-        String[] splitPath = path.split("/");
-        return splitPath[splitPath.length - 1];
+    private Long getId(String path) {
+        return Long.parseLong(path.substring("/tasks/".length()));
     }
 }
