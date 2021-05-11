@@ -22,8 +22,6 @@ public class TodoRestApiHandler implements HttpHandler {
         URI url = exchange.getRequestURI();
         String path = url.getPath();
 
-
-
         if(path.equals("/tasks")) {
             handleCollection(exchange, method, path);
         }
@@ -34,7 +32,6 @@ public class TodoRestApiHandler implements HttpHandler {
     }
 
     private void handleItem(HttpExchange exchange, String method, String path) throws IOException {
-        String content = "";
         InputStream inputStream = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
@@ -45,7 +42,7 @@ public class TodoRestApiHandler implements HttpHandler {
 
             for (Task task : tasks) {
                 if (task.getId().toString().equals(id)) {
-                    content = taskToJSON(task);
+                    send(exchange, 200, taskToJSON(task));
                 }
             }
         }
@@ -56,7 +53,7 @@ public class TodoRestApiHandler implements HttpHandler {
             for (Task task : tasks) {
                 if (task.getId().toString().equals(id)) {
                     task.setTitle(toTask(body).getTitle());
-                    content = taskToJSON(task);
+                    send(exchange, 200, taskToJSON(task));
                 }
             }
         }
@@ -67,29 +64,20 @@ public class TodoRestApiHandler implements HttpHandler {
             for (Task task : tasks) {
                 if (task.getId().toString().equals(id)) {
                     tasks.remove(task);
-                    content = "";
+                    send(exchange, 404, "");
                 }
             }
         }
-
-        exchange.sendResponseHeaders(200, content.getBytes().length);
-
-        OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-
-        outputStream.close();
     }
 
     private void handleCollection(HttpExchange exchange, String method, String path) throws IOException {
-        String content = "";
         InputStream inputStream = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
 
         if(method.equals("GET")) {
-            content = tasksToJSON();
+            send(exchange, 200, tasksToJSON());
         }
 
         if(method.equals("POST") && path.equals("/tasks")) {
@@ -97,11 +85,13 @@ public class TodoRestApiHandler implements HttpHandler {
                 Task task = toTask(body);
                 task.setId((long) tasks.size() + 1);
                 tasks.add(task);
-                content = taskToJSON(task);
+                send(exchange, 201, taskToJSON(task));
             }
         }
+    }
 
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+    private void send(HttpExchange exchange, int statusCode, String content) throws IOException {
+        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
