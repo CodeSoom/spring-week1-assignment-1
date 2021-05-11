@@ -32,11 +32,6 @@ public class TodoRestApiHandler implements HttpHandler {
     }
 
     private void handleItem(HttpExchange exchange, String method, String path) throws IOException {
-        InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
-
         if(method.equals("GET")) {
             String id = getId(path);
 
@@ -48,6 +43,7 @@ public class TodoRestApiHandler implements HttpHandler {
         }
 
         if(method.equals("PUT")) {
+            String body = getBody(exchange);
             String id = getId(path);
 
             for (Task task : tasks) {
@@ -70,17 +66,15 @@ public class TodoRestApiHandler implements HttpHandler {
         }
     }
 
-    private void handleCollection(HttpExchange exchange, String method, String path) throws IOException {
-        InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
 
+    private void handleCollection(HttpExchange exchange, String method, String path) throws IOException {
         if(method.equals("GET")) {
             send(exchange, 200, tasksToJSON());
         }
 
         if(method.equals("POST") && path.equals("/tasks")) {
+            String body = getBody(exchange);
+
             if(!body.isBlank()) {
                 Task task = toTask(body);
                 task.setId((long) tasks.size() + 1);
@@ -90,6 +84,14 @@ public class TodoRestApiHandler implements HttpHandler {
         }
     }
 
+
+    private String getBody(HttpExchange exchange) {
+        InputStream inputStream = exchange.getRequestBody();
+        return new BufferedReader(new InputStreamReader(inputStream))
+                    .lines()
+                    .collect(Collectors.joining("\n"));
+    }
+    
     private void send(HttpExchange exchange, int statusCode, String content) throws IOException {
         exchange.sendResponseHeaders(statusCode, content.getBytes().length);
 
