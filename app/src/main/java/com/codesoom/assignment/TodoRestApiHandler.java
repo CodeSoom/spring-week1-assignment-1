@@ -22,18 +22,25 @@ public class TodoRestApiHandler implements HttpHandler {
         URI url = exchange.getRequestURI();
         String path = url.getPath();
 
-        String content = "Todo List";
 
+
+        if(path.equals("/tasks")) {
+            handleCollection(exchange, method, path);
+        }
+
+        if(path.startsWith("/tasks")) {
+            handleItem(exchange, method, path);
+        }
+    }
+
+    private void handleItem(HttpExchange exchange, String method, String path) throws IOException {
+        String content = "";
         InputStream inputStream = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        if(method.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJSON();
-        }
-
-        if(method.equals("GET") && path.contains("/tasks/")) {
+        if(method.equals("GET")) {
             String id = getId(path);
 
             for (Task task : tasks) {
@@ -43,16 +50,7 @@ public class TodoRestApiHandler implements HttpHandler {
             }
         }
 
-        if(method.equals("POST") && path.equals("/tasks")) {
-            if(!body.isBlank()) {
-                Task task = toTask(body);
-                task.setId((long) tasks.size() + 1);
-                tasks.add(task);
-                content = taskToJSON(task);
-            }
-        }
-
-        if(method.equals("PUT") && path.contains("/tasks/")) {
+        if(method.equals("PUT")) {
             String id = getId(path);
 
             for (Task task : tasks) {
@@ -63,7 +61,7 @@ public class TodoRestApiHandler implements HttpHandler {
             }
         }
 
-        if(method.equals("DELETE") && path.contains("/tasks/")) {
+        if(method.equals("DELETE")) {
             String id = getId(path);
 
             for (Task task : tasks) {
@@ -71,6 +69,35 @@ public class TodoRestApiHandler implements HttpHandler {
                     tasks.remove(task);
                     content = "";
                 }
+            }
+        }
+
+        exchange.sendResponseHeaders(200, content.getBytes().length);
+
+        OutputStream outputStream = exchange.getResponseBody();
+        outputStream.write(content.getBytes());
+        outputStream.flush();
+
+        outputStream.close();
+    }
+
+    private void handleCollection(HttpExchange exchange, String method, String path) throws IOException {
+        String content = "";
+        InputStream inputStream = exchange.getRequestBody();
+        String body = new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
+
+        if(method.equals("GET")) {
+            content = tasksToJSON();
+        }
+
+        if(method.equals("POST") && path.equals("/tasks")) {
+            if(!body.isBlank()) {
+                Task task = toTask(body);
+                task.setId((long) tasks.size() + 1);
+                tasks.add(task);
+                content = taskToJSON(task);
             }
         }
 
