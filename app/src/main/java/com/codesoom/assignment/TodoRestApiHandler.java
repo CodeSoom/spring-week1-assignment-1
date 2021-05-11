@@ -24,53 +24,53 @@ public class TodoRestApiHandler implements HttpHandler {
         String path = url.getPath();
 
         if(path.equals("/tasks")) {
-            handleCollection(exchange, method, path);
+            handleCollection(exchange, method);
         }
 
         if(path.startsWith("/tasks/")) {
             Long id = getId(path);
-            handleItem(exchange, method, path, id);
+            handleItem(exchange, method, id);
         }
     }
 
-    private void handleItem(HttpExchange exchange, String method, String path, Long id) throws IOException {
-        if(method.equals("GET")) {
-            Task task = findTask(id);
+    private void handleItem(HttpExchange exchange, String method, Long id) throws IOException {
+        Task task = findTask(id);
 
+        if(task == null) {
+            send(exchange, 404, "");
+            return;
+        }
+
+        if(method.equals("GET")) {
             send(exchange, 200, taskToJSON(task));
         }
 
-        if(method.equals("PUT")) {
+        if(method.equals("PUT") || method.equals("PATCH")) {
             String body = getBody(exchange);
-            Task task = findTask(id);
 
             task.setTitle(toTask(body).getTitle());
             send(exchange, 200, taskToJSON(task));
         }
 
         if(method.equals("DELETE")) {
-            Task task = findTask(id);
-
             tasks.remove(task);
             send(exchange, 404, "");
         }
     }
 
-    private void handleCollection(HttpExchange exchange, String method, String path) throws IOException {
+    private void handleCollection(HttpExchange exchange, String method) throws IOException {
         if(method.equals("GET")) {
             send(exchange, 200, tasksToJSON());
         }
 
-        if(method.equals("POST") && path.equals("/tasks")) {
+        if(method.equals("POST")) {
             String body = getBody(exchange);
 
-            if(!body.isBlank()) {
-                Task task = toTask(body);
-                task.setId(generateId());
-                tasks.add(task);
+            Task task = toTask(body);
+            task.setId(generateId());
+            tasks.add(task);
 
-                send(exchange, 201, taskToJSON(task));
-            }
+            send(exchange, 201, taskToJSON(task));
         }
     }
 
