@@ -54,7 +54,7 @@ public class TodoRestApiHandler implements HttpHandler {
 
         if(method.equals("DELETE")) {
             tasks.remove(task);
-            send(exchange, 404, "");
+            send(exchange, 204, "");
         }
     }
 
