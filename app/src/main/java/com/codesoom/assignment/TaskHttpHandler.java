@@ -32,22 +32,19 @@ public class TaskHttpHandler implements HttpHandler {
         String content = "Hello, World!";
         int httpStatusCode = 200;
 
-        if (method.equals("GET")) {
-            if (path.equals("/tasks")) {
-                content = tasksToJson();
-            }
-            if (Pattern.matches("/tasks/[0-9]+$", path)) {
-                long taskId = Arrays.stream(path.split("/"))
-                    .skip(2)
-                    .mapToLong(Long::parseLong)
-                    .findFirst()
-                    .getAsLong();
+        if (method.equals("GET") && path.equals("/tasks")) {
+            content = tasksToJson();
+        }
 
-                content = tasks.stream()
-                    .filter(task -> task.isMatchId(taskId))
-                    .map(Task::getTitle)
-                    .findFirst()
-                    .orElse("no task for id");
+        if (method.equals("GET") && Pattern.matches("/tasks/[0-9]+$", path)) {
+            long taskId = getTaskIdFromPath(path);
+
+            String contentFromTaskId = getContentFromTaskId(taskId);
+            if (contentFromTaskId == null) {
+                content = "Can't find task from your id.";
+                httpStatusCode = 404;
+            } else {
+                content = contentFromTaskId;
             }
         }
 
@@ -57,6 +54,22 @@ public class TaskHttpHandler implements HttpHandler {
         responseBody.write(content.getBytes());
         responseBody.flush();
         responseBody.close();
+    }
+
+    private String getContentFromTaskId(long taskId) {
+        return tasks.stream()
+            .filter(task -> task.isMatchId(taskId))
+            .map(Task::getTitle)
+            .findFirst()
+            .orElse(null);
+    }
+
+    private long getTaskIdFromPath(String path) {
+        return Arrays.stream(path.split("/"))
+            .skip(2)
+            .mapToLong(Long::parseLong)
+            .findFirst()
+            .getAsLong();
     }
 
     private String tasksToJson() throws IOException {
