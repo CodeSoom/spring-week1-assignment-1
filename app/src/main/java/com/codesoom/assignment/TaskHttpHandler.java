@@ -98,6 +98,11 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
+        sendHttpResponse(httpExchange, content, httpStatusCode);
+    }
+
+    private void sendHttpResponse(HttpExchange httpExchange, String content, int httpStatusCode)
+        throws IOException {
         httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
 
         OutputStream responseBody = httpExchange.getResponseBody();
