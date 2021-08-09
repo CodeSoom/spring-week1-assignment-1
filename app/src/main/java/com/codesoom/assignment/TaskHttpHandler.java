@@ -43,7 +43,8 @@ public class TaskHttpHandler implements HttpHandler {
             content = tasksToJson();
         }
 
-        if (method.equals("GET") && Pattern.matches("/tasks/[0-9]+$", path)) {
+        boolean isNumberMatchEndOfPath = Pattern.matches("/tasks/[0-9]+$", path);
+        if (method.equals("GET") && isNumberMatchEndOfPath) {
             long taskId = getTaskIdFromPath(path);
 
             Task task = getTaskFromId(taskId);
@@ -65,6 +66,23 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
+        if ((method.equals("PUT") || method.equals("PATCH")) && isNumberMatchEndOfPath) {
+            long taskId = getTaskIdFromPath(path);
+
+            Task task = getTaskFromId(taskId);
+            if (task == null) {
+                content = "Can't find task from your id.";
+                httpStatusCode = 404;
+            } else {
+                Task bodyTask = getTaskFromContent(body);
+
+                task.setTitle(bodyTask.getTitle());
+
+                content = taskToJson(task);
+                httpStatusCode = 200;
+            }
+        }
+
         httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
 
         OutputStream responseBody = httpExchange.getResponseBody();
@@ -81,10 +99,14 @@ public class TaskHttpHandler implements HttpHandler {
         return outputStream.toString();
     }
 
+    private Task getTaskFromContent(String content) throws JsonProcessingException {
+        return objectMapper.readValue(content, Task.class);
+    }
+
     private Task toTask(String content) throws JsonProcessingException {
         Long newTaskId = ((long) (tasks.size() + 1));
 
-        Task task = objectMapper.readValue(content, Task.class);
+        Task task = getTaskFromContent(content);
         task.setId(newTaskId);
 
         return task;
