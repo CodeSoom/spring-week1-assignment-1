@@ -66,7 +66,8 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
-        if ((method.equals("PUT") || method.equals("PATCH")) && isNumberMatchEndOfPath) {
+        if ((method.equals("PUT") || method.equals("PATCH")) && path.equals("/tasks")
+            && isNumberMatchEndOfPath) {
             long taskId = getTaskIdFromPath(path);
 
             Task task = getTaskFromId(taskId);
@@ -83,7 +84,7 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
-        if (method.equals("DELETE") && isNumberMatchEndOfPath) {
+        if (method.equals("DELETE") && path.equals("/tasks") && isNumberMatchEndOfPath) {
             long taskId = getTaskIdFromPath(path);
 
             Task task = getTaskFromId(taskId);
@@ -124,9 +125,9 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private Task toTask(String content) throws JsonProcessingException {
-        Long newTaskId = ((long) (tasks.size() + 1));
-
         Task task = getTaskFromContent(content);
+
+        Long newTaskId = ((long) (tasks.size() + 1));
         task.setId(newTaskId);
 
         return task;
