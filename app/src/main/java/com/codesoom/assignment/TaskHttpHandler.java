@@ -83,6 +83,21 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
+        if (method.equals("DELETE") && isNumberMatchEndOfPath) {
+            long taskId = getTaskIdFromPath(path);
+
+            Task task = getTaskFromId(taskId);
+            if (task == null) {
+                content = "Can't find task from your id.";
+                httpStatusCode = 404;
+            } else {
+                tasks.remove(task);
+
+                content = taskToJson(task);
+                httpStatusCode = 204;
+            }
+        }
+
         httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
 
         OutputStream responseBody = httpExchange.getResponseBody();
