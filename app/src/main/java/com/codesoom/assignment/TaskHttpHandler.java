@@ -23,10 +23,6 @@ public class TaskHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    public TaskHttpHandler() {
-        addTemporaryTasks();
-    }
-
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         URI requestURI = httpExchange.getRequestURI();
@@ -116,15 +112,4 @@ public class TaskHttpHandler implements HttpHandler {
 
         return outputStream.toString();
     }
-
-    private void addTemporaryTasks() {
-        Task task1 = new Task(1L, "task one");
-        Task task2 = new Task(2L, "task two");
-        Task task3 = new Task(3L, "task three");
-
-        tasks.add(task1);
-        tasks.add(task2);
-        tasks.add(task3);
-    }
-
 }
