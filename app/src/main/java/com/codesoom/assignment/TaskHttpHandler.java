@@ -1,21 +1,27 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class TaskHttpHandler implements HttpHandler {
 
     private List<Task> tasks = new ArrayList<>();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     public TaskHttpHandler() {
         addTemporaryTasks();
@@ -28,6 +34,11 @@ public class TaskHttpHandler implements HttpHandler {
         String method = httpExchange.getRequestMethod();
 
         System.out.println(method + " " + path);
+
+        InputStream httpRequestBody = httpExchange.getRequestBody();
+        String body = new BufferedReader(new InputStreamReader(httpRequestBody))
+            .lines()
+            .collect(Collectors.joining("\n"));
 
         String content = "Hello, World!";
         int httpStatusCode = 200;
@@ -48,12 +59,28 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
+        if (method.equals("POST") && path.equals("/tasks")) {
+            if (!body.isEmpty()) {
+                tasks.add(toTask(body));
+                httpStatusCode = 201;
+            }
+        }
+
         httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
 
         OutputStream responseBody = httpExchange.getResponseBody();
         responseBody.write(content.getBytes());
         responseBody.flush();
         responseBody.close();
+    }
+
+    private Task toTask(String content) throws JsonProcessingException {
+        Long newTaskId = ((long) (tasks.size() + 1));
+
+        Task task = objectMapper.readValue(content, Task.class);
+        task.setId(newTaskId);
+
+        return task;
     }
 
     private String getContentFromTaskId(long taskId) {
@@ -73,7 +100,6 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private String tasksToJson() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
         OutputStream outputStream = new ByteArrayOutputStream();
 
         objectMapper.writeValue(outputStream, tasks);
