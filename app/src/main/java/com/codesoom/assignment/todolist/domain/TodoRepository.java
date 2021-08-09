@@ -1,9 +1,8 @@
-package com.codesoom.assignment.todolist.application;
+package com.codesoom.assignment.todolist.domain;
 
-import com.codesoom.assignment.todolist.domain.Task;
+import com.codesoom.assignment.todolist.exceptions.NotFoundEntityException;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TodoRepository {
@@ -40,5 +39,17 @@ public class TodoRepository {
 
     public Optional<Task> findById(Long id) {
         return Optional.ofNullable(store.get(id));
+    }
+
+    public List<Task> findAll() {
+        return new ArrayList<>(store.values());
+    }
+
+    public void deleteById(Long id) {
+        if (!store.containsKey(id)) {
+            throw new NotFoundEntityException();
+        }
+
+        store.remove(id);
     }
 }
