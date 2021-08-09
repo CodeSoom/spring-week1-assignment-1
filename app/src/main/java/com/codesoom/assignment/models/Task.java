@@ -25,4 +25,8 @@ public class Task {
             ", title='" + title + '\'' +
             '}';
     }
+
+    public boolean isMatchId(long taskId) {
+        return this.id.equals(taskId);
+    }
 }

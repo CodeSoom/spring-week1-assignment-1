@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class TaskHttpHandler implements HttpHandler {
 
@@ -17,16 +19,6 @@ public class TaskHttpHandler implements HttpHandler {
 
     public TaskHttpHandler() {
         addTemporaryTasks();
-    }
-
-    private void addTemporaryTasks() {
-        Task task1 = new Task(1L, "task one");
-        Task task2 = new Task(2L, "task two");
-        Task task3 = new Task(3L, "task three");
-
-        tasks.add(task1);
-        tasks.add(task2);
-        tasks.add(task3);
     }
 
     @Override
@@ -40,8 +32,23 @@ public class TaskHttpHandler implements HttpHandler {
         String content = "Hello, World!";
         int httpStatusCode = 200;
 
-        if (method.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJson();
+        if (method.equals("GET")) {
+            if (path.equals("/tasks")) {
+                content = tasksToJson();
+            }
+            if (Pattern.matches("/tasks/[0-9]+$", path)) {
+                long taskId = Arrays.stream(path.split("/"))
+                    .skip(2)
+                    .mapToLong(Long::parseLong)
+                    .findFirst()
+                    .getAsLong();
+
+                content = tasks.stream()
+                    .filter(task -> task.isMatchId(taskId))
+                    .map(Task::getTitle)
+                    .findFirst()
+                    .orElse("no task for id");
+            }
         }
 
         httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
@@ -59,6 +66,16 @@ public class TaskHttpHandler implements HttpHandler {
         objectMapper.writeValue(outputStream, tasks);
 
         return outputStream.toString();
+    }
+
+    private void addTemporaryTasks() {
+        Task task1 = new Task(1L, "task one");
+        Task task2 = new Task(2L, "task two");
+        Task task3 = new Task(3L, "task three");
+
+        tasks.add(task1);
+        tasks.add(task2);
+        tasks.add(task3);
     }
 
 }
