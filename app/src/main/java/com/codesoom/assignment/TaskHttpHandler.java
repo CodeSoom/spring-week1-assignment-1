@@ -50,18 +50,21 @@ public class TaskHttpHandler implements HttpHandler {
         if (method.equals("GET") && Pattern.matches("/tasks/[0-9]+$", path)) {
             long taskId = getTaskIdFromPath(path);
 
-            String contentFromTaskId = getContentFromTaskId(taskId);
-            if (contentFromTaskId == null) {
+            Task task = getTaskFromId(taskId);
+            if (task == null) {
                 content = "Can't find task from your id.";
                 httpStatusCode = 404;
             } else {
-                content = contentFromTaskId;
+                content = taskToJson(task);
             }
         }
 
         if (method.equals("POST") && path.equals("/tasks")) {
             if (!body.isEmpty()) {
-                tasks.add(toTask(body));
+                Task task = toTask(body);
+                tasks.add(task);
+
+                content = taskToJson(task);
                 httpStatusCode = 201;
             }
         }
@@ -74,6 +77,14 @@ public class TaskHttpHandler implements HttpHandler {
         responseBody.close();
     }
 
+    private String taskToJson(Task task) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+
+        objectMapper.writeValue(outputStream, task);
+
+        return outputStream.toString();
+    }
+
     private Task toTask(String content) throws JsonProcessingException {
         Long newTaskId = ((long) (tasks.size() + 1));
 
@@ -83,10 +94,9 @@ public class TaskHttpHandler implements HttpHandler {
         return task;
     }
 
-    private String getContentFromTaskId(long taskId) {
+    private Task getTaskFromId(long taskId) {
         return tasks.stream()
             .filter(task -> task.isMatchId(taskId))
-            .map(Task::getTitle)
             .findFirst()
             .orElse(null);
     }
