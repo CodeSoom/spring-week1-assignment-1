@@ -1,15 +1,19 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.modles.Task;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
-public class TaskHandler implements HttpHandler {
+public final class TaskHandler implements HttpHandler {
+    private final List<Task> tasks = new ArrayList<>();
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         System.out.println(exchange.getRequestURI().getPath());
