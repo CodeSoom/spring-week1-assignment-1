@@ -65,6 +65,21 @@ public final class TaskHandler implements HttpHandler {
         sendResponse(exchange, HttpURLConnection.HTTP_OK, content);
     }
 
+    private void handlePost(final HttpExchange exchange, final String requestBody) throws IOException {
+        final Task task = JsonConverter.jsonToTaskOrNull(requestBody);
+        if (task == null) {
+            sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_TASK_FAIL);
+            return;
+        }
+        final String content = JsonConverter.toJsonOrNull(task);
+        if (content == null) {
+            sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_JSON_FAIL);
+            return ;
+        }
+        tasks.add(task);
+        sendResponse(exchange, HttpURLConnection.HTTP_CREATED, content);
+    }
+
     @Override
     public void handle(final HttpExchange exchange) throws IOException {
         final String method = exchange.getRequestMethod();
@@ -73,16 +88,14 @@ public final class TaskHandler implements HttpHandler {
         final String requestBody = new BufferedReader((new InputStreamReader(exchange.getRequestBody())))
                 .lines().collect(Collectors.joining(System.lineSeparator()));
 
-        System.out.println(requestBody);
-
         if (!EMPTY_STRING.equals(path)) {
             handleId(exchange, method, path);
         }
 
         if (HTTP_GET.equals(method)) {
             handleGet(exchange);
+            return;
         }
-
-        sendResponse(exchange, HttpURLConnection.HTTP_CREATED, HTTP_POST + " " + HANDLER_PATH);
+        handlePost(exchange, requestBody);
     }
 }

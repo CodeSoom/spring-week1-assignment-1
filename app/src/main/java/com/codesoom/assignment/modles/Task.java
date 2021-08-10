@@ -1,29 +1,25 @@
 package com.codesoom.assignment.modles;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-
 public final class Task {
-    private Long id;
-    private String titie;
+    private static Long CURRENT_ID = 1L;
+
+    private final Long id;
+    private String title;
+
+    public Task() {
+        this.id = CURRENT_ID;
+        ++CURRENT_ID;
+    }
 
     public Long getId() {
         return this.id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public String getTitle() {
+        return this.title;
     }
 
-    public String getTitie() {
-        return this.titie;
-    }
-
-    public void setTitie(String titie) {
-        this.titie = titie;
+    public void setTitle(String title) {
+        this.title = title;
     }
 }
