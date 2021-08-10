@@ -42,17 +42,14 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private String getContent(String method, String path, String content) throws IOException {
-        int i = path.indexOf("/tasks/");
-        String id = "";
-        if(i == 0){
-            id = path.replace("/tasks/","");
-        }
 
-        if(method.equals("GET") && path.equals("/tasks")){
+        String id = checkPathgetId(path);
+
+        if("GET".equals(method) && "/tasks".equals(path)){
             return tasksToJSON();
         }
 
-        if(method.equals("GET") && path.equals("/tasks/"+id)){
+        if("GET".equals(method) && ("/tasks/"+id).equals(path)){
             Task task = findId(id);
             if(task == null){
                 return "";
@@ -60,7 +57,7 @@ public class DemoHttpHandler implements HttpHandler {
             return oneTaskToJSON(task);
         }
 
-        if(method.equals("POST") && path.equals("/tasks")){
+        if("POST".equals(method) && "/tasks".equals(path)){
             if(!content.isBlank()){
                 Task task = jsonToTask(content);
                 task.setId(++sequence);
@@ -69,26 +66,32 @@ public class DemoHttpHandler implements HttpHandler {
             return "Create a new task";
         }
 
-        if((method.equals("PUT") || (method.equals("PATCH")) && path.equals("/tasks/"+id))) {
+        if("PUT".equals(method) || "PATCH".equals(method) && ("/tasks/"+id).equals(path)) {
             Task task = findId(id);
             if(task == null){
                 return "";
             }
-            
             updateTitle(task, content);
             return oneTaskToJSON(task);
         }
 
-        if((method.equals("DELETE")) && path.equals("/tasks/"+id)) {
+        if("DELETE".equals(method) && ("/tasks/"+id).equals(path)) {
             Task task = findId(id);
             if(task == null){
-                return "없는 id 입니다.";
+                return "no exist";
             }
             deleteTodo(id);
             return oneTaskToJSON(task);
         }
 
         return "ToDo List";
+    }
+
+    private String checkPathgetId(String path) {
+        if(path.indexOf("/tasks/") == 0){
+            return path.replace("/tasks/","");
+        }
+        return "";
     }
 
     private void deleteTodo(String id) {
