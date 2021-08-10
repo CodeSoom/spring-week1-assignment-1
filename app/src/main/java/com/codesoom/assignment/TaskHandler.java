@@ -25,14 +25,18 @@ public final class TaskHandler implements HttpHandler {
 
     private final List<Task> tasks = new ArrayList<>();
 
-    private void sendResponse(final HttpExchange exchange, final int statusCode, final String content) throws IOException {
+    private void sendResponse(
+            final HttpExchange exchange,final int statusCode, final String content
+    ) throws IOException {
         final OutputStream outputStream = exchange.getResponseBody();
         exchange.sendResponseHeaders(statusCode, content.getBytes().length);
         outputStream.write(content.getBytes(StandardCharsets.UTF_8));
         outputStream.close();
     }
 
-    private void handleId(final HttpExchange exchange, final String method, final String path) throws IOException {
+    private void handleId(
+            final HttpExchange exchange, final String method, final String path
+    ) throws IOException {
         if (HTTP_PUT.equals(method)) {
             sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_PUT + " " + path);
             return ;
