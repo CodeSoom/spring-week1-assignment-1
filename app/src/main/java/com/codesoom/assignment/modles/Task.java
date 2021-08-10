@@ -31,24 +31,4 @@ public final class Task {
     public void setTitie(String titie) {
         this.titie = titie;
     }
-
-    public static Task toTaskOrNull(final String content) {
-        try {
-            return OBJECT_MAPPER.readValue(content, Task.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public String toJsonOrNull() {
-        final OutputStream outputStream = new ByteArrayOutputStream();
-        try {
-            OBJECT_MAPPER.writeValue(outputStream, this);
-            return outputStream.toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 }

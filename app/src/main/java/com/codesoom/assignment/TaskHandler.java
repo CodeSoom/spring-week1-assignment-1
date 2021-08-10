@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.modles.Task;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -71,7 +72,8 @@ public final class TaskHandler implements HttpHandler {
         }
 
         if (HTTP_GET.equals(method)) {
-            sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_GET + " " + HANDLER_PATH);
+            final String content = JsonConverter.toJsonOrNull(tasks);
+            sendResponse(exchange, HttpURLConnection.HTTP_OK, content);
             return;
         }
 
