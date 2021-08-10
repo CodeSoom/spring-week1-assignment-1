@@ -11,11 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class TaskHttpHandler implements HttpHandler {
@@ -27,11 +24,8 @@ public class TaskHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        URI requestURI = httpExchange.getRequestURI();
-        String path = requestURI.getPath();
-        String method = httpExchange.getRequestMethod();
-
-        System.out.println(method + " " + path);
+        HttpRequest httpRequest = new HttpRequest(httpExchange);
+        System.out.println(httpRequest);
 
         InputStream httpRequestBody = httpExchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(httpRequestBody))
@@ -41,13 +35,12 @@ public class TaskHttpHandler implements HttpHandler {
         String content = "Hello, World!";
         int httpStatusCode = 200;
 
-        if (method.equals("GET") && path.equals("/tasks")) {
+        if (httpRequest.isMatchMethod("GET") && httpRequest.isMatchPath("/tasks")) {
             content = tasksToJson();
         }
 
-        boolean hasTaskId = Pattern.matches("/tasks/[0-9]+$", path);
-        if (method.equals("GET") && hasTaskId) {
-            long taskId = getTaskIdFromPath(path);
+        if (httpRequest.isMatchMethod("GET") && httpRequest.hasTaskId()) {
+            long taskId = httpRequest.getTaskIdFromPath();
 
             Task task = getTaskFromId(taskId);
             if (task == null) {
@@ -58,7 +51,7 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
-        if (method.equals("POST") && path.equals("/tasks")) {
+        if (httpRequest.isMatchMethod("POST") && httpRequest.isMatchPath("/tasks")) {
             if (!body.isEmpty()) {
                 Task task = toTask(body);
                 tasks.add(task);
@@ -68,9 +61,9 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
-        if ((method.equals("PUT") || method.equals("PATCH")) && path.startsWith("/tasks")
-            && hasTaskId) {
-            long taskId = getTaskIdFromPath(path);
+        if (httpRequest.isUpdateMethod() && httpRequest.pathStartsWith("/tasks") && httpRequest
+            .hasTaskId()) {
+            long taskId = httpRequest.getTaskIdFromPath();
 
             Task task = getTaskFromId(taskId);
             if (task == null) {
@@ -86,8 +79,8 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
-        if (method.equals("DELETE") && path.startsWith("/tasks") && hasTaskId) {
-            long taskId = getTaskIdFromPath(path);
+        if (httpRequest.isMatchMethod("DELETE") && httpRequest.pathStartsWith("/tasks") && httpRequest.hasTaskId()) {
+            long taskId = httpRequest.getTaskIdFromPath();
 
             Task task = getTaskFromId(taskId);
             if (task == null) {
@@ -138,14 +131,6 @@ public class TaskHttpHandler implements HttpHandler {
             .filter(task -> task.isMatchId(taskId))
             .findFirst()
             .orElse(null);
-    }
-
-    private long getTaskIdFromPath(String path) {
-        return Arrays.stream(path.split("/"))
-            .skip(2)
-            .mapToLong(Long::parseLong)
-            .findFirst()
-            .getAsLong();
     }
 
     private String tasksToJson() throws IOException {
