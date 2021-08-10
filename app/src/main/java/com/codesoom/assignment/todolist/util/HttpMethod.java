@@ -19,6 +19,6 @@ public enum HttpMethod {
         return Arrays.stream(HttpMethod.values())
                 .filter(m-> m.name.equalsIgnoreCase(method))
                 .findFirst()
-                .orElseThrow(RuntimeException::new);
+                .orElse(GET);
     }
 }
