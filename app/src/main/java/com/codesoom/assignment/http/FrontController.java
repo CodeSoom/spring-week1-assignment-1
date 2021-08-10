@@ -4,6 +4,7 @@ import com.codesoom.assignment.common.MethodArgumentResolver;
 import com.codesoom.assignment.todolist.domain.Controller;
 import com.codesoom.assignment.todolist.exceptions.AlreadyExistsControllerException;
 import com.codesoom.assignment.todolist.exceptions.AlreadyExistsResolverException;
+import com.codesoom.assignment.todolist.exceptions.NotFoundSupportedResolverException;
 import com.codesoom.assignment.todolist.exceptions.NotFoundEntityException;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -15,7 +16,6 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class FrontController {
     private static final FrontController instance = new FrontController();
@@ -89,14 +89,12 @@ public class FrontController {
     }
 
     private Object mapping(Parameter parameter, HttpExchange exchange, Method method) {
-        MethodArgumentResolver supportedResolver = argumentResolvers.stream().filter(resolver -> resolver.supportParameter(parameter))
+        MethodArgumentResolver supportedResolver = argumentResolvers.stream()
+                .filter(resolver -> resolver.supportParameter(parameter))
                 .findAny()
-                .orElse(null);
+                .orElseThrow(NotFoundSupportedResolverException::new);
 
-        if (Objects.nonNull(supportedResolver)) {
-            return supportedResolver.resolveArgument(exchange, parameter, method);
-        }
-        return null;
+        return supportedResolver.resolveArgument(exchange, parameter, method);
     }
 
     public boolean support(URI uri) {
