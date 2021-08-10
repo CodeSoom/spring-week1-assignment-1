@@ -7,8 +7,8 @@ import java.util.regex.Pattern;
 
 public class HttpRequest {
 
-    private String path;
-    private String method;
+    private final String path;
+    private final String method;
 
     public HttpRequest(HttpExchange httpExchange) {
         URI requestURI = httpExchange.getRequestURI();

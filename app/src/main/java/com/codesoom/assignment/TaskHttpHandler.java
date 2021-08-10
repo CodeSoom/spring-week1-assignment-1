@@ -20,10 +20,10 @@ public class TaskHttpHandler implements HttpHandler {
     public static final String NOT_FOUND_MESSAGE = "Not Found.";
     public static final String NOT_FOUND_TASK_ID_MESSAGE = "Can't find task from your id.";
 
-    private Long lastTaskId = 1L;
+    private final List<Task> tasks = new ArrayList<>();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private List<Task> tasks = new ArrayList<>();
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private Long lastTaskId = 1L;
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
