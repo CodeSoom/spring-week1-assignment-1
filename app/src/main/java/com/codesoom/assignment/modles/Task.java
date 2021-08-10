@@ -8,11 +8,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 public final class Task {
-    public static final String TO_JSON_FAIL = "Json conversion fail.";
-    public static final String TO_TASK_FAIL = "Task conversion fail.";
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
     private Long id;
     private String titie;
 

@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public final class TaskHandler implements HttpHandler {
+    public static final String TO_JSON_FAIL = "Json conversion fail.";
+    public static final String TO_TASK_FAIL = "Task conversion fail.";
+
     public static final String HANDLER_PATH = "/tasks";
 
     private static final String EMPTY_STRING = "";
@@ -27,7 +30,7 @@ public final class TaskHandler implements HttpHandler {
     private final List<Task> tasks = new ArrayList<>();
 
     private void sendResponse(
-            final HttpExchange exchange,final int statusCode, final String content
+            final HttpExchange exchange, final int statusCode, final String content
     ) throws IOException {
         final OutputStream outputStream = exchange.getResponseBody();
         exchange.sendResponseHeaders(statusCode, content.getBytes().length);
@@ -40,20 +43,26 @@ public final class TaskHandler implements HttpHandler {
     ) throws IOException {
         if (HTTP_PUT.equals(method)) {
             sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_PUT + " " + path);
-            return ;
         }
 
         if (HTTP_PATCH.equals(method)) {
             sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_PATCH + " " + path);
-            return ;
         }
 
         if (HTTP_DELETE.equals(method)) {
             sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_DELETE + " " + path);
-            return ;
         }
 
         sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_GET + " " + path);
+    }
+
+    private void handleGet(final HttpExchange exchange) throws IOException {
+        final String content = JsonConverter.toJsonOrNull(tasks);
+        if (content == null) {
+            sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_JSON_FAIL);
+            return;
+        }
+        sendResponse(exchange, HttpURLConnection.HTTP_OK, content);
     }
 
     @Override
@@ -68,32 +77,12 @@ public final class TaskHandler implements HttpHandler {
 
         if (!EMPTY_STRING.equals(path)) {
             handleId(exchange, method, path);
-            return;
         }
 
         if (HTTP_GET.equals(method)) {
-            final String content = JsonConverter.toJsonOrNull(tasks);
-            sendResponse(exchange, HttpURLConnection.HTTP_OK, content);
-            return;
+            handleGet(exchange);
         }
 
         sendResponse(exchange, HttpURLConnection.HTTP_CREATED, HTTP_POST + " " + HANDLER_PATH);
-
-//
-//        final Task task = Task.toTaskOrNull(requestBody);
-//        if (task == null) {
-//            sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, Task.TO_TASK_FAIL);
-//            return;
-//        }
-//
-//        System.out.println(task.toString());
-//
-//        final String content = task.toJsonOrNull();
-//        if (content == null) {
-//            sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, Task.TO_JSON_FAIL);
-//            return;
-//        }
-//
-//        sendResponse(exchange, HttpURLConnection.HTTP_OK, content);
     }
 }
