@@ -10,6 +10,7 @@ import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
@@ -17,10 +18,23 @@ public class DemoHttpHandler implements HttpHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static Long sequence = 0L;
 
+    private enum HttpStatus {
+        OK(200), CREATED(201);
+
+        private final int code;
+
+        HttpStatus(int code) {
+            this.code = code;
+        }
+
+        public int getCode() {
+            return code;
+        }
+    }
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
-
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
@@ -33,7 +47,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         String content = getContent(method, path, body);
 
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+        exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
 
         OutputStream outputstream = exchange.getResponseBody();
         outputstream.write(content.getBytes());
@@ -43,22 +57,22 @@ public class DemoHttpHandler implements HttpHandler {
 
     private String getContent(String method, String path, String content) throws IOException {
 
-        String id = checkPathgetId(path);
+        String id = checkPathGetId(path);
 
         if("GET".equals(method) && "/tasks".equals(path)){
             return tasksToJSON();
         }
 
         if("GET".equals(method) && ("/tasks/"+id).equals(path)){
-            Task task = findId(id);
-            if(task == null){
+            Optional<Task> task = findId(id);
+            if(task.isEmpty()){
                 return "";
             }
-            return oneTaskToJSON(task);
+            return oneTaskToJSON(task.get());
         }
 
         if("POST".equals(method) && "/tasks".equals(path)){
-            if(!content.isBlank()){
+            if(!content.isEmpty()){
                 Task task = jsonToTask(content);
                 task.setId(++sequence);
                 tasks.add(task);
@@ -67,27 +81,27 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         if("PUT".equals(method) || "PATCH".equals(method) && ("/tasks/"+id).equals(path)) {
-            Task task = findId(id);
-            if(task == null){
+            Optional<Task> task = findId(id);
+            if(task.isEmpty()){
                 return "";
             }
-            updateTitle(task, content);
-            return oneTaskToJSON(task);
+            Task updateTask = updateTitle(task.get(), content);
+            return oneTaskToJSON(updateTask);
         }
 
         if("DELETE".equals(method) && ("/tasks/"+id).equals(path)) {
-            Task task = findId(id);
+            Optional<Task> task = findId(id);
             if(task == null){
                 return "no exist";
             }
             deleteTodo(id);
-            return oneTaskToJSON(task);
+            return "";
         }
 
         return "ToDo List";
     }
 
-    private String checkPathgetId(String path) {
+    private String checkPathGetId(String path) {
         if(path.indexOf("/tasks/") == 0){
             return path.replace("/tasks/","");
         }
@@ -102,9 +116,10 @@ public class DemoHttpHandler implements HttpHandler {
         }
     }
 
-    private void updateTitle(Task task, String content) throws JsonProcessingException {
+    private Task updateTitle(Task task, String content) throws JsonProcessingException {
         Task originTask = jsonToTask(content);
         task.setTitle(originTask.getTitle());
+        return task;
     }
 
     private String oneTaskToJSON(Task task) throws IOException {
@@ -113,13 +128,16 @@ public class DemoHttpHandler implements HttpHandler {
         return outputStream.toString();
     }
 
-    private Task findId(String id) {
-        for(Task task : tasks){
-            if((task.getId()+"").equals(id)){
-                return task;
+    private Optional findId(String id) {
+        Optional<Task> task = Optional.empty();
+
+        for(Task findTask : tasks){
+            if((findTask.getId()+"").equals(id)){
+                return task.of(findTask);
             }
         }
-        return null;
+
+        return task;
     }
 
     private Task jsonToTask(String content) throws JsonProcessingException {
