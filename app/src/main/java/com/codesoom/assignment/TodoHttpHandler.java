@@ -8,7 +8,6 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
-import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -34,8 +33,8 @@ public class TodoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        // TODO: 나중에 mehotd들 enum으로 변경해보기
-        if (method.equals(GET)) {
+        // TODO: 나중에 method들 enum으로 변경해보기
+        if (GET.equals(method)) {
             if (path.equals(BASIC_URI)) {
                 content = tasksToJSON();
             } else {
@@ -43,7 +42,7 @@ public class TodoHttpHandler implements HttpHandler {
                 Task task = taskMap.get(id);
                 content = taskToJSON(task);
             }
-        } else if (method.equals(POST)) {
+        } else if (POST.equals(method)) {
             if(!body.isBlank()) {
                 Task task = toTask(body);
                 taskMap.put(task.getId(), task);
@@ -53,7 +52,7 @@ public class TodoHttpHandler implements HttpHandler {
             } else {
                 content = "";
             }
-        } else if (method.equals(PUT)) {
+        } else if (PUT.equals(method)) {
             Long id = getId(path);
             Task task = taskMap.get(id);
 
@@ -63,7 +62,7 @@ public class TodoHttpHandler implements HttpHandler {
 
             content = taskToJSON(task);
 
-        } else if (method.equals(PATCH)) {
+        } else if (PATCH.equals(method)) {
             Long id = getId(path);
             Task task = taskMap.get(id);
 
@@ -72,7 +71,7 @@ public class TodoHttpHandler implements HttpHandler {
             taskMap.put(id, task);
 
             content = taskToJSON(task);
-        } else if (method.equals(DELETE)) {
+        } else if (DELETE.equals(method)) {
             Long id = getId(path);
             taskMap.remove(id);
             content = "";
