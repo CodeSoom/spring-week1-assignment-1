@@ -39,17 +39,39 @@ public class DemoHttpHandler implements HttpHandler {
 
         // 콘텐츠 초기화
         String content = null;
+        int HttpStatusOK = 200;
+        int HttpStatusCreated = 201;
+        int HttpStatusNoContent = 204;
+        int HttpStatusNotFound = 404;
 
+        
         // GET /tasks
         if (method.equals("GET") && path.equals("/tasks")) {
             content = tasksToJson(tasks);
+
+            exchange.sendResponseHeaders(HttpStatusOK, content.getBytes().length);
+            OutputStream responseBody = exchange.getResponseBody();
+            responseBody.write(content.getBytes());
+            responseBody.flush();
+            responseBody.close();
         }
 
         // GET /tasks/{id}
         if (method.equals("GET") && hasTaskId) {
             Long id = extractIdFromPath(path);
             Task findTask = findTaskById(id);
-            content = taskToJson(findTask);
+            if (findTask == null) {
+                content = "Cannot find task by id";
+                exchange.sendResponseHeaders(HttpStatusNotFound, content.getBytes().length);
+            } else {
+                content = taskToJson(findTask);
+                exchange.sendResponseHeaders(HttpStatusOK, content.getBytes().length);
+            }
+
+            OutputStream responseBody = exchange.getResponseBody();
+            responseBody.write(content.getBytes());
+            responseBody.flush();
+            responseBody.close();
         }
 
         // POST /tasks
@@ -57,13 +79,32 @@ public class DemoHttpHandler implements HttpHandler {
             Task task = createTaskWithId(body);
             content = taskToJson(task);
             tasks.add(task);
+
+            exchange.sendResponseHeaders(HttpStatusCreated, content.getBytes().length);
+            OutputStream responseBody = exchange.getResponseBody();
+            responseBody.write(content.getBytes());
+            responseBody.flush();
+            responseBody.close();
         }
 
         // Delete /tasks/{id}
         if (method.equals("DELETE") && hasTaskId) {
             Long id = extractIdFromPath(path);
             Task findTask = findTaskById(id);
-            tasks.remove(findTask);
+
+            if (findTask == null) {
+                content = "Cannot find task by id";
+                exchange.sendResponseHeaders(HttpStatusNotFound, content.getBytes().length);
+            } else {
+                tasks.remove(findTask);
+                content = tasksToJson(tasks);
+                exchange.sendResponseHeaders(HttpStatusNoContent, -1L);
+            }
+
+            OutputStream responseBody = exchange.getResponseBody();
+            responseBody.write(content.getBytes());
+            responseBody.flush();
+            responseBody.close();
         }
 
         // PUT,PATCH /tasks/{id}
@@ -71,17 +112,22 @@ public class DemoHttpHandler implements HttpHandler {
         if ((method.equals("PATCH") || method.equals("PUT")) && hasTaskId) {
             Long id = extractIdFromPath(path);
             Task findTask = findTaskById(id);
-            Task inputTask = toTask(body);
-            findTask.setTitle(inputTask.getTitle());
+            if (findTask == null) {
+                content = "Cannot find task by id";
+                exchange.sendResponseHeaders(HttpStatusNotFound, content.getBytes().length);
+            } else {
+                Task inputTask = toTask(body);
+                findTask.setTitle(inputTask.getTitle());
 
-            content = taskToJson(findTask);
+                content = taskToJson(findTask);
+                exchange.sendResponseHeaders(HttpStatusOK, content.getBytes().length);
+            }
+
+            OutputStream responseBody = exchange.getResponseBody();
+            responseBody.write(content.getBytes());
+            responseBody.flush();
+            responseBody.close();
         }
-
-        exchange.sendResponseHeaders(200, content.getBytes().length);
-        OutputStream responseBody = exchange.getResponseBody();
-        responseBody.write(content.getBytes());
-        responseBody.flush();
-        responseBody.close();
     }
 
     /**
@@ -103,7 +149,6 @@ public class DemoHttpHandler implements HttpHandler {
                     .orElseThrow(NoSuchElementException::new);
             task.setId(maxId + 1L);
         }
-        System.out.println("task = " + task);
 
         return task;
     }
@@ -119,7 +164,7 @@ public class DemoHttpHandler implements HttpHandler {
                 .stream()
                 .filter(t -> t.getId().equals(id))
                 .findFirst()
-                .orElseThrow(NoSuchElementException::new);
+                .orElse(null);
     }
 
     /**
