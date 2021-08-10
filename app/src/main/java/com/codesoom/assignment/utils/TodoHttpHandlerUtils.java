@@ -1,5 +1,6 @@
 package com.codesoom.assignment.utils;
 
+import com.codesoom.assignment.models.StatusCode;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.models.Title;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -41,8 +42,8 @@ public class TodoHttpHandlerUtils {
         return outputStream.toString();
     }
 
-    public static void writeOutputStream(HttpExchange exchange, String content, Integer statusCode) throws IOException {
-        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
+    public static void writeOutputStream(HttpExchange exchange, String content, StatusCode statusCode) throws IOException {
+        exchange.sendResponseHeaders(statusCode.getValue(), content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();

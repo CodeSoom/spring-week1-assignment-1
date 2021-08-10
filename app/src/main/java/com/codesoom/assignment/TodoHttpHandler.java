@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.HttpMethod;
+import com.codesoom.assignment.models.StatusCode;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.models.Title;
 import com.sun.net.httpserver.HttpExchange;
@@ -31,17 +32,17 @@ public class TodoHttpHandler implements HttpHandler {
         // TODO: 나중에 method들 enum으로 변경해보기
         if (HttpMethod.GET.getHttpMethod().equals(method) && URI_WITHOUT_PARAMETERS.equals(path)) {
             content = tasksToJSON(taskMap);
-            writeOutputStream(exchange, content, 200);
+            writeOutputStream(exchange, content, StatusCode.OK);
         }
         if (HttpMethod.GET.getHttpMethod().equals(method) && !URI_WITHOUT_PARAMETERS.equals(path)) {
             Long id = getId(path);
             Task task = taskMap.get(id);
             if (task == null) {
-                writeOutputStream(exchange, content, 404);
+                writeOutputStream(exchange, content, StatusCode.NOT_FOUND);
                 return;
             }
             content = taskToJSON(task);
-            writeOutputStream(exchange, content, 200);
+            writeOutputStream(exchange, content, StatusCode.OK);
         }
         if (HttpMethod.POST.getHttpMethod().equals(method)) {
             Task task = toTask(body);
@@ -51,13 +52,13 @@ public class TodoHttpHandler implements HttpHandler {
             Task lastTask = taskMap.get(lastSequence);
 
             content = taskToJSON(lastTask);
-            writeOutputStream(exchange, content, 201);
+                writeOutputStream(exchange, content, StatusCode.Created);
         }
         if (HttpMethod.PUT.getHttpMethod().equals(method)) {
             Long id = getId(path);
             Task task = taskMap.get(id);
             if (task == null) {
-                writeOutputStream(exchange, content, 404);
+                writeOutputStream(exchange, content, StatusCode.NOT_FOUND);
                 return;
             }
 
@@ -66,13 +67,13 @@ public class TodoHttpHandler implements HttpHandler {
             taskMap.put(id, task);
 
             content = taskToJSON(task);
-            writeOutputStream(exchange, content, 200);
+            writeOutputStream(exchange, content, StatusCode.OK);
         }
         if (HttpMethod.PATCH.getHttpMethod().equals(method)) {
             Long id = getId(path);
             Task task = taskMap.get(id);
             if (task == null) {
-                writeOutputStream(exchange, content, 404);
+                writeOutputStream(exchange, content, StatusCode.NOT_FOUND);
                 return;
             }
             Title title = toTitle(body);  //body를 직접 쓸시 인코딩 깨짐 문제 존재. 인코딩 방식 찾지 못해 Title 객체 생성해서 사용.
@@ -80,19 +81,19 @@ public class TodoHttpHandler implements HttpHandler {
             taskMap.put(id, task);
 
             content = taskToJSON(task);
-            writeOutputStream(exchange, content, 200);
+            writeOutputStream(exchange, content, StatusCode.OK);
         }
         if (HttpMethod.DELETE.getHttpMethod().equals(method)) {
             Long id = getId(path);
             Task task = taskMap.get(id);
             if (task == null) {
-                writeOutputStream(exchange, content, 404);
+                writeOutputStream(exchange, content, StatusCode.NOT_FOUND);
                 return;
             }
 
             taskMap.remove(id);
             content = "";
-            writeOutputStream(exchange, content, 204);
+            writeOutputStream(exchange, content, StatusCode.NO_CONTENT);
         }
     }
 }
