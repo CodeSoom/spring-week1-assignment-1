@@ -32,11 +32,13 @@ public class TaskHttpHandler implements HttpHandler {
             .lines()
             .collect(Collectors.joining("\n"));
 
-        String content = "Hello, World!";
-        int httpStatusCode = 200;
+        String content;
+        int httpStatusCode;
 
         if (httpRequest.isMatchMethod("GET") && httpRequest.isMatchPath("/tasks")) {
             content = tasksToJson();
+            httpStatusCode = 200;
+            new HttpResponse(httpExchange).send(httpStatusCode, content);
         }
 
         if (httpRequest.isMatchMethod("GET") && httpRequest.hasTaskId()) {
@@ -46,9 +48,12 @@ public class TaskHttpHandler implements HttpHandler {
             if (task == null) {
                 content = "Can't find task from your id.";
                 httpStatusCode = 404;
-            } else {
-                content = taskToJson(task);
+                new HttpResponse(httpExchange).send(httpStatusCode, content);
             }
+
+            content = taskToJson(task);
+            httpStatusCode = 200;
+            new HttpResponse(httpExchange).send(httpStatusCode, content);
         }
 
         if (httpRequest.isMatchMethod("POST") && httpRequest.isMatchPath("/tasks")) {
@@ -58,6 +63,7 @@ public class TaskHttpHandler implements HttpHandler {
 
                 content = taskToJson(task);
                 httpStatusCode = 201;
+                new HttpResponse(httpExchange).send(httpStatusCode, content);
             }
         }
 
@@ -69,42 +75,36 @@ public class TaskHttpHandler implements HttpHandler {
             if (task == null) {
                 content = "Can't find task from your id.";
                 httpStatusCode = 404;
-            } else {
-                Task bodyTask = getTaskFromContent(body);
-
-                task.setTitle(bodyTask.getTitle());
-
-                content = taskToJson(task);
-                httpStatusCode = 200;
+                new HttpResponse(httpExchange).send(httpStatusCode, content);
             }
+            Task bodyTask = getTaskFromContent(body);
+
+            task.setTitle(bodyTask.getTitle());
+
+            content = taskToJson(task);
+            httpStatusCode = 200;
+
+            new HttpResponse(httpExchange).send(httpStatusCode, content);
         }
 
-        if (httpRequest.isMatchMethod("DELETE") && httpRequest.pathStartsWith("/tasks") && httpRequest.hasTaskId()) {
+        if (httpRequest.isMatchMethod("DELETE") && httpRequest.pathStartsWith("/tasks")
+            && httpRequest.hasTaskId()) {
             long taskId = httpRequest.getTaskIdFromPath();
 
             Task task = getTaskFromId(taskId);
             if (task == null) {
                 content = "Can't find task from your id.";
                 httpStatusCode = 404;
-            } else {
-                tasks.remove(task);
-
-                content = taskToJson(task);
-                httpStatusCode = 204;
+                new HttpResponse(httpExchange).send(httpStatusCode, content);
             }
+            tasks.remove(task);
+
+            content = taskToJson(task);
+            httpStatusCode = 204;
+            new HttpResponse(httpExchange).send(httpStatusCode, content);
         }
 
-        sendHttpResponse(httpExchange, content, httpStatusCode);
-    }
-
-    private void sendHttpResponse(HttpExchange httpExchange, String content, int httpStatusCode)
-        throws IOException {
-        httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
-
-        OutputStream responseBody = httpExchange.getResponseBody();
-        responseBody.write(content.getBytes());
-        responseBody.flush();
-        responseBody.close();
+        new HttpResponse(httpExchange).send(400, "Bad Request");
     }
 
     private String taskToJson(Task task) throws IOException {
