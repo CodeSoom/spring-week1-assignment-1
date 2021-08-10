@@ -20,12 +20,9 @@ public class DemoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
 
     public DemoHttpHandler(){
-        Task task = new Task();
-        task.setId(1L);
-        task.setTitle("do nothing");
-        tasks.add(task);
-    }
 
+    }
+    long id = 0L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -33,7 +30,6 @@ public class DemoHttpHandler implements HttpHandler {
         String method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
-
 
         InputStream inputStream = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(inputStream))
@@ -44,7 +40,10 @@ public class DemoHttpHandler implements HttpHandler {
         if(!body.isBlank()){
 
             Task task = toTask(body);
+            ++id;
+            task.setId(id);
             tasks.add(task);
+
         };
 
         String content = "Hello codesoom";
