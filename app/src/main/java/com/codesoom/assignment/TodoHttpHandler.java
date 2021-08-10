@@ -34,97 +34,76 @@ public class TodoHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         // TODO: 나중에 method들 enum으로 변경해보기
-        if (GET.equals(method)) {
-            if (URI_WITHOUT_PARAMETERS.equals(path)) {
-                content = tasksToJSON(taskMap);
-            } else {
-                Long id = getId(path);
-                Task task = taskMap.get(id);
-                if (task == null) {
-                    exchange.sendResponseHeaders(404, content.getBytes().length);
-                    OutputStream outputStream = exchange.getResponseBody();
-                    outputStream.write(content.getBytes());
-                    outputStream.flush();
-                    outputStream.close();
-                    return;
-                }
-                content = taskToJSON(task);
-            }
-        } else if (POST.equals(method)) {
-            if(!body.isBlank()) {
-                Task task = toTask(body);
-                taskMap.put(task.getId(), task);
-                Long lastSequence = Task.getSequence();
-                Task lastTask = taskMap.get(lastSequence);
-                content = taskToJSON(lastTask);
-                exchange.sendResponseHeaders(201, content.getBytes().length);
-                OutputStream outputStream = exchange.getResponseBody();
-                outputStream.write(content.getBytes());
-                outputStream.flush();
-                outputStream.close();
-                return;
-            } else {
-                content = "";
-            }
-        } else if (PUT.equals(method)) {
+        if (GET.equals(method) && URI_WITHOUT_PARAMETERS.equals(path)) {
+            content = tasksToJSON(taskMap);
+            writeOutputStream(exchange, content, 200);
+            return;
+        }
+        if (GET.equals(method) && !URI_WITHOUT_PARAMETERS.equals(path)) {
             Long id = getId(path);
             Task task = taskMap.get(id);
             if (task == null) {
-                exchange.sendResponseHeaders(404, content.getBytes().length);
-                OutputStream outputStream = exchange.getResponseBody();
-                outputStream.write(content.getBytes());
-                outputStream.flush();
-                outputStream.close();
+                writeOutputStream(exchange, content, 404);
                 return;
             }
+            content = taskToJSON(task);
+            writeOutputStream(exchange, content, 200);
+            return;
+        }
+        if (POST.equals(method)) {
+            Task task = toTask(body);
+            taskMap.put(task.getId(), task);
+
+            Long lastSequence = Task.getSequence();
+            Task lastTask = taskMap.get(lastSequence);
+
+            content = taskToJSON(lastTask);
+            writeOutputStream(exchange, content, 201);
+            return;
+        }
+        if (PUT.equals(method)) {
+            Long id = getId(path);
+            Task task = taskMap.get(id);
+            if (task == null) {
+                writeOutputStream(exchange, content, 404);
+                return;
+            }
+
             Task changeTask = toTask(body);
             task.setTitle(changeTask.getTitle());
             taskMap.put(id, task);
 
             content = taskToJSON(task);
-
-        } else if (PATCH.equals(method)) {
+            writeOutputStream(exchange, content, 200);
+            return;
+        }
+        if (PATCH.equals(method)) {
             Long id = getId(path);
             Task task = taskMap.get(id);
             if (task == null) {
-                exchange.sendResponseHeaders(404, content.getBytes().length);
-                OutputStream outputStream = exchange.getResponseBody();
-                outputStream.write(content.getBytes());
-                outputStream.flush();
-                outputStream.close();
+                writeOutputStream(exchange, content, 404);
                 return;
             }
-            Title title = toTitle(body);  //body를 직접 쓸시 인코딩 깨짐 문제 존재. 인코딩 방식 찾지 못해 Title 객체 만들어서 body를 전환하는 걸로.
+            Title title = toTitle(body);  //body를 직접 쓸시 인코딩 깨짐 문제 존재. 인코딩 방식 찾지 못해 Title 객체 생성해서 사용.
             task.setTitle(title.getTitle());
             taskMap.put(id, task);
 
             content = taskToJSON(task);
-        } else if (DELETE.equals(method)) {
+            writeOutputStream(exchange, content, 200);
+            return;
+        }
+        if (DELETE.equals(method)) {
             Long id = getId(path);
             Task task = taskMap.get(id);
             if (task == null) {
-                exchange.sendResponseHeaders(404, content.getBytes().length);
-                OutputStream outputStream = exchange.getResponseBody();
-                outputStream.write(content.getBytes());
-                outputStream.flush();
-                outputStream.close();
+                writeOutputStream(exchange, content, 404);
                 return;
             }
+
             taskMap.remove(id);
             content = "";
-            exchange.sendResponseHeaders(204, content.getBytes().length);
-
-            OutputStream outputStream = exchange.getResponseBody();
-            outputStream.write(content.getBytes());
-            outputStream.flush();
-            outputStream.close();
+            writeOutputStream(exchange, content, 204);
+            return;
         }
-
-        exchange.sendResponseHeaders(200, content.getBytes().length);
-
-        OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
     }
 }

@@ -4,6 +4,7 @@ import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.models.Title;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.net.httpserver.HttpExchange;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -38,5 +39,13 @@ public class TodoHttpHandlerUtils {
         objectMapper.writeValue(outputStream, taskMap.values());
 
         return outputStream.toString();
+    }
+
+    public static void writeOutputStream(HttpExchange exchange, String content, Integer statusCode) throws IOException {
+        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
+        OutputStream outputStream = exchange.getResponseBody();
+        outputStream.write(content.getBytes());
+        outputStream.flush();
+        outputStream.close();
     }
 }
