@@ -12,10 +12,15 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.logging.Logger;
 
 public class HttpConnector {
+    Logger logger = Logger.getLogger(this.getClass().getName());
+
     private static final int DEFAULT_PORT = 8000;
     public static final String ROOT_CONTEXT = "/";
+    public static final int DEFAULT_BACKLOG = 0;
+
     private final FrontController frontController;
     HttpServer server = null;
 
@@ -24,13 +29,13 @@ public class HttpConnector {
     }
 
 
-    public void start(){
+    public void start() {
         start(DEFAULT_PORT);
     }
 
-    public void start(int port){
+    public void start(int port) {
         try {
-            server = HttpServer.create(new InetSocketAddress(port), 0);
+            server = HttpServer.create(new InetSocketAddress(port), DEFAULT_BACKLOG);
             HttpContext context = server.createContext(ROOT_CONTEXT);
             context.setHandler(this::handleRequest);
             server.start();
@@ -48,13 +53,13 @@ public class HttpConnector {
         } else {
             response = Response.from(HttpURLConnection.HTTP_NOT_FOUND);
         }
-
-        final ObjectMapper om = ObjectMapperSingleton.getInstance();
-        final byte[] bytes = om.writeValueAsBytes(response.getBody());
-        exchange.sendResponseHeaders(response.getStatusCode(), bytes.length);
-        OutputStream os = exchange.getResponseBody();
-
-        os.write(bytes);
-        os.close();
+        try (OutputStream os = exchange.getResponseBody()) {
+            final ObjectMapper om = ObjectMapperSingleton.getInstance();
+            final byte[] bytes = om.writeValueAsBytes(response.getBody());
+            exchange.sendResponseHeaders(response.getStatusCode(), bytes.length);
+            os.write(bytes);
+        } catch (IOException ie) {
+            logger.severe(ie.getMessage());
+        }
     }
 }
