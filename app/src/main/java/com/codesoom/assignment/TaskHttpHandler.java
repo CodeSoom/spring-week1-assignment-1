@@ -42,12 +42,12 @@ public class TaskHttpHandler implements HttpHandler {
         if (httpRequest.isMatchMethod("GET") && httpRequest.hasTaskId()) {
             long taskId = httpRequest.getTaskIdFromPath();
 
-            Task task = getTaskFromId(taskId);
-            if (task == null) {
+            if (!existTaskFromId(taskId)) {
                 new HttpResponseNotFound(httpExchange).send(NOT_FOUND_TASK_ID_MESSAGE);
             }
 
-            new HttpResponseOK(httpExchange).send(taskToJson(task));
+            Task content = findTaskFromId(taskId);
+            new HttpResponseOK(httpExchange).send(taskToJson(content));
         }
 
         if (httpRequest.isMatchMethod("POST") && httpRequest.isMatchPath("/tasks")) {
@@ -63,10 +63,12 @@ public class TaskHttpHandler implements HttpHandler {
             .hasTaskId()) {
             long taskId = httpRequest.getTaskIdFromPath();
 
-            Task task = getTaskFromId(taskId);
-            if (task == null) {
+            if (!existTaskFromId(taskId)) {
                 new HttpResponseNotFound(httpExchange).send(NOT_FOUND_TASK_ID_MESSAGE);
             }
+
+            Task task = findTaskFromId(taskId);
+
             Task bodyTask = getTaskFromContent(body);
             task.setTitle(bodyTask.getTitle());
 
@@ -77,16 +79,24 @@ public class TaskHttpHandler implements HttpHandler {
             && httpRequest.hasTaskId()) {
             long taskId = httpRequest.getTaskIdFromPath();
 
-            Task task = getTaskFromId(taskId);
-            if (task == null) {
+            if (!existTaskFromId(taskId)) {
                 new HttpResponseNotFound(httpExchange).send(NOT_FOUND_TASK_ID_MESSAGE);
             }
+
+            Task task = findTaskFromId(taskId);
             tasks.remove(task);
 
             new HttpResponseNoContent(httpExchange).send(taskToJson(task));
         }
 
         new HttpResponseNotFound(httpExchange).send(NOT_FOUND_MESSAGE);
+    }
+
+    private Task findTaskFromId(long taskId) {
+        return tasks.stream()
+            .filter(task -> task.isMatchId(taskId))
+            .findFirst()
+            .get();
     }
 
     private String taskToJson(Task task) throws IOException {
@@ -108,11 +118,9 @@ public class TaskHttpHandler implements HttpHandler {
         return task;
     }
 
-    private Task getTaskFromId(long taskId) {
+    private boolean existTaskFromId(long taskId) {
         return tasks.stream()
-            .filter(task -> task.isMatchId(taskId))
-            .findFirst()
-            .orElse(null);
+            .anyMatch(task -> task.isMatchId(taskId));
     }
 
     private String tasksToJson() throws IOException {
