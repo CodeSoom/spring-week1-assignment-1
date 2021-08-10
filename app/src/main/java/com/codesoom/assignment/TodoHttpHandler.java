@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.models.HttpMethod;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.models.Title;
 import com.sun.net.httpserver.HttpExchange;
@@ -13,14 +14,8 @@ import java.util.stream.Collectors;
 import static com.codesoom.assignment.utils.TodoHttpHandlerUtils.*;
 
 public class TodoHttpHandler implements HttpHandler {
-
     private Map<Long, Task> taskMap = new ConcurrentHashMap<>();
 
-    private static final String GET = "GET";
-    private static final String POST = "POST";
-    private static final String PUT = "PUT";
-    private static final String PATCH = "PATCH";
-    private static final String DELETE = "DELETE";
     private static final String URI_WITHOUT_PARAMETERS = "/tasks";
 
     @Override
@@ -34,12 +29,11 @@ public class TodoHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         // TODO: 나중에 method들 enum으로 변경해보기
-        if (GET.equals(method) && URI_WITHOUT_PARAMETERS.equals(path)) {
+        if (HttpMethod.GET.getHttpMethod().equals(method) && URI_WITHOUT_PARAMETERS.equals(path)) {
             content = tasksToJSON(taskMap);
             writeOutputStream(exchange, content, 200);
-            return;
         }
-        if (GET.equals(method) && !URI_WITHOUT_PARAMETERS.equals(path)) {
+        if (HttpMethod.GET.getHttpMethod().equals(method) && !URI_WITHOUT_PARAMETERS.equals(path)) {
             Long id = getId(path);
             Task task = taskMap.get(id);
             if (task == null) {
@@ -48,9 +42,8 @@ public class TodoHttpHandler implements HttpHandler {
             }
             content = taskToJSON(task);
             writeOutputStream(exchange, content, 200);
-            return;
         }
-        if (POST.equals(method)) {
+        if (HttpMethod.POST.getHttpMethod().equals(method)) {
             Task task = toTask(body);
             taskMap.put(task.getId(), task);
 
@@ -59,9 +52,8 @@ public class TodoHttpHandler implements HttpHandler {
 
             content = taskToJSON(lastTask);
             writeOutputStream(exchange, content, 201);
-            return;
         }
-        if (PUT.equals(method)) {
+        if (HttpMethod.PUT.getHttpMethod().equals(method)) {
             Long id = getId(path);
             Task task = taskMap.get(id);
             if (task == null) {
@@ -75,9 +67,8 @@ public class TodoHttpHandler implements HttpHandler {
 
             content = taskToJSON(task);
             writeOutputStream(exchange, content, 200);
-            return;
         }
-        if (PATCH.equals(method)) {
+        if (HttpMethod.PATCH.getHttpMethod().equals(method)) {
             Long id = getId(path);
             Task task = taskMap.get(id);
             if (task == null) {
@@ -90,9 +81,8 @@ public class TodoHttpHandler implements HttpHandler {
 
             content = taskToJSON(task);
             writeOutputStream(exchange, content, 200);
-            return;
         }
-        if (DELETE.equals(method)) {
+        if (HttpMethod.DELETE.getHttpMethod().equals(method)) {
             Long id = getId(path);
             Task task = taskMap.get(id);
             if (task == null) {
@@ -103,7 +93,6 @@ public class TodoHttpHandler implements HttpHandler {
             taskMap.remove(id);
             content = "";
             writeOutputStream(exchange, content, 204);
-            return;
         }
     }
 }
