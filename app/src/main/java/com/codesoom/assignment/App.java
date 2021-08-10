@@ -7,10 +7,10 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class App {
-
+    private static final int PORT = 8000;
     public static void main(String[] args) {
 
-        InetSocketAddress address = new InetSocketAddress("localhost", 8000);
+        InetSocketAddress address = new InetSocketAddress("localhost", PORT);
 
         try {
             HttpServer httpserver = HttpServer.create(address, 0);
