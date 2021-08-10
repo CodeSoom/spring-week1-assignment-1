@@ -73,6 +73,8 @@ public class DemoHttpHandler implements HttpHandler {
             Task findTask = findTaskById(id);
             Task inputTask = toTask(body);
             findTask.setTitle(inputTask.getTitle());
+
+            content = taskToJson(findTask);
         }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
@@ -94,7 +96,11 @@ public class DemoHttpHandler implements HttpHandler {
         if (tasks.size() == 0) {
             task.setId(1L);
         } else {
-            long maxId = tasks.stream().mapToLong(Task::getId).max().orElseThrow(NoSuchElementException::new);
+            long maxId = tasks
+                    .stream()
+                    .mapToLong(Task::getId)
+                    .max()
+                    .orElseThrow(NoSuchElementException::new);
             task.setId(maxId + 1L);
         }
         System.out.println("task = " + task);
@@ -109,11 +115,11 @@ public class DemoHttpHandler implements HttpHandler {
      * @return Task
      */
     private Task findTaskById(Long id) {
-        Task findTask = tasks.stream()
+        return tasks
+                .stream()
                 .filter(t -> t.getId().equals(id))
                 .findFirst()
                 .orElseThrow(NoSuchElementException::new);
-        return findTask;
     }
 
     /**
