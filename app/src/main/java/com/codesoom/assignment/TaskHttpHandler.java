@@ -17,6 +17,9 @@ import java.util.stream.Collectors;
 
 public class TaskHttpHandler implements HttpHandler {
 
+    public static final String NOT_FOUND_MESSAGE = "Not Found.";
+    public static final String NOT_FOUND_TASK_ID_MESSAGE = "Can't find task from your id.";
+
     private Long lastTaskId = 1L;
 
     private List<Task> tasks = new ArrayList<>();
@@ -32,13 +35,8 @@ public class TaskHttpHandler implements HttpHandler {
             .lines()
             .collect(Collectors.joining("\n"));
 
-        String content;
-        int httpStatusCode;
-
         if (httpRequest.isMatchMethod("GET") && httpRequest.isMatchPath("/tasks")) {
-            content = tasksToJson();
-            httpStatusCode = 200;
-            new HttpResponse(httpExchange).send(httpStatusCode, content);
+            new HttpResponseOK(httpExchange).send(tasksToJson());
         }
 
         if (httpRequest.isMatchMethod("GET") && httpRequest.hasTaskId()) {
@@ -46,14 +44,10 @@ public class TaskHttpHandler implements HttpHandler {
 
             Task task = getTaskFromId(taskId);
             if (task == null) {
-                content = "Can't find task from your id.";
-                httpStatusCode = 404;
-                new HttpResponse(httpExchange).send(httpStatusCode, content);
+                new HttpResponseNotFound(httpExchange).send(NOT_FOUND_TASK_ID_MESSAGE);
             }
 
-            content = taskToJson(task);
-            httpStatusCode = 200;
-            new HttpResponse(httpExchange).send(httpStatusCode, content);
+            new HttpResponseOK(httpExchange).send(taskToJson(task));
         }
 
         if (httpRequest.isMatchMethod("POST") && httpRequest.isMatchPath("/tasks")) {
@@ -61,9 +55,7 @@ public class TaskHttpHandler implements HttpHandler {
                 Task task = toTask(body);
                 tasks.add(task);
 
-                content = taskToJson(task);
-                httpStatusCode = 201;
-                new HttpResponse(httpExchange).send(httpStatusCode, content);
+                new HttpResponseCreated(httpExchange).send(taskToJson(task));
             }
         }
 
@@ -73,18 +65,12 @@ public class TaskHttpHandler implements HttpHandler {
 
             Task task = getTaskFromId(taskId);
             if (task == null) {
-                content = "Can't find task from your id.";
-                httpStatusCode = 404;
-                new HttpResponse(httpExchange).send(httpStatusCode, content);
+                new HttpResponseNotFound(httpExchange).send(NOT_FOUND_TASK_ID_MESSAGE);
             }
             Task bodyTask = getTaskFromContent(body);
-
             task.setTitle(bodyTask.getTitle());
 
-            content = taskToJson(task);
-            httpStatusCode = 200;
-
-            new HttpResponse(httpExchange).send(httpStatusCode, content);
+            new HttpResponseOK(httpExchange).send(taskToJson(task));
         }
 
         if (httpRequest.isMatchMethod("DELETE") && httpRequest.pathStartsWith("/tasks")
@@ -93,18 +79,14 @@ public class TaskHttpHandler implements HttpHandler {
 
             Task task = getTaskFromId(taskId);
             if (task == null) {
-                content = "Can't find task from your id.";
-                httpStatusCode = 404;
-                new HttpResponse(httpExchange).send(httpStatusCode, content);
+                new HttpResponseNotFound(httpExchange).send(NOT_FOUND_TASK_ID_MESSAGE);
             }
             tasks.remove(task);
 
-            content = taskToJson(task);
-            httpStatusCode = 204;
-            new HttpResponse(httpExchange).send(httpStatusCode, content);
+            new HttpResponseNoContent(httpExchange).send(taskToJson(task));
         }
 
-        new HttpResponse(httpExchange).send(400, "Bad Request");
+        new HttpResponseNotFound(httpExchange).send(NOT_FOUND_MESSAGE);
     }
 
     private String taskToJson(Task task) throws IOException {

@@ -4,7 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class HttpResponse {
+public abstract class HttpResponse {
 
     private final HttpExchange exchange;
 
@@ -12,13 +12,14 @@ public class HttpResponse {
         this.exchange = exchange;
     }
 
-
-    public void send(int httpStatusCode, String content) throws IOException {
-        exchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
+    public void send(String content) throws IOException {
+        exchange.sendResponseHeaders(httpStatusCode(), content.getBytes().length);
 
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.write(content.getBytes());
         responseBody.flush();
         responseBody.close();
     }
+
+    protected abstract int httpStatusCode();
 }
