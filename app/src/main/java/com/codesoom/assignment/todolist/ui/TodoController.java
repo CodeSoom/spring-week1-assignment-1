@@ -52,14 +52,7 @@ public class TodoController implements Controller {
         return Response.of(HTTP_CREATED, savedTask);
     }
 
-    @RequestMapping(value = "/{id}", method = HttpMethod.PATCH)
-    public Response updateTask(HttpExchange exchange, @PathVariable Long id, Task task) {
-        final Task updated = todoService.update(id, task);
-        return Response.of(HTTP_OK, updated);
-    }
-
-    //TODO RequestMapping의 method attribute를 배열로 받게해서 중복된 해당 컨트롤러 삭제 필요
-    @RequestMapping(value = "/{id}", method = HttpMethod.PUT)
+    @RequestMapping(value = "/{id}", method = {HttpMethod.PUT, HttpMethod.PATCH})
     public Response overwriteTask(HttpExchange exchange, @PathVariable Long id, Task task) {
         final Task updated = todoService.update(id, task);
         return Response.of(HTTP_OK, updated);
@@ -93,7 +86,7 @@ public class TodoController implements Controller {
         final RequestMapping annotation = method.getDeclaredAnnotation(RequestMapping.class);
         final String mainPath = this.getClass().getDeclaredAnnotation(RequestMapping.class).value();
 
-        if (Objects.isNull(annotation) || notMatchedHttpMethod(exchange, annotation)) {
+        if (Objects.isNull(annotation) || !isMatchedHttpMethod(exchange, annotation)) {
             return false;
         }
 
@@ -102,12 +95,12 @@ public class TodoController implements Controller {
 
         final String[] split = (mainPath + annotation.value()).split(PATH_DELIMITER);
 
-
         return paths.length == split.length;
     }
 
-    private boolean notMatchedHttpMethod(HttpExchange exchange, RequestMapping annotation) {
-        return !annotation.method().equals(HttpMethod.from(exchange.getRequestMethod()));
+    private boolean isMatchedHttpMethod(HttpExchange exchange, RequestMapping annotation) {
+        return Arrays.asList(annotation.method())
+                .contains(HttpMethod.from(exchange.getRequestMethod()));
     }
 
 }
