@@ -66,7 +66,7 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
-        if ((method.equals("PUT") || method.equals("PATCH")) && path.equals("/tasks")
+        if ((method.equals("PUT") || method.equals("PATCH")) && path.startsWith("/tasks")
             && isNumberMatchEndOfPath) {
             long taskId = getTaskIdFromPath(path);
 
@@ -84,7 +84,7 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
-        if (method.equals("DELETE") && path.equals("/tasks") && isNumberMatchEndOfPath) {
+        if (method.equals("DELETE") && path.startsWith("/tasks") && isNumberMatchEndOfPath) {
             long taskId = getTaskIdFromPath(path);
 
             Task task = getTaskFromId(taskId);
