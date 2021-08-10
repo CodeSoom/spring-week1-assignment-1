@@ -1,7 +1,5 @@
 package com.codesoom.assignment.models;
 
-import com.google.common.base.Strings;
-
 public class Task {
 
     private Long id;
@@ -13,7 +11,6 @@ public class Task {
     }
 
     public Task() {
-
     }
 
     public Long getId() {

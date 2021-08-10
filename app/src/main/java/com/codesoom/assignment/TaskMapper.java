@@ -20,20 +20,22 @@ public class TaskMapper {
         return outputStream.toString();
     }
 
+    public Task getTaskFromContent(String content) throws JsonProcessingException {
+        return objectMapper.readValue(content, Task.class);
+    }
+
+    public String tasksToJson() throws IOException {
+        TaskManager taskManager = TaskManager.getInstance();
+        List<Task> allTasks = taskManager.getAllTasks();
+
+        return tasksToJson(allTasks);
+    }
+
     private String tasksToJson(List<Task> tasks) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
 
         objectMapper.writeValue(outputStream, tasks);
 
         return outputStream.toString();
-    }
-
-    public Task getTaskFromContent(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
-    }
-
-    public String tasksToJson() throws IOException {
-        List<Task> allTasks = new TaskManager().getAllTasks();
-        return tasksToJson(allTasks);
     }
 }

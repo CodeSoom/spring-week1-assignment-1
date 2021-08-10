@@ -9,8 +9,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class TaskHttpHandler implements HttpHandler {
@@ -18,7 +16,13 @@ public class TaskHttpHandler implements HttpHandler {
     public static final String NOT_FOUND_MESSAGE = "Not Found.";
     public static final String NOT_FOUND_TASK_ID_MESSAGE = "Can't find task from your id.";
 
-    private final List<Task> tasks = new ArrayList<>();
+    private final TaskManager taskManager;
+    private final TaskMapper taskMapper;
+
+    public TaskHttpHandler() {
+        this.taskManager = TaskManager.getInstance();
+        this.taskMapper = new TaskMapper();
+    }
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -29,9 +33,6 @@ public class TaskHttpHandler implements HttpHandler {
         String body = new BufferedReader(new InputStreamReader(httpRequestBody))
             .lines()
             .collect(Collectors.joining("\n"));
-
-        TaskManager taskManager = new TaskManager();
-        TaskMapper taskMapper = new TaskMapper();
 
         if (httpRequest.isMatchMethod("GET") && httpRequest.isMatchPath("/tasks")) {
             new HttpResponseOK(httpExchange).send(taskMapper.tasksToJson());
@@ -50,10 +51,10 @@ public class TaskHttpHandler implements HttpHandler {
 
         if (httpRequest.isMatchMethod("POST") && httpRequest.isMatchPath("/tasks")) {
             if (!body.isEmpty()) {
-                Task task = taskManager.toTask(body);
-                tasks.add(task);
+                Task task = taskMapper.getTaskFromContent(body);
+                Task newTask = taskManager.createTask(task);
 
-                new HttpResponseCreated(httpExchange).send(taskMapper.taskToJson(task));
+                new HttpResponseCreated(httpExchange).send(taskMapper.taskToJson(newTask));
             }
         }
 
@@ -65,12 +66,10 @@ public class TaskHttpHandler implements HttpHandler {
                 new HttpResponseNotFound(httpExchange).send(NOT_FOUND_TASK_ID_MESSAGE);
             }
 
-            Task task = taskManager.findTaskFromId(taskId);
+            Task task = taskMapper.getTaskFromContent(body);
+            Task updatedTask = taskManager.updateTask(taskId, task);
 
-            Task bodyTask = taskMapper.getTaskFromContent(body);
-            task.setTitle(bodyTask.getTitle());
-
-            new HttpResponseOK(httpExchange).send(taskMapper.taskToJson(task));
+            new HttpResponseOK(httpExchange).send(taskMapper.taskToJson(updatedTask));
         }
 
         if (httpRequest.isMatchMethod("DELETE") && httpRequest.pathStartsWith("/tasks")
@@ -81,10 +80,9 @@ public class TaskHttpHandler implements HttpHandler {
                 new HttpResponseNotFound(httpExchange).send(NOT_FOUND_TASK_ID_MESSAGE);
             }
 
-            Task task = taskManager.findTaskFromId(taskId);
-            tasks.remove(task);
+            Task deletedTask = taskManager.deleteTask(taskId);
 
-            new HttpResponseNoContent(httpExchange).send(taskMapper.taskToJson(task));
+            new HttpResponseNoContent(httpExchange).send(taskMapper.taskToJson(deletedTask));
         }
 
         new HttpResponseNotFound(httpExchange).send(NOT_FOUND_MESSAGE);
