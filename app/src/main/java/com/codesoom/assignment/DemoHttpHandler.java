@@ -9,13 +9,14 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    private List<Task> tasks = new ArrayList<>();
+    private HashMap<Long, Task> tasks = new HashMap<>();
     private long id = 0L;
 
     @Override
@@ -36,6 +37,7 @@ public class DemoHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         System.out.println(method + " " + path);
+        String[] pathElements = path.split("/");
 
 
         String content = "Hello, world!";
@@ -48,9 +50,11 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
 
-        else if(method.equals("GET") && path.equals("/tasks/{id}")) {
-            System.out.println("/tasks/{id}");
-            content = tasksToJSON();
+        else if(method.equals("GET") && pathElements.length > 2) {
+
+            id = Long.parseLong(pathElements[pathElements.length - 1]);
+            content = taskToJSON(id);
+
             httpExchange.sendResponseHeaders(200, content.getBytes().length);
         }
 
@@ -60,21 +64,31 @@ public class DemoHttpHandler implements HttpHandler {
                 Task task = toTask(body);
                 ++id;
                 task.setId(id);
-
-                tasks.add(task);
-
+                tasks.put(id, task);
             }
             httpExchange.sendResponseHeaders(201, content.getBytes().length);
         }
 
-        else if(method.equals("Patch") && path.equals("/tasks")) {
-//            Task task = tasks.get()
+        else if((method.equals("PATCH") || method.equals("PUT")) && pathElements.length > 2) {
+            id = Long.parseLong(pathElements[pathElements.length - 1]);
+            if (!body.isEmpty()) {
+                Task task = toTask(body);
+                task.setId(id);
+                tasks.put(id, task);
+            }
+            content = taskToJSON(id);
             httpExchange.sendResponseHeaders(200, content.getBytes().length);
         }
 
-        else if(method.equals("Delete") && path.equals("/tasks")) {
-//            tasks.remove()
-            content = "Delete task.";
+        else if(method.equals("DELETE") && pathElements.length > 2) {
+            id = Long.parseLong(pathElements[pathElements.length - 1]);
+            if(tasks.get(id) != null) {
+                tasks.remove(id);
+                content = "Delete task.";
+            } else {
+                content = "존재하지 않음";
+            }
+
             httpExchange.sendResponseHeaders(200, content.getBytes().length);
         }
 
@@ -95,6 +109,14 @@ public class DemoHttpHandler implements HttpHandler {
 
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
+
+        return outputStream.toString();
+    }
+
+    private String taskToJSON(Long id) throws IOException {
+
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, tasks.get(id));
 
         return outputStream.toString();
     }
