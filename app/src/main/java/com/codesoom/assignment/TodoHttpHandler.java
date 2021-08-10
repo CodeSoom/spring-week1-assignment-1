@@ -2,8 +2,6 @@ package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.models.Title;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -12,8 +10,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static com.codesoom.assignment.utils.TodoHttpHandlerUtils.*;
+
 public class TodoHttpHandler implements HttpHandler {
-    private ObjectMapper objectMapper = new ObjectMapper();
+
     private Map<Long, Task> taskMap = new ConcurrentHashMap<>();
 
     private static final String GET = "GET";
@@ -21,7 +21,7 @@ public class TodoHttpHandler implements HttpHandler {
     private static final String PUT = "PUT";
     private static final String PATCH = "PATCH";
     private static final String DELETE = "DELETE";
-    private static final String BASIC_URI = "/tasks";
+    private static final String URI_WITHOUT_PARAMETERS = "/tasks";
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -35,11 +35,19 @@ public class TodoHttpHandler implements HttpHandler {
 
         // TODO: 나중에 method들 enum으로 변경해보기
         if (GET.equals(method)) {
-            if (path.equals(BASIC_URI)) {
-                content = tasksToJSON();
+            if (URI_WITHOUT_PARAMETERS.equals(path)) {
+                content = tasksToJSON(taskMap);
             } else {
                 Long id = getId(path);
                 Task task = taskMap.get(id);
+                if (task == null) {
+                    exchange.sendResponseHeaders(404, content.getBytes().length);
+                    OutputStream outputStream = exchange.getResponseBody();
+                    outputStream.write(content.getBytes());
+                    outputStream.flush();
+                    outputStream.close();
+                    return;
+                }
                 content = taskToJSON(task);
             }
         } else if (POST.equals(method)) {
@@ -49,13 +57,26 @@ public class TodoHttpHandler implements HttpHandler {
                 Long lastSequence = Task.getSequence();
                 Task lastTask = taskMap.get(lastSequence);
                 content = taskToJSON(lastTask);
+                exchange.sendResponseHeaders(201, content.getBytes().length);
+                OutputStream outputStream = exchange.getResponseBody();
+                outputStream.write(content.getBytes());
+                outputStream.flush();
+                outputStream.close();
+                return;
             } else {
                 content = "";
             }
         } else if (PUT.equals(method)) {
             Long id = getId(path);
             Task task = taskMap.get(id);
-
+            if (task == null) {
+                exchange.sendResponseHeaders(404, content.getBytes().length);
+                OutputStream outputStream = exchange.getResponseBody();
+                outputStream.write(content.getBytes());
+                outputStream.flush();
+                outputStream.close();
+                return;
+            }
             Task changeTask = toTask(body);
             task.setTitle(changeTask.getTitle());
             taskMap.put(id, task);
@@ -65,7 +86,14 @@ public class TodoHttpHandler implements HttpHandler {
         } else if (PATCH.equals(method)) {
             Long id = getId(path);
             Task task = taskMap.get(id);
-
+            if (task == null) {
+                exchange.sendResponseHeaders(404, content.getBytes().length);
+                OutputStream outputStream = exchange.getResponseBody();
+                outputStream.write(content.getBytes());
+                outputStream.flush();
+                outputStream.close();
+                return;
+            }
             Title title = toTitle(body);  //body를 직접 쓸시 인코딩 깨짐 문제 존재. 인코딩 방식 찾지 못해 Title 객체 만들어서 body를 전환하는 걸로.
             task.setTitle(title.getTitle());
             taskMap.put(id, task);
@@ -73,8 +101,23 @@ public class TodoHttpHandler implements HttpHandler {
             content = taskToJSON(task);
         } else if (DELETE.equals(method)) {
             Long id = getId(path);
+            Task task = taskMap.get(id);
+            if (task == null) {
+                exchange.sendResponseHeaders(404, content.getBytes().length);
+                OutputStream outputStream = exchange.getResponseBody();
+                outputStream.write(content.getBytes());
+                outputStream.flush();
+                outputStream.close();
+                return;
+            }
             taskMap.remove(id);
             content = "";
+            exchange.sendResponseHeaders(204, content.getBytes().length);
+
+            OutputStream outputStream = exchange.getResponseBody();
+            outputStream.write(content.getBytes());
+            outputStream.flush();
+            outputStream.close();
         }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
@@ -83,32 +126,5 @@ public class TodoHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
-    }
-
-    private Title toTitle(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Title.class);
-    }
-
-    private Long getId(String path) {
-        String[] splits = path.split("/");
-        return Long.parseLong(splits[splits.length - 1]);
-    }
-
-    private String taskToJSON(Task task) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, task);
-
-        return outputStream.toString();
-    }
-
-    private Task toTask(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
-    }
-
-    private String tasksToJSON() throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, taskMap.values());
-
-        return outputStream.toString();
     }
 }
