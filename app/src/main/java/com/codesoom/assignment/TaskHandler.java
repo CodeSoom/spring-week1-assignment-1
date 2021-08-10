@@ -33,17 +33,17 @@ public final class TaskHandler implements HttpHandler {
     }
 
     private void handleId(final HttpExchange exchange, final String method, final String path) throws IOException {
-        if (method.equals(HTTP_PUT)) {
+        if (HTTP_PUT.equals(method)) {
             sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_PUT + " " + path);
             return ;
         }
 
-        if (method.equals(HTTP_PATCH)) {
+        if (HTTP_PATCH.equals(method)) {
             sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_PATCH + " " + path);
             return ;
         }
 
-        if (method.equals(HTTP_DELETE)) {
+        if (HTTP_DELETE.equals(method)) {
             sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_DELETE + " " + path);
             return ;
         }
@@ -58,14 +58,15 @@ public final class TaskHandler implements HttpHandler {
 
         final String requestBody = new BufferedReader((new InputStreamReader(exchange.getRequestBody())))
                 .lines().collect(Collectors.joining(System.lineSeparator()));
+
         System.out.println(requestBody);
 
-        if (!path.equals(EMPTY_STRING)) {
+        if (!EMPTY_STRING.equals(path)) {
             handleId(exchange, method, path);
             return;
         }
 
-        if (method.equals(HTTP_GET)) {
+        if (HTTP_GET.equals(method)) {
             sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_GET + " " + HANDLER_PATH);
             return;
         }
