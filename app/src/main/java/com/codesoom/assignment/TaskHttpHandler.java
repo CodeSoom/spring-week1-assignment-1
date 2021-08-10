@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 
 public class TaskHttpHandler implements HttpHandler {
 
+    private Long lastTaskId = 1L;
+
     private List<Task> tasks = new ArrayList<>();
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -126,9 +128,7 @@ public class TaskHttpHandler implements HttpHandler {
 
     private Task toTask(String content) throws JsonProcessingException {
         Task task = getTaskFromContent(content);
-
-        Long newTaskId = ((long) (tasks.size() + 1));
-        task.setId(newTaskId);
+        task.setId(++lastTaskId);
 
         return task;
     }
