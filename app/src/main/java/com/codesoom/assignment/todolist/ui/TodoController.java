@@ -84,12 +84,12 @@ public class TodoController implements Controller {
     @Override
     public Method getAvailMethod(HttpExchange exchange) {
         return Arrays.stream(this.getClass().getDeclaredMethods())
-                .filter(m -> availableMethod(m, exchange))
+                .filter(m -> isAvailable(m, exchange))
                 .findFirst()
                 .orElseThrow(RuntimeException::new);
     }
 
-    private boolean availableMethod(Method method, HttpExchange exchange) {
+    private boolean isAvailable(Method method, HttpExchange exchange) {
         final RequestMapping annotation = method.getDeclaredAnnotation(RequestMapping.class);
         final String mainPath = this.getClass().getDeclaredAnnotation(RequestMapping.class).value();
 

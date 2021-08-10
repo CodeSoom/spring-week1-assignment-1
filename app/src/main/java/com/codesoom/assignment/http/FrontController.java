@@ -2,6 +2,8 @@ package com.codesoom.assignment.http;
 
 import com.codesoom.assignment.common.MethodArgumentResolver;
 import com.codesoom.assignment.todolist.domain.Controller;
+import com.codesoom.assignment.todolist.exceptions.AlreadyExistsControllerException;
+import com.codesoom.assignment.todolist.exceptions.AlreadyExistsResolverException;
 import com.codesoom.assignment.todolist.exceptions.NotFoundEntityException;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -29,7 +31,7 @@ public class FrontController {
 
     public void addController(Controller controller) {
         if (controllers.contains(controller)) {
-            throw new RuntimeException();
+            throw new AlreadyExistsControllerException();
         }
         controllers.add(controller);
     }
@@ -40,7 +42,7 @@ public class FrontController {
 
     public void addArgumentResolver(MethodArgumentResolver resolver) {
         if (argumentResolvers.contains(resolver)) {
-            throw new RuntimeException();
+            throw new AlreadyExistsResolverException();
         }
         argumentResolvers.add(resolver);
     }
@@ -74,7 +76,7 @@ public class FrontController {
         return Response.of(HttpURLConnection.HTTP_INTERNAL_ERROR, targetException.getCause().toString());
     }
 
-    private Object[] mappedParameter(Method method, HttpExchange exchange) throws IOException {
+    private Object[] mappedParameter(Method method, HttpExchange exchange) {
         final Parameter[] parameters = method.getParameters();
         Object[] mappedParams = new Object[parameters.length];
 
