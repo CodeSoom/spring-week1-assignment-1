@@ -1,12 +1,8 @@
 package com.codesoom.assignment.http;
 
+import com.codesoom.assignment.common.MethodArgumentResolver;
 import com.codesoom.assignment.todolist.domain.Controller;
-import com.codesoom.assignment.todolist.domain.PathVariable;
-import com.codesoom.assignment.todolist.domain.RequestMapping;
-import com.codesoom.assignment.todolist.domain.Task;
 import com.codesoom.assignment.todolist.exceptions.NotFoundEntityException;
-import com.codesoom.assignment.todolist.util.PathExtractor;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -17,16 +13,15 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 public class FrontController {
     private static final FrontController instance = new FrontController();
-    private static final List<Controller> controllers = new ArrayList<>();
-    private final ObjectMapper om;
 
-    private FrontController() {
-        om = new ObjectMapper();
-    }
+    private static final List<Controller> controllers = new ArrayList<>();
+    private static final List<MethodArgumentResolver> argumentResolvers = new ArrayList<>();
+
+    private FrontController() {}
 
     public static FrontController getInstance() {
         return instance;
@@ -37,6 +32,17 @@ public class FrontController {
             throw new RuntimeException();
         }
         controllers.add(controller);
+    }
+
+    public void addArgumentResolver(List<MethodArgumentResolver> resolvers) {
+        resolvers.forEach(this::addArgumentResolver);
+    }
+
+    public void addArgumentResolver(MethodArgumentResolver resolver) {
+        if (argumentResolvers.contains(resolver)) {
+            throw new RuntimeException();
+        }
+        argumentResolvers.add(resolver);
     }
 
     public Response execute(HttpExchange exchange) throws IOException {
@@ -80,45 +86,19 @@ public class FrontController {
         return mappedParams;
     }
 
-    private Object mapping(Parameter parameter, HttpExchange exchange, Method method) throws IOException {
-        if (parameter.getParameterizedType().equals(HttpExchange.class)) {
-            return exchange;
+    private Object mapping(Parameter parameter, HttpExchange exchange, Method method) {
+        MethodArgumentResolver supportedResolver = argumentResolvers.stream().filter(resolver -> resolver.supportParameter(parameter))
+                .findAny()
+                .orElse(null);
+
+        if (Objects.nonNull(supportedResolver)) {
+            return supportedResolver.resolveArgument(exchange, parameter, method);
         }
-
-        if (parameter.getParameterizedType().equals(Task.class)) {
-            return om.readValue(exchange.getRequestBody(), Task.class);
-        }
-
-        if (parameter.isAnnotationPresent(PathVariable.class)) {
-            Map<String, Object> pathValues = PathExtractor.extract(mixedPath(method),
-                    exchange.getRequestURI().getPath());
-
-            return toObject(parameter.getType(), String.valueOf(pathValues.get(parameter.getName())));
-        }
-
-        return parameter;
-    }
-
-    private String mixedPath(Method method) {
-        return method.getDeclaringClass().getDeclaredAnnotation(RequestMapping.class).value()
-                + method.getDeclaredAnnotation(RequestMapping.class).value();
+        return null;
     }
 
     public boolean support(URI uri) {
         return controllers.stream()
                 .anyMatch(controller -> controller.support(uri));
     }
-
-    public static Object toObject(Class clazz, String value) {
-        if (Boolean.class == clazz) return Boolean.parseBoolean(value);
-        if (Byte.class == clazz) return Byte.parseByte(value);
-        if (Short.class == clazz) return Short.parseShort(value);
-        if (Integer.class == clazz) return Integer.parseInt(value);
-        if (Long.class == clazz) return Long.parseLong(value);
-        if (Float.class == clazz) return Float.parseFloat(value);
-        if (Double.class == clazz) return Double.parseDouble(value);
-        return value;
-    }
-
-
 }

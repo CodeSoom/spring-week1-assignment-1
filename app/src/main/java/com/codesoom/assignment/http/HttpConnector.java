@@ -1,7 +1,11 @@
 package com.codesoom.assignment.http;
 
+import com.codesoom.assignment.todolist.config.ObjectMapperSingleton;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.net.httpserver.*;
+import com.sun.net.httpserver.HttpContext;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
+
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -13,12 +17,10 @@ public class HttpConnector {
     private static final int DEFAULT_PORT = 8000;
     public static final String ROOT_CONTEXT = "/";
     private final FrontController frontController;
-    private final ObjectMapper om;
     HttpServer server = null;
 
     public HttpConnector(FrontController frontController) {
         this.frontController = frontController;
-        om = new ObjectMapper();
     }
 
 
@@ -47,6 +49,7 @@ public class HttpConnector {
             response = Response.from(HttpURLConnection.HTTP_NOT_FOUND);
         }
 
+        final ObjectMapper om = ObjectMapperSingleton.getInstance();
         final byte[] bytes = om.writeValueAsBytes(response.getBody());
         exchange.sendResponseHeaders(response.getStatusCode(), bytes.length);
         OutputStream os = exchange.getResponseBody();
