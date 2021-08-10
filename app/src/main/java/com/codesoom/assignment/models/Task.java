@@ -1,7 +1,7 @@
 package com.codesoom.assignment.models;
 
 public class Task {
-    private static Long sequence = 0L;
+    public static Long sequence = 0L;
     private Long id;
     private String title;
 
@@ -12,6 +12,10 @@ public class Task {
 
     public Long getId() {
         return id;
+    }
+
+    public static Long getSequence() {
+        return sequence;
     }
 
     public String getTitle() {
