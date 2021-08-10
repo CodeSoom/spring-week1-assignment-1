@@ -55,7 +55,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
 
-        else if(method.equals("GET") && pathElements.length > 2) {
+        else if("GET".equals(method) && pathElements.length > 2) {
 
             id = Long.parseLong(pathElements[pathElements.length - 1]);
             content = taskToJSON(id);
@@ -63,7 +63,7 @@ public class DemoHttpHandler implements HttpHandler {
             httpExchange.sendResponseHeaders(200, content.getBytes().length);
         }
 
-        else if(method.equals("POST") && path.equals("/tasks")) {
+        else if("POST".equals(method) && path.equals("/tasks")) {
             content = "Create a new task.";
             if (!body.isEmpty()) {
                 Task task = toTask(body);
@@ -74,7 +74,7 @@ public class DemoHttpHandler implements HttpHandler {
             httpExchange.sendResponseHeaders(201, content.getBytes().length);
         }
 
-        else if((method.equals("PATCH") || method.equals("PUT")) && pathElements.length > 2) {
+        else if(("PATCH".equals(method) || method.equals("PUT")) && pathElements.length > 2) {
             id = Long.parseLong(pathElements[pathElements.length - 1]);
             if (!body.isEmpty()) {
                 Task task = toTask(body);
@@ -85,7 +85,7 @@ public class DemoHttpHandler implements HttpHandler {
             httpExchange.sendResponseHeaders(200, content.getBytes().length);
         }
 
-        else if(method.equals("DELETE") && pathElements.length > 2) {
+        else if("DELETE".equals(method) && pathElements.length > 2) {
             id = Long.parseLong(pathElements[pathElements.length - 1]);
             if(tasks.get(id) != null) {
                 tasks.remove(id);
