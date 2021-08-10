@@ -43,8 +43,8 @@ public class TaskHttpHandler implements HttpHandler {
             content = tasksToJson();
         }
 
-        boolean isNumberMatchEndOfPath = Pattern.matches("/tasks/[0-9]+$", path);
-        if (method.equals("GET") && isNumberMatchEndOfPath) {
+        boolean hasTaskId = Pattern.matches("/tasks/[0-9]+$", path);
+        if (method.equals("GET") && hasTaskId) {
             long taskId = getTaskIdFromPath(path);
 
             Task task = getTaskFromId(taskId);
@@ -67,7 +67,7 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         if ((method.equals("PUT") || method.equals("PATCH")) && path.startsWith("/tasks")
-            && isNumberMatchEndOfPath) {
+            && hasTaskId) {
             long taskId = getTaskIdFromPath(path);
 
             Task task = getTaskFromId(taskId);
@@ -84,7 +84,7 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
-        if (method.equals("DELETE") && path.startsWith("/tasks") && isNumberMatchEndOfPath) {
+        if (method.equals("DELETE") && path.startsWith("/tasks") && hasTaskId) {
             long taskId = getTaskIdFromPath(path);
 
             Task task = getTaskFromId(taskId);
