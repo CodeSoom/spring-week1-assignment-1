@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.models.RequestInfo;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,53 +12,62 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
-    ObjectMapper objectMapper = new ObjectMapper();
-
+    private Long nextId = 1L;
+    private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
-
-    public DemoHttpHandler() {
-        Task task1 = new Task();
-        task1.setId(1L);
-        task1.setTitle("Do nothing...");
-        tasks.add(task1);
-
-        Task task2 = new Task();
-        task2.setId(1L);
-        task2.setTitle("Do nothing...2");
-        tasks.add(task2);
-    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
-        URI uri = exchange.getRequestURI();
-        String path = uri.getPath();
+        // get method, url, body
+        RequestInfo requestInfo = new RequestInfo(exchange);
 
-        InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
+        System.out.println(requestInfo.getMethod() + requestInfo.getPath());
 
-        System.out.println(method + " " + path);
+        String content = "";
 
-        if(!body.isBlank()) {
-            System.out.println(body);
-            Task task = toTask(body);
-            tasks.add(task);
+        // GET ALL
+        if (requestInfo.getMethod().equals("GET") && hasTask(requestInfo.getPath())) {
+            content = convertTasksToJson(this.tasks);
         }
 
-        String content = "Hello, world!";
+        // GET Detail
+        if (requestInfo.getMethod().equals("GET") && hasTaskId(requestInfo.getPath())) {
+            Long id = getTaskIdFromPath(requestInfo.getPath());
+            Task resultTask = getTaskById(id);
 
-        if (method.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJson();
+            content = convertTaskToJson(resultTask);
         }
 
-        if (method.equals("POST") && path.equals("/tasks")) {
-            content = "Create new task.";
+        // POST
+        if (requestInfo.getMethod().equals("POST") && hasTask(requestInfo.getPath())) {
+            Task task = convertJsonToTask(requestInfo.getBody());
+            task.setId(this.nextId++);
+            this.tasks.add(task);
+
+            content = convertTaskToJson(task);
+        }
+
+        // PUT
+        if (requestInfo.getMethod().equals("PUT") && hasTaskId(requestInfo.getPath())) {
+            Long id = getTaskIdFromPath(requestInfo.getPath());
+            String inputTitle = convertJsonToTask(requestInfo.getBody()).getTitle();
+
+            Task resultTask = getTaskById(id);
+            resultTask.setTitle(inputTitle);
+
+            content = convertTaskToJson(resultTask);
+        }
+
+        // DELETE
+        if (requestInfo.getMethod().equals("DELETE") && hasTaskId(requestInfo.getPath())) {
+            Long id = getTaskIdFromPath(requestInfo.getPath());
+            removeTaskById(id);
         }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
@@ -68,14 +78,52 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
-    private Task toTask(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
+    private Task convertJsonToTask(String content) throws JsonProcessingException {
+        return this.objectMapper.readValue(content, Task.class);
     }
 
-    private String tasksToJson() throws IOException {
+    private String convertTasksToJson(List<Task> tasks) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
+        this.objectMapper.writeValue(outputStream, tasks);
 
         return outputStream.toString();
+    }
+
+    private String convertTaskToJson(Task task) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        this.objectMapper.writeValue(outputStream, task);
+
+        return outputStream.toString();
+    }
+
+    private Task getTaskById(Long id) {
+        return this.tasks.stream()
+                .filter(task->task.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void removeTaskById(Long id) {
+        this.tasks = this.tasks.stream()
+                .filter(task->!(task.getId().equals(id)))
+                .collect(Collectors.toList());
+    }
+
+    private boolean hasTask(String path) {
+        return Pattern.matches("/tasks$", path);
+    }
+
+    private boolean hasTaskId(String path) {
+        return Pattern.matches("/tasks/[0-9]+$", path);
+    }
+
+    private Long getTaskIdFromPath(String path) {
+        Pattern pattern = Pattern.compile("/tasks/([0-9]+)$");
+        Matcher matcher = pattern.matcher(path);
+
+        if(!matcher.find())
+            return null;
+
+        return Long.parseLong(matcher.group(1));
     }
 }
