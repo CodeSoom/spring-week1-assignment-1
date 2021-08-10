@@ -23,7 +23,7 @@ public class TaskHttpHandler implements HttpHandler {
     private final List<Task> tasks = new ArrayList<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private Long lastTaskId = 1L;
+    private Long lastTaskId = 0L;
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
