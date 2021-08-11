@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.util.stream.Collectors;
 
 public class TaskHttpHandler implements HttpHandler {
@@ -19,9 +20,19 @@ public class TaskHttpHandler implements HttpHandler {
     private final TaskManager taskManager = TaskManager.getInstance();
     private final TaskMapper taskMapper = new TaskMapper();
 
+    private HttpRequest httpRequest;
+
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        HttpRequest httpRequest = new HttpRequest(httpExchange);
+        URI requestURI = httpExchange.getRequestURI();
+        String path = requestURI.getPath();
+        String method = httpExchange.getRequestMethod();
+
+        try {
+            httpRequest = new HttpRequest(path, method);
+        } catch (RuntimeException error) {
+            new HttpResponseBadRequest(httpExchange).send(error.getMessage());
+        }
         System.out.println(httpRequest);
 
         InputStream httpRequestBody = httpExchange.getRequestBody();

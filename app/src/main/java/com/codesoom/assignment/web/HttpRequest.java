@@ -1,7 +1,6 @@
 package com.codesoom.assignment.web;
 
-import com.sun.net.httpserver.HttpExchange;
-import java.net.URI;
+import com.codesoom.assignment.errors.NotAllowedMethodException;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
@@ -10,11 +9,25 @@ public class HttpRequest {
     private final String path;
     private final String method;
 
-    public HttpRequest(HttpExchange httpExchange) {
-        URI requestURI = httpExchange.getRequestURI();
+    private enum AllowMethods {
+        GET, POST, PUT, PATCH, DELETE;
 
-        this.path = requestURI.getPath();
-        this.method = httpExchange.getRequestMethod();
+        public static boolean exist(String requestMethod) {
+            return Arrays.stream(AllowMethods.values())
+                .anyMatch(allowMethod -> allowMethod.toString().equals(requestMethod));
+        }
+    }
+
+    public HttpRequest(String path, String method) {
+        checkAllowMethod(method);
+        this.path = path;
+        this.method = method;
+    }
+
+    private void checkAllowMethod(String requestMethod) {
+        if (!AllowMethods.exist(requestMethod)) {
+            throw new NotAllowedMethodException(requestMethod);
+        }
     }
 
     public long getTaskIdFromPath() {
@@ -38,12 +51,12 @@ public class HttpRequest {
     }
 
     public boolean isUpdateOne() {
-        return ("PUT".equals(method) || "PATCH".equals(method)) && path.startsWith("/tasks")
+        return ("PUT".equals(method) || "PATCH".equals(method))
             && hasTaskId();
     }
 
     public boolean isDeleteOne() {
-        return "DELETE".equals(method) && path.startsWith("/tasks") && hasTaskId();
+        return "DELETE".equals(method) && hasTaskId();
     }
 
     private boolean hasTaskId() {
