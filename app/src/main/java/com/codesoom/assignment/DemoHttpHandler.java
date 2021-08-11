@@ -16,13 +16,11 @@ import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
-
     private List<Task> tasks = new ArrayList<>();
 
-    public DemoHttpHandler(){
 
-    }
     long id = 0L;
+
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -71,7 +69,6 @@ public class DemoHttpHandler implements HttpHandler {
 
     private String tasksToJson() throws IOException{
         ObjectMapper objectMapper = new ObjectMapper();
-
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
 
