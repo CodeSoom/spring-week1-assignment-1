@@ -17,18 +17,6 @@ public class HttpRequest {
         this.method = httpExchange.getRequestMethod();
     }
 
-    public boolean isMatchMethod(String method) {
-        return method.equals(this.method);
-    }
-
-    public boolean isMatchPath(String path) {
-        return path.equals(this.path);
-    }
-
-    public boolean isUpdateMethod() {
-        return "PUT".equals(method) || "PATCH".equals(method);
-    }
-
     public long getTaskIdFromPath() {
         return Arrays.stream(path.split("/"))
             .skip(2)
@@ -37,12 +25,29 @@ public class HttpRequest {
             .getAsLong();
     }
 
-    public boolean hasTaskId() {
-        return Pattern.matches("/tasks/[0-9]+$", path);
+    public boolean isReadAll() {
+        return "GET".equals(method) && "/tasks".equals(path);
     }
 
-    public boolean pathStartsWith(String path) {
-        return this.path.startsWith(path);
+    public boolean isReadOne() {
+        return "GET".equals(method) && hasTaskId();
+    }
+
+    public boolean isCreateOne() {
+        return "POST".equals(method) && "/tasks".equals(path);
+    }
+
+    public boolean isUpdateOne() {
+        return ("PUT".equals(method) || "PATCH".equals(method)) && path.startsWith("/tasks")
+            && hasTaskId();
+    }
+
+    public boolean isDeleteOne() {
+        return "DELETE".equals(method) && path.startsWith("/tasks") && hasTaskId();
+    }
+
+    private boolean hasTaskId() {
+        return Pattern.matches("/tasks/[0-9]+$", path);
     }
 
     @Override

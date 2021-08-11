@@ -29,11 +29,11 @@ public class TaskHttpHandler implements HttpHandler {
             .lines()
             .collect(Collectors.joining("\n"));
 
-        if (httpRequest.isMatchMethod("GET") && httpRequest.isMatchPath("/tasks")) {
+        if (httpRequest.isReadAll()) {
             new HttpResponseOK(httpExchange).send(taskMapper.toJson());
         }
 
-        if (httpRequest.isMatchMethod("GET") && httpRequest.hasTaskId()) {
+        if (httpRequest.isReadOne()) {
             long taskId = httpRequest.getTaskIdFromPath();
 
             try {
@@ -43,7 +43,7 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
-        if (httpRequest.isMatchMethod("POST") && httpRequest.isMatchPath("/tasks")) {
+        if (httpRequest.isCreateOne()) {
             if (body.isEmpty()) {
                 new HttpResponseNoContent(httpExchange).send();
             }
@@ -53,8 +53,7 @@ public class TaskHttpHandler implements HttpHandler {
             new HttpResponseCreated(httpExchange).send(taskMapper.toJsonWith(createdTask));
         }
 
-        if (httpRequest.isUpdateMethod() && httpRequest.pathStartsWith("/tasks") && httpRequest
-            .hasTaskId()) {
+        if (httpRequest.isUpdateOne()) {
             long taskId = httpRequest.getTaskIdFromPath();
 
             try {
@@ -66,8 +65,7 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
-        if (httpRequest.isMatchMethod("DELETE") && httpRequest.pathStartsWith("/tasks")
-            && httpRequest.hasTaskId()) {
+        if (httpRequest.isDeleteOne()) {
             long taskId = httpRequest.getTaskIdFromPath();
 
             try {
