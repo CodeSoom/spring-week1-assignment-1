@@ -24,10 +24,16 @@ public class DemoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
+        String content = "Hello codesoom";
+
 
         String method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
+
+        String task_id = getId(path);
+        System.out.println(task_id);
+
 
         InputStream inputStream = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(inputStream))
@@ -35,23 +41,50 @@ public class DemoHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         System.out.println(method + " "+ path);
-        if(!body.isBlank()){
+
+
+        if(!body.isBlank() && method.equals("POST") ){
 
             Task task = toTask(body);
             ++id;
             task.setId(id);
             tasks.add(task);
-
         };
 
-        String content = "Hello codesoom";
 
+        //GET /tasks
         if (method.equals("GET") && path.equals("/tasks")) {
             content = tasksToJson();
         }
 
+        //GET tasks/{task_id}
+        if (method.equals("GET") && path.equals("/tasks/"+task_id)) {
+            Integer task_id_int = Integer.parseInt(task_id);
+            Task target_task = tasks.get( task_id_int-1 );
+
+            content = targetTaskToJson(target_task);
+        }
+
+        //POST tasks
         if (method.equals("POST") && path.equals("/tasks")) {
             content = "Create a new task";
+        }
+
+        if (method.equals("PUT") && path.equals("/tasks/"+task_id)) {
+            Integer task_id_int = Integer.parseInt(task_id);
+            Task target_task = tasks.get( task_id_int-1 );
+            Task change_task = toTask(body);
+            target_task.setTitle(change_task.getTitle());
+
+            content = "change target task";
+        }
+
+
+        if (method.equals("DELETE") && path.equals("/tasks/"+task_id)) {
+            Integer task_id_int = Integer.parseInt(task_id);
+            tasks.remove( task_id_int-1 );
+
+            content = "Deleted target task";
         }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
@@ -63,17 +96,30 @@ public class DemoHttpHandler implements HttpHandler {
 
     }
 
+    private String getId(String path) {
+        return path.replace("/tasks/","");
+    }
+
     private Task toTask(String content) throws JsonProcessingException {
         return objectMapper.readValue(content, Task.class);
     }
 
+
+    private String targetTaskToJson(Task task) throws IOException{
+        ObjectMapper objectMapper = new ObjectMapper();
+        OutputStream outputStream = new ByteArrayOutputStream();
+
+        objectMapper.writeValue(outputStream, task);
+
+        return outputStream.toString();
+    }
     private String tasksToJson() throws IOException{
         ObjectMapper objectMapper = new ObjectMapper();
         OutputStream outputStream = new ByteArrayOutputStream();
+
         objectMapper.writeValue(outputStream, tasks);
 
         return outputStream.toString();
     }
-
 
 }
