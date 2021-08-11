@@ -1,7 +1,6 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -10,32 +9,29 @@ import java.util.List;
 
 public class TaskMapper {
 
+    private final TaskManager taskManager = TaskManager.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public String taskToJson(Task task) throws IOException {
+    public String toJsonWith(long id) throws IOException {
+        Task task = taskManager.findTaskWith(id);
+        return toJsonWith(task);
+    }
+
+    public String toJsonWith(Task task) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
 
-        objectMapper.writeValue(outputStream, task);
-
-        return outputStream.toString();
+        return write(outputStream, task);
     }
 
-    public Task getTaskFromContent(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
-    }
-
-    public String tasksToJson() throws IOException {
-        TaskManager taskManager = TaskManager.getInstance();
-        List<Task> allTasks = taskManager.getAllTasks();
-
-        return tasksToJson(allTasks);
-    }
-
-    private String tasksToJson(List<Task> tasks) throws IOException {
+    public String toJson() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
+        List<Task> tasks = taskManager.getAllTasks();
 
+        return write(outputStream, tasks);
+    }
+
+    private String write(OutputStream outputStream, Object tasks) throws IOException {
         objectMapper.writeValue(outputStream, tasks);
-
         return outputStream.toString();
     }
 }
