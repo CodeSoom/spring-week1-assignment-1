@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.HttpEnum.HttpMethodCode;
 import com.codesoom.HttpEnum.HttpStatusCode;
 import com.codesoom.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -36,7 +37,6 @@ public class CrudHttpHandler implements HttpHandler {
 
         String path = uri.getPath();
         String id = "";
-        OutputStream outputStream = exchange.getResponseBody();
 
 
         String response = "[]";
@@ -44,14 +44,14 @@ public class CrudHttpHandler implements HttpHandler {
          * method에 null이 들어온다면 비교주체자가 null이 되버리기 때문에 equals를 실행할 수 없어 NPE가 발생할 가능성이 생기는 것 같습니다.
          * 반대로 "GET".equals(method) 로 변경하면 비교하는 주체가 null이 발생할 일이 없어지기 때문에 NPE 방지가 되는 원리 같습니다.
          */
-        if("GET".equals(method) &&  "/tasks".equals(path)) {
+        if(HttpMethodCode.GET.getStatus().equals(method) &&  "/tasks".equals(path)) {
 
             if(!tasks.isEmpty()) {
                 response = toTaskJson();
             }
             exchange.sendResponseHeaders(HttpStatusCode.OK.getStatus(),response.getBytes().length);
         }
-        else if("GET".equals(method) &&  Pattern.matches("/tasks/[0-9]*$",path)) {
+        else if(HttpMethodCode.GET.getStatus().equals(method) &&  Pattern.matches("/tasks/[0-9]*$",path)) {
             id = getId(path);
             Task task = tasks.get(Long.parseLong(id));
             if(task==null) {
@@ -63,7 +63,7 @@ public class CrudHttpHandler implements HttpHandler {
             }
 
         }
-        else if("POST".equals(method) && "/tasks".equals(path)) {
+        else if(HttpMethodCode.POST.getStatus().equals(method) && "/tasks".equals(path)) {
 
             String content = getContent(exchange);
             Task task = toTask(content);
@@ -73,7 +73,7 @@ public class CrudHttpHandler implements HttpHandler {
             response=toTaskJsonOne(task);
             exchange.sendResponseHeaders(HttpStatusCode.CREATED.getStatus(), response.getBytes().length);
         }
-        else if("PUT".equals(method) && Pattern.matches("/tasks/[0-9]*$",path) ) {
+        else if( (HttpMethodCode.PUT.getStatus().equals(method) || HttpMethodCode.PATCH.getStatus().equals(method) )&& Pattern.matches("/tasks/[0-9]*$",path) ) {
 
             id = getId(path);
             String content = getContent(exchange);
@@ -93,7 +93,7 @@ public class CrudHttpHandler implements HttpHandler {
 
 
         }
-        else if("DELETE".equals(method) && Pattern.matches("/tasks/[0-9]*$",path) ) {
+        else if(HttpMethodCode.DELETE.getStatus().equals(method) && Pattern.matches("/tasks/[0-9]*$",path) ) {
 
             id = getId(path);
             if(tasks.get(Long.parseLong(id)) == null) {
@@ -104,8 +104,6 @@ public class CrudHttpHandler implements HttpHandler {
                 exchange.sendResponseHeaders(HttpStatusCode.OK.getStatus(), response.getBytes().length);
             }
 
-            response="DELETE..";
-
         }
         else{
             /*
@@ -115,14 +113,14 @@ public class CrudHttpHandler implements HttpHandler {
             exchange.sendResponseHeaders(HttpStatusCode.NOTFOUND.getStatus(), 0);
         }
 
-
+        OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(response.getBytes());
         outputStream.flush();
         outputStream.close();
     }
 
     private String getId(String path) {
-            return path.replace("/task/","");
+            return path.replace("/tasks/","");
     }
 
     private String getContent(HttpExchange exchange) {
