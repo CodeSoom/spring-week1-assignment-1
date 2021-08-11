@@ -45,7 +45,7 @@ public class TaskHttpHandler implements HttpHandler {
                 new HttpResponseNotFound(httpExchange).send(NOT_FOUND_TASK_ID_MESSAGE);
             }
 
-            Task content = taskManager.findTaskFromId(taskId);
+            Task content = taskManager.findTaskWith(taskId);
             new HttpResponseOK(httpExchange).send(taskMapper.taskToJson(content));
         }
 

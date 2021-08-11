@@ -19,16 +19,16 @@ public class TaskManager {
 
     private Long lastId = 0L;
 
-    public Task findTaskFromId(long taskId) {
+    public Task findTaskWith(long id) {
         return tasks.stream()
-            .filter(task -> task.isMatchId(taskId))
+            .filter(task -> task.isMatchId(id))
             .findFirst()
             .get();
     }
 
-    public boolean existTaskFromId(long taskId) {
+    public boolean existTaskFromId(long id) {
         return tasks.stream()
-            .anyMatch(task -> task.isMatchId(taskId));
+            .anyMatch(task -> task.isMatchId(id));
     }
 
     public List<Task> getAllTasks() {
@@ -43,15 +43,15 @@ public class TaskManager {
         return task;
     }
 
-    public Task deleteTask(long taskId) {
-        Task task = findTaskFromId(taskId);
+    public Task deleteTask(long id) {
+        Task task = findTaskWith(id);
         tasks.remove(task);
 
         return task;
     }
 
-    public Task updateTask(long taskId, Task content) {
-        Task task = findTaskFromId(taskId);
+    public Task updateTask(long id, Task content) {
+        Task task = findTaskWith(id);
 
         task.setTitle(content.getTitle());
 
