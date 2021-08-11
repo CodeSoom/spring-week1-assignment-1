@@ -2,7 +2,6 @@ package com.codesoom.assignment.web;
 
 import com.codesoom.assignment.TaskManager;
 import com.codesoom.assignment.TaskMapper;
-import com.codesoom.assignment.TaskConvertor;
 import com.codesoom.assignment.errors.TaskIdNotFoundException;
 import com.codesoom.assignment.models.Task;
 import com.sun.net.httpserver.HttpExchange;
@@ -18,7 +17,6 @@ public class TaskHttpHandler implements HttpHandler {
     public static final String NOT_FOUND_MESSAGE = "Not Found.";
 
     private final TaskManager taskManager = TaskManager.getInstance();
-    private final TaskConvertor taskConvertor = new TaskConvertor();
     private final TaskMapper taskMapper = new TaskMapper();
 
     @Override
@@ -50,10 +48,9 @@ public class TaskHttpHandler implements HttpHandler {
                 new HttpResponseNoContent(httpExchange).send();
             }
 
-            Task task = taskConvertor.toTask(body);
-            Task newTask = taskManager.createTask(task);
+            Task createdTask = taskManager.createTask(body);
 
-            new HttpResponseCreated(httpExchange).send(taskMapper.toJsonWith(newTask));
+            new HttpResponseCreated(httpExchange).send(taskMapper.toJsonWith(createdTask));
         }
 
         if (httpRequest.isUpdateMethod() && httpRequest.pathStartsWith("/tasks") && httpRequest
@@ -61,8 +58,7 @@ public class TaskHttpHandler implements HttpHandler {
             long taskId = httpRequest.getTaskIdFromPath();
 
             try {
-                Task task = taskConvertor.toTask(body);
-                Task updatedTask = taskManager.updateTask(taskId, task);
+                Task updatedTask = taskManager.updateTask(taskId, body);
 
                 new HttpResponseOK(httpExchange).send(taskMapper.toJsonWith(updatedTask));
             } catch (TaskIdNotFoundException error) {

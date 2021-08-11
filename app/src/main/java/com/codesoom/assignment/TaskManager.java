@@ -2,6 +2,7 @@ package com.codesoom.assignment;
 
 import com.codesoom.assignment.errors.TaskIdNotFoundException;
 import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class TaskManager {
         return uniqueInstance;
     }
 
+    private final TaskConvertor taskConvertor = new TaskConvertor();
     private final List<Task> tasks = new ArrayList<>();
 
     private Long lastId = 0L;
@@ -31,7 +33,9 @@ public class TaskManager {
         return tasks;
     }
 
-    public Task createTask(Task task) {
+    public Task createTask(String body) throws JsonProcessingException {
+        Task task = taskConvertor.toTask(body);
+
         lastId++;
         task.setId(lastId);
 
@@ -47,10 +51,12 @@ public class TaskManager {
         return task;
     }
 
-    public Task updateTask(long id, Task content) {
+    public Task updateTask(long id, String body) throws JsonProcessingException {
         Task task = findTaskWith(id);
+        Task content = taskConvertor.toTask(body);
 
-        task.setTitle(content.getTitle());
+        String newTitle = content.getTitle();
+        task.setTitle(newTitle);
 
         return task;
     }
