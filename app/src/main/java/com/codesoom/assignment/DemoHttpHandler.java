@@ -58,7 +58,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         // POST
         if ("POST".equals(requestMethod) && hasTask(requestPath)) {
-            Task task = convertJsonToTask(requestPath);
+            Task task = convertJsonToTask(requestBody);
             task.setId(this.nextId++);
             this.tasks.add(task);
 
