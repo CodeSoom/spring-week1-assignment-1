@@ -32,12 +32,12 @@ public class DemoHttpHandler implements HttpHandler {
         String content = "";
 
         // GET ALL
-        if (requestInfo.getMethod().equals("GET") && hasTask(requestInfo.getPath())) {
+        if ("GET".equals(requestInfo.getMethod()) && hasTask(requestInfo.getPath())) {
             content = convertTasksToJson(this.tasks);
         }
 
         // GET Detail
-        if (requestInfo.getMethod().equals("GET") && hasTaskId(requestInfo.getPath())) {
+        if ("GET".equals(requestInfo.getMethod()) && hasTaskId(requestInfo.getPath())) {
             Long id = getTaskIdFromPath(requestInfo.getPath());
             Task resultTask = getTaskById(id);
 
@@ -45,7 +45,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         // POST
-        if (requestInfo.getMethod().equals("POST") && hasTask(requestInfo.getPath())) {
+        if ("POST".equals(requestInfo.getMethod()) && hasTask(requestInfo.getPath())) {
             Task task = convertJsonToTask(requestInfo.getBody());
             task.setId(this.nextId++);
             this.tasks.add(task);
@@ -54,7 +54,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         // PUT
-        if (requestInfo.getMethod().equals("PUT") && hasTaskId(requestInfo.getPath())) {
+        if ("PUT".equals(requestInfo.getMethod()) && hasTaskId(requestInfo.getPath())) {
             Long id = getTaskIdFromPath(requestInfo.getPath());
             String inputTitle = convertJsonToTask(requestInfo.getBody()).getTitle();
 
@@ -65,7 +65,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         // DELETE
-        if (requestInfo.getMethod().equals("DELETE") && hasTaskId(requestInfo.getPath())) {
+        if ("DELETE".equals(requestInfo.getMethod()) && hasTaskId(requestInfo.getPath())) {
             Long id = getTaskIdFromPath(requestInfo.getPath());
             removeTaskById(id);
         }
