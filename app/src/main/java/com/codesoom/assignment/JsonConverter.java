@@ -1,7 +1,5 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.modles.Task;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.ByteArrayOutputStream;
@@ -11,16 +9,6 @@ import java.util.Optional;
 
 public final class JsonConverter {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
-    public static Optional<Task> jsonToTask(final String content) {
-        Task task = null;
-        try {
-            task = OBJECT_MAPPER.readValue(content, Task.class);
-        } catch (JsonProcessingException exception) {
-            exception.printStackTrace();
-        }
-        return Optional.ofNullable(task);
-    }
 
     public static Optional<String> toJson(final Object object) {
         String jsonString = null;
@@ -33,15 +21,6 @@ public final class JsonConverter {
             e.printStackTrace();
         }
         return Optional.ofNullable(jsonString);
-    }
-
-    public static Task jsonToTaskOrNull(final String content) {
-        try {
-            return OBJECT_MAPPER.readValue(content, Task.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     public static String toJsonOrNull(final Object object) {

@@ -73,7 +73,7 @@ public final class TaskHandler implements HttpHandler {
     }
 
     private void handlePost(final HttpExchange exchange, final String requestBody) throws IOException {
-        final Optional<Task> taskOptional = JsonConverter.jsonToTask(requestBody);
+        final Optional<Task> taskOptional = Task.jsonToTask(requestBody);
         if (taskOptional.isEmpty()) {
             sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_TASK_FAIL);
             return;
