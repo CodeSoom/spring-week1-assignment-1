@@ -62,10 +62,10 @@ public class DemoHttpHandler implements HttpHandler {
             int length = 0;
             if (tasks.get(id) != null) {
                 content = taskToJSON(id);
-                httpStatusCode = 200;
+                httpStatusCode = HttpStatusCode.Success.getStatusCode();
                 length = content.getBytes().length;
             } else {
-                httpStatusCode = 404;
+                httpStatusCode = HttpStatusCode.NotFound.getStatusCode();
                 length = 0;
             }
 
@@ -77,9 +77,9 @@ public class DemoHttpHandler implements HttpHandler {
                 task.setId(id);
                 tasks.put(id, task);
                 content = taskToJSON(id);
-                httpStatusCode = 201;
+                httpStatusCode = HttpStatusCode.Created.getStatusCode();
             } else {
-                httpStatusCode = 204;
+                httpStatusCode = HttpStatusCode.NoContent.getStatusCode();
             }
             httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
         } else if (("PATCH".equals(method) || method.equals("PUT")) && (pathElements != null ? pathElements.length : 0) > 2) {
@@ -88,9 +88,9 @@ public class DemoHttpHandler implements HttpHandler {
                 Task task = toTask(body);
                 task.setId(id);
                 tasks.put(id, task);
-                httpStatusCode = 200;
+                httpStatusCode = HttpStatusCode.Success.getStatusCode();
             } else {
-                httpStatusCode = 404;
+                httpStatusCode = HttpStatusCode.NotFound.getStatusCode();
             }
             content = taskToJSON(id);
             httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
@@ -99,10 +99,10 @@ public class DemoHttpHandler implements HttpHandler {
             if (tasks.get(id) != null) {
                 tasks.remove(id);
                 content = "Delete task.";
-                httpStatusCode = 204;
+                httpStatusCode = HttpStatusCode.NoContent.getStatusCode();
             } else {
                 content = "존재하지 않음";
-                httpStatusCode = 404;
+                httpStatusCode = HttpStatusCode.NotFound.getStatusCode();
             }
 
             httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);

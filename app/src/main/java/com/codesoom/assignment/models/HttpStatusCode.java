@@ -1,7 +1,7 @@
 package com.codesoom.assignment.models;
 
 public enum HttpStatusCode {
-    Success(200), Created(201), Forbidden(403),NotFound(404), InternalServerError(500);
+    Success(200), Created(201), NoContent(204), Forbidden(403),NotFound(404), InternalServerError(500);
 
     private int num;
 
