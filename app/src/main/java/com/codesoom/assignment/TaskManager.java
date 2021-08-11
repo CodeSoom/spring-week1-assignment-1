@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.errors.TaskIdNotFoundException;
 import com.codesoom.assignment.models.Task;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,12 +24,7 @@ public class TaskManager {
         return tasks.stream()
             .filter(task -> task.isMatchId(id))
             .findFirst()
-            .get();
-    }
-
-    public boolean existTaskFromId(long id) {
-        return tasks.stream()
-            .anyMatch(task -> task.isMatchId(id));
+            .orElseThrow(TaskIdNotFoundException::new);
     }
 
     public List<Task> getAllTasks() {
@@ -38,6 +34,7 @@ public class TaskManager {
     public Task createTask(Task task) {
         lastId++;
         task.setId(lastId);
+
         tasks.add(task);
 
         return task;
