@@ -12,6 +12,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collector;
@@ -100,7 +101,7 @@ public class DemoHttpHandler implements HttpHandler {
         return this.tasks.stream()
                 .filter(task->task.getId().equals(id))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(()->new NoSuchElementException("Not Found Task"));
     }
 
     private void removeTaskById(Long id) {
