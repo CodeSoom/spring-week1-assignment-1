@@ -11,11 +11,14 @@ public class App {
         return "Hello World!";
     }
 
+    private static final int PORT = 8000;
+    private static final int BACK_LOG = 0;
+
     public static void main(String[] args) {
 
-        InetSocketAddress address = new InetSocketAddress(8000);
+        InetSocketAddress address = new InetSocketAddress(PORT);
         try {
-            HttpServer httpServer = HttpServer.create(address, 0);
+            HttpServer httpServer = HttpServer.create(address, BACK_LOG);
             HttpHandler handler = new DemoHttpHandler();
             httpServer.createContext("/", handler);
             httpServer.start();

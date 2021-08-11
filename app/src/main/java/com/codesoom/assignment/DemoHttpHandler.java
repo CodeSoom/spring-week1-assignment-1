@@ -20,6 +20,14 @@ public class DemoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
     ObjectMapper mapper = new ObjectMapper();
 
+    // 상태 코드 정의
+    int HTTP_STATUS_OK = 200;
+    int HTTP_STATUS_CREATED = 201;
+    int HTTP_STATUS_CREATED_NO_CONTENT = 204;
+    int HTTP_STATUS_NOT_FOUND = 404;
+
+    String NOT_FOUND_MSG = "Cannot find task by id";
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
@@ -36,104 +44,91 @@ public class DemoHttpHandler implements HttpHandler {
         // path가 아이디를 가지는지 여부
         boolean hasTaskId = Pattern.matches("/tasks/[0-9]+$", path);
 
+
+
         // 콘텐츠 초기화
-        String content = null;
-        int HttpStatusOK = 200;
-        int HttpStatusCreated = 201;
-        int HttpStatusNoContent = 204;
-        int HttpStatusNotFound = 404;
+        String content = "";
 
-        
+        // 아래 path 조건에 해당이 안되면 잘못된 요청이므로 404로 초기화
+        int statusCode = 404;
+
         // GET /tasks
-        if (method.equals("GET") && path.equals("/tasks")) {
+        if ("GET".equals(method) && "/tasks".equals(path)) {
             content = tasksToJson(tasks);
-
-            exchange.sendResponseHeaders(HttpStatusOK, content.getBytes().length);
-            OutputStream responseBody = exchange.getResponseBody();
-            responseBody.write(content.getBytes());
-            responseBody.flush();
-            responseBody.close();
+            statusCode = HTTP_STATUS_OK;
         }
 
         // GET /tasks/{id}
-        if (method.equals("GET") && hasTaskId) {
+        if ("GET".equals(method) && hasTaskId) {
             Long id = extractIdFromPath(path);
             Task findTask = findTaskById(id);
             if (findTask == null) {
-                content = "Cannot find task by id";
-                exchange.sendResponseHeaders(HttpStatusNotFound, content.getBytes().length);
+                content = NOT_FOUND_MSG;
+                statusCode = HTTP_STATUS_NOT_FOUND;
             } else {
                 content = taskToJson(findTask);
-                exchange.sendResponseHeaders(HttpStatusOK, content.getBytes().length);
+                statusCode = HTTP_STATUS_OK;
             }
-
-            OutputStream responseBody = exchange.getResponseBody();
-            responseBody.write(content.getBytes());
-            responseBody.flush();
-            responseBody.close();
         }
 
         // POST /tasks
-        if (method.equals("POST") && path.equals("/tasks")) {
+        if ("POST".equals(method) && "/tasks".equals(path)) {
             Task task = createTaskWithId(body);
             content = taskToJson(task);
             tasks.add(task);
 
-            exchange.sendResponseHeaders(HttpStatusCreated, content.getBytes().length);
-            OutputStream responseBody = exchange.getResponseBody();
-            responseBody.write(content.getBytes());
-            responseBody.flush();
-            responseBody.close();
+            statusCode = HTTP_STATUS_CREATED;
         }
 
         // Delete /tasks/{id}
-        if (method.equals("DELETE") && hasTaskId) {
+        if ("DELETE".equals(method) && hasTaskId) {
             Long id = extractIdFromPath(path);
             Task findTask = findTaskById(id);
 
             if (findTask == null) {
-                content = "Cannot find task by id";
-                exchange.sendResponseHeaders(HttpStatusNotFound, content.getBytes().length);
+                content = NOT_FOUND_MSG;
+                statusCode = HTTP_STATUS_NOT_FOUND;
             } else {
                 tasks.remove(findTask);
                 content = tasksToJson(tasks);
-                exchange.sendResponseHeaders(HttpStatusNoContent, -1L);
+                statusCode = HTTP_STATUS_CREATED_NO_CONTENT;
             }
-
-            OutputStream responseBody = exchange.getResponseBody();
-            responseBody.write(content.getBytes());
-            responseBody.flush();
-            responseBody.close();
         }
 
         // PUT,PATCH /tasks/{id}
         // 여기서는 Task 객체의 변경 가능한 필드가 title 뿐이므로 put, patch가 동일하게 동작한다.
-        if ((method.equals("PATCH") || method.equals("PUT")) && hasTaskId) {
+        if (("PATCH".equals(method) || "PUT".equals(method)) && hasTaskId) {
             Long id = extractIdFromPath(path);
             Task findTask = findTaskById(id);
             if (findTask == null) {
-                content = "Cannot find task by id";
-                exchange.sendResponseHeaders(HttpStatusNotFound, content.getBytes().length);
+                content = NOT_FOUND_MSG;
+                statusCode = HTTP_STATUS_NOT_FOUND;
             } else {
                 Task inputTask = toTask(body);
                 findTask.setTitle(inputTask.getTitle());
 
                 content = taskToJson(findTask);
-                exchange.sendResponseHeaders(HttpStatusOK, content.getBytes().length);
+                statusCode = HTTP_STATUS_OK;
             }
-
-            OutputStream responseBody = exchange.getResponseBody();
-            responseBody.write(content.getBytes());
-            responseBody.flush();
-            responseBody.close();
         }
+
+        // 상태코드가 204이면 콘텐츠 길이를 -1로 해준다. -1이 아니면 경고 메시지를 출력하고 강제로 -1로 변환됨
+        long contentLength = statusCode == 204 ? -1L : content.getBytes().length;
+
+        exchange.sendResponseHeaders(statusCode, contentLength);
+        OutputStream responseBody = exchange.getResponseBody();
+        responseBody.write(content.getBytes());
+        responseBody.flush();
+        responseBody.close();
     }
 
     /**
-     * Task 객체 생성
-     * @param body
-     * @return
-     * @throws JsonProcessingException
+     * http 요청의 body 문자열을 받아 할 일 객체를 생성해 리턴합니다.
+     * <p> body 문자열은 반드시 json 형식이어야 합니다. </p>
+     *
+     * @param body http 요청의 body 문자열
+     * @return Task 할 일
+     * @throws JsonProcessingException json 처리 중 문제가 발생한 경우
      */
     private Task createTaskWithId(String body) throws JsonProcessingException {
         Task task;
@@ -153,10 +148,10 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     /**
-     * Id로 task 찾기
+     * 식별자 아이디로 할 일 객체를 찾아서 리턴합니다.
      *
-     * @param id 아이디
-     * @return Task
+     * @param id 식별자 id
+     * @return Task 할 일
      */
     private Task findTaskById(Long id) {
         return tasks
@@ -167,10 +162,10 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     /**
-     * Path에서 Id 추출하기
+     * 주어진 path에서 식별자 숫자를 찾아 리턴합니다.
      *
-     * @param path url 경로
-     * @return Id
+     * @param path path url 경로
+     * @return Id 식별자 숫자
      */
     private Long extractIdFromPath(String path) {
         String[] pathSplit = path.split("/");
@@ -190,11 +185,11 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     /**
-     * Task 객체 리스트를 Json으로 변환
+     * Task 객체 리스트를 Json으로 변환후 문자열로 리턴합니다.
      *
-     * @param tasks task 리스트
-     * @return String/Json으로 변환된 객체
-     * @throws IOException
+     * @param tasks 할 일 객체 리스트
+     * @return String Json으로 변환된 객체
+     * @throws IOException stream 처리 중 예외가 발생한 경우
      */
     private String tasksToJson(List<Task> tasks) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -204,11 +199,11 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     /**
-     * Task 객체를 Json으로 변환
+     * Task 객체를 Json으로 변환후 문자열로 리턴합니다.
      *
-     * @param task task 리스트
-     * @return String/Json으로 변환된 객체
-     * @throws IOException
+     * @param task 할 일 객체
+     * @return String Json으로 변환된 객체
+     * @throws IOException stream 처리 중 예외가 발생한 경우
      */
     private String taskToJson(Task task) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
