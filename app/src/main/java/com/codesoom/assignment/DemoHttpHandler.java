@@ -31,18 +31,25 @@ public class DemoHttpHandler implements HttpHandler {
         System.out.println(requestInfo.getMethod() + requestInfo.getPath());
 
         String content = "";
+        int codeStatus = 500;
 
         // GET ALL
         if ("GET".equals(requestInfo.getMethod()) && hasTask(requestInfo.getPath())) {
             content = convertTasksToJson(this.tasks);
+            codeStatus = 200;
         }
 
         // GET Detail
         if ("GET".equals(requestInfo.getMethod()) && hasTaskId(requestInfo.getPath())) {
-            Long id = getTaskIdFromPath(requestInfo.getPath());
-            Task resultTask = getTaskById(id);
-
-            content = convertTaskToJson(resultTask);
+            try {
+                Long id = getTaskIdFromPath(requestInfo.getPath());
+                Task resultTask = getTaskById(id);
+                content = convertTaskToJson(resultTask);
+                codeStatus = 200;
+            } catch (NoSuchElementException e) {
+                e.printStackTrace();
+                codeStatus = 404;
+            }
         }
 
         // POST
@@ -52,26 +59,39 @@ public class DemoHttpHandler implements HttpHandler {
             this.tasks.add(task);
 
             content = convertTaskToJson(task);
+            codeStatus = 201;
         }
 
-        // PUT
-        if ("PUT".equals(requestInfo.getMethod()) && hasTaskId(requestInfo.getPath())) {
-            Long id = getTaskIdFromPath(requestInfo.getPath());
-            String inputTitle = convertJsonToTask(requestInfo.getBody()).getTitle();
+        // PUT & PATCH
+        if (("PUT".equals(requestInfo.getMethod()) || "PATCH".equals(requestInfo.getMethod())) && hasTaskId(requestInfo.getPath())) {
+            try {
+                Long id = getTaskIdFromPath(requestInfo.getPath());
+                String inputTitle = convertJsonToTask(requestInfo.getBody()).getTitle();
 
-            Task resultTask = getTaskById(id);
-            resultTask.setTitle(inputTitle);
+                Task resultTask = getTaskById(id);
+                resultTask.setTitle(inputTitle);
 
-            content = convertTaskToJson(resultTask);
+                content = convertTaskToJson(resultTask);
+                codeStatus = 200;
+            } catch(NoSuchElementException e) {
+                e.printStackTrace();
+                codeStatus = 404;
+            }
         }
 
         // DELETE
         if ("DELETE".equals(requestInfo.getMethod()) && hasTaskId(requestInfo.getPath())) {
-            Long id = getTaskIdFromPath(requestInfo.getPath());
-            removeTaskById(id);
+            try {
+                Long id = getTaskIdFromPath(requestInfo.getPath());
+                removeTaskById(id);
+                codeStatus = 204;
+            } catch (NoSuchElementException e) {
+                e.printStackTrace();
+                codeStatus = 404;
+            }
         }
 
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+        exchange.sendResponseHeaders(codeStatus, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
@@ -97,14 +117,16 @@ public class DemoHttpHandler implements HttpHandler {
         return outputStream.toString();
     }
 
-    private Task getTaskById(Long id) {
+    private Task getTaskById(Long id) throws NoSuchElementException {
         return this.tasks.stream()
                 .filter(task->task.getId().equals(id))
                 .findFirst()
                 .orElseThrow(()->new NoSuchElementException("Not Found Task"));
     }
 
-    private void removeTaskById(Long id) {
+    private void removeTaskById(Long id) throws NoSuchElementException {
+        getTaskById(id);
+
         this.tasks = this.tasks.stream()
                 .filter(task->!(task.getId().equals(id)))
                 .collect(Collectors.toList());
@@ -118,7 +140,7 @@ public class DemoHttpHandler implements HttpHandler {
         return Pattern.matches("/tasks/[0-9]+$", path);
     }
 
-    private Long getTaskIdFromPath(String path) {
+    private Long getTaskIdFromPath(String path) throws NoSuchElementException {
         Pattern pattern = Pattern.compile("/tasks/([0-9]+)$");
         Matcher matcher = pattern.matcher(path);
 
