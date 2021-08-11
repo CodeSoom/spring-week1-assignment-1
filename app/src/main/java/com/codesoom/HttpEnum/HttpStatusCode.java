@@ -5,6 +5,7 @@ public enum HttpStatusCode {
     OK(200),
     NOTFOUND(404),
     CREATED(201),
+    NOCONTENT(204),
     BADREQUEST(400);
 
     private int status;

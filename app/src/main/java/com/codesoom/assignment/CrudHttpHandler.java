@@ -101,7 +101,7 @@ public class CrudHttpHandler implements HttpHandler {
                 exchange.sendResponseHeaders(HttpStatusCode.NOTFOUND.getStatus(), response.getBytes().length);
             } else {
                 tasks.remove(Long.parseLong(id));
-                exchange.sendResponseHeaders(HttpStatusCode.OK.getStatus(), response.getBytes().length);
+                exchange.sendResponseHeaders(HttpStatusCode.NOCONTENT.getStatus(), response.getBytes().length);
             }
 
         }
