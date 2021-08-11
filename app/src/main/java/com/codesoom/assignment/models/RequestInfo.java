@@ -22,7 +22,7 @@ public class RequestInfo {
         this.path = uri.getPath();
 
         InputStream inputStream = exchange.getRequestBody();
-        this.body = new BufferedReader(new InputStreamReader(inputStream, "euc-kr"))
+        this.body = new BufferedReader(new InputStreamReader(inputStream, "utf-8"))
                 .lines()
                 .collect(Collectors.joining("\n"));
     }
