@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.models.HttpStatusCode;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,8 +25,6 @@ public class DemoHttpHandler implements HttpHandler {
 
     private HashMap<Long, Task> tasks = new HashMap<>();
     private long id = 0L;
-    private int httpStatusCode = 200;
-    private int length = 0;
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -52,6 +51,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         String content = "Hello, world!";
 
+        int httpStatusCode = 500;
         if (method.equals("GET") && Objects.equals(path, "/tasks")) {
             content = tasksToJSON();
             System.out.println("/tasks");
@@ -59,6 +59,7 @@ public class DemoHttpHandler implements HttpHandler {
         } else if ("GET".equals(method) && (pathElements != null ? pathElements.length : 0) > 2) {
 
             id = Long.parseLong(pathElements[pathElements.length - 1]);
+            int length = 0;
             if (tasks.get(id) != null) {
                 content = taskToJSON(id);
                 httpStatusCode = 200;
@@ -76,8 +77,11 @@ public class DemoHttpHandler implements HttpHandler {
                 task.setId(id);
                 tasks.put(id, task);
                 content = taskToJSON(id);
+                httpStatusCode = 201;
+            } else {
+                httpStatusCode = 204;
             }
-            httpExchange.sendResponseHeaders(201, content.getBytes().length);
+            httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
         } else if (("PATCH".equals(method) || method.equals("PUT")) && (pathElements != null ? pathElements.length : 0) > 2) {
             id = Long.parseLong(pathElements[pathElements.length - 1]);
             if (!body.isEmpty() && tasks.get(id) != null) {
