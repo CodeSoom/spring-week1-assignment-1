@@ -12,6 +12,10 @@ public abstract class HttpResponse {
         this.exchange = exchange;
     }
 
+    public void send() throws IOException {
+        send("");
+    }
+
     public void send(String content) throws IOException {
         exchange.sendResponseHeaders(httpStatusCode(), content.getBytes().length);
 

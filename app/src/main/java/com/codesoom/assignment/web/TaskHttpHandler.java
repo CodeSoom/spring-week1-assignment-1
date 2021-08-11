@@ -50,12 +50,14 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         if (httpRequest.isMatchMethod("POST") && httpRequest.isMatchPath("/tasks")) {
-            if (!body.isEmpty()) {
-                Task task = taskMapper.getTaskFromContent(body);
-                Task newTask = taskManager.createTask(task);
-
-                new HttpResponseCreated(httpExchange).send(taskMapper.taskToJson(newTask));
+            if (body.isEmpty()) {
+                new HttpResponseNoContent(httpExchange).send();
             }
+
+            Task task = taskMapper.getTaskFromContent(body);
+            Task newTask = taskManager.createTask(task);
+
+            new HttpResponseCreated(httpExchange).send(taskMapper.taskToJson(newTask));
         }
 
         if (httpRequest.isUpdateMethod() && httpRequest.pathStartsWith("/tasks") && httpRequest
