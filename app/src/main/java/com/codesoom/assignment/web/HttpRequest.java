@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 
 public class HttpRequest {
 
+    public static final String PREFIX_PATH = "/tasks";
+
     private final String path;
     private final String method;
 
@@ -31,14 +33,14 @@ public class HttpRequest {
     }
 
     public Long getTaskIdFromPath() {
-        String replaced = path.replace("/tasks", "")
+        String replaced = path.replace(PREFIX_PATH, "")
             .replace("/", "");
 
         return Long.parseLong(replaced);
     }
 
     public boolean isReadAll() {
-        return "GET".equals(method) && "/tasks".equals(path);
+        return "GET".equals(method) && PREFIX_PATH.equals(path);
     }
 
     public boolean isReadOne() {
@@ -46,11 +48,11 @@ public class HttpRequest {
     }
 
     public boolean isCreateOne() {
-        return "POST".equals(method) && "/tasks".equals(path);
+        return "POST".equals(method) && PREFIX_PATH.equals(path);
     }
 
     public boolean isUpdateOne() {
-        return ("PUT".equals(method) || "PATCH".equals(method))
+        return ("PUT".equals(method) || PREFIX_PATH.equals(method))
             && hasTaskId();
     }
 
