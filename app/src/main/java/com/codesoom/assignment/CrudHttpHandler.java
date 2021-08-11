@@ -56,10 +56,12 @@ public class CrudHttpHandler implements HttpHandler {
             Task task = tasks.get(Long.parseLong(id));
             if(task==null) {
                 response = "아이디가 없습니다.";
+                exchange.sendResponseHeaders(HttpStatusCode.NOTFOUND.getStatus(), response.getBytes().length);
             } else {
                 response = toTaskJsonOne(task);
+                exchange.sendResponseHeaders(HttpStatusCode.OK.getStatus(), response.getBytes().length);
             }
-            exchange.sendResponseHeaders(HttpStatusCode.OK.getStatus(), response.getBytes().length);
+
         }
         else if("POST".equals(method) && "/task".equals(path)) {
 
@@ -79,13 +81,16 @@ public class CrudHttpHandler implements HttpHandler {
 
             if(tasks.get(Long.parseLong(id)) == null){
                 response = "아이디가 없습니다.";
+                exchange.sendResponseHeaders(HttpStatusCode.NOTFOUND.getStatus(), response.getBytes().length);
+
             } else {
                 Task task = tasks.get(Long.parseLong(id));
                 task.setTitle(taskPut.getTitle());
                 response=toTaskJsonOne(task);
+                exchange.sendResponseHeaders(HttpStatusCode.OK.getStatus(), response.getBytes().length);
+
             }
 
-            exchange.sendResponseHeaders(HttpStatusCode.OK.getStatus(), response.getBytes().length);
 
         }
         else if("DELETE".equals(method) && Pattern.matches("/task/[0-9]*$",path) ) {
@@ -93,19 +98,21 @@ public class CrudHttpHandler implements HttpHandler {
             id = getId(path);
             if(tasks.get(Long.parseLong(id)) == null) {
                 response = "아이디가 없습니다.";
+                exchange.sendResponseHeaders(HttpStatusCode.NOTFOUND.getStatus(), response.getBytes().length);
             } else {
                 tasks.remove(Long.parseLong(id));
+                exchange.sendResponseHeaders(HttpStatusCode.OK.getStatus(), response.getBytes().length);
             }
 
             response="DELETE..";
-            exchange.sendResponseHeaders(HttpStatusCode.OK.getStatus(), response.getBytes().length);
+
         }
         else{
             /*
              * 서버가 요청을 완료했다는 뜻을 담고 있습니다.
              * https://datatracker.ietf.org/doc/html/rfc7231#section-6.3.1
              */
-            exchange.sendResponseHeaders(HttpStatusCode.OK.getStatus(), 0);
+            exchange.sendResponseHeaders(HttpStatusCode.NOTFOUND.getStatus(), 0);
         }
 
 
