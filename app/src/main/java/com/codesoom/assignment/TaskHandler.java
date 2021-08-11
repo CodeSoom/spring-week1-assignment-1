@@ -39,8 +39,8 @@ public final class TaskHandler implements HttpHandler {
     private void handleId(
             final HttpExchange exchange, final String method, final String path
     ) throws IOException {
-        if (HttpMethod.PUT.name().equals(method)) {
-            sendResponse(exchange, HttpURLConnection.HTTP_OK, HttpMethod.PUT.name() + " " + path);
+        if (HttpMethod.GET.name().equals(method)) {
+            sendResponse(exchange, HttpURLConnection.HTTP_OK, HttpMethod.GET.name() + " " + path);
             return;
         }
 
@@ -54,7 +54,11 @@ public final class TaskHandler implements HttpHandler {
             return;
         }
 
-        sendResponse(exchange, HttpURLConnection.HTTP_OK, HttpMethod.GET.name() + " " + path);
+        sendResponse(exchange, HttpURLConnection.HTTP_BAD_METHOD,
+                path + " can only handle "
+                + HttpMethod.GET.name() + " "
+                + HttpMethod.PATCH.name() + " "
+                + HttpMethod.DELETE.name() + " methods.");
     }
 
     private void handleGet(final HttpExchange exchange) throws IOException {
@@ -98,6 +102,15 @@ public final class TaskHandler implements HttpHandler {
             handleGet(exchange);
             return;
         }
-        handlePost(exchange, requestBody);
+
+        if (HttpMethod.POST.name().equals(method)) {
+            handlePost(exchange, requestBody);
+            return;
+        }
+
+        sendResponse(exchange, HttpURLConnection.HTTP_BAD_METHOD,
+                path + " can only handle "
+                        + HttpMethod.GET.name() + " "
+                        + HttpMethod.POST.name() + " methods");
     }
 }
