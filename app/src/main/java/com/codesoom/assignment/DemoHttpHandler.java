@@ -123,7 +123,7 @@ public class DemoHttpHandler implements HttpHandler {
         Matcher matcher = pattern.matcher(path);
 
         if(!matcher.find())
-            return null;
+            throw new NoSuchElementException("Not Found id");
 
         return Long.parseLong(matcher.group(1));
     }
