@@ -47,14 +47,17 @@ public final class TaskHandler implements HttpHandler {
     ) throws IOException {
         if (HTTP_PUT.equals(method)) {
             sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_PUT + " " + path);
+            return;
         }
 
         if (HTTP_PATCH.equals(method)) {
             sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_PATCH + " " + path);
+            return;
         }
 
         if (HTTP_DELETE.equals(method)) {
             sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_DELETE + " " + path);
+            return;
         }
 
         sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_GET + " " + path);
@@ -94,6 +97,7 @@ public final class TaskHandler implements HttpHandler {
 
         if (!EMPTY_STRING.equals(path)) {
             handleId(exchange, method, path);
+            return;
         }
 
         if (HTTP_GET.equals(method)) {
