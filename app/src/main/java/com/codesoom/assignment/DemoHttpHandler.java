@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 public class DemoHttpHandler implements HttpHandler {
 
     private List<Task> tasks = new ArrayList<>();
-
     ObjectMapper mapper = new ObjectMapper();
 
     @Override
