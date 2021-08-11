@@ -1,7 +1,6 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +8,8 @@ public class TaskManager {
 
     private static final TaskManager uniqueInstance = new TaskManager();
 
-    private TaskManager() {}
+    private TaskManager() {
+    }
 
     public static TaskManager getInstance() {
         return uniqueInstance;
@@ -17,7 +17,7 @@ public class TaskManager {
 
     private final List<Task> tasks = new ArrayList<>();
 
-    private Long lastTaskId = 0L;
+    private Long lastId = 0L;
 
     public Task findTaskFromId(long taskId) {
         return tasks.stream()
@@ -36,7 +36,8 @@ public class TaskManager {
     }
 
     public Task createTask(Task task) {
-        task.setId(++lastTaskId);
+        lastId++;
+        task.setId(lastId);
         tasks.add(task);
 
         return task;
@@ -49,7 +50,7 @@ public class TaskManager {
         return task;
     }
 
-    public Task updateTask(long taskId, Task content) throws JsonProcessingException {
+    public Task updateTask(long taskId, Task content) {
         Task task = findTaskFromId(taskId);
 
         task.setTitle(content.getTitle());
