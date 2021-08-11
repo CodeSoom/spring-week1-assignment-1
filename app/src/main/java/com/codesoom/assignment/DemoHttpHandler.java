@@ -16,6 +16,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
@@ -44,22 +45,21 @@ public class DemoHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         System.out.println(method + " " + path + " " + body);
-        String[] pathElements = path.split("/");
-
+        String[] pathElements = null;
+        if (path != null) {
+            pathElements = path.split("/");
+        }
 
         String content = "Hello, world!";
 
-        if(method.equals("GET") && path.equals("/tasks")) {
+        if (method.equals("GET") && Objects.equals(path, "/tasks")) {
             content = tasksToJSON();
             System.out.println("/tasks");
             httpExchange.sendResponseHeaders(200, content.getBytes().length);
-        }
-
-
-        else if("GET".equals(method) && pathElements.length > 2) {
+        } else if ("GET".equals(method) && (pathElements != null ? pathElements.length : 0) > 2) {
 
             id = Long.parseLong(pathElements[pathElements.length - 1]);
-            if(tasks.get(id) != null) {
+            if (tasks.get(id) != null) {
                 content = taskToJSON(id);
                 httpStatusCode = 200;
                 length = content.getBytes().length;
@@ -69,9 +69,7 @@ public class DemoHttpHandler implements HttpHandler {
             }
 
             httpExchange.sendResponseHeaders(httpStatusCode, length);
-        }
-
-        else if("POST".equals(method) && path.equals("/tasks")) {
+        } else if ("POST".equals(method) && Objects.equals(path, "/tasks")) {
             if (!body.isEmpty()) {
                 Task task = toTask(body);
                 ++id;
@@ -80,9 +78,7 @@ public class DemoHttpHandler implements HttpHandler {
                 content = taskToJSON(id);
             }
             httpExchange.sendResponseHeaders(201, content.getBytes().length);
-        }
-
-        else if(("PATCH".equals(method) || method.equals("PUT")) && pathElements.length > 2) {
+        } else if (("PATCH".equals(method) || method.equals("PUT")) && (pathElements != null ? pathElements.length : 0) > 2) {
             id = Long.parseLong(pathElements[pathElements.length - 1]);
             if (!body.isEmpty() && tasks.get(id) != null) {
                 Task task = toTask(body);
@@ -94,11 +90,9 @@ public class DemoHttpHandler implements HttpHandler {
             }
             content = taskToJSON(id);
             httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
-        }
-
-        else if("DELETE".equals(method) && pathElements.length > 2) {
+        } else if ("DELETE".equals(method) && (pathElements != null ? pathElements.length : 0) > 2) {
             id = Long.parseLong(pathElements[pathElements.length - 1]);
-            if(tasks.get(id) != null) {
+            if (tasks.get(id) != null) {
                 tasks.remove(id);
                 content = "Delete task.";
                 httpStatusCode = 204;
@@ -109,7 +103,6 @@ public class DemoHttpHandler implements HttpHandler {
 
             httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
         }
-
 
 
         OutputStream outputStream = httpExchange.getResponseBody();
