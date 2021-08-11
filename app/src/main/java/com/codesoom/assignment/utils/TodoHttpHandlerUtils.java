@@ -16,6 +16,7 @@ public class TodoHttpHandlerUtils {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static Title toTitle(String content) throws JsonProcessingException {
+        System.out.println(content);
         return objectMapper.readValue(content, Title.class);
     }
 
