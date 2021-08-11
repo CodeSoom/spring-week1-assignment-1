@@ -15,6 +15,8 @@ public enum HttpStatusCode {
                 return Success;
             case 201:
                 return Created;
+            case 204:
+                return NoContent;
             case 403 :
                 return Forbidden;
             case 404 :
