@@ -30,19 +30,23 @@ public class DemoHttpHandler implements HttpHandler {
 
         System.out.println(requestInfo.getMethod() + requestInfo.getPath());
 
+        String requestMethod = requestInfo.getMethod();
+        String requestPath = requestInfo.getPath();
+        String requestBody = requestInfo.getBody();
+
         String content = "";
         int codeStatus = 500;
 
         // GET ALL
-        if ("GET".equals(requestInfo.getMethod()) && hasTask(requestInfo.getPath())) {
+        if ("GET".equals(requestMethod) && hasTask(requestPath)) {
             content = convertTasksToJson(this.tasks);
             codeStatus = 200;
         }
 
         // GET Detail
-        if ("GET".equals(requestInfo.getMethod()) && hasTaskId(requestInfo.getPath())) {
+        if ("GET".equals(requestMethod) && hasTaskId(requestPath)) {
             try {
-                Long id = getTaskIdFromPath(requestInfo.getPath());
+                Long id = getTaskIdFromPath(requestPath);
                 Task resultTask = getTaskById(id);
                 content = convertTaskToJson(resultTask);
                 codeStatus = 200;
@@ -53,8 +57,8 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         // POST
-        if ("POST".equals(requestInfo.getMethod()) && hasTask(requestInfo.getPath())) {
-            Task task = convertJsonToTask(requestInfo.getBody());
+        if ("POST".equals(requestMethod) && hasTask(requestPath)) {
+            Task task = convertJsonToTask(requestPath);
             task.setId(this.nextId++);
             this.tasks.add(task);
 
@@ -63,10 +67,10 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         // PUT & PATCH
-        if (("PUT".equals(requestInfo.getMethod()) || "PATCH".equals(requestInfo.getMethod())) && hasTaskId(requestInfo.getPath())) {
+        if (("PUT".equals(requestMethod) || "PATCH".equals(requestMethod)) && hasTaskId(requestPath)) {
             try {
-                Long id = getTaskIdFromPath(requestInfo.getPath());
-                String inputTitle = convertJsonToTask(requestInfo.getBody()).getTitle();
+                Long id = getTaskIdFromPath(requestPath);
+                String inputTitle = convertJsonToTask(requestBody).getTitle();
 
                 Task resultTask = getTaskById(id);
                 resultTask.setTitle(inputTitle);
@@ -80,9 +84,9 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         // DELETE
-        if ("DELETE".equals(requestInfo.getMethod()) && hasTaskId(requestInfo.getPath())) {
+        if ("DELETE".equals(requestMethod) && hasTaskId(requestPath)) {
             try {
-                Long id = getTaskIdFromPath(requestInfo.getPath());
+                Long id = getTaskIdFromPath(requestPath);
                 removeTaskById(id);
                 codeStatus = 204;
             } catch (NoSuchElementException e) {
