@@ -78,12 +78,12 @@ public final class TaskHandler implements HttpHandler {
             sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_TASK_FAIL);
             return;
         }
+        tasks.add(taskOptional.get());
         final Optional<String> jsonStringOptional = JsonConverter.toJson(taskOptional.get());
         if (jsonStringOptional.isEmpty()) {
             sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_JSON_FAIL);
             return ;
         }
-        tasks.add(taskOptional.get());
         sendResponse(exchange, HttpURLConnection.HTTP_CREATED, jsonStringOptional.get());
     }
 
