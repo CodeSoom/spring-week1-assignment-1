@@ -4,6 +4,7 @@ import com.codesoom.assignment.modles.Task;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import javax.swing.text.html.Option;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,6 +13,7 @@ import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public final class TaskHandler implements HttpHandler {
@@ -59,27 +61,27 @@ public final class TaskHandler implements HttpHandler {
     }
 
     private void handleGet(final HttpExchange exchange) throws IOException {
-        final String content = JsonConverter.toJsonOrNull(tasks);
-        if (content == null) {
+        final Optional<String> jsonStringOptional = JsonConverter.toJson(tasks);
+        if (jsonStringOptional.isEmpty()) {
             sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_JSON_FAIL);
             return;
         }
-        sendResponse(exchange, HttpURLConnection.HTTP_OK, content);
+        sendResponse(exchange, HttpURLConnection.HTTP_OK, jsonStringOptional.get());
     }
 
     private void handlePost(final HttpExchange exchange, final String requestBody) throws IOException {
-        final Task task = JsonConverter.jsonToTaskOrNull(requestBody);
-        if (task == null) {
+        final Optional<Task> taskOptional = JsonConverter.jsonToTask(requestBody);
+        if (taskOptional.isEmpty()) {
             sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_TASK_FAIL);
             return;
         }
-        final String content = JsonConverter.toJsonOrNull(task);
-        if (content == null) {
+        final Optional<String> jsonStringOptional = JsonConverter.toJson(taskOptional.get());
+        if (jsonStringOptional.isEmpty()) {
             sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_JSON_FAIL);
             return ;
         }
-        tasks.add(task);
-        sendResponse(exchange, HttpURLConnection.HTTP_CREATED, content);
+        tasks.add(taskOptional.get());
+        sendResponse(exchange, HttpURLConnection.HTTP_CREATED, jsonStringOptional.get());
     }
 
     @Override
