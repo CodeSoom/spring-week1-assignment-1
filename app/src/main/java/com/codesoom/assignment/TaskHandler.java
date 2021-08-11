@@ -25,12 +25,6 @@ public final class TaskHandler implements HttpHandler {
     private static final String EMPTY_STRING = "";
     private static final String PATH_DELIMITER = "/";
 
-    private static final String HTTP_GET = "GET";
-    private static final String HTTP_POST = "POST";
-    private static final String HTTP_PUT = "PUT";
-    private static final String HTTP_PATCH = "PATCH";
-    private static final String HTTP_DELETE = "DELETE";
-
     private final List<Task> tasks = new ArrayList<>();
 
     private void sendResponse(
@@ -45,22 +39,22 @@ public final class TaskHandler implements HttpHandler {
     private void handleId(
             final HttpExchange exchange, final String method, final String path
     ) throws IOException {
-        if (HTTP_PUT.equals(method)) {
-            sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_PUT + " " + path);
+        if (HttpMethod.PUT.name().equals(method)) {
+            sendResponse(exchange, HttpURLConnection.HTTP_OK, HttpMethod.PUT.name() + " " + path);
             return;
         }
 
-        if (HTTP_PATCH.equals(method)) {
-            sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_PATCH + " " + path);
+        if (HttpMethod.PATCH.name().equals(method)) {
+            sendResponse(exchange, HttpURLConnection.HTTP_OK, HttpMethod.PATCH.name() + " " + path);
             return;
         }
 
-        if (HTTP_DELETE.equals(method)) {
-            sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_DELETE + " " + path);
+        if (HttpMethod.DELETE.name().equals(method)) {
+            sendResponse(exchange, HttpURLConnection.HTTP_OK, HttpMethod.DELETE.name() + " " + path);
             return;
         }
 
-        sendResponse(exchange, HttpURLConnection.HTTP_OK, HTTP_GET + " " + path);
+        sendResponse(exchange, HttpURLConnection.HTTP_OK, HttpMethod.GET.name() + " " + path);
     }
 
     private void handleGet(final HttpExchange exchange) throws IOException {
@@ -100,7 +94,7 @@ public final class TaskHandler implements HttpHandler {
             return;
         }
 
-        if (HTTP_GET.equals(method)) {
+        if (HttpMethod.GET.name().equals(method)) {
             handleGet(exchange);
             return;
         }
