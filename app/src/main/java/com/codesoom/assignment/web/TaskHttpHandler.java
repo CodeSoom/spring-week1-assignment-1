@@ -11,7 +11,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.swing.text.NumberFormatter;
 
 public class TaskHttpHandler implements HttpHandler {
 
@@ -40,13 +42,18 @@ public class TaskHttpHandler implements HttpHandler {
             .lines()
             .collect(Collectors.joining("\n"));
 
+        Long taskId;
+        try {
+            taskId = httpRequest.getTaskIdFromPath();
+        } catch (NumberFormatException ne) {
+            taskId = null;
+        }
+
         if (httpRequest.isReadAll()) {
             new HttpResponseOK(httpExchange).send(taskMapper.toJson());
         }
 
         if (httpRequest.isReadOne()) {
-            long taskId = httpRequest.getTaskIdFromPath();
-
             try {
                 new HttpResponseOK(httpExchange).send(taskMapper.toJsonWith(taskId));
             } catch (TaskIdNotFoundException error) {
@@ -65,8 +72,6 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         if (httpRequest.isUpdateOne()) {
-            long taskId = httpRequest.getTaskIdFromPath();
-
             try {
                 Task updatedTask = taskManager.updateTask(taskId, body);
 
@@ -77,8 +82,6 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         if (httpRequest.isDeleteOne()) {
-            long taskId = httpRequest.getTaskIdFromPath();
-
             try {
                 Task deletedTask = taskManager.deleteTask(taskId);
 

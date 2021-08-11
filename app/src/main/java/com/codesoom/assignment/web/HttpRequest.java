@@ -30,12 +30,11 @@ public class HttpRequest {
         }
     }
 
-    public long getTaskIdFromPath() {
-        return Arrays.stream(path.split("/"))
-            .skip(2)
-            .mapToLong(Long::parseLong)
-            .findFirst()
-            .getAsLong();
+    public Long getTaskIdFromPath() {
+        String replaced = path.replace("/tasks", "")
+            .replace("/", "");
+
+        return Long.parseLong(replaced);
     }
 
     public boolean isReadAll() {
