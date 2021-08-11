@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.HttpEnum.HttpStatusCode;
 import com.codesoom.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class CrudHttpHandler implements HttpHandler {
@@ -33,29 +35,31 @@ public class CrudHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
 
         String path = uri.getPath();
-        String id = getId(path);
+        String id = "";
         OutputStream outputStream = exchange.getResponseBody();
 
 
         String response = "[]";
-        /**
+        /*
          * method에 null이 들어온다면 비교주체자가 null이 되버리기 때문에 equals를 실행할 수 없어 NPE가 발생할 가능성이 생기는 것 같습니다.
          * 반대로 "GET".equals(method) 로 변경하면 비교하는 주체가 null이 발생할 일이 없어지기 때문에 NPE 방지가 되는 원리 같습니다.
          */
-        if("GET".equals(method) && ( ("/task".equals(path)) || ("/task/"+id).equals(path) ) ) {
+        if("GET".equals(method) &&  "/task".equals(path)) {
 
-            if(!"noId".equals(id)){
-                Task task = tasks.get(Long.parseLong(id));
-                if(task==null)
-                    response = "아이디가 없습니다.";
-                else
-                    response = toTaskJsonOne(task);
-            }
-            else if(!tasks.isEmpty()) {
+            if(!tasks.isEmpty()) {
                 response = toTaskJson();
             }
-
-            exchange.sendResponseHeaders(200,response.getBytes().length);
+            exchange.sendResponseHeaders(HttpStatusCode.OK.getStatus(),response.getBytes().length);
+        }
+        else if("GET".equals(method) &&  Pattern.matches("/task/[0-9]*$",path)) {
+            id = getId(path);
+            Task task = tasks.get(Long.parseLong(id));
+            if(task==null) {
+                response = "아이디가 없습니다.";
+            } else {
+                response = toTaskJsonOne(task);
+            }
+            exchange.sendResponseHeaders(HttpStatusCode.OK.getStatus(), response.getBytes().length);
         }
         else if("POST".equals(method) && "/task".equals(path)) {
 
@@ -65,40 +69,43 @@ public class CrudHttpHandler implements HttpHandler {
             tasks.put(task.getId(), task);
 
             response=toTaskJsonOne(task);
-            exchange.sendResponseHeaders(201,response.getBytes().length);
+            exchange.sendResponseHeaders(HttpStatusCode.CREATED.getStatus(), response.getBytes().length);
         }
-        else if("PUT".equals(method) && ("/task/"+id).equals(path)) {
+        else if("PUT".equals(method) && Pattern.matches("/task/[0-9]*$",path) ) {
 
+            id = getId(path);
             String content = getContent(exchange);
             Task taskPut = toTask(content);
 
-            if(tasks.get(Long.parseLong(id)) == null)
+            if(tasks.get(Long.parseLong(id)) == null){
                 response = "아이디가 없습니다.";
-            else{
+            } else {
                 Task task = tasks.get(Long.parseLong(id));
                 task.setTitle(taskPut.getTitle());
                 response=toTaskJsonOne(task);
             }
 
-            exchange.sendResponseHeaders(200,response.getBytes().length);
+            exchange.sendResponseHeaders(HttpStatusCode.OK.getStatus(), response.getBytes().length);
 
         }
-        else if("DELETE".equals(method) && ("/task/"+id).equals(path)) {
+        else if("DELETE".equals(method) && Pattern.matches("/task/[0-9]*$",path) ) {
 
-            if(tasks.get(Long.parseLong(id)) == null)
-                response="아이디가 없습니다.";
-            else
+            id = getId(path);
+            if(tasks.get(Long.parseLong(id)) == null) {
+                response = "아이디가 없습니다.";
+            } else {
                 tasks.remove(Long.parseLong(id));
+            }
 
             response="DELETE..";
-            exchange.sendResponseHeaders(200,response.getBytes().length);
+            exchange.sendResponseHeaders(HttpStatusCode.OK.getStatus(), response.getBytes().length);
         }
         else{
-            /**
+            /*
              * 서버가 요청을 완료했다는 뜻을 담고 있습니다.
              * https://datatracker.ietf.org/doc/html/rfc7231#section-6.3.1
              */
-            exchange.sendResponseHeaders(200, 0);
+            exchange.sendResponseHeaders(HttpStatusCode.OK.getStatus(), 0);
         }
 
 
@@ -108,13 +115,7 @@ public class CrudHttpHandler implements HttpHandler {
     }
 
     private String getId(String path) {
-
-        if(path.indexOf("/task/")==0) {
             return path.replace("/task/","");
-        }
-        else {
-            return "noId";
-        }
     }
 
     private String getContent(HttpExchange exchange) {
