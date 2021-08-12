@@ -27,15 +27,15 @@ public class TodoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        boolean isTasksPath = path.equals("/tasks");
+        boolean isTasksPath = "/tasks".equals(path);
         boolean isTasksPathWithId = path.length() > "/tasks/".length();
 
-        if (method.equals("GET") && isTasksPath) {
+        if ("GET".equals(method) && isTasksPath) {
             content = tasksToJson(tasks);
             statusCode = 200;
         }
 
-        if (method.equals("GET") && isTasksPathWithId) {
+        if ("GET".equals(method) && isTasksPathWithId) {
             Long id = Long.parseLong(path.substring(7));
 
             List<Task> task = tasks.stream().filter(item -> id.equals(item.getId())).collect(Collectors.toList());
@@ -48,14 +48,14 @@ public class TodoHttpHandler implements HttpHandler {
             }
         }
 
-        if (method.equals("POST") && isTasksPath && !body.isBlank()) {
+        if ("POST".equals(method) && isTasksPath && !body.isBlank()) {
             Task task = toTask(body);
             tasks.add(task);
             statusCode = 201;
             content = taskToJson(task);
         }
 
-        if (method.equals("PUT") && isTasksPathWithId && !body.isBlank()) {
+        if ("PUT".equals(method) && isTasksPathWithId && !body.isBlank()) {
             Long id = Long.parseLong(path.substring(7));
             String title = toTask(body).getTitle();
 
@@ -74,7 +74,7 @@ public class TodoHttpHandler implements HttpHandler {
             }
         }
 
-        if (method.equals("DELETE") && isTasksPathWithId) {
+        if ("DELETE".equals(method) && isTasksPathWithId) {
             Long id = Long.parseLong(path.substring(7));
 
             List<Task> remainingTasks = tasks.stream().filter(item -> !id.equals(item.getId())).collect(Collectors.toList());
