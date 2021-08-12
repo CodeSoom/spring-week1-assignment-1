@@ -32,7 +32,7 @@ public class TodoHttpHandler implements HttpHandler {
 
         if ("GET".equals(method) && isTasksPath) {
             content = tasksToJson(tasks);
-            statusCode = 200;
+            statusCode = HttpStatus.Ok.code();
         }
 
         if ("GET".equals(method) && isTasksPathWithId) {
@@ -42,16 +42,16 @@ public class TodoHttpHandler implements HttpHandler {
 
             if(task.size() != 0){
                 content = taskToJson(task.get(0));
-                statusCode = 200;
+                statusCode = HttpStatus.Ok.code();
             } else {
-                statusCode = 404;
+                statusCode = HttpStatus.NotFound.code();
             }
         }
 
         if ("POST".equals(method) && isTasksPath && !body.isBlank()) {
             Task task = toTask(body);
             tasks.add(task);
-            statusCode = 201;
+            statusCode = HttpStatus.Created.code();
             content = taskToJson(task);
         }
 
@@ -67,10 +67,10 @@ public class TodoHttpHandler implements HttpHandler {
 
             if(!tasks.equals(newTasks)) {
                 tasks = newTasks;
-                statusCode = 200;
+                statusCode = HttpStatus.Ok.code();
                 content = taskToJson(new Task(id, title));
             } else {
-                statusCode = 404;
+                statusCode = HttpStatus.NotFound.code();
             }
         }
 
@@ -81,10 +81,10 @@ public class TodoHttpHandler implements HttpHandler {
 
             if(remainingTasks.size() != tasks.size()){
                 tasks = remainingTasks;
-                statusCode = 204;
+                statusCode = HttpStatus.NoContent.code();
                 content = tasksToJson(tasks);
             } else {
-                statusCode = 404;
+                statusCode = HttpStatus.NotFound.code();
             }
         }
 
