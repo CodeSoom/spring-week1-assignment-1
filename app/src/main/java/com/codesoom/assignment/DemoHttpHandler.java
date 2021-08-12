@@ -9,7 +9,6 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,9 +16,13 @@ import java.util.stream.Collectors;
 public class DemoHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
+    int createdStatusCode = 201;
+    int okStatusCode =200;
+    int badRequestStatusCode=400;
+    int notFoundStatusCode=404;
+    int noContentStatusCode=204;
 
-
-    long id = 0L;
+    Long id = 0L;
 
 
     @Override
@@ -54,40 +57,64 @@ public class DemoHttpHandler implements HttpHandler {
         //GET /tasks
         if (method.equals("GET") && path.equals("/tasks")) {
             content = tasksToJson();
+            exchange.sendResponseHeaders(okStatusCode, content.getBytes().length);
+
         }
 
         //GET tasks/{taskId}
         if (method.equals("GET") && path.equals("/tasks/"+taskId)) {
-            Integer taskIdInt = Integer.parseInt(taskId);
-            Integer indexFromTaskId = taskIdInt-1
-            Task targetTask = tasks.get( indexFromTaskId );
+            int taskIdInt = Integer.parseInt(taskId);
 
+            Task targetTask = tasks.get(taskIdInt - 1);
             content = targetTaskToJson(targetTask);
+
+            exchange.sendResponseHeaders(okStatusCode, content.getBytes().length);
+
         }
 
         //POST tasks
         if (method.equals("POST") && path.equals("/tasks")) {
             content = "Create a new task";
-        }
+            exchange.sendResponseHeaders(createdStatusCode, content.getBytes().length);
 
+        }
+        if (method.equals("PATCH") && path.equals("/tasks")) {
+            content = "Create a new task";
+            exchange.sendResponseHeaders(createdStatusCode, content.getBytes().length);
+
+        }
         if (method.equals("PUT") && path.equals("/tasks/"+taskId)) {
-            Integer task_id_int = Integer.parseInt(taskId);
-            Task target_task = tasks.get( task_id_int-1 );
+            int taskIdInt = Integer.parseInt(taskId);
+            int indexFromTaskId;
+            indexFromTaskId = taskIdInt-1;
+            Task target_task = tasks.get( indexFromTaskId );
             Task change_task = toTask(body);
             target_task.setTitle(change_task.getTitle());
-
             content = "change target task";
+
+            exchange.sendResponseHeaders(okStatusCode, content.getBytes().length);
+
         }
 
 
         if (method.equals("DELETE") && path.equals("/tasks/"+taskId)) {
-            Integer task_id_int = Integer.parseInt(taskId);
-            tasks.remove( task_id_int-1 );
 
-            content = "Deleted target task";
+            System.out.println("qweqweqw");
+            String deleteStatus = deleteTask(Long.parseLong(taskId));
+            if(deleteStatus == "Delete success"){
+                content = "Delete success";
+                exchange.sendResponseHeaders(noContentStatusCode, content.getBytes().length);
+
+            }else{
+                content = "fail";
+                exchange.sendResponseHeaders(notFoundStatusCode, content.getBytes().length);
+            }
+
         }
 
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+
+
+
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
@@ -121,5 +148,16 @@ public class DemoHttpHandler implements HttpHandler {
 
         return outputStream.toString();
     }
+
+    private String deleteTask(long ID) throws IOException {
+        for(Task task : tasks){
+            if(task.getId() == ID){
+                tasks.remove(task);
+                return "Delete success";
+            }
+        }
+        return "fail";
+    }
+
 
 }
