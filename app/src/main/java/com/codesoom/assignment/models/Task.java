@@ -29,12 +29,12 @@ public class Task {
         this.title = title;
     }
 
+    public boolean isMatchId(long taskId) {
+        return this.id.equals(taskId);
+    }
+
     @Override
     public String toString() {
         return String.format("Task {id=%s, title=%s} ", id, title);
-    }
-
-    public boolean isMatchId(long taskId) {
-        return this.id.equals(taskId);
     }
 }

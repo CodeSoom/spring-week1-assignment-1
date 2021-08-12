@@ -15,24 +15,15 @@ import java.util.stream.Collectors;
 
 public class TaskHttpHandler implements HttpHandler {
 
-    public static final String NOT_FOUND_MESSAGE = "Not Found.";
+    private static final String NOT_FOUND_MESSAGE = "Not Found.";
+    private static final String NOT_ALLOWED_METHOD_MESSAGE = "허용되지 않은 메서드 입니다.";
 
     private final TaskManager taskManager = TaskManager.getInstance();
     private final TaskMapper taskMapper = new TaskMapper();
 
-    private HttpRequest httpRequest;
-
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        URI requestURI = httpExchange.getRequestURI();
-        String path = requestURI.getPath();
-        String method = httpExchange.getRequestMethod();
-
-        try {
-            httpRequest = new HttpRequest(path, method);
-        } catch (RuntimeException error) {
-            new HttpResponseBadRequest(httpExchange).send(error.getMessage());
-        }
+        HttpRequest httpRequest = getHttpRequest(httpExchange);
         System.out.println(httpRequest);
 
         InputStream httpRequestBody = httpExchange.getRequestBody();
@@ -90,5 +81,18 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         new HttpResponseNotFound(httpExchange).send(NOT_FOUND_MESSAGE);
+    }
+
+    private HttpRequest getHttpRequest(HttpExchange httpExchange) throws IOException {
+        URI requestURI = httpExchange.getRequestURI();
+        String path = requestURI.getPath();
+        String method = httpExchange.getRequestMethod();
+
+        HttpRequest httpRequest = new HttpRequest(path, method);
+        if (!httpRequest.isAllowedMethod()) {
+            new HttpResponseBadRequest(httpExchange).send(NOT_ALLOWED_METHOD_MESSAGE);
+        }
+
+        return httpRequest;
     }
 }

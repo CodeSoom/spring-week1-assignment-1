@@ -1,6 +1,5 @@
 package com.codesoom.assignment.web;
 
-import com.codesoom.assignment.errors.NotAllowedMethodException;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
@@ -21,15 +20,12 @@ public class HttpRequest {
     }
 
     public HttpRequest(String path, String method) {
-        checkAllowMethod(method);
         this.path = path;
         this.method = method;
     }
 
-    private void checkAllowMethod(String requestMethod) {
-        if (!AllowMethods.exist(requestMethod)) {
-            throw new NotAllowedMethodException(requestMethod);
-        }
+    public boolean isAllowedMethod() {
+        return AllowMethods.exist(method);
     }
 
     public Long getTaskIdFromPath() {
