@@ -65,7 +65,9 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private void handleGetRequest(Long id) throws IOException {
-        List<Task> task = tasks.stream().filter(item -> id.equals(item.getId())).collect(Collectors.toList());
+        List<Task> task = tasks.stream()
+                .filter(item -> id.equals(item.getId()))
+                .collect(Collectors.toList());
 
         if(task.size() != 0){
             content = taskToJson(task.get(0));
@@ -112,7 +114,9 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private void handleDeleteRequest(Long id) throws IOException {
-        List<Task> remainingTasks = tasks.stream().filter(item -> !id.equals(item.getId())).collect(Collectors.toList());
+        List<Task> remainingTasks = tasks.stream()
+                .filter(item -> !id.equals(item.getId()))
+                .collect(Collectors.toList());
 
         if(remainingTasks.size() != tasks.size()){
             tasks = remainingTasks;
