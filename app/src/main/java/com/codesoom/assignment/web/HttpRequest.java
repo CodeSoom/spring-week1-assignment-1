@@ -52,7 +52,7 @@ public class HttpRequest {
     }
 
     public boolean isUpdateOne() {
-        return ("PUT".equals(method) || PREFIX_PATH.equals(method))
+        return ("PUT".equals(method) || "PATCH".equals(method))
             && hasTaskId();
     }
 
@@ -68,5 +68,4 @@ public class HttpRequest {
     public String toString() {
         return String.format("HttpRequest {method=%s, path=%s} ", method, path);
     }
-
 }
