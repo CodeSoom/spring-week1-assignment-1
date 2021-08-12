@@ -2,6 +2,7 @@ package com.codesoom.assignment.web;
 
 import com.codesoom.assignment.TaskManager;
 import com.codesoom.assignment.TaskMapper;
+import com.codesoom.assignment.errors.MethodNotAllowedException;
 import com.codesoom.assignment.errors.TaskIdNotFoundException;
 import com.codesoom.assignment.models.Task;
 import com.sun.net.httpserver.HttpExchange;
@@ -16,7 +17,6 @@ import java.util.stream.Collectors;
 public class TaskHttpHandler implements HttpHandler {
 
     private static final String NOT_FOUND_MESSAGE = "Not Found.";
-    private static final String NOT_ALLOWED_METHOD_MESSAGE = "허용되지 않은 메서드 입니다.";
 
     private final TaskManager taskManager = TaskManager.getInstance();
     private final TaskMapper taskMapper = new TaskMapper();
@@ -88,11 +88,12 @@ public class TaskHttpHandler implements HttpHandler {
         String path = requestURI.getPath();
         String method = httpExchange.getRequestMethod();
 
-        HttpRequest httpRequest = new HttpRequest(path, method);
-        if (!httpRequest.isAllowedMethod()) {
-            new HttpResponseBadRequest(httpExchange).send(NOT_ALLOWED_METHOD_MESSAGE);
+        try {
+            new HttpRequest(path, method);
+        } catch(MethodNotAllowedException error) {
+            new HttpResponseBadRequest(httpExchange).send(error.getMessage());
         }
 
-        return httpRequest;
+        return new HttpRequest(path, method);
     }
 }
