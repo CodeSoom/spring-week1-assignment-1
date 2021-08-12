@@ -29,63 +29,26 @@ public class TodoHttpHandler implements HttpHandler {
 
         boolean isTasksPath = "/tasks".equals(path);
         boolean isTasksPathWithId = path.length() > "/tasks/".length();
+        Long id = Long.parseLong(path.substring(7));
 
         if ("GET".equals(method) && isTasksPath) {
-            content = tasksToJson(tasks);
-            statusCode = HttpStatus.Ok.code();
+            handleGetRequest();
         }
 
         if ("GET".equals(method) && isTasksPathWithId) {
-            Long id = Long.parseLong(path.substring(7));
-
-            List<Task> task = tasks.stream().filter(item -> id.equals(item.getId())).collect(Collectors.toList());
-
-            if(task.size() != 0){
-                content = taskToJson(task.get(0));
-                statusCode = HttpStatus.Ok.code();
-            } else {
-                statusCode = HttpStatus.NotFound.code();
-            }
+            handleGetRequest(id);
         }
 
         if ("POST".equals(method) && isTasksPath && !body.isBlank()) {
-            Task task = toTask(body);
-            tasks.add(task);
-            statusCode = HttpStatus.Created.code();
-            content = taskToJson(task);
+            handlePostRequest(id, body);
         }
 
         if ("PUT".equals(method) && isTasksPathWithId && !body.isBlank()) {
-            Long id = Long.parseLong(path.substring(7));
-            String title = toTask(body).getTitle();
-
-            List<Task> newTasks = tasks.stream()
-                    .map(item -> id.equals(item.getId())
-                            ? new Task(id, title)
-                            : item)
-                    .collect(Collectors.toList());
-
-            if(!tasks.equals(newTasks)) {
-                tasks = newTasks;
-                statusCode = HttpStatus.Ok.code();
-                content = taskToJson(new Task(id, title));
-            } else {
-                statusCode = HttpStatus.NotFound.code();
-            }
+            handlePutRequest(id, body);
         }
 
         if ("DELETE".equals(method) && isTasksPathWithId) {
-            Long id = Long.parseLong(path.substring(7));
-
-            List<Task> remainingTasks = tasks.stream().filter(item -> !id.equals(item.getId())).collect(Collectors.toList());
-
-            if(remainingTasks.size() != tasks.size()){
-                tasks = remainingTasks;
-                statusCode = HttpStatus.NoContent.code();
-                content = tasksToJson(tasks);
-            } else {
-                statusCode = HttpStatus.NotFound.code();
-            }
+            handleDeleteRequest(id);
         }
 
         exchange.sendResponseHeaders(statusCode, content.getBytes().length);
@@ -94,6 +57,70 @@ public class TodoHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private void handleGetRequest() throws IOException {
+        content = tasksToJson(tasks);
+        statusCode = HttpStatus.Ok.code();
+    }
+
+    private void handleGetRequest(Long id) throws IOException {
+        List<Task> task = tasks.stream().filter(item -> id.equals(item.getId())).collect(Collectors.toList());
+
+        if(task.size() != 0){
+            content = taskToJson(task.get(0));
+            statusCode = HttpStatus.Ok.code();
+        } else {
+            statusCode = HttpStatus.NotFound.code();
+        }
+    }
+
+    private void handlePostRequest(Long id, String body) throws IOException {
+        String title = toTask(body).getTitle();
+
+        List<Task> newTasks = tasks.stream()
+                .map(item -> id.equals(item.getId())
+                        ? new Task(id, title)
+                        : item)
+                .collect(Collectors.toList());
+
+        if(!tasks.equals(newTasks)) {
+            tasks = newTasks;
+            statusCode = HttpStatus.Ok.code();
+            content = taskToJson(new Task(id, title));
+        } else {
+            statusCode = HttpStatus.NotFound.code();
+        }
+    }
+
+    private void handlePutRequest(Long id, String body) throws IOException {
+        String title = toTask(body).getTitle();
+
+        List<Task> newTasks = tasks.stream()
+                .map(item -> id.equals(item.getId())
+                        ? new Task(id, title)
+                        : item)
+                .collect(Collectors.toList());
+
+        if(!tasks.equals(newTasks)) {
+            tasks = newTasks;
+            statusCode = HttpStatus.Ok.code();
+            content = taskToJson(new Task(id, title));
+        } else {
+            statusCode = HttpStatus.NotFound.code();
+        }
+    }
+
+    private void handleDeleteRequest(Long id) throws IOException {
+        List<Task> remainingTasks = tasks.stream().filter(item -> !id.equals(item.getId())).collect(Collectors.toList());
+
+        if(remainingTasks.size() != tasks.size()){
+            tasks = remainingTasks;
+            statusCode = HttpStatus.NoContent.code();
+            content = tasksToJson(tasks);
+        } else {
+            statusCode = HttpStatus.NotFound.code();
+        }
     }
 
     private Task toTask(String content) throws JsonProcessingException {
