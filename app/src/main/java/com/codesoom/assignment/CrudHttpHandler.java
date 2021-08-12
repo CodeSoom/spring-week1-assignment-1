@@ -46,23 +46,23 @@ public class CrudHttpHandler implements HttpHandler {
          */
         if(HttpMethodCode.GET.getStatus().equals(method) && "/tasks".equals(path) && !hasId.isPresent() ) {
 
-            response = getAll();
+            getAll();
 
         } else if(HttpMethodCode.GET.getStatus().equals(method) && hasId.isPresent() ) {
 
-            response = getOne(hasId.get());
+            getOne(hasId.get());
 
         } else if(HttpMethodCode.POST.getStatus().equals(method) && "/tasks".equals(path)) {
 
-            response = join(getContent(exchange));
+            join(getContent(exchange));
 
         } else if( (HttpMethodCode.PUT.getStatus().equals(method) || HttpMethodCode.PATCH.getStatus().equals(method) ) && hasId.isPresent()) {
 
-            response = edit(getContent(exchange), hasId.get());
+            edit(getContent(exchange), hasId.get());
 
         } else if(HttpMethodCode.DELETE.getStatus().equals(method) && hasId.isPresent() ) {
 
-            response = delete(hasId.get());
+            delete(hasId.get());
 
         }
         
@@ -74,60 +74,73 @@ public class CrudHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
-    private SendResponseData getAll() throws IOException {
+    private void getAll() throws IOException {
 
         if(!tasks.isEmpty()) {
-            return new SendResponseData(HttpStatusCode.OK.getStatus(),toTaskJson());
+            response.setHttpStatusCode(HttpStatusCode.OK.getStatus());
+            response.setResponse(toTaskJson());
         } else {
-            return new SendResponseData(HttpStatusCode.OK.getStatus(),"[]");
+            response.setHttpStatusCode(HttpStatusCode.OK.getStatus());
+            response.setResponse("[]");
         }
 
     }
 
-    private SendResponseData getOne(String hasId) throws IOException {
+    private void getOne(String hasId) throws IOException {
 
         Task task = tasks.get(Long.parseLong(hasId));
         if(task==null) {
-            return new SendResponseData(HttpStatusCode.NOTFOUND.getStatus(), "아이디가 없습니다.");
+            NOT_FOUND();
         } else {
-            return new SendResponseData(HttpStatusCode.OK.getStatus(), toTaskJsonOne(task));
+            response.setHttpStatusCode(HttpStatusCode.OK.getStatus());
+            response.setResponse(toTaskJsonOne(task));
         }
 
     }
 
-    private SendResponseData join(String content) throws IOException {
+    private void join(String content) throws IOException {
 
         Task task = toTask(content);
         task.setId(autoId++);
         tasks.put(task.getId(), task);
 
-        return new SendResponseData(HttpStatusCode.CREATED.getStatus(), toTaskJsonOne(task));
+        response.setHttpStatusCode(HttpStatusCode.CREATED.getStatus());
+        response.setResponse(toTaskJsonOne(task));
 
     }
 
-    private SendResponseData edit(String content, String findId) throws IOException {
+    private void edit(String content, String findId) throws IOException {
 
         Task taskPut = toTask(content);
 
         if(tasks.get(Long.parseLong(findId)) == null){
-            return new SendResponseData(HttpStatusCode.NOTFOUND.getStatus(), "아이디가 없습니다.");
+            NOT_FOUND();
         } else {
             Task task = tasks.get(Long.parseLong(findId));
             task.setTitle(taskPut.getTitle());
-            return new SendResponseData(HttpStatusCode.OK.getStatus(),toTaskJsonOne(task));
+
+            response.setHttpStatusCode(HttpStatusCode.OK.getStatus());
+            response.setResponse(toTaskJsonOne(task));
         }
 
     }
 
-    private SendResponseData delete(String findId) throws IOException {
+    private void delete(String findId) throws IOException {
 
         if(tasks.get(Long.parseLong(findId)) == null) {
-           return new SendResponseData(HttpStatusCode.NOTFOUND.getStatus(), "아이디가 없습니다.");
+            NOT_FOUND();
         } else {
             tasks.remove(Long.parseLong(findId));
-            return new SendResponseData(HttpStatusCode.NOCONTENT.getStatus(), "");
+
+            response.setHttpStatusCode(HttpStatusCode.NOCONTENT.getStatus());
+            response.setResponse("");
         }
 
+    }
+
+    private void NOT_FOUND() {
+        response.setHttpStatusCode(HttpStatusCode.NOTFOUND.getStatus());
+        response.setResponse("[]");
     }
 
     private String hasId(String path) {
