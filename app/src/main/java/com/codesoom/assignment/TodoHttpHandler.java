@@ -40,7 +40,7 @@ public class TodoHttpHandler implements HttpHandler {
         }
 
         if ("POST".equals(method) && isTasksPath && !body.isBlank()) {
-            handlePostRequest(id, body);
+            handlePostRequest(body);
         }
 
         if ("PUT".equals(method) && isTasksPathWithId && !body.isBlank()) {
@@ -77,22 +77,11 @@ public class TodoHttpHandler implements HttpHandler {
         }
     }
 
-    private void handlePostRequest(Long id, String body) throws IOException {
-        String title = toTask(body).getTitle();
-
-        List<Task> newTasks = tasks.stream()
-                .map(item -> id.equals(item.getId())
-                        ? new Task(id, title)
-                        : item)
-                .collect(Collectors.toList());
-
-        if(!tasks.equals(newTasks)) {
-            tasks = newTasks;
-            statusCode = HttpStatus.Ok.code();
-            content = taskToJson(new Task(id, title));
-        } else {
-            statusCode = HttpStatus.NotFound.code();
-        }
+    private void handlePostRequest(String body) throws IOException {
+        Task task = toTask(body);
+        tasks.add(task);
+        statusCode = HttpStatus.Created.code();
+        content = taskToJson(task);
     }
 
     private void handlePutRequest(Long id, String body) throws IOException {
@@ -111,6 +100,7 @@ public class TodoHttpHandler implements HttpHandler {
         } else {
             statusCode = HttpStatus.NotFound.code();
         }
+
     }
 
     private void handleDeleteRequest(Long id) throws IOException {
