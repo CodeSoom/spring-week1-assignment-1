@@ -1,11 +1,7 @@
 package com.codesoom.assignment.web;
 
 import com.codesoom.assignment.errors.MethodNotAllowedException;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class HttpRequest {
 
@@ -55,17 +51,5 @@ public class HttpRequest {
     @Override
     public String toString() {
         return String.format("HttpRequest {method=%s, path=%s} ", method, path);
-    }
-
-    private enum AllowMethods {
-        GET, POST, PUT, PATCH, DELETE;
-
-        private static final Map<String, AllowMethods> stringToEnum = Arrays.stream(values())
-            .collect(
-                Collectors.toMap(Enum::toString, method -> method));
-
-        public static Optional<AllowMethods> fromString(String method) {
-            return Optional.ofNullable(stringToEnum.get(method));
-        }
     }
 }
