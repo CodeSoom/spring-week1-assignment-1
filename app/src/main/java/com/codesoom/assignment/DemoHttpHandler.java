@@ -50,13 +50,30 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         String content = "Hello, world!";
+        boolean hasIdVariable = false;
+        if(pathElements != null && pathElements.length > 2) {
+            hasIdVariable = true;
+        }
 
         int httpStatusCode = 500;
-        if (method.equals("GET") && Objects.equals(path, "/tasks")) {
+        if ("GET".equals(method) && Objects.equals(path, "/tasks")) { //전체 조회
             content = tasksToJSON();
             System.out.println("/tasks");
             httpExchange.sendResponseHeaders(200, content.getBytes().length);
-        } else if ("GET".equals(method) && (pathElements != null ? pathElements.length : 0) > 2) {
+        } else if ("POST".equals(method) && Objects.equals(path, "/tasks")) { //task 생성
+            if (!body.isEmpty()) {
+                Task task = toTask(body);
+                long tempId = id+1;
+                task.setId(tempId);
+                tasks.put(tempId, task);
+                ++id;
+                content = taskToJSON(id);
+                httpStatusCode = HttpStatusCode.Created.getStatusCode();
+            } else {
+                httpStatusCode = HttpStatusCode.NoContent.getStatusCode();
+            }
+            httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
+        } else if ("GET".equals(method) && (hasIdVariable)) { //특정 task 조회
 
             id = Long.parseLong(pathElements[pathElements.length - 1]);
             int length = 0;
@@ -70,19 +87,7 @@ public class DemoHttpHandler implements HttpHandler {
             }
 
             httpExchange.sendResponseHeaders(httpStatusCode, length);
-        } else if ("POST".equals(method) && Objects.equals(path, "/tasks")) {
-            if (!body.isEmpty()) {
-                Task task = toTask(body);
-                ++id;
-                task.setId(id);
-                tasks.put(id, task);
-                content = taskToJSON(id);
-                httpStatusCode = HttpStatusCode.Created.getStatusCode();
-            } else {
-                httpStatusCode = HttpStatusCode.NoContent.getStatusCode();
-            }
-            httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
-        } else if (("PATCH".equals(method) || method.equals("PUT")) && (pathElements != null ? pathElements.length : 0) > 2) {
+        } else if (("PATCH".equals(method) || method.equals("PUT")) && (hasIdVariable)) { // 특정 task 수정
             id = Long.parseLong(pathElements[pathElements.length - 1]);
             if (!body.isEmpty() && tasks.get(id) != null) {
                 Task task = toTask(body);
@@ -94,7 +99,7 @@ public class DemoHttpHandler implements HttpHandler {
             }
             content = taskToJSON(id);
             httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
-        } else if ("DELETE".equals(method) && (pathElements != null ? pathElements.length : 0) > 2) {
+        } else if ("DELETE".equals(method) && (hasIdVariable)) { //특정 task 삭제
             id = Long.parseLong(pathElements[pathElements.length - 1]);
             if (tasks.get(id) != null) {
                 tasks.remove(id);
