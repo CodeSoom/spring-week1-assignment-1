@@ -16,6 +16,7 @@ public class TodoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
     private String content = "";
     private Integer statusCode = 500;
+    private Long id;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -29,13 +30,13 @@ public class TodoHttpHandler implements HttpHandler {
 
         boolean isTasksPath = "/tasks".equals(path);
         boolean isTasksPathWithId = path.length() > "/tasks/".length();
-        Long id = Long.parseLong(path.substring(7));
 
         if ("GET".equals(method) && isTasksPath) {
             handleGetRequest();
         }
 
         if ("GET".equals(method) && isTasksPathWithId) {
+            id = Long.parseLong(path.substring(7));
             handleGetRequest(id);
         }
 
@@ -44,10 +45,12 @@ public class TodoHttpHandler implements HttpHandler {
         }
 
         if ("PUT".equals(method) && isTasksPathWithId && !body.isBlank()) {
+            id = Long.parseLong(path.substring(7));
             handlePutRequest(id, body);
         }
 
         if ("DELETE".equals(method) && isTasksPathWithId) {
+            id = Long.parseLong(path.substring(7));
             handleDeleteRequest(id);
         }
 
