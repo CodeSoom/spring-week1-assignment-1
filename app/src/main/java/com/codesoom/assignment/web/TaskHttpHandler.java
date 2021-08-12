@@ -17,24 +17,16 @@ import java.util.stream.Collectors;
 public class TaskHttpHandler implements HttpHandler {
 
     private static final String NOT_FOUND_MESSAGE = "Not Found.";
-    private static final long DEFAULT_TASK_ID = 0L;
 
     private final TaskManager taskManager = TaskManager.getInstance();
     private final TaskMapper taskMapper = new TaskMapper();
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        HttpRequest httpRequest = getHttpRequest(httpExchange);
-        System.out.println(httpRequest);
+        HttpRequest httpRequest = createHttpRequest(httpExchange);
+        String body = getParsedResponseBody(httpExchange);
 
-        InputStream httpRequestBody = httpExchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(httpRequestBody))
-            .lines()
-            .collect(Collectors.joining("\n"));
-
-        long taskId = httpRequest.getTaskIdFromPath()
-            .orElse(DEFAULT_TASK_ID);
-
+        long taskId = httpRequest.getTaskIdFromPath();
         if (httpRequest.isReadAll()) {
             new HttpResponseOK(httpExchange).send(taskMapper.toJson());
         }
@@ -80,7 +72,14 @@ public class TaskHttpHandler implements HttpHandler {
         new HttpResponseNotFound(httpExchange).send(NOT_FOUND_MESSAGE);
     }
 
-    private HttpRequest getHttpRequest(HttpExchange httpExchange) throws IOException {
+    private String getParsedResponseBody(HttpExchange httpExchange) {
+        InputStream httpRequestBody = httpExchange.getRequestBody();
+        return new BufferedReader(new InputStreamReader(httpRequestBody))
+            .lines()
+            .collect(Collectors.joining("\n"));
+    }
+
+    private HttpRequest createHttpRequest(HttpExchange httpExchange) throws IOException {
         URI requestURI = httpExchange.getRequestURI();
         String path = requestURI.getPath();
         String method = httpExchange.getRequestMethod();
