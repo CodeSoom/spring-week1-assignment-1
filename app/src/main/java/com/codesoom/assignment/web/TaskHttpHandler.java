@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 public class TaskHttpHandler implements HttpHandler {
 
     private static final String NOT_FOUND_MESSAGE = "Not Found.";
+    private static final long DEFAULT_TASK_ID = 0L;
 
     private final TaskManager taskManager = TaskManager.getInstance();
     private final TaskMapper taskMapper = new TaskMapper();
@@ -31,12 +32,8 @@ public class TaskHttpHandler implements HttpHandler {
             .lines()
             .collect(Collectors.joining("\n"));
 
-        Long taskId;
-        try {
-            taskId = httpRequest.getTaskIdFromPath();
-        } catch (NumberFormatException ne) {
-            taskId = null;
-        }
+        long taskId = httpRequest.getTaskIdFromPath()
+            .orElse(DEFAULT_TASK_ID);
 
         if (httpRequest.isReadAll()) {
             new HttpResponseOK(httpExchange).send(taskMapper.toJson());
@@ -90,7 +87,7 @@ public class TaskHttpHandler implements HttpHandler {
 
         try {
             new HttpRequest(path, method);
-        } catch(MethodNotAllowedException error) {
+        } catch (MethodNotAllowedException error) {
             new HttpResponseBadRequest(httpExchange).send(error.getMessage());
         }
 

@@ -1,6 +1,7 @@
 package com.codesoom.assignment.web;
 
 import com.codesoom.assignment.errors.MethodNotAllowedException;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class HttpRequest {
@@ -16,11 +17,15 @@ public class HttpRequest {
             .orElseThrow(MethodNotAllowedException::new);
     }
 
-    public Long getTaskIdFromPath() {
+    public Optional<Long> getTaskIdFromPath() {
         String replaced = path.replace(PREFIX_PATH, "")
             .replace("/", "");
 
-        return Long.parseLong(replaced);
+        if (replaced.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(Long.parseLong(replaced));
     }
 
     public boolean isReadAll() {
