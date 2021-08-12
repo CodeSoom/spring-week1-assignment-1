@@ -1,19 +1,20 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.models.RequestContent;
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.models.TasksStorage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
-    private List<Task> tasks = new ArrayList<>();
+    private TasksStorage tasks = new TasksStorage();
     private String content = "";
     private Integer statusCode = 500;
     private Long id;
@@ -63,17 +64,15 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private void handleGetRequest() throws IOException {
-        content = tasksToJson(tasks);
+        content = tasksToJson(tasks.readAll());
         statusCode = HttpStatus.Ok.code();
     }
 
     private void handleGetRequest(Long id) throws IOException {
-        List<Task> task = tasks.stream()
-                .filter(item -> id.equals(item.getId()))
-                .collect(Collectors.toList());
+        Task task = tasks.read(id);
 
-        if(task.size() != 0){
-            content = taskToJson(task.get(0));
+        if (task != null){
+            content = taskToJson(task);
             statusCode = HttpStatus.Ok.code();
         } else {
             statusCode = HttpStatus.NotFound.code();
@@ -81,50 +80,43 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private void handlePostRequest(String body) throws IOException {
-        Task task = toTask(body);
-        tasks.add(task);
+        String title = toRequestContent(body).getTitle();
+
+        Task task = tasks.create(title);
+
         statusCode = HttpStatus.Created.code();
         content = taskToJson(task);
     }
 
     private void handlePutRequest(Long id, String body) throws IOException {
-        String title = toTask(body).getTitle();
+        String title = toRequestContent(body).getTitle();
 
-        List<Task> newTasks = tasks.stream()
-                .map(item -> id.equals(item.getId())
-                        ? new Task(id, title)
-                        : item)
-                .collect(Collectors.toList());
+        Task task = tasks.update(id, title);
 
-        if(!tasks.equals(newTasks)) {
-            tasks = newTasks;
+        if(task != null) {
             statusCode = HttpStatus.Ok.code();
-            content = taskToJson(new Task(id, title));
+            content = taskToJson(task);
         } else {
             statusCode = HttpStatus.NotFound.code();
         }
-
     }
 
     private void handleDeleteRequest(Long id) throws IOException {
-        List<Task> remainingTasks = tasks.stream()
-                .filter(item -> !id.equals(item.getId()))
-                .collect(Collectors.toList());
+        Task task = tasks.delete(id);
 
-        if(remainingTasks.size() != tasks.size()){
-            tasks = remainingTasks;
+        if(task != null) {
             statusCode = HttpStatus.NoContent.code();
-            content = tasksToJson(tasks);
+            content = taskToJson(task);
         } else {
             statusCode = HttpStatus.NotFound.code();
         }
     }
 
-    private Task toTask(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
+    private RequestContent toRequestContent(String content) throws JsonProcessingException {
+        return objectMapper.readValue(content, RequestContent.class);
     }
 
-    private String tasksToJson(List<Task> tasks) throws IOException {
+    private String tasksToJson(Collection<Task> tasks) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
 

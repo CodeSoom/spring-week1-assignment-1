@@ -4,10 +4,6 @@ public class Task {
     private final Long id;
     private String title;
 
-    public Task() {
-        this.id = System.currentTimeMillis();
-    }
-
     public Task(Long id, String title) {
         this.id = id;
         this.title = title;
