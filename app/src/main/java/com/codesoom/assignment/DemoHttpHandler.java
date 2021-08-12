@@ -46,8 +46,7 @@ public class DemoHttpHandler implements HttpHandler {
         if(!body.isBlank() && method.equals("POST") ){
 
             Task task = toTask(body);
-            ++id;
-            task.setId(id);
+            task.setId(++id);
             tasks.add(task);
         };
 
