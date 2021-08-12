@@ -8,13 +8,12 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
-    private final List<Task> tasks = new ArrayList<>();
+    private final List<Map<String,Task>> tasks = new ArrayList<>();
+    private final Map<String,Task> taskMap = new HashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static Long sequence = 0L;
 
@@ -96,7 +95,8 @@ public class DemoHttpHandler implements HttpHandler {
     private void createTask(String body) throws JsonProcessingException {
         Task task = jsonToTask(body);
         task.setId(++sequence);
-        tasks.add(task);
+        taskMap.put(task.getId()+"",task);
+        tasks.add(taskMap);
     }
 
     private String checkPathGetId(String path) {
@@ -107,12 +107,7 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private void deleteTodo(String id) {
-        for(Task task : tasks){
-            if((task.getId()+"").equals(id)){
-                tasks.remove(task);
-                return;
-            }
-        }
+        tasks.remove(id);
     }
 
     private Task updateTitle(Task task, String content) throws JsonProcessingException {
@@ -129,13 +124,11 @@ public class DemoHttpHandler implements HttpHandler {
 
     private Optional findId(String id) {
         Optional<Task> task = Optional.empty();
-
-        for(Task findTask : tasks){
-            if((findTask.getId()+"").equals(id)){
-                return task.of(findTask);
-            }
+        Task findTask = taskMap.get(id);
+        if(findTask == null){
+            return task;
         }
-        return task;
+        return task.of(findTask);
     }
 
     private Task jsonToTask(String content) throws JsonProcessingException {
