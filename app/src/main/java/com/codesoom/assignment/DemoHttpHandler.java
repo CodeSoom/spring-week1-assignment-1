@@ -8,20 +8,15 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
-    private Long nextId = 1L;
+    private TaskManager taskManger = new TaskManager();
     private ObjectMapper objectMapper = new ObjectMapper();
-    private List<Task> tasks = new ArrayList<>();
+
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -39,7 +34,8 @@ public class DemoHttpHandler implements HttpHandler {
 
         // GET ALL
         if ("GET".equals(requestMethod) && hasTask(requestPath)) {
-            content = convertTasksToJson(this.tasks);
+            List<Task> allTasks = taskManger.getAllTasks();
+            content = convertTasksToJson(allTasks);
             codeStatus = 200;
         }
 
@@ -47,7 +43,7 @@ public class DemoHttpHandler implements HttpHandler {
         if ("GET".equals(requestMethod) && hasTaskId(requestPath)) {
             try {
                 Long id = getTaskIdFromPath(requestPath);
-                Task resultTask = getTaskById(id);
+                Task resultTask = taskManger.getTaskById(id);
                 content = convertTaskToJson(resultTask);
                 codeStatus = 200;
             } catch (NoSuchElementException e) {
@@ -59,10 +55,8 @@ public class DemoHttpHandler implements HttpHandler {
         // POST
         if ("POST".equals(requestMethod) && hasTask(requestPath)) {
             Task task = convertJsonToTask(requestBody);
-            task.setId(this.nextId++);
-            this.tasks.add(task);
-
-            content = convertTaskToJson(task);
+            Task newTask = taskManger.createTask(task.getTitle());
+            content = convertTaskToJson(newTask);
             codeStatus = 201;
         }
 
@@ -70,12 +64,9 @@ public class DemoHttpHandler implements HttpHandler {
         if (("PUT".equals(requestMethod) || "PATCH".equals(requestMethod)) && hasTaskId(requestPath)) {
             try {
                 Long id = getTaskIdFromPath(requestPath);
-                String inputTitle = convertJsonToTask(requestBody).getTitle();
-
-                Task resultTask = getTaskById(id);
-                resultTask.setTitle(inputTitle);
-
-                content = convertTaskToJson(resultTask);
+                Task task = convertJsonToTask(requestBody);
+                taskManger.updateTask(id, task.getTitle());
+                content = convertTaskToJson(taskManger.getTaskById(id));
                 codeStatus = 200;
             } catch(NoSuchElementException e) {
                 e.printStackTrace();
@@ -87,7 +78,7 @@ public class DemoHttpHandler implements HttpHandler {
         if ("DELETE".equals(requestMethod) && hasTaskId(requestPath)) {
             try {
                 Long id = getTaskIdFromPath(requestPath);
-                removeTaskById(id);
+                taskManger.removeTask(id);
                 codeStatus = 204;
             } catch (NoSuchElementException e) {
                 e.printStackTrace();
@@ -119,21 +110,6 @@ public class DemoHttpHandler implements HttpHandler {
         this.objectMapper.writeValue(outputStream, task);
 
         return outputStream.toString();
-    }
-
-    private Task getTaskById(Long id) throws NoSuchElementException {
-        return this.tasks.stream()
-                .filter(task->task.getId().equals(id))
-                .findFirst()
-                .orElseThrow(()->new NoSuchElementException("Not Found Task"));
-    }
-
-    private void removeTaskById(Long id) throws NoSuchElementException {
-        getTaskById(id);
-
-        this.tasks = this.tasks.stream()
-                .filter(task->!(task.getId().equals(id)))
-                .collect(Collectors.toList());
     }
 
     private boolean hasTask(String path) {
