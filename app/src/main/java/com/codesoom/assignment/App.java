@@ -26,7 +26,7 @@ public class App {
             HttpServer server = HttpServer.create(address,MAX_BACKLOG);
 
             HttpHandler handler = new CrudHttpHandler();
-            server.createContext("/",handler);
+            server.createContext("/", handler);
             server.start();
 
         } catch (IOException e) {

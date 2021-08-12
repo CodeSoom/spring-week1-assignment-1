@@ -1,5 +1,9 @@
 package com.codesoom.HttpEnum;
 
+/**
+ * HTTP 상태코드를 정의합니다.
+ * @link https://datatracker.ietf.org/doc/html/rfc7231#section-6
+ */
 public enum HttpStatusCode {
 
     OK(200),
