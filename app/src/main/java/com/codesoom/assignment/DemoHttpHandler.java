@@ -23,66 +23,13 @@ public class DemoHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
-        InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
+        String body = createBody(exchange);
 
         System.out.println(method +" "+ path);
 
-        String content = "";
-        String id = checkPathGetId(path);
-        int httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
-
-        // GET /
-        if(HttpMethod.GET.getMethod().equals(method) && "/".equals(path)){
-            content =  "ToDo List";
-            httpStatusCode = HttpStatus.OK.getCode();
-        }
-
-        // GET /tasks
-        if(HttpMethod.GET.getMethod().equals(method) && "/tasks".equals(path)){
-            content =  tasksToJSON();
-            httpStatusCode = HttpStatus.OK.getCode();
-        }
-
-        // GET /tasks/{id}
-        if(HttpMethod.GET.getMethod().equals(method) && ("/tasks/"+id).equals(path)){
-            Optional<Task> task = findId(id);
-            httpStatusCode = HttpStatus.NOT_FOUND.getCode();
-            if(!task.isEmpty()){
-                content =  oneTaskToJSON(task.get());
-                httpStatusCode = HttpStatus.OK.getCode();
-            }
-        }
-
-        // POST /tasks
-        if(HttpMethod.POST.getMethod().equals(method) && "/tasks".equals(path)){
-            createTask(body);
-            content = tasksToJSON();
-            httpStatusCode = HttpStatus.CREATED.getCode();
-        }
-
-        // PUT,PATCH /tasks/{id}
-        if(HttpMethod.PUT.getMethod().equals(method) || HttpMethod.PATCH.equals(method) && ("/tasks/"+id).equals(path)) {
-            Optional<Task> task = findId(id);
-            httpStatusCode = HttpStatus.NOT_FOUND.getCode();
-            if(!task.isEmpty()){
-                Task updateTask = updateTitle(task.get(), body);
-                content =  oneTaskToJSON(updateTask);
-                httpStatusCode = HttpStatus.OK.getCode();
-            }
-        }
-
-        // Delete /tasks/{id}
-        if(HttpMethod.DELETE.getMethod().equals(method) && ("/tasks/"+id).equals(path)) {
-            Optional<Task> task = findId(id);
-            httpStatusCode = HttpStatus.NOT_FOUND.getCode();
-            if(!task.isEmpty()){
-                deleteTodo(id);
-                httpStatusCode = HttpStatus.NO_CONTENT.getCode();
-            }
-        }
+        Map<String, String>  contentAndStatusCode = checkPath(path, method, body);
+        String content = contentAndStatusCode.get("content");
+        int httpStatusCode = Integer.parseInt(contentAndStatusCode.get("httpStatusCode"));
 
         exchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
 
@@ -90,6 +37,72 @@ public class DemoHttpHandler implements HttpHandler {
         outputstream.write(content.getBytes());
         outputstream.flush();
         outputstream.close();
+    }
+
+    private Map<String, String> checkPath(String path, String method, String body) throws IOException {
+        String id = checkPathGetId(path);
+        Map<String, String> map = new HashMap<>();
+        map.put("content", "");
+        map.put("httpStatusCode",HttpStatus.INTERNAL_SERVER_ERROR.getCode()+"");
+
+        if("/".equals(path)){
+            if(HttpMethod.GET.getMethod().equals(method)){
+                map.put("content", "Todo List");
+                map.put("httpStatusCode",HttpStatus.OK.getCode()+"");
+            }
+        }
+
+        if("/tasks".equals(path)){
+            if(HttpMethod.GET.getMethod().equals(method)){
+                map.put("content", tasksToJSON());
+                map.put("httpStatusCode",HttpStatus.OK.getCode()+"");
+            }
+            if(HttpMethod.POST.getMethod().equals(method)){
+                createTask(body);
+                map.put("content", tasksToJSON());
+                map.put("httpStatusCode",HttpStatus.CREATED.getCode()+"");
+            }
+        }
+
+        if(("/tasks/"+id).equals(path)){
+            if(HttpMethod.GET.getMethod().equals(method)){
+                Optional<Task> task = findId(id);
+                map.put("httpStatusCode",HttpStatus.NOT_FOUND.getCode()+"");
+                if(!task.isEmpty()){
+                    map.put("content", oneTaskToJSON(task.get()));
+                    map.put("httpStatusCode",HttpStatus.OK.getCode()+"");
+                }
+            }
+            if(HttpMethod.PUT.getMethod().equals(method) || HttpMethod.PATCH.getMethod().equals(method)){
+                Optional<Task> task = findId(id);
+                map.put("httpStatusCode",HttpStatus.NOT_FOUND.getCode()+"");
+                if(!task.isEmpty()){
+                    Task updateTask = updateTitle(task.get(), body);
+                    map.put("content", oneTaskToJSON(updateTask));
+                    map.put("httpStatusCode",HttpStatus.OK.getCode()+"");
+                }
+            }
+            if(HttpMethod.DELETE.getMethod().equals(method)){
+                if(("/tasks/"+id).equals(path)){
+                    Optional<Task> task = findId(id);
+                    map.put("httpStatusCode",HttpStatus.NOT_FOUND.getCode()+"");
+                    if(!task.isEmpty()){
+                        deleteTodo(id);
+                        map.put("httpStatusCode",HttpStatus.NO_CONTENT.getCode()+"");
+                    }
+                }
+            }
+        }
+        return map;
+    }
+
+    private String createBody(HttpExchange exchange) {
+        InputStream inputStream = exchange.getRequestBody();
+        String body = new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
+
+        return body;
     }
 
     private void createTask(String body) throws JsonProcessingException {
