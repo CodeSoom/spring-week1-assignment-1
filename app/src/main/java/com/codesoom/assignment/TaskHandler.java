@@ -12,20 +12,37 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public final class TaskHandler implements HttpHandler {
-    public static final String TO_JSON_FAIL = "Json conversion fail.";
-    public static final String TO_TASK_FAIL = "Task conversion fail.";
+    private static final String TO_JSON_FAIL = "Json conversion fail.";
+    private static final String TO_TASK_FAIL = "Task conversion fail.";
+
+    private static final String INVALID_REQUEST = "Invalid request.";
+    private static final String INVALID_ID = "Invalid id.";
 
     public static final String HANDLER_PATH = "/tasks";
+
+    private static final int INDEX_START = 0;
+    private static final int ID_INDEX = 1;
 
     private static final String EMPTY_STRING = "";
     private static final String PATH_DELIMITER = "/";
 
     private final List<Task> tasks = new ArrayList<>();
+
+    private Optional<Integer> parseId(final String idString) {
+        Integer taskId = null;
+        try {
+            taskId = Integer.parseInt(idString);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        return Optional.ofNullable(taskId);
+    }
 
     private void sendResponse(
             final HttpExchange exchange, final int statusCode, final String content
@@ -36,9 +53,38 @@ public final class TaskHandler implements HttpHandler {
         outputStream.close();
     }
 
+    private void handleInvalidMethod(
+        final HttpExchange exchange, final String path, final String[] allowedMethods
+    ) throws IOException {
+        final StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(HANDLER_PATH).append(path).append(" can only handle ");
+        Arrays.stream(allowedMethods).forEach(method ->stringBuilder.append(method).append(" "));
+        stringBuilder.append("methods.");
+        sendResponse(exchange, HttpURLConnection.HTTP_BAD_METHOD, stringBuilder.toString());
+    }
+
     private void handleId(
             final HttpExchange exchange, final String method, final String path
     ) throws IOException {
+
+        if (path.charAt(INDEX_START) != PATH_DELIMITER.charAt(INDEX_START)) {
+            sendResponse(exchange, HttpURLConnection.HTTP_BAD_REQUEST, INVALID_REQUEST);
+            return;
+        }
+
+        final String[] paths = path.split(PATH_DELIMITER);
+        Arrays.stream(paths).forEach(System.out::println);
+        if (ID_INDEX + 1 != paths.length) {
+            sendResponse(exchange, HttpURLConnection.HTTP_BAD_REQUEST, INVALID_REQUEST);
+            return;
+        }
+
+        final Optional<Integer> taskId = parseId(paths[ID_INDEX]);
+        if (taskId.isEmpty()) {
+            sendResponse(exchange, HttpURLConnection.HTTP_BAD_REQUEST, INVALID_ID);
+            return;
+        }
+
         if (HttpMethod.GET.name().equals(method)) {
             sendResponse(exchange, HttpURLConnection.HTTP_OK, HttpMethod.GET.name() + " " + path);
             return;
@@ -54,11 +100,8 @@ public final class TaskHandler implements HttpHandler {
             return;
         }
 
-        sendResponse(exchange, HttpURLConnection.HTTP_BAD_METHOD,
-                path + " can only handle "
-                + HttpMethod.GET.name() + " "
-                + HttpMethod.PATCH.name() + " "
-                + HttpMethod.DELETE.name() + " methods.");
+        final String[] allowedMethods = new String[] {HttpMethod.GET.name(), HttpMethod.PATCH.name(), HttpMethod.DELETE.name()};
+        handleInvalidMethod(exchange, path, allowedMethods);
     }
 
     private void handleGet(final HttpExchange exchange) throws IOException {
@@ -80,7 +123,7 @@ public final class TaskHandler implements HttpHandler {
         final Optional<String> jsonStringOptional = JsonConverter.toJson(taskOptional.get());
         if (jsonStringOptional.isEmpty()) {
             sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_JSON_FAIL);
-            return ;
+            return;
         }
         sendResponse(exchange, HttpURLConnection.HTTP_CREATED, jsonStringOptional.get());
     }
@@ -108,9 +151,7 @@ public final class TaskHandler implements HttpHandler {
             return;
         }
 
-        sendResponse(exchange, HttpURLConnection.HTTP_BAD_METHOD,
-                path + " can only handle "
-                        + HttpMethod.GET.name() + " "
-                        + HttpMethod.POST.name() + " methods");
+        final String[] allowedMethods = new String[] {HttpMethod.GET.name(), HttpMethod.POST.name()};
+        handleInvalidMethod(exchange, path, allowedMethods);
     }
 }
