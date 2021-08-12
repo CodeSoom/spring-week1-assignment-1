@@ -18,19 +18,18 @@ public class TaskMapper {
     }
 
     public String toJsonWith(Task task) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-
-        return write(outputStream, task);
+        return write(task);
     }
 
     public String toJson() throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
         List<Task> tasks = taskManager.getAllTasks();
 
-        return write(outputStream, tasks);
+        return write(tasks);
     }
 
-    private String write(OutputStream outputStream, Object tasks) throws IOException {
+    private String write(Object tasks) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+
         objectMapper.writeValue(outputStream, tasks);
         return outputStream.toString();
     }
