@@ -13,13 +13,12 @@ public class App {
     }
 
     public static void main(String[] args) {
+
         InetSocketAddress address = new InetSocketAddress(PORT);
         try {
             HttpServer httpServer = HttpServer.create(address, 0);
-
             HttpHandler handler = new TodoHttpHandler();
             httpServer.createContext("/", handler);
-
             httpServer.start();
         } catch (IOException e) {
             e.printStackTrace();
