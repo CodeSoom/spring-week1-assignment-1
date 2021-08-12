@@ -31,8 +31,8 @@ public class DemoHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
-        String task_id = getId(path);
-        System.out.println(task_id);
+        String taskId = getId(path);
+        System.out.println(taskId);
 
 
         InputStream inputStream = exchange.getRequestBody();
@@ -56,12 +56,13 @@ public class DemoHttpHandler implements HttpHandler {
             content = tasksToJson();
         }
 
-        //GET tasks/{task_id}
-        if (method.equals("GET") && path.equals("/tasks/"+task_id)) {
-            Integer task_id_int = Integer.parseInt(task_id);
-            Task target_task = tasks.get( task_id_int-1 );
+        //GET tasks/{taskId}
+        if (method.equals("GET") && path.equals("/tasks/"+taskId)) {
+            Integer taskIdInt = Integer.parseInt(taskId);
+            Integer indexFromTaskId = taskIdInt-1
+            Task targetTask = tasks.get( indexFromTaskId );
 
-            content = targetTaskToJson(target_task);
+            content = targetTaskToJson(targetTask);
         }
 
         //POST tasks
@@ -69,8 +70,8 @@ public class DemoHttpHandler implements HttpHandler {
             content = "Create a new task";
         }
 
-        if (method.equals("PUT") && path.equals("/tasks/"+task_id)) {
-            Integer task_id_int = Integer.parseInt(task_id);
+        if (method.equals("PUT") && path.equals("/tasks/"+taskId)) {
+            Integer task_id_int = Integer.parseInt(taskId);
             Task target_task = tasks.get( task_id_int-1 );
             Task change_task = toTask(body);
             target_task.setTitle(change_task.getTitle());
@@ -79,8 +80,8 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
 
-        if (method.equals("DELETE") && path.equals("/tasks/"+task_id)) {
-            Integer task_id_int = Integer.parseInt(task_id);
+        if (method.equals("DELETE") && path.equals("/tasks/"+taskId)) {
+            Integer task_id_int = Integer.parseInt(taskId);
             tasks.remove( task_id_int-1 );
 
             content = "Deleted target task";

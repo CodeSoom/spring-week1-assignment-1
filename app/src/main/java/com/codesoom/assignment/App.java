@@ -16,9 +16,11 @@ public class App {
         System.out.println(new App().getGreeting());
 
         try {
-            Integer portNum = 8000;
+            int portNum = 8000;
+            int backlogSettingNum =0;
+
             InetSocketAddress address =new InetSocketAddress(( portNum));
-            HttpServer httpServer = HttpServer.create(address,0);
+            HttpServer httpServer = HttpServer.create(address,backlogSettingNum);
             HttpHandler handler = new DemoHttpHandler();
             httpServer.createContext("/",handler);
             httpServer.start();
