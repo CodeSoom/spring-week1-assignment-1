@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.RequestContent;
+import com.codesoom.assignment.models.Response;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.models.TasksStorage;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,8 +21,7 @@ import java.util.stream.Collectors;
 public class TodoHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
     private TasksStorage tasks = new TasksStorage();
-    private String content = "";
-    private Integer statusCode = HttpStatus.InternalServerError.code();
+    private Response response;
     private Long id;
 
     @Override
@@ -34,86 +34,98 @@ public class TodoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
+        response = new Response();
+
         boolean isTasksPath = "/tasks".equals(path);
         boolean isTasksPathWithId = path.length() > "/tasks/".length();
 
         if ("GET".equals(method) && isTasksPath) {
-            handleGetRequest();
+            response = handleGetRequest();
         }
 
         if ("GET".equals(method) && isTasksPathWithId) {
             id = Long.parseLong(path.substring(7));
-            handleGetRequest(id);
+            response = handleGetRequest(id);
         }
 
         if ("POST".equals(method) && isTasksPath && !body.isBlank()) {
-            handlePostRequest(body);
+            response = handlePostRequest(body);
         }
 
         if ("PUT".equals(method) && isTasksPathWithId && !body.isBlank()) {
             id = Long.parseLong(path.substring(7));
-            handlePutRequest(id, body);
+            response = handlePutRequest(id, body);
         }
 
         if ("DELETE".equals(method) && isTasksPathWithId) {
             id = Long.parseLong(path.substring(7));
-            handleDeleteRequest(id);
+            response = handleDeleteRequest(id);
         }
 
-        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
+        exchange.sendResponseHeaders(response.getStatusCode(), response.getContentBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(content.getBytes());
+        outputStream.write(response.getContentBytes());
         outputStream.flush();
         outputStream.close();
     }
 
-    private void handleGetRequest() throws IOException {
-        content = tasksToJson(tasks.readAll());
-        statusCode = HttpStatus.Ok.code();
+    private Response handleGetRequest() throws IOException {
+        String content = tasksToJson(tasks.readAll());
+        HttpStatus httpStatus = HttpStatus.Ok;
+
+        return new Response(content, httpStatus);
     }
 
-    private void handleGetRequest(Long id) throws IOException {
+    private Response handleGetRequest(Long id) throws IOException {
         Task task = tasks.read(id);
 
         if (task != null){
-            content = taskToJson(task);
-            statusCode = HttpStatus.Ok.code();
+            String content = taskToJson(task);
+            HttpStatus httpStatus = HttpStatus.Ok;
+
+            return new Response(content, httpStatus);
         } else {
-            statusCode = HttpStatus.NotFound.code();
+            return new Response(HttpStatus.NotFound);
         }
     }
 
-    private void handlePostRequest(String body) throws IOException {
+    private Response handlePostRequest(String body) throws IOException {
         String title = toRequestContent(body).getTitle();
 
         Task task = tasks.create(title);
 
-        statusCode = HttpStatus.Created.code();
-        content = taskToJson(task);
+        String content = taskToJson(task);
+        HttpStatus httpStatus = HttpStatus.Created;
+
+        return new Response(content, httpStatus);
     }
 
-    private void handlePutRequest(Long id, String body) throws IOException {
+    private Response handlePutRequest(Long id, String body) throws IOException {
         String title = toRequestContent(body).getTitle();
 
         Task task = tasks.update(id, title);
 
         if(task != null) {
-            statusCode = HttpStatus.Ok.code();
-            content = taskToJson(task);
+            String content = taskToJson(task);
+            HttpStatus httpStatus = HttpStatus.Ok;
+
+            return new Response(content, httpStatus);
         } else {
-            statusCode = HttpStatus.NotFound.code();
+            return new Response(HttpStatus.NotFound);
         }
     }
 
-    private void handleDeleteRequest(Long id) throws IOException {
+    private Response handleDeleteRequest(Long id) throws IOException {
         Task task = tasks.delete(id);
 
         if(task != null) {
-            statusCode = HttpStatus.NoContent.code();
-            content = taskToJson(task);
+            String content = taskToJson(task);
+            HttpStatus httpStatus = HttpStatus.NoContent;
+
+            return new Response(content, httpStatus);
         } else {
-            statusCode = HttpStatus.NotFound.code();
+            return new Response(HttpStatus.NotFound);
         }
     }
 
