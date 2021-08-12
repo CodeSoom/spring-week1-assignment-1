@@ -78,12 +78,21 @@ public class DemoHttpHandler implements HttpHandler {
             exchange.sendResponseHeaders(createdStatusCode, content.getBytes().length);
 
         }
-        if (method.equals("PATCH") && path.equals("/tasks")) {
-            content = "Create a new task";
-            exchange.sendResponseHeaders(createdStatusCode, content.getBytes().length);
+
+        if (method.equals("PUT") && path.equals("/tasks/"+taskId)) {
+            int taskIdInt = Integer.parseInt(taskId);
+            int indexFromTaskId;
+            indexFromTaskId = taskIdInt-1;
+            Task target_task = tasks.get( indexFromTaskId );
+            Task change_task = toTask(body);
+            target_task.setTitle(change_task.getTitle());
+            content = "change target task";
+
+            exchange.sendResponseHeaders(okStatusCode, content.getBytes().length);
 
         }
-        if (method.equals("PUT") && path.equals("/tasks/"+taskId)) {
+
+        if (method.equals("PATCH") && path.equals("/tasks/"+taskId)) {
             int taskIdInt = Integer.parseInt(taskId);
             int indexFromTaskId;
             indexFromTaskId = taskIdInt-1;
