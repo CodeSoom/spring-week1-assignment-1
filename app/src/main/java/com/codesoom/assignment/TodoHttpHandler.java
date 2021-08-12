@@ -21,7 +21,7 @@ public class TodoHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
     private TasksStorage tasks = new TasksStorage();
     private String content = "";
-    private Integer statusCode = 500;
+    private Integer statusCode = HttpStatus.InternalServerError.code();
     private Long id;
 
     @Override
