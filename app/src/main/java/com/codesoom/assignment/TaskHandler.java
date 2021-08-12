@@ -4,16 +4,15 @@ import com.codesoom.assignment.modles.Task;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import javax.swing.text.html.Option;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -32,12 +31,12 @@ public final class TaskHandler implements HttpHandler {
     private static final String EMPTY_STRING = "";
     private static final String PATH_DELIMITER = "/";
 
-    private final List<Task> tasks = new ArrayList<>();
+    private final Map<Long, Task> tasks = new HashMap<>();
 
-    private Optional<Integer> parseId(final String idString) {
-        Integer taskId = null;
+    private Optional<Long> parseId(final String idString) {
+        Long taskId = null;
         try {
-            taskId = Integer.parseInt(idString);
+            taskId = Long.parseLong(idString);
         } catch (Exception exception) {
             exception.printStackTrace();
         }
@@ -63,6 +62,30 @@ public final class TaskHandler implements HttpHandler {
         sendResponse(exchange, HttpURLConnection.HTTP_BAD_METHOD, stringBuilder.toString());
     }
 
+    private void handleGet(final HttpExchange exchange, final Object object) throws IOException {
+        final Optional<String> jsonStringOptional = JsonConverter.toJson(object);
+        if (jsonStringOptional.isEmpty()) {
+            sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_JSON_FAIL);
+            return;
+        }
+        sendResponse(exchange, HttpURLConnection.HTTP_OK, jsonStringOptional.get());
+    }
+
+    private void handlePost(final HttpExchange exchange, final String requestBody) throws IOException {
+        final Optional<Task> taskOptional = Task.jsonToTask(requestBody);
+        if (taskOptional.isEmpty()) {
+            sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_TASK_FAIL);
+            return;
+        }
+        tasks.put(taskOptional.get().getId(), taskOptional.get());
+        final Optional<String> jsonStringOptional = JsonConverter.toJson(taskOptional.get());
+        if (jsonStringOptional.isEmpty()) {
+            sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_JSON_FAIL);
+            return;
+        }
+        sendResponse(exchange, HttpURLConnection.HTTP_CREATED, jsonStringOptional.get());
+    }
+
     private void handleId(
             final HttpExchange exchange, final String method, final String path
     ) throws IOException {
@@ -73,20 +96,25 @@ public final class TaskHandler implements HttpHandler {
         }
 
         final String[] paths = path.split(PATH_DELIMITER);
-        Arrays.stream(paths).forEach(System.out::println);
         if (ID_INDEX + 1 != paths.length) {
             sendResponse(exchange, HttpURLConnection.HTTP_BAD_REQUEST, INVALID_REQUEST);
             return;
         }
 
-        final Optional<Integer> taskId = parseId(paths[ID_INDEX]);
-        if (taskId.isEmpty()) {
+        final Optional<Long> taskIdOptional = parseId(paths[ID_INDEX]);
+        if (taskIdOptional.isEmpty()) {
+            sendResponse(exchange, HttpURLConnection.HTTP_BAD_REQUEST, INVALID_ID);
+            return;
+        }
+
+        final Optional<Task> taskOptional = Optional.ofNullable(tasks.get(taskIdOptional.get()));
+        if (taskOptional.isEmpty()) {
             sendResponse(exchange, HttpURLConnection.HTTP_BAD_REQUEST, INVALID_ID);
             return;
         }
 
         if (HttpMethod.GET.name().equals(method)) {
-            sendResponse(exchange, HttpURLConnection.HTTP_OK, HttpMethod.GET.name() + " " + path);
+            handleGet(exchange, taskOptional.get());
             return;
         }
 
@@ -104,29 +132,6 @@ public final class TaskHandler implements HttpHandler {
         handleInvalidMethod(exchange, path, allowedMethods);
     }
 
-    private void handleGet(final HttpExchange exchange) throws IOException {
-        final Optional<String> jsonStringOptional = JsonConverter.toJson(tasks);
-        if (jsonStringOptional.isEmpty()) {
-            sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_JSON_FAIL);
-            return;
-        }
-        sendResponse(exchange, HttpURLConnection.HTTP_OK, jsonStringOptional.get());
-    }
-
-    private void handlePost(final HttpExchange exchange, final String requestBody) throws IOException {
-        final Optional<Task> taskOptional = Task.jsonToTask(requestBody);
-        if (taskOptional.isEmpty()) {
-            sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_TASK_FAIL);
-            return;
-        }
-        tasks.add(taskOptional.get());
-        final Optional<String> jsonStringOptional = JsonConverter.toJson(taskOptional.get());
-        if (jsonStringOptional.isEmpty()) {
-            sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_JSON_FAIL);
-            return;
-        }
-        sendResponse(exchange, HttpURLConnection.HTTP_CREATED, jsonStringOptional.get());
-    }
 
     @Override
     public void handle(final HttpExchange exchange) throws IOException {
@@ -142,7 +147,7 @@ public final class TaskHandler implements HttpHandler {
         }
 
         if (HttpMethod.GET.name().equals(method)) {
-            handleGet(exchange);
+            handleGet(exchange, tasks);
             return;
         }
 
