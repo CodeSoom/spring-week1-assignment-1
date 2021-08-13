@@ -1,5 +1,9 @@
-package com.codesoom.assignment;
+//TODO arraylist에서 찾는메서드 찾아보기
+//TODO 변수이름 타입 지우기
+//Todo :반환결과 고민하기
+//TODO: 다양한 url 소화하기
 
+package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -36,7 +40,7 @@ public class DemoHttpHandler implements HttpHandler {
     URI uri = exchange.getRequestURI();
     String path = uri.getPath();
 
-    String taskId = getId(path);
+    int taskId = Integer.parseInt(getId(path));
     System.out.println(taskId);
 
     InputStream inputStream = exchange.getRequestBody();
@@ -62,9 +66,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     //GET tasks/{taskId}
     if (method.equals("GET") && path.equals("/tasks/" + taskId)) {
-      int taskIdInt = Integer.parseInt(taskId);
-
-      Task targetTask = tasks.get(taskIdInt - 1);
+      Task targetTask = tasks.get(taskId - 1);
       content = targetTaskToJson(targetTask);
 
       exchange.sendResponseHeaders(okStatusCode, content.getBytes().length);
@@ -79,9 +81,8 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     if (method.equals("PUT") && path.equals("/tasks/" + taskId)) {
-      int taskIdInt = Integer.parseInt(taskId);
       int indexFromTaskId;
-      indexFromTaskId = taskIdInt - 1;
+      indexFromTaskId = taskId - 1;
       Task target_task = tasks.get(indexFromTaskId);
       Task change_task = toTask(body);
       target_task.setTitle(change_task.getTitle());
@@ -92,9 +93,8 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     if (method.equals("PATCH") && path.equals("/tasks/" + taskId)) {
-      int taskIdInt = Integer.parseInt(taskId);
       int indexFromTaskId;
-      indexFromTaskId = taskIdInt - 1;
+      indexFromTaskId = taskId - 1;
       Task target_task = tasks.get(indexFromTaskId);
       Task change_task = toTask(body);
       target_task.setTitle(change_task.getTitle());
@@ -107,7 +107,7 @@ public class DemoHttpHandler implements HttpHandler {
     if (method.equals("DELETE") && path.equals("/tasks/" + taskId)) {
 
       System.out.println("qweqweqw");
-      String deleteStatus = deleteTask(Long.parseLong(taskId));
+      String deleteStatus = deleteTask(taskId);
       if (deleteStatus == "Delete success") {
         content = "Delete success";
         exchange.sendResponseHeaders(noContentStatusCode, content.getBytes().length);
