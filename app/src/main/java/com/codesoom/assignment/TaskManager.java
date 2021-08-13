@@ -43,9 +43,9 @@ public class TaskManager {
         return taskMapper.toJsonWith(task);
     }
 
-    public String updateTask(long id, String body) throws IOException {
+    public String updateTask(long id, String title) throws IOException {
         Task task = findTask(id);
-        Task content = taskFactory.toTask(body);
+        Task content = taskFactory.toTask(title);
 
         String newTitle = content.getTitle();
         task.setTitle(newTitle);
