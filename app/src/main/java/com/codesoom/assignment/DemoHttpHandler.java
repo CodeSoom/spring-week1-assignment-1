@@ -21,10 +21,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
-    private final List<Map<String, Task>> tasks = new ArrayList<>();
-    private final Map<String, Task> taskMap = new HashMap<>();
+
     private final JsonConverter jsonConverter = new JsonConverter();
-    private static Long sequence = 0L;
+    private final TaskFactory taskFactory = new TaskFactory();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -38,18 +37,18 @@ public class DemoHttpHandler implements HttpHandler {
 
         String id = checkPathGetId(path);
         String content = "";
-
         int httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
 
         // GET /tasks
         if(httpRequest.isGetAllTasks()) {
+            List<Map<String, Task>> tasks = taskFactory.getTasks();
             content = jsonConverter.tasksToJSON(tasks);
             httpStatusCode = HttpStatus.OK.getCode();
         }
 
         // GET /tasks/{id}
-        if(httpRequest.isGetOneTask(method, path)) {
-            Optional<Task> task = findId(id);
+        if(httpRequest.isGetOneTask()) {
+            Optional<Task> task = taskFactory.findId(id);
             httpStatusCode = HttpStatus.NOT_FOUND.getCode();
             if(!task.isEmpty()){
                 content =  jsonConverter.oneTaskToJSON(task.get());
@@ -58,29 +57,30 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         // POST /tasks
-        if(httpRequest.isCreateTask(method, path)){
-            createTask(body);
+        if(httpRequest.isCreateTask()){
+            taskFactory.createTask(body);
+            List<Map<String, Task>> tasks = taskFactory.getTasks();
             content = jsonConverter.tasksToJSON(tasks);
             httpStatusCode = HttpStatus.CREATED.getCode();
         }
 
         // PUT,PATCH /tasks/{id}
-        if(httpRequest.isUpdateTask(method, path)) {
-            Optional<Task> task = findId(id);
+        if(httpRequest.isUpdateTask()) {
+            Optional<Task> task = taskFactory.findId(id);
             httpStatusCode = HttpStatus.NOT_FOUND.getCode();
             if(!task.isEmpty()){
-                Task updateTask = updateTask(task.get(), body);
+                Task updateTask = taskFactory.updateTask(task.get(), body);
                 content =  jsonConverter.oneTaskToJSON(updateTask);
                 httpStatusCode = HttpStatus.OK.getCode();
             }
         }
 
         // Delete /tasks/{id}
-        if(httpRequest.isDeleteTask(method, path)) {
-            Optional<Task> task = findId(id);
+        if(httpRequest.isDeleteTask()) {
+            Optional<Task> task = taskFactory.findId(id);
             httpStatusCode = HttpStatus.NOT_FOUND.getCode();
             if(!task.isEmpty()){
-                deleteTask(id);
+                taskFactory.deleteTask(id);
                 httpStatusCode = HttpStatus.NO_CONTENT.getCode();
             }
         }
@@ -109,29 +109,4 @@ public class DemoHttpHandler implements HttpHandler {
         return "";
     }
 
-    private void deleteTask(String id) {
-        tasks.remove(id);
-    }
-
-    private Task updateTask(Task task, String content) throws JsonProcessingException {
-        Task originTask = jsonConverter.jsonToTask(content);
-        task.setTitle(originTask.getTitle());
-        return task;
-    }
-
-    private Optional findId(String id) {
-        Optional<Task> task = Optional.empty();
-        Task findTask = taskMap.get(id);
-        if (findTask == null) {
-            return task;
-        }
-        return task.of(findTask);
-    }
-
-    private void createTask(String body) throws JsonProcessingException {
-        Task task = jsonConverter.jsonToTask(body);
-        task.setId(++sequence);
-        taskMap.put(task.getId() + "", task);
-        tasks.add(taskMap);
-    }
 }

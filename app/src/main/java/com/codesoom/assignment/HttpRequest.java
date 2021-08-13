@@ -1,8 +1,8 @@
 package com.codesoom.assignment;
 
 public class HttpRequest {
-    final String method;
-    final String path;
+    private final String method;
+    private final String path;
 
     public HttpRequest(String method, String path) {
         this.method = method;
@@ -10,34 +10,34 @@ public class HttpRequest {
     }
 
     public boolean isGetAllTasks(){
-        return HttpMethod.GET.getMethod().equals(method) && isTasksPath(path);
+        return HttpMethod.GET.getMethod().equals(method) && isTasksPath();
     }
 
-    public boolean isDeleteTask(String method, String path) {
-        return HttpMethod.DELETE.getMethod().equals(method) && isTasksPathWithId(path);
+    public boolean isDeleteTask() {
+        return HttpMethod.DELETE.getMethod().equals(method) && isTasksPathWithId();
     }
 
-    public boolean isUpdateTask(String method, String path) {
-        return HttpMethod.PUT.getMethod().equals(method) || HttpMethod.PATCH.equals(method) && isTasksPathWithId(path);
+    public boolean isUpdateTask() {
+        return HttpMethod.PUT.getMethod().equals(method) || HttpMethod.PATCH.equals(method) && isTasksPathWithId();
     }
 
-    public boolean isCreateTask(String method, String path) {
-        return HttpMethod.POST.getMethod().equals(method) && isTasksPath(path);
+    public boolean isCreateTask() {
+        return HttpMethod.POST.getMethod().equals(method) && isTasksPath();
     }
 
-    public boolean isGetOneTask(String method, String path) {
-        return HttpMethod.GET.getMethod().equals(method) && isTasksPathWithId(path);
+    public boolean isGetOneTask() {
+        return HttpMethod.GET.getMethod().equals(method) && isTasksPathWithId();
     }
 
-    private boolean isTasksPath(String path) {
+    private boolean isTasksPath() {
         if("/tasks".equals(path)){
             return true;
         }
         return false;
     }
 
-    private boolean isTasksPathWithId(String path) {
-        String id = checkPathGetId(path);
+    private boolean isTasksPathWithId() {
+        String id = checkPathGetId(this.path);
 
         if(("/tasks/"+id).equals(path)){
             return true;
@@ -47,7 +47,7 @@ public class HttpRequest {
 
     private String checkPathGetId(String path) {
         if (path.indexOf("/tasks/") == 0) {
-            return path.substring(7);
+            return this.path.substring(7);
         }
         return "";
     }
