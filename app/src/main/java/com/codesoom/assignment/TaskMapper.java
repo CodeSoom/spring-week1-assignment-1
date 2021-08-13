@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Map;
 
 public class TaskMapper {
 
@@ -15,8 +14,8 @@ public class TaskMapper {
         return write(task);
     }
 
-    public String toJson(Map<Long, Task> tasks) throws IOException {
-        return write(tasks.values());
+    public String toJson(TaskMap taskMap) throws IOException {
+        return write(taskMap.getValues());
     }
 
     private String write(Object tasks) throws IOException {

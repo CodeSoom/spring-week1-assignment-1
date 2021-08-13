@@ -3,8 +3,6 @@ package com.codesoom.assignment;
 import com.codesoom.assignment.errors.TaskIdNotFoundException;
 import com.codesoom.assignment.models.Task;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class TaskManager {
 
@@ -12,7 +10,7 @@ public class TaskManager {
 
     private final TaskMapper taskMapper = new TaskMapper();
     private final TaskFactory taskFactory = new TaskFactory();
-    private final Map<Long, Task> tasks = new HashMap<>();
+    private final TaskMap taskMap = new TaskMap();
 
     private Long lastId = 0L;
 
@@ -24,7 +22,7 @@ public class TaskManager {
     }
 
     public String getAllTasks() throws IOException {
-        return taskMapper.toJson(tasks);
+        return taskMapper.toJson(taskMap);
     }
 
     public String findTaskWith(long id) throws IOException {
@@ -38,7 +36,7 @@ public class TaskManager {
         lastId++;
         task.setId(lastId);
 
-        tasks.put(lastId, task);
+        taskMap.put(lastId, task);
 
         return taskMapper.toJsonWith(task);
     }
@@ -57,11 +55,11 @@ public class TaskManager {
         Task task = findTask(id);
         Long taskId = task.getId();
 
-        tasks.remove(taskId);
+        taskMap.remove(taskId);
     }
 
     private Task findTask(long id) {
-        Task task = tasks.get(id);
+        Task task = taskMap.get(id);
         if (task == null) {
             throw new TaskIdNotFoundException();
         }
