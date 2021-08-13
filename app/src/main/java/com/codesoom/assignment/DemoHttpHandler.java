@@ -1,6 +1,5 @@
 //TODO arraylist에서 찾는메서드 찾아보기
 //Todo :반환결과 고민하기
-//TODO: 다양한 url 소화하기
 
 package com.codesoom.assignment;
 
@@ -39,11 +38,13 @@ public class DemoHttpHandler implements HttpHandler {
     String method = exchange.getRequestMethod();
     URI uri = exchange.getRequestURI();
     String path = uri.getPath();
-    System.out.println(path);
 
     System.out.println(getId(path));
 
-    int taskId = Integer.parseInt(getId(path));
+    int taskId = 0;
+    if(getId(path) != ""){
+      taskId = Integer.parseInt(getId(path));
+    }
 
     InputStream inputStream = exchange.getRequestBody();
     String body = new BufferedReader(new InputStreamReader(inputStream))
@@ -130,7 +131,12 @@ public class DemoHttpHandler implements HttpHandler {
 
   private String getId(String path) {
     String[] splitBySlash= path.split("/");
-    String id = splitBySlash[2];
+    String id = "";
+    if(splitBySlash.length > 2) {
+
+      id = splitBySlash[2];
+      System.out.println(id);
+    }
     return id;
   }
 
