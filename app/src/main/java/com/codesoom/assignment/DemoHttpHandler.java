@@ -113,15 +113,15 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private boolean hasTask(String path) {
-        return Pattern.matches("/tasks$", path);
+        return Pattern.matches("/tasks/?$", path);
     }
 
     private boolean hasTaskId(String path) {
-        return Pattern.matches("/tasks/[0-9]+$", path);
+        return Pattern.matches("/tasks/[0-9]+/?$", path);
     }
 
     private Long getTaskIdFromPath(String path) throws NoSuchElementException {
-        Pattern pattern = Pattern.compile("/tasks/([0-9]+)$");
+        Pattern pattern = Pattern.compile("/tasks/([0-9]+)/?$");
         Matcher matcher = pattern.matcher(path);
 
         if(!matcher.find()) {
