@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class DemoHttpHandler implements HttpHandler {
     private final List<Map<String, Task>> tasks = new ArrayList<>();
     private final Map<String, Task> taskMap = new HashMap<>();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final JsonConverter jsonConverter = new JsonConverter();
     private static Long sequence = 0L;
 
     @Override
@@ -43,7 +43,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         // GET /tasks
         if(httpRequest.isGetAllTasks()) {
-            content =  tasksToJSON();
+            content = jsonConverter.tasksToJSON(tasks);
             httpStatusCode = HttpStatus.OK.getCode();
         }
 
@@ -52,7 +52,7 @@ public class DemoHttpHandler implements HttpHandler {
             Optional<Task> task = findId(id);
             httpStatusCode = HttpStatus.NOT_FOUND.getCode();
             if(!task.isEmpty()){
-                content =  oneTaskToJSON(task.get());
+                content =  jsonConverter.oneTaskToJSON(task.get());
                 httpStatusCode = HttpStatus.OK.getCode();
             }
         }
@@ -60,7 +60,7 @@ public class DemoHttpHandler implements HttpHandler {
         // POST /tasks
         if(httpRequest.isCreateTask(method, path)){
             createTask(body);
-            content = tasksToJSON();
+            content = jsonConverter.tasksToJSON(tasks);
             httpStatusCode = HttpStatus.CREATED.getCode();
         }
 
@@ -69,8 +69,8 @@ public class DemoHttpHandler implements HttpHandler {
             Optional<Task> task = findId(id);
             httpStatusCode = HttpStatus.NOT_FOUND.getCode();
             if(!task.isEmpty()){
-                Task updateTask = updateTitle(task.get(), body);
-                content =  oneTaskToJSON(updateTask);
+                Task updateTask = updateTask(task.get(), body);
+                content =  jsonConverter.oneTaskToJSON(updateTask);
                 httpStatusCode = HttpStatus.OK.getCode();
             }
         }
@@ -80,7 +80,7 @@ public class DemoHttpHandler implements HttpHandler {
             Optional<Task> task = findId(id);
             httpStatusCode = HttpStatus.NOT_FOUND.getCode();
             if(!task.isEmpty()){
-                deleteTodo(id);
+                deleteTask(id);
                 httpStatusCode = HttpStatus.NO_CONTENT.getCode();
             }
         }
@@ -93,22 +93,6 @@ public class DemoHttpHandler implements HttpHandler {
         outputstream.close();
     }
 
-    private boolean isTasksPath(String path) {
-        if("/tasks".equals(path)){
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isTasksPathWithId(String path) {
-        String id = checkPathGetId(path);
-
-        if(("/tasks/"+id).equals(path)){
-            return true;
-        }
-        return false;
-    }
-
     private String createBody(HttpExchange exchange) {
         InputStream inputStream = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(inputStream))
@@ -118,13 +102,6 @@ public class DemoHttpHandler implements HttpHandler {
         return body;
     }
 
-    private void createTask(String body) throws JsonProcessingException {
-        Task task = jsonToTask(body);
-        task.setId(++sequence);
-        taskMap.put(task.getId() + "", task);
-        tasks.add(taskMap);
-    }
-
     private String checkPathGetId(String path) {
         if (path.indexOf("/tasks/") == 0) {
             return path.substring(7);
@@ -132,20 +109,14 @@ public class DemoHttpHandler implements HttpHandler {
         return "";
     }
 
-    private void deleteTodo(String id) {
+    private void deleteTask(String id) {
         tasks.remove(id);
     }
 
-    private Task updateTitle(Task task, String content) throws JsonProcessingException {
-        Task originTask = jsonToTask(content);
+    private Task updateTask(Task task, String content) throws JsonProcessingException {
+        Task originTask = jsonConverter.jsonToTask(content);
         task.setTitle(originTask.getTitle());
         return task;
-    }
-
-    private String oneTaskToJSON(Task task) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, task);
-        return outputStream.toString();
     }
 
     private Optional findId(String id) {
@@ -157,13 +128,10 @@ public class DemoHttpHandler implements HttpHandler {
         return task.of(findTask);
     }
 
-    private Task jsonToTask(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
-    }
-
-    private String tasksToJSON() throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
-        return outputStream.toString();
+    private void createTask(String body) throws JsonProcessingException {
+        Task task = jsonConverter.jsonToTask(body);
+        task.setId(++sequence);
+        taskMap.put(task.getId() + "", task);
+        tasks.add(taskMap);
     }
 }
