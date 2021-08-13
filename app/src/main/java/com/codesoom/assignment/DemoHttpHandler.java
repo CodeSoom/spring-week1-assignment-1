@@ -1,5 +1,3 @@
-//TODO arraylist에서 찾는메서드 찾아보기
-//Todo :반환결과 고민하기
 
 package com.codesoom.assignment;
 
@@ -91,7 +89,6 @@ public class DemoHttpHandler implements HttpHandler {
     if (method.equals("POST") && path.equals("/tasks")) {
       content = "Create a new task";
       exchange.sendResponseHeaders(createdStatusCode, content.getBytes().length);
-
     }
 
 
@@ -100,7 +97,6 @@ public class DemoHttpHandler implements HttpHandler {
       if (isTaskRewrite == true) {
         content = "target task changed";
         exchange.sendResponseHeaders(okStatusCode, content.getBytes().length);
-
       } else {
         content = "fail";
         exchange.sendResponseHeaders(notFoundStatusCode, content.getBytes().length);
@@ -109,17 +105,14 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     if (method.equals("DELETE") && path.equals("/tasks/" + taskId)) {
-
       Boolean isTaskDeleted = deleteTask(taskId);
       if (isTaskDeleted == true) {
         content = "Delete success";
         exchange.sendResponseHeaders(noContentStatusCode, content.getBytes().length);
-
       } else {
         content = "fail";
         exchange.sendResponseHeaders(notFoundStatusCode, content.getBytes().length);
       }
-
     }
 
     OutputStream outputStream = exchange.getResponseBody();
@@ -133,7 +126,6 @@ public class DemoHttpHandler implements HttpHandler {
     String[] splitBySlash= path.split("/");
     String id = "";
     if(splitBySlash.length > 2) {
-
       id = splitBySlash[2];
       System.out.println(id);
     }
