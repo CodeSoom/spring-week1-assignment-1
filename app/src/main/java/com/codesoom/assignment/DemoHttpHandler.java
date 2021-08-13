@@ -69,11 +69,22 @@ public class DemoHttpHandler implements HttpHandler {
 
     //GET tasks/{taskId}
     if (method.equals("GET") && path.equals("/tasks/" + taskId)) {
-      Task targetTask = tasks.get(taskId - 1);
-      content = targetTaskToJson(targetTask);
+      Task targetTask = null;
 
-      exchange.sendResponseHeaders(okStatusCode, content.getBytes().length);
+      for (Task task : tasks) {
+        if (task.getId() == taskId) {
+          targetTask = task;
+          content = targetTaskToJson(targetTask);
 
+        }
+      }
+
+      if (targetTask != null) {
+        exchange.sendResponseHeaders(okStatusCode, content.getBytes().length);
+      }else{
+        exchange.sendResponseHeaders(notFoundStatusCode, content.getBytes().length);
+
+      }
     }
 
     //POST tasks
@@ -109,8 +120,8 @@ public class DemoHttpHandler implements HttpHandler {
 
     if (method.equals("DELETE") && path.equals("/tasks/" + taskId)) {
 
-      String deleteStatus = deleteTask(taskId);
-      if (deleteStatus == "Delete success") {
+      Boolean isTaskDeleted = deleteTask(taskId);
+      if (isTaskDeleted == true) {
         content = "Delete success";
         exchange.sendResponseHeaders(noContentStatusCode, content.getBytes().length);
 
@@ -162,15 +173,14 @@ public class DemoHttpHandler implements HttpHandler {
     return outputStream.toString();
   }
 
-  private String deleteTask(long ID) throws IOException {
+  private Boolean deleteTask(long ID) throws IOException {
     for (Task task : tasks) {
       if (task.getId() == ID) {
         tasks.remove(task);
-        return "Delete success";
+        return true;
       }
     }
-    return "fail";
+    return false;
   }
-
-
+  
 }
