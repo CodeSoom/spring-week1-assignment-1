@@ -21,9 +21,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
-
-    private final JsonConverter jsonConverter = new JsonConverter();
     private final TaskFactory taskFactory = new TaskFactory();
+    private final HttpResponse httpResponse = new HttpResponse(taskFactory);
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -36,59 +35,36 @@ public class DemoHttpHandler implements HttpHandler {
         System.out.println(method + " " + path);
 
         String id = checkPathGetId(path);
-        String content = "";
-        int httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
 
         // GET /tasks
         if(httpRequest.isGetAllTasks()) {
-            List<Map<String, Task>> tasks = taskFactory.getTasks();
-            content = jsonConverter.tasksToJSON(tasks);
-            httpStatusCode = HttpStatus.OK.getCode();
+            httpResponse.getAllTasks();
         }
 
         // GET /tasks/{id}
         if(httpRequest.isGetOneTask()) {
-            Optional<Task> task = taskFactory.findId(id);
-            httpStatusCode = HttpStatus.NOT_FOUND.getCode();
-            if(!task.isEmpty()){
-                content =  jsonConverter.oneTaskToJSON(task.get());
-                httpStatusCode = HttpStatus.OK.getCode();
-            }
+            httpResponse.getOneTask(id);
         }
 
         // POST /tasks
         if(httpRequest.isCreateTask()){
-            taskFactory.createTask(body);
-            List<Map<String, Task>> tasks = taskFactory.getTasks();
-            content = jsonConverter.tasksToJSON(tasks);
-            httpStatusCode = HttpStatus.CREATED.getCode();
+            httpResponse.createTask(body);
         }
 
         // PUT,PATCH /tasks/{id}
         if(httpRequest.isUpdateTask()) {
-            Optional<Task> task = taskFactory.findId(id);
-            httpStatusCode = HttpStatus.NOT_FOUND.getCode();
-            if(!task.isEmpty()){
-                Task updateTask = taskFactory.updateTask(task.get(), body);
-                content =  jsonConverter.oneTaskToJSON(updateTask);
-                httpStatusCode = HttpStatus.OK.getCode();
-            }
+            httpResponse.updateTask(id, body);
         }
 
         // Delete /tasks/{id}
         if(httpRequest.isDeleteTask()) {
-            Optional<Task> task = taskFactory.findId(id);
-            httpStatusCode = HttpStatus.NOT_FOUND.getCode();
-            if(!task.isEmpty()){
-                taskFactory.deleteTask(id);
-                httpStatusCode = HttpStatus.NO_CONTENT.getCode();
-            }
+            httpResponse.deleteTask(id);
         }
 
-        exchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
+        exchange.sendResponseHeaders(httpResponse.getHttpStatusCode(), httpResponse.getContent().getBytes().length);
 
         OutputStream outputstream = exchange.getResponseBody();
-        outputstream.write(content.getBytes());
+        outputstream.write(httpResponse.getContent().getBytes());
         outputstream.flush();
         outputstream.close();
     }
