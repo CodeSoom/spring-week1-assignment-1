@@ -1,6 +1,5 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.models.RequestInfo;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,10 +7,12 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
+import java.net.URI;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
     private TaskManager taskManger = new TaskManager();
@@ -21,13 +22,9 @@ public class DemoHttpHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         // get method, url, body
-        RequestInfo requestInfo = new RequestInfo(exchange);
-
-        System.out.println(requestInfo.getMethod() + requestInfo.getPath());
-
-        String requestMethod = requestInfo.getMethod();
-        String requestPath = requestInfo.getPath();
-        String requestBody = requestInfo.getBody();
+        String requestMethod = extractMethodFromExchange(exchange);
+        String requestPath = extractPathFromExchange(exchange);
+        String requestBody = extractBodyFromExchange(exchange);
 
         String content = "";
         int statusCode = 500;
@@ -92,6 +89,22 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private String extractMethodFromExchange(HttpExchange exchange) {
+        return exchange.getRequestMethod();
+    }
+
+    private String extractPathFromExchange(HttpExchange exchange) {
+        URI uri = exchange.getRequestURI();
+        return uri.getPath();
+    }
+
+    private String extractBodyFromExchange(HttpExchange exchange) throws UnsupportedEncodingException {
+        InputStream inputStream = exchange.getRequestBody();
+        return new BufferedReader(new InputStreamReader(inputStream, "utf-8"))
+                .lines()
+                .collect(Collectors.joining("\n"));
     }
 
     private Task convertJsonToTask(String content) throws JsonProcessingException {
