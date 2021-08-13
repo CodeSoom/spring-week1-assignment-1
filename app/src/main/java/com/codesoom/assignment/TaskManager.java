@@ -3,8 +3,8 @@ package com.codesoom.assignment;
 import com.codesoom.assignment.errors.TaskIdNotFoundException;
 import com.codesoom.assignment.models.Task;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TaskManager {
 
@@ -12,7 +12,7 @@ public class TaskManager {
 
     private final TaskMapper taskMapper = new TaskMapper();
     private final TaskFactory taskFactory = new TaskFactory();
-    private final List<Task> tasks = new ArrayList<>();
+    private final Map<Long, Task> tasks = new HashMap<>();
 
     private Long lastId = 0L;
 
@@ -38,7 +38,7 @@ public class TaskManager {
         lastId++;
         task.setId(lastId);
 
-        tasks.add(task);
+        tasks.put(lastId, task);
 
         return taskMapper.toJsonWith(task);
     }
@@ -55,13 +55,17 @@ public class TaskManager {
 
     public void deleteTask(long id) {
         Task task = findTask(id);
-        tasks.remove(task);
+        Long taskId = task.getId();
+
+        tasks.remove(taskId);
     }
 
     private Task findTask(long id) {
-        return tasks.stream()
-            .filter(task -> task.isMatchId(id))
-            .findFirst()
-            .orElseThrow(TaskIdNotFoundException::new);
+        Task task = tasks.get(id);
+        if (task == null) {
+            throw new TaskIdNotFoundException();
+        }
+
+        return task;
     }
 }
