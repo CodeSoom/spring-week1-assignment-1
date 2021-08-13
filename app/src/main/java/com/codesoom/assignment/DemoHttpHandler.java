@@ -1,5 +1,4 @@
 //TODO arraylist에서 찾는메서드 찾아보기
-//TODO 변수이름 타입 지우기
 //Todo :반환결과 고민하기
 //TODO: 다양한 url 소화하기
 
@@ -30,6 +29,7 @@ public class DemoHttpHandler implements HttpHandler {
   int badRequestStatusCode = 400;
   int notFoundStatusCode = 404;
   int noContentStatusCode = 204;
+
   Long id = 0L;
 
   @Override
@@ -39,9 +39,11 @@ public class DemoHttpHandler implements HttpHandler {
     String method = exchange.getRequestMethod();
     URI uri = exchange.getRequestURI();
     String path = uri.getPath();
+    System.out.println(path);
+
+    System.out.println(getId(path));
 
     int taskId = Integer.parseInt(getId(path));
-    System.out.println(taskId);
 
     InputStream inputStream = exchange.getRequestBody();
     String body = new BufferedReader(new InputStreamReader(inputStream))
@@ -127,7 +129,9 @@ public class DemoHttpHandler implements HttpHandler {
   }
 
   private String getId(String path) {
-    return path.replace("/tasks/", "");
+    String[] splitBySlash= path.split("/");
+    String id = splitBySlash[2];
+    return id;
   }
 
   private Task toTask(String content) throws JsonProcessingException {
