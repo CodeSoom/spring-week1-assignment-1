@@ -29,11 +29,10 @@ public class DemoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
-        URI uri = exchange.getRequestURI();
-        String path = uri.getPath();
-
-        String body = createBody(exchange);
+        final String method = exchange.getRequestMethod();
+        final URI uri = exchange.getRequestURI();
+        final String path = uri.getPath();
+        final String body = createBody(exchange);
 
         System.out.println(method + " " + path);
 
