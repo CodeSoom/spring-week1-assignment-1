@@ -1,10 +1,8 @@
 package com.codesoom.assignment.web;
 
 import com.codesoom.assignment.TaskManager;
-import com.codesoom.assignment.TaskMapper;
 import com.codesoom.assignment.errors.MethodNotAllowedException;
 import com.codesoom.assignment.errors.TaskIdNotFoundException;
-import com.codesoom.assignment.models.Task;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.io.BufferedReader;
@@ -19,7 +17,6 @@ public class TaskHttpHandler implements HttpHandler {
     private static final String NOT_FOUND_MESSAGE = "Not Found.";
 
     private final TaskManager taskManager = TaskManager.getInstance();
-    private final TaskMapper taskMapper = new TaskMapper();
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -28,12 +25,12 @@ public class TaskHttpHandler implements HttpHandler {
 
         long taskId = httpRequest.getTaskIdFromPath();
         if (httpRequest.isReadAll()) {
-            new HttpResponseOK(httpExchange).send(taskMapper.toJson());
+            new HttpResponseOK(httpExchange).send(taskManager.getAllTasks());
         }
 
         if (httpRequest.isReadOne()) {
             try {
-                new HttpResponseOK(httpExchange).send(taskMapper.toJsonWith(taskId));
+                new HttpResponseOK(httpExchange).send(taskManager.findTaskWith(taskId));
             } catch (TaskIdNotFoundException error) {
                 new HttpResponseNotFound(httpExchange).send(error.getMessage());
             }
@@ -44,16 +41,16 @@ public class TaskHttpHandler implements HttpHandler {
                 new HttpResponseNoContent(httpExchange).send();
             }
 
-            Task createdTask = taskManager.createTask(body);
+            String createdTask = taskManager.createTask(body);
 
-            new HttpResponseCreated(httpExchange).send(taskMapper.toJsonWith(createdTask));
+            new HttpResponseCreated(httpExchange).send(createdTask);
         }
 
         if (httpRequest.isUpdateOne()) {
             try {
-                Task updatedTask = taskManager.updateTask(taskId, body);
+                String updatedTask = taskManager.updateTask(taskId, body);
 
-                new HttpResponseOK(httpExchange).send(taskMapper.toJsonWith(updatedTask));
+                new HttpResponseOK(httpExchange).send(updatedTask);
             } catch (TaskIdNotFoundException error) {
                 new HttpResponseNotFound(httpExchange).send(error.getMessage());
             }
@@ -61,9 +58,9 @@ public class TaskHttpHandler implements HttpHandler {
 
         if (httpRequest.isDeleteOne()) {
             try {
-                Task deletedTask = taskManager.deleteTask(taskId);
+                taskManager.deleteTask(taskId);
 
-                new HttpResponseNoContent(httpExchange).send(taskMapper.toJsonWith(deletedTask));
+                new HttpResponseNoContent(httpExchange).send();
             } catch (TaskIdNotFoundException error) {
                 new HttpResponseNotFound(httpExchange).send(error.getMessage());
             }

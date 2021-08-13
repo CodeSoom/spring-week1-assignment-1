@@ -2,7 +2,7 @@ package com.codesoom.assignment;
 
 import com.codesoom.assignment.errors.TaskIdNotFoundException;
 import com.codesoom.assignment.models.Task;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +10,7 @@ public class TaskManager {
 
     private static final TaskManager uniqueInstance = new TaskManager();
 
+    private final TaskMapper taskMapper = new TaskMapper();
     private final TaskFactory taskFactory = new TaskFactory();
     private final List<Task> tasks = new ArrayList<>();
 
@@ -22,18 +23,16 @@ public class TaskManager {
         return uniqueInstance;
     }
 
-    public Task findTaskWith(long id) {
-        return tasks.stream()
-            .filter(task -> task.isMatchId(id))
-            .findFirst()
-            .orElseThrow(TaskIdNotFoundException::new);
+    public String getAllTasks() throws IOException {
+        return taskMapper.toJson(tasks);
     }
 
-    public List<Task> getAllTasks() {
-        return tasks;
+    public String findTaskWith(long id) throws IOException {
+        Task task = findTask(id);
+        return taskMapper.toJsonWith(task);
     }
 
-    public Task createTask(String title) throws JsonProcessingException {
+    public String createTask(String title) throws IOException {
         Task task = taskFactory.toTask(title);
 
         lastId++;
@@ -41,23 +40,28 @@ public class TaskManager {
 
         tasks.add(task);
 
-        return task;
+        return taskMapper.toJsonWith(task);
     }
 
-    public Task deleteTask(long id) {
-        Task task = findTaskWith(id);
-        tasks.remove(task);
-
-        return task;
-    }
-
-    public Task updateTask(long id, String body) throws JsonProcessingException {
-        Task task = findTaskWith(id);
+    public String updateTask(long id, String body) throws IOException {
+        Task task = findTask(id);
         Task content = taskFactory.toTask(body);
 
         String newTitle = content.getTitle();
         task.setTitle(newTitle);
 
-        return task;
+        return taskMapper.toJsonWith(task);
+    }
+
+    public void deleteTask(long id) {
+        Task task = findTask(id);
+        tasks.remove(task);
+    }
+
+    private Task findTask(long id) {
+        return tasks.stream()
+            .filter(task -> task.isMatchId(id))
+            .findFirst()
+            .orElseThrow(TaskIdNotFoundException::new);
     }
 }

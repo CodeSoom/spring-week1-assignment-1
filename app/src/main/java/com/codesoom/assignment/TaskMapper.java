@@ -9,21 +9,13 @@ import java.util.List;
 
 public class TaskMapper {
 
-    private final TaskManager taskManager = TaskManager.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper();
-
-    public String toJsonWith(long id) throws IOException {
-        Task task = taskManager.findTaskWith(id);
-        return toJsonWith(task);
-    }
 
     public String toJsonWith(Task task) throws IOException {
         return write(task);
     }
 
-    public String toJson() throws IOException {
-        List<Task> tasks = taskManager.getAllTasks();
-
+    public String toJson(List<Task> tasks) throws IOException {
         return write(tasks);
     }
 
