@@ -6,14 +6,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+
 public class DemoHttpHandler implements HttpHandler {
-    private final List<Map<String,Task>> tasks = new ArrayList<>();
-    private final Map<String,Task> taskMap = new HashMap<>();
+    private final List<Map<String, Task>> tasks = new ArrayList<>();
+    private final Map<String, Task> taskMap = new HashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static Long sequence = 0L;
 
@@ -25,9 +35,9 @@ public class DemoHttpHandler implements HttpHandler {
 
         String body = createBody(exchange);
 
-        System.out.println(method +" "+ path);
+        System.out.println(method + " " + path);
 
-        Map<String, String>  contentAndStatusCode = checkPath(path, method, body);
+        Map<String, String> contentAndStatusCode = checkPath(path, method, body);
         String content = contentAndStatusCode.get("content");
         int httpStatusCode = Integer.parseInt(contentAndStatusCode.get("httpStatusCode"));
 
@@ -43,52 +53,52 @@ public class DemoHttpHandler implements HttpHandler {
         String id = checkPathGetId(path);
         Map<String, String> map = new HashMap<>();
         map.put("content", "");
-        map.put("httpStatusCode",HttpStatus.INTERNAL_SERVER_ERROR.getCode()+"");
+        map.put("httpStatusCode", HttpStatus.INTERNAL_SERVER_ERROR.getCode() + "");
 
-        if("/".equals(path)){
-            if(HttpMethod.GET.getMethod().equals(method)){
+        if ("/".equals(path)) {
+            if (HttpMethod.GET.getMethod().equals(method)) {
                 map.put("content", "Todo List");
-                map.put("httpStatusCode",HttpStatus.OK.getCode()+"");
+                map.put("httpStatusCode", HttpStatus.OK.getCode() + "");
             }
         }
 
-        if("/tasks".equals(path)){
-            if(HttpMethod.GET.getMethod().equals(method)){
+        if ("/tasks".equals(path)) {
+            if (HttpMethod.GET.getMethod().equals(method)) {
                 map.put("content", tasksToJSON());
-                map.put("httpStatusCode",HttpStatus.OK.getCode()+"");
+                map.put("httpStatusCode", HttpStatus.OK.getCode() + "");
             }
-            if(HttpMethod.POST.getMethod().equals(method)){
+            if (HttpMethod.POST.getMethod().equals(method)) {
                 createTask(body);
                 map.put("content", tasksToJSON());
-                map.put("httpStatusCode",HttpStatus.CREATED.getCode()+"");
+                map.put("httpStatusCode", HttpStatus.CREATED.getCode() + "");
             }
         }
 
-        if(("/tasks/"+id).equals(path)){
-            if(HttpMethod.GET.getMethod().equals(method)){
+        if (("/tasks/" + id).equals(path)) {
+            if (HttpMethod.GET.getMethod().equals(method)) {
                 Optional<Task> task = findId(id);
-                map.put("httpStatusCode",HttpStatus.NOT_FOUND.getCode()+"");
-                if(!task.isEmpty()){
+                map.put("httpStatusCode", HttpStatus.NOT_FOUND.getCode() + "");
+                if (!task.isEmpty()) {
                     map.put("content", oneTaskToJSON(task.get()));
-                    map.put("httpStatusCode",HttpStatus.OK.getCode()+"");
+                    map.put("httpStatusCode", HttpStatus.OK.getCode() + "");
                 }
             }
-            if(HttpMethod.PUT.getMethod().equals(method) || HttpMethod.PATCH.getMethod().equals(method)){
+            if (HttpMethod.PUT.getMethod().equals(method) || HttpMethod.PATCH.getMethod().equals(method)) {
                 Optional<Task> task = findId(id);
-                map.put("httpStatusCode",HttpStatus.NOT_FOUND.getCode()+"");
-                if(!task.isEmpty()){
+                map.put("httpStatusCode", HttpStatus.NOT_FOUND.getCode() + "");
+                if (!task.isEmpty()) {
                     Task updateTask = updateTitle(task.get(), body);
                     map.put("content", oneTaskToJSON(updateTask));
-                    map.put("httpStatusCode",HttpStatus.OK.getCode()+"");
+                    map.put("httpStatusCode", HttpStatus.OK.getCode() + "");
                 }
             }
-            if(HttpMethod.DELETE.getMethod().equals(method)){
-                if(("/tasks/"+id).equals(path)){
+            if (HttpMethod.DELETE.getMethod().equals(method)) {
+                if (("/tasks/" + id).equals(path)) {
                     Optional<Task> task = findId(id);
-                    map.put("httpStatusCode",HttpStatus.NOT_FOUND.getCode()+"");
-                    if(!task.isEmpty()){
+                    map.put("httpStatusCode", HttpStatus.NOT_FOUND.getCode() + "");
+                    if (!task.isEmpty()) {
                         deleteTodo(id);
-                        map.put("httpStatusCode",HttpStatus.NO_CONTENT.getCode()+"");
+                        map.put("httpStatusCode", HttpStatus.NO_CONTENT.getCode() + "");
                     }
                 }
             }
@@ -108,13 +118,13 @@ public class DemoHttpHandler implements HttpHandler {
     private void createTask(String body) throws JsonProcessingException {
         Task task = jsonToTask(body);
         task.setId(++sequence);
-        taskMap.put(task.getId()+"",task);
+        taskMap.put(task.getId() + "", task);
         tasks.add(taskMap);
     }
 
     private String checkPathGetId(String path) {
-        if(path.indexOf("/tasks/") == 0){
-            return path.replace("/tasks/","");
+        if (path.indexOf("/tasks/") == 0) {
+            return path.replace("/tasks/", "");
         }
         return "";
     }
@@ -138,7 +148,7 @@ public class DemoHttpHandler implements HttpHandler {
     private Optional findId(String id) {
         Optional<Task> task = Optional.empty();
         Task findTask = taskMap.get(id);
-        if(findTask == null){
+        if (findTask == null) {
             return task;
         }
         return task.of(findTask);
