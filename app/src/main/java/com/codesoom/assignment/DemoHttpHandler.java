@@ -94,27 +94,17 @@ public class DemoHttpHandler implements HttpHandler {
 
     }
 
-    if (method.equals("PUT") && path.equals("/tasks/" + taskId)) {
-      int indexFromTaskId;
-      indexFromTaskId = taskId - 1;
-      Task target_task = tasks.get(indexFromTaskId);
-      Task change_task = toTask(body);
-      target_task.setTitle(change_task.getTitle());
-      content = "change target task";
 
-      exchange.sendResponseHeaders(okStatusCode, content.getBytes().length);
+    if ((method.equals("PATCH")||method.equals("PUT") )&& path.equals("/tasks/" + taskId) ) {
+      Boolean isTaskRewrite = rewriteTask(taskId, body);
+      if (isTaskRewrite == true) {
+        content = "target task changed";
+        exchange.sendResponseHeaders(okStatusCode, content.getBytes().length);
 
-    }
-
-    if (method.equals("PATCH") && path.equals("/tasks/" + taskId)) {
-      int indexFromTaskId;
-      indexFromTaskId = taskId - 1;
-      Task target_task = tasks.get(indexFromTaskId);
-      Task change_task = toTask(body);
-      target_task.setTitle(change_task.getTitle());
-      content = "change target task";
-
-      exchange.sendResponseHeaders(okStatusCode, content.getBytes().length);
+      } else {
+        content = "fail";
+        exchange.sendResponseHeaders(notFoundStatusCode, content.getBytes().length);
+      }
 
     }
 
@@ -182,5 +172,14 @@ public class DemoHttpHandler implements HttpHandler {
     }
     return false;
   }
-  
+    private Boolean rewriteTask(long ID,String body ) throws IOException {
+    for (Task task : tasks) {
+      if (task.getId() == ID) {
+        task.setTitle(body);
+        return true;
+      }
+    }
+    return false;
+  }
+
 }
