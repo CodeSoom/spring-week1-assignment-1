@@ -16,8 +16,8 @@ public class App {
       int portNumber = 8000;
       int backlogSettingNumber = 0;
 
-      InetSocketAddress address = new InetSocketAddress((portNum));
-      HttpServer httpServer = HttpServer.create(address, backlogSettingNum);
+      InetSocketAddress address = new InetSocketAddress((portNumber));
+      HttpServer httpServer = HttpServer.create(address, backlogSettingNumber);
       HttpHandler handler = new DemoHttpHandler();
       httpServer.createContext("/", handler);
       httpServer.start();
