@@ -17,6 +17,8 @@ public class DemoHttpHandler implements HttpHandler {
     private static final int NOT_FOUND = 404;
     private static final String GET_METHOD = "GET";
     private static final String POST_METHOD = "POST";
+    private static final String PUT_METHOD = "PUT";
+    private static final String FETCH_METHOD = "FETCH";
     private static final String TASKS_PATH = "/tasks";
     private static final String TASK_DETAIL_PATH = "/tasks/";
 
@@ -45,6 +47,12 @@ public class DemoHttpHandler implements HttpHandler {
             addTask.setId(increaseId());
             this.tasks.add(addTask);
             sendResponseBody(exchange, new ResponseData(CREATED, taskToJson(addTask)));
+            return;
+        }
+
+        if ((requestMethod.equals(PUT_METHOD) || requestMethod.equals(FETCH_METHOD)) && path.startsWith(TASK_DETAIL_PATH)) {
+            sendResponseBody(exchange, taskModifyResponseData(findTask(taskId(path)), body));
+            return;
         }
 
     }
@@ -88,6 +96,15 @@ public class DemoHttpHandler implements HttpHandler {
 
     private Long increaseId() {
         return this.id += 1L;
+    }
+
+    private ResponseData taskModifyResponseData(Task task, String changeTitle) {
+        if (!Objects.isNull(task)) {
+            task.setTitle(changeTitle);
+            return new ResponseData(OK, changeTitle);
+        }
+
+        return new ResponseData(NOT_FOUND, "");
     }
 
     private String tasksToJson() throws IOException {
