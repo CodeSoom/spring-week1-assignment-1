@@ -23,11 +23,11 @@ public class DemoHttpHandler implements HttpHandler {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
   private final List<Task> tasks = new ArrayList<>();
-  int createdStatusCode = 201;
-  int okStatusCode = 200;
-  int badRequestStatusCode = 400;
-  int notFoundStatusCode = 404;
-  int noContentStatusCode = 204;
+  static final int createdStatusCode = 201;
+  static final int okStatusCode = 200;
+  static final int badRequestStatusCode = 400;
+  static final int notFoundStatusCode = 404;
+  static final int noContentStatusCode = 204;
 
   Long id = 0L;
 
@@ -109,7 +109,6 @@ public class DemoHttpHandler implements HttpHandler {
 
     if (method.equals("DELETE") && path.equals("/tasks/" + taskId)) {
 
-      System.out.println("qweqweqw");
       String deleteStatus = deleteTask(taskId);
       if (deleteStatus == "Delete success") {
         content = "Delete success";
