@@ -1,146 +1,71 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.models.Task;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.codesoom.assignment.models.Path;
+import com.codesoom.assignment.models.Response;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
-    private TaskManager taskManger = new TaskManager();
-    private ObjectMapper objectMapper = new ObjectMapper();
-
+    private TaskService taskService = new TaskService();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         // get method, url, body
-        String requestMethod = extractMethodFromExchange(exchange);
-        String requestPath = extractPathFromExchange(exchange);
-        String requestBody = extractBodyFromExchange(exchange);
+        String method = extractMethod(exchange);
+        Path path = extractPath(exchange);
+        String body = extractBody(exchange);
 
-        String content = "";
-        int statusCode = 500;
-
+        Response response = new Response();
         // GET ALL
-        if ("GET".equals(requestMethod) && hasTask(requestPath)) {
-            List<Task> allTasks = taskManger.getAllTasks();
-            content = convertTasksToJson(allTasks);
-            statusCode = 200;
+        if ("GET".equals(method) && path.has("tasks")) {
+            response = taskService.getAll();
         }
 
         // GET Detail
-        if ("GET".equals(requestMethod) && hasTaskId(requestPath)) {
-            try {
-                Long id = getTaskIdFromPath(requestPath);
-                Task resultTask = taskManger.getTaskById(id);
-                content = convertTaskToJson(resultTask);
-                statusCode = 200;
-            } catch (NoSuchElementException e) {
-                e.printStackTrace();
-                statusCode = 404;
-            }
+        if ("GET".equals(method) && path.hasIdOf("tasks")) {
+            response = taskService.getOne(path);
         }
 
         // POST
-        if ("POST".equals(requestMethod) && hasTask(requestPath)) {
-            Task task = convertJsonToTask(requestBody);
-            Task newTask = taskManger.createTask(task.getTitle());
-            content = convertTaskToJson(newTask);
-            statusCode = 201;
+        if ("POST".equals(method) && path.has("tasks")) {
+            response = taskService.create(body);
         }
 
         // PUT & PATCH
-        if (("PUT".equals(requestMethod) || "PATCH".equals(requestMethod)) && hasTaskId(requestPath)) {
-            try {
-                Long id = getTaskIdFromPath(requestPath);
-                Task task = convertJsonToTask(requestBody);
-                taskManger.updateTask(id, task.getTitle());
-                content = convertTaskToJson(taskManger.getTaskById(id));
-                statusCode = 200;
-            } catch(NoSuchElementException e) {
-                e.printStackTrace();
-                statusCode = 404;
-            }
+        if (("PUT".equals(method) || "PATCH".equals(method)) && path.hasIdOf("tasks")) {
+            response = taskService.update(path, body);
         }
 
         // DELETE
-        if ("DELETE".equals(requestMethod) && hasTaskId(requestPath)) {
-            try {
-                Long id = getTaskIdFromPath(requestPath);
-                taskManger.removeTask(id);
-                statusCode = 204;
-            } catch (NoSuchElementException e) {
-                e.printStackTrace();
-                statusCode = 404;
-            }
+        if ("DELETE".equals(method) && path.hasIdOf("tasks")) {
+            response = taskService.remove(path);
         }
 
-        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
+        exchange.sendResponseHeaders(response.getStatusCode(), response.getContent().getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(content.getBytes());
+        outputStream.write(response.getContent().getBytes());
         outputStream.flush();
         outputStream.close();
     }
 
-    private String extractMethodFromExchange(HttpExchange exchange) {
+    private String extractMethod(HttpExchange exchange) {
         return exchange.getRequestMethod();
     }
 
-    private String extractPathFromExchange(HttpExchange exchange) {
+    private Path extractPath(HttpExchange exchange) {
         URI uri = exchange.getRequestURI();
-        return uri.getPath();
+        return new Path(uri);
     }
 
-    private String extractBodyFromExchange(HttpExchange exchange) throws UnsupportedEncodingException {
+    private String extractBody(HttpExchange exchange) throws UnsupportedEncodingException {
         InputStream inputStream = exchange.getRequestBody();
         return new BufferedReader(new InputStreamReader(inputStream, "utf-8"))
                 .lines()
                 .collect(Collectors.joining("\n"));
-    }
-
-    private Task convertJsonToTask(String content) throws JsonProcessingException {
-        return this.objectMapper.readValue(content, Task.class);
-    }
-
-    private String convertTasksToJson(List<Task> tasks) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        this.objectMapper.writeValue(outputStream, tasks);
-
-        return outputStream.toString();
-    }
-
-    private String convertTaskToJson(Task task) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        this.objectMapper.writeValue(outputStream, task);
-
-        return outputStream.toString();
-    }
-
-    private boolean hasTask(String path) {
-        return Pattern.matches("/tasks/?$", path);
-    }
-
-    private boolean hasTaskId(String path) {
-        return Pattern.matches("/tasks/[0-9]+/?$", path);
-    }
-
-    private Long getTaskIdFromPath(String path) throws NoSuchElementException {
-        Pattern pattern = Pattern.compile("/tasks/([0-9]+)/?$");
-        Matcher matcher = pattern.matcher(path);
-
-        if(!matcher.find()) {
-            throw new NoSuchElementException("Not Found id");
-        }
-
-        return Long.parseLong(matcher.group(1));
     }
 }

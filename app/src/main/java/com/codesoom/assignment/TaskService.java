@@ -1,52 +1,119 @@
 package com.codesoom.assignment;
+import com.codesoom.assignment.models.Path;
+import com.codesoom.assignment.models.Response;
 import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.ArrayList;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
-public class TaskManager {
-    private Long nextId = 1L;
-    private List<Task> tasks = new ArrayList<>();
+public class TaskService {
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final TaskManager taskManager = new TaskManager();
 
-    public Task createTask(String title) {
-        Task task = new Task(nextId++, title);
-        tasks.add(task);
-        return task;
-    }
+    public Response create(String body) {
+        String content;
+        int statusCode;
 
-    public List<Task> getAllTasks() {
-        return tasks;
-    }
-
-    public Task getTaskById(Long id) throws NoSuchElementException {
-        return tasks.stream()
-                .filter(task->task.getId().equals(id))
-                .findFirst()
-                .orElseThrow(()->new NoSuchElementException("Not Found Task"));
-    }
-
-    public void removeTask(Long id) throws NoSuchElementException {
-        if(!checkTask(id)) {
-            throw new NoSuchElementException("Not Found Task");
+        try {
+            String title = convertJsonToTask(body).getTitle();
+            taskManager.create(title);
+            content = convertTaskToJson(taskManager.getLast());
+            statusCode = 201;
+        } catch (IOException e) {
+            content = e.toString();
+            statusCode = 500;
         }
 
-        tasks = tasks.stream()
-                .filter(task->!(task.getId().equals(id)))
-                .collect(Collectors.toList());
+        return new Response(statusCode, content);
     }
 
-    public void updateTask(Long id, String title) {
-        Task resultTask = getTaskById(id);
-        resultTask.setTitle(title);
+    public Response getAll() {
+        String content;
+        int statusCode;
+
+        try {
+            content = convertTasksToJson(taskManager.getAll());
+            statusCode = 200;
+        } catch (IOException e) {
+            content = e.toString();
+            statusCode = 500;
+        }
+
+        return new Response(statusCode, content);
     }
 
-    private boolean checkTask(Long id) {
-        long countResult = tasks.stream()
-                            .filter(task->task.getId().equals(id))
-                            .count();
+    public Response getOne(Path path) {
+        String content;
+        int statusCode;
 
-        return countResult > 0;
+        try {
+            Long id = path.getIdOf("tasks");
+            Task resultTask = taskManager.getOne(id);
+            content = convertTaskToJson(resultTask);
+            statusCode = 200;
+        } catch (NoSuchElementException | IOException e) {
+            content = e.toString();
+            statusCode = 404;
+        }
+
+        return new Response(statusCode, content);
+    }
+
+    public Response remove(Path path) throws NoSuchElementException {
+        String content;
+        int statusCode;
+
+        try {
+            Long id = path.getIdOf("tasks");
+            taskManager.remove(id);
+            content = "Success Remove Task : " + id;
+            statusCode = 204;
+        } catch (NoSuchElementException e) {
+            content = e.toString();
+            statusCode = 404;
+        }
+
+        return new Response(statusCode, content);
+    }
+
+    public Response update(Path path, String body) {
+        String content;
+        int statusCode;
+
+        try {
+            Long id = path.getIdOf("tasks");
+            String title = convertJsonToTask(body).getTitle();
+            taskManager.update(id, title);
+            content = convertTaskToJson(taskManager.getOne(id));
+            statusCode = 200;
+        } catch(NoSuchElementException | IOException e) {
+            content = e.toString();
+            statusCode = 404;
+        }
+
+        return new Response(statusCode, content);
+    }
+
+    private Task convertJsonToTask(String content) throws JsonProcessingException {
+        return this.objectMapper.readValue(content, Task.class);
+    }
+
+    private String convertTasksToJson(List<Task> tasks) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        this.objectMapper.writeValue(outputStream, tasks);
+
+        return outputStream.toString();
+    }
+
+    private String convertTaskToJson(Task task) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        this.objectMapper.writeValue(outputStream, task);
+
+        return outputStream.toString();
     }
 }
