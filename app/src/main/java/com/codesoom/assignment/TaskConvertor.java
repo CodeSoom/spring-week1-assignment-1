@@ -8,7 +8,7 @@ public class TaskConvertor {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public Task toTask(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
+    public Task toTask(String title) throws JsonProcessingException {
+        return objectMapper.readValue(title, Task.class);
     }
 }

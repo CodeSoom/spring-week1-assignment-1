@@ -10,17 +10,17 @@ public class TaskManager {
 
     private static final TaskManager uniqueInstance = new TaskManager();
 
+    private final TaskConvertor taskConvertor = new TaskConvertor();
+    private final List<Task> tasks = new ArrayList<>();
+
+    private Long lastId = 0L;
+
     private TaskManager() {
     }
 
     public static TaskManager getInstance() {
         return uniqueInstance;
     }
-
-    private final TaskConvertor taskConvertor = new TaskConvertor();
-    private final List<Task> tasks = new ArrayList<>();
-
-    private Long lastId = 0L;
 
     public Task findTaskWith(long id) {
         return tasks.stream()
@@ -33,8 +33,8 @@ public class TaskManager {
         return tasks;
     }
 
-    public Task createTask(String body) throws JsonProcessingException {
-        Task task = taskConvertor.toTask(body);
+    public Task createTask(String title) throws JsonProcessingException {
+        Task task = taskConvertor.toTask(title);
 
         lastId++;
         task.setId(lastId);
