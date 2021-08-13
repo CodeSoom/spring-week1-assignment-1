@@ -33,6 +33,7 @@ public class DemoHttpHandler implements HttpHandler {
         final String path = uri.getPath();
         final String body = createBody(exchange);
 
+        HttpRequest httpRequest = new HttpRequest(method, path);
         System.out.println(method + " " + path);
 
         String id = checkPathGetId(path);
@@ -41,13 +42,13 @@ public class DemoHttpHandler implements HttpHandler {
         int httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
 
         // GET /tasks
-        if(isGetAllTasks(method, path)) {
+        if(httpRequest.isGetAllTasks()) {
             content =  tasksToJSON();
             httpStatusCode = HttpStatus.OK.getCode();
         }
 
         // GET /tasks/{id}
-        if(isGetOneTask(method, path)) {
+        if(httpRequest.isGetOneTask(method, path)) {
             Optional<Task> task = findId(id);
             httpStatusCode = HttpStatus.NOT_FOUND.getCode();
             if(!task.isEmpty()){
@@ -57,14 +58,14 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         // POST /tasks
-        if(isCreateTask(method, path)){
+        if(httpRequest.isCreateTask(method, path)){
             createTask(body);
             content = tasksToJSON();
             httpStatusCode = HttpStatus.CREATED.getCode();
         }
 
         // PUT,PATCH /tasks/{id}
-        if(isUpdateTask(method, path)) {
+        if(httpRequest.isUpdateTask(method, path)) {
             Optional<Task> task = findId(id);
             httpStatusCode = HttpStatus.NOT_FOUND.getCode();
             if(!task.isEmpty()){
@@ -75,7 +76,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         // Delete /tasks/{id}
-        if(isDeleteTask(method, path)) {
+        if(httpRequest.isDeleteTask(method, path)) {
             Optional<Task> task = findId(id);
             httpStatusCode = HttpStatus.NOT_FOUND.getCode();
             if(!task.isEmpty()){
@@ -90,26 +91,6 @@ public class DemoHttpHandler implements HttpHandler {
         outputstream.write(content.getBytes());
         outputstream.flush();
         outputstream.close();
-    }
-
-    private boolean isDeleteTask(String method, String path) {
-        return HttpMethod.DELETE.getMethod().equals(method) && isTasksPathWithId(path);
-    }
-
-    private boolean isUpdateTask(String method, String path) {
-        return HttpMethod.PUT.getMethod().equals(method) || HttpMethod.PATCH.equals(method) && isTasksPathWithId(path);
-    }
-
-    private boolean isCreateTask(String method, String path) {
-        return HttpMethod.POST.getMethod().equals(method) && isTasksPath(path);
-    }
-
-    private boolean isGetOneTask(String method, String path) {
-        return HttpMethod.GET.getMethod().equals(method) && isTasksPathWithId(path);
-    }
-
-    private boolean isGetAllTasks(String method, String path) {
-        return HttpMethod.GET.getMethod().equals(method) && isTasksPath(path);
     }
 
     private boolean isTasksPath(String path) {
