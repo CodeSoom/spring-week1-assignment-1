@@ -124,8 +124,9 @@ public class DemoHttpHandler implements HttpHandler {
         Pattern pattern = Pattern.compile("/tasks/([0-9]+)$");
         Matcher matcher = pattern.matcher(path);
 
-        if(!matcher.find())
+        if(!matcher.find()) {
             throw new NoSuchElementException("Not Found id");
+        }
 
         return Long.parseLong(matcher.group(1));
     }
