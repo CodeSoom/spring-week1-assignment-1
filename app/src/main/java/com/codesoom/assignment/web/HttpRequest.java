@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 public class HttpRequest {
 
-    public static final String PREFIX_PATH = "/tasks";
+    private static final String PREFIX_PATH = "/tasks";
     private static final long EMPTY_TASK_ID = 0L;
 
     private final String path;
