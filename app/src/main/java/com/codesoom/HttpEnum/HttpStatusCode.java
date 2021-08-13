@@ -7,10 +7,10 @@ package com.codesoom.HttpEnum;
 public enum HttpStatusCode {
 
     OK(200),
-    NOTFOUND(404),
+    NOT_FOUND(404),
     CREATED(201),
-    NOCONTENT(204),
-    BADREQUEST(400);
+    NO_CONTENT(204),
+    BAD_REQUEST(400);
 
     private int status;
 

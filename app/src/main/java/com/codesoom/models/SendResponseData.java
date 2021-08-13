@@ -8,7 +8,7 @@ public class SendResponseData {
     private String response;
 
     public void init() {
-        this.httpStatusCode = HttpStatusCode.NOTFOUND.getStatus();
+        this.httpStatusCode = HttpStatusCode.NOT_FOUND.getStatus();
         this.response = "[]";
     }
     public SendResponseData(int httpStatusCode, String response) {
