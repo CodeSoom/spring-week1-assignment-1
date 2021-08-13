@@ -7,28 +7,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
+    String[] pathElements = null;
     private ObjectMapper objectMapper = new ObjectMapper();
-
     private HashMap<Long, Task> tasks = new HashMap<>();
     private long id = 0L;
     private int httpStatusCode = 500;
     private int length = 0;
     private String content = null;
-    String[] pathElements = null;
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -53,12 +46,9 @@ public class DemoHttpHandler implements HttpHandler {
             pathElements = path.split("/");
         }
 
-
-
-
         content = "Hello, world!";
         boolean hasIdVariable = false;
-        if(pathElements != null && pathElements.length > 2) {
+        if (pathElements != null && pathElements.length > 2) {
             hasIdVariable = true;
         }
 
@@ -87,7 +77,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     private void modifyTask(String body) throws IOException {
         id = Long.parseLong(pathElements[pathElements.length - 1]);
-        if (body!= null && !body.isEmpty() && tasks.get(id) != null) {
+        if (body != null && !body.isEmpty() && tasks.get(id) != null) {
             Task task = toTask(body);
             task.setId(id);
             tasks.put(id, task);
@@ -115,7 +105,7 @@ public class DemoHttpHandler implements HttpHandler {
     private void generateTask(String body) throws IOException {
         if (body != null && !body.isEmpty()) {
             Task task = toTask(body);
-            long tempId = id+1;
+            long tempId = id + 1;
             task.setId(tempId);
             tasks.put(tempId, task);
             ++id;
@@ -151,7 +141,7 @@ public class DemoHttpHandler implements HttpHandler {
     private String tasksToJSON() throws IOException {
 
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, new ArrayList(tasks.values()));
+        objectMapper.writeValue(outputStream, new ArrayList<>(tasks.values()));
 
         return outputStream.toString();
     }
