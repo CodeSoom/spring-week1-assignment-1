@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-
 public class DemoHttpHandler implements HttpHandler {
     private final List<Map<String, Task>> tasks = new ArrayList<>();
     private final Map<String, Task> taskMap = new HashMap<>();
@@ -36,9 +35,54 @@ public class DemoHttpHandler implements HttpHandler {
 
         System.out.println(method + " " + path);
 
-        Map<String, String> contentAndStatusCode = checkPath(path, method, body);
-        String content = contentAndStatusCode.get("content");
-        int httpStatusCode = Integer.parseInt(contentAndStatusCode.get("httpStatusCode"));
+        String id = checkPathGetId(path);
+        String content = "";
+
+        int httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
+
+        // GET /tasks
+        if(isGetAllTasks(method, path)) {
+            content =  tasksToJSON();
+            httpStatusCode = HttpStatus.OK.getCode();
+        }
+
+        // GET /tasks/{id}
+        if(isGetOneTask(method, path)) {
+            Optional<Task> task = findId(id);
+            httpStatusCode = HttpStatus.NOT_FOUND.getCode();
+            if(!task.isEmpty()){
+                content =  oneTaskToJSON(task.get());
+                httpStatusCode = HttpStatus.OK.getCode();
+            }
+        }
+
+        // POST /tasks
+        if(isCreateTask(method, path)){
+            createTask(body);
+            content = tasksToJSON();
+            httpStatusCode = HttpStatus.CREATED.getCode();
+        }
+
+        // PUT,PATCH /tasks/{id}
+        if(isUpdateTask(method, path)) {
+            Optional<Task> task = findId(id);
+            httpStatusCode = HttpStatus.NOT_FOUND.getCode();
+            if(!task.isEmpty()){
+                Task updateTask = updateTitle(task.get(), body);
+                content =  oneTaskToJSON(updateTask);
+                httpStatusCode = HttpStatus.OK.getCode();
+            }
+        }
+
+        // Delete /tasks/{id}
+        if(isDeleteTask(method, path)) {
+            Optional<Task> task = findId(id);
+            httpStatusCode = HttpStatus.NOT_FOUND.getCode();
+            if(!task.isEmpty()){
+                deleteTodo(id);
+                httpStatusCode = HttpStatus.NO_CONTENT.getCode();
+            }
+        }
 
         exchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
 
@@ -48,61 +92,40 @@ public class DemoHttpHandler implements HttpHandler {
         outputstream.close();
     }
 
-    private Map<String, String> checkPath(String path, String method, String body) throws IOException {
+    private boolean isDeleteTask(String method, String path) {
+        return HttpMethod.DELETE.getMethod().equals(method) && isTasksPathWithId(path);
+    }
+
+    private boolean isUpdateTask(String method, String path) {
+        return HttpMethod.PUT.getMethod().equals(method) || HttpMethod.PATCH.equals(method) && isTasksPathWithId(path);
+    }
+
+    private boolean isCreateTask(String method, String path) {
+        return HttpMethod.POST.getMethod().equals(method) && isTasksPath(path);
+    }
+
+    private boolean isGetOneTask(String method, String path) {
+        return HttpMethod.GET.getMethod().equals(method) && isTasksPathWithId(path);
+    }
+
+    private boolean isGetAllTasks(String method, String path) {
+        return HttpMethod.GET.getMethod().equals(method) && isTasksPath(path);
+    }
+
+    private boolean isTasksPath(String path) {
+        if("/tasks".equals(path)){
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isTasksPathWithId(String path) {
         String id = checkPathGetId(path);
-        Map<String, String> map = new HashMap<>();
-        map.put("content", "");
-        map.put("httpStatusCode", HttpStatus.INTERNAL_SERVER_ERROR.getCode() + "");
 
-        if ("/".equals(path)) {
-            if (HttpMethod.GET.getMethod().equals(method)) {
-                map.put("content", "Todo List");
-                map.put("httpStatusCode", HttpStatus.OK.getCode() + "");
-            }
+        if(("/tasks/"+id).equals(path)){
+            return true;
         }
-
-        if ("/tasks".equals(path)) {
-            if (HttpMethod.GET.getMethod().equals(method)) {
-                map.put("content", tasksToJSON());
-                map.put("httpStatusCode", HttpStatus.OK.getCode() + "");
-            }
-            if (HttpMethod.POST.getMethod().equals(method)) {
-                createTask(body);
-                map.put("content", tasksToJSON());
-                map.put("httpStatusCode", HttpStatus.CREATED.getCode() + "");
-            }
-        }
-
-        if (("/tasks/" + id).equals(path)) {
-            if (HttpMethod.GET.getMethod().equals(method)) {
-                Optional<Task> task = findId(id);
-                map.put("httpStatusCode", HttpStatus.NOT_FOUND.getCode() + "");
-                if (!task.isEmpty()) {
-                    map.put("content", oneTaskToJSON(task.get()));
-                    map.put("httpStatusCode", HttpStatus.OK.getCode() + "");
-                }
-            }
-            if (HttpMethod.PUT.getMethod().equals(method) || HttpMethod.PATCH.getMethod().equals(method)) {
-                Optional<Task> task = findId(id);
-                map.put("httpStatusCode", HttpStatus.NOT_FOUND.getCode() + "");
-                if (!task.isEmpty()) {
-                    Task updateTask = updateTitle(task.get(), body);
-                    map.put("content", oneTaskToJSON(updateTask));
-                    map.put("httpStatusCode", HttpStatus.OK.getCode() + "");
-                }
-            }
-            if (HttpMethod.DELETE.getMethod().equals(method)) {
-                if (("/tasks/" + id).equals(path)) {
-                    Optional<Task> task = findId(id);
-                    map.put("httpStatusCode", HttpStatus.NOT_FOUND.getCode() + "");
-                    if (!task.isEmpty()) {
-                        deleteTodo(id);
-                        map.put("httpStatusCode", HttpStatus.NO_CONTENT.getCode() + "");
-                    }
-                }
-            }
-        }
-        return map;
+        return false;
     }
 
     private String createBody(HttpExchange exchange) {
@@ -123,7 +146,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     private String checkPathGetId(String path) {
         if (path.indexOf("/tasks/") == 0) {
-            return path.replace("/tasks/", "");
+            return path.substring(7);
         }
         return "";
     }
