@@ -15,10 +15,12 @@ public class DemoHttpHandler implements HttpHandler {
     private static final int OK = 200;
     private static final int CREATED = 201;
     private static final int NOT_FOUND = 404;
+    private static final int NO_CONTENT = 204;
     private static final String GET_METHOD = "GET";
     private static final String POST_METHOD = "POST";
     private static final String PUT_METHOD = "PUT";
     private static final String FETCH_METHOD = "FETCH";
+    private static final String DELETE_METHOD = "DELETE";
     private static final String TASKS_PATH = "/tasks";
     private static final String TASK_DETAIL_PATH = "/tasks/";
 
@@ -55,6 +57,9 @@ public class DemoHttpHandler implements HttpHandler {
             return;
         }
 
+        if (requestMethod.equals(DELETE_METHOD) && path.startsWith(TASK_DETAIL_PATH)) {
+            sendResponseBody(exchange, new ResponseData(removeTask(taskId(path)), ""));
+        }
     }
 
     private String body(InputStream requestBody) {
@@ -119,4 +124,13 @@ public class DemoHttpHandler implements HttpHandler {
         return outputStream.toString();
     }
 
+    private int removeTask(Long taskId) {
+        for (Task task : tasks) {
+            if (task.getId().equals(taskId)) {
+                tasks.remove(task);
+                return NO_CONTENT;
+            }
+        }
+        return NOT_FOUND;
+    }
 }
