@@ -10,7 +10,7 @@ public class TaskManager {
 
     private static final TaskManager uniqueInstance = new TaskManager();
 
-    private final TaskConvertor taskConvertor = new TaskConvertor();
+    private final TaskFactory taskFactory = new TaskFactory();
     private final List<Task> tasks = new ArrayList<>();
 
     private Long lastId = 0L;
@@ -34,7 +34,7 @@ public class TaskManager {
     }
 
     public Task createTask(String title) throws JsonProcessingException {
-        Task task = taskConvertor.toTask(title);
+        Task task = taskFactory.toTask(title);
 
         lastId++;
         task.setId(lastId);
@@ -53,7 +53,7 @@ public class TaskManager {
 
     public Task updateTask(long id, String body) throws JsonProcessingException {
         Task task = findTaskWith(id);
-        Task content = taskConvertor.toTask(body);
+        Task content = taskFactory.toTask(body);
 
         String newTitle = content.getTitle();
         task.setTitle(newTitle);

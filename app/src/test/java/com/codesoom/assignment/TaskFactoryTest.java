@@ -7,15 +7,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-class TaskConvertorTest {
+class TaskFactoryTest {
 
     @Test
-    @DisplayName("task 모델로 변환한다.")
+    @DisplayName("task 모델을 생성한다.")
     void toTask() throws JsonProcessingException {
         String content = "{\"title\":\"watch ashal youtube\"}";
 
-        TaskConvertor taskConvertor = new TaskConvertor();
-        Task task = taskConvertor.toTask(content);
+        TaskFactory taskFactory = new TaskFactory();
+        Task task = taskFactory.toTask(content);
 
         assertThat(task.getTitle()).isEqualTo("watch ashal youtube");
     }
