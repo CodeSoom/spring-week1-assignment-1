@@ -56,10 +56,11 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         int httpStatusCode = 500;
+        int length = 0;
         if ("GET".equals(method) && Objects.equals(path, "/tasks")) { //전체 조회
             content = tasksToJSON();
             System.out.println("/tasks");
-            httpExchange.sendResponseHeaders(200, content.getBytes().length);
+            httpStatusCode = HttpStatusCode.Success.getStatusCode();
         } else if ("POST".equals(method) && Objects.equals(path, "/tasks")) { //task 생성
             if (!body.isEmpty()) {
                 Task task = toTask(body);
@@ -72,46 +73,42 @@ public class DemoHttpHandler implements HttpHandler {
             } else {
                 httpStatusCode = HttpStatusCode.NoContent.getStatusCode();
             }
-            httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
         } else if ("GET".equals(method) && (hasIdVariable)) { //특정 task 조회
 
             id = Long.parseLong(pathElements[pathElements.length - 1]);
-            int length = 0;
+
             if (tasks.get(id) != null) {
                 content = taskToJSON(id);
                 httpStatusCode = HttpStatusCode.Success.getStatusCode();
                 length = content.getBytes().length;
             } else {
                 httpStatusCode = HttpStatusCode.NotFound.getStatusCode();
-                length = 0;
             }
-
-            httpExchange.sendResponseHeaders(httpStatusCode, length);
-        } else if (("PATCH".equals(method) || method.equals("PUT")) && (hasIdVariable)) { // 특정 task 수정
+        } else if (("PATCH".equals(method) || "PUT".equals(method)) && (hasIdVariable)) { // 특정 task 수정
             id = Long.parseLong(pathElements[pathElements.length - 1]);
             if (!body.isEmpty() && tasks.get(id) != null) {
                 Task task = toTask(body);
                 task.setId(id);
                 tasks.put(id, task);
+                content = taskToJSON(id);
                 httpStatusCode = HttpStatusCode.Success.getStatusCode();
+                length = content.getBytes().length;
             } else {
                 httpStatusCode = HttpStatusCode.NotFound.getStatusCode();
             }
-            content = taskToJSON(id);
-            httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
         } else if ("DELETE".equals(method) && (hasIdVariable)) { //특정 task 삭제
             id = Long.parseLong(pathElements[pathElements.length - 1]);
             if (tasks.get(id) != null) {
                 tasks.remove(id);
-                content = "Delete task.";
+                content = "task deleted.";
                 httpStatusCode = HttpStatusCode.NoContent.getStatusCode();
+                length = content.getBytes().length;
             } else {
                 content = "존재하지 않음";
                 httpStatusCode = HttpStatusCode.NotFound.getStatusCode();
             }
-
-            httpExchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
         }
+        httpExchange.sendResponseHeaders(httpStatusCode, length);
 
 
         OutputStream outputStream = httpExchange.getResponseBody();
