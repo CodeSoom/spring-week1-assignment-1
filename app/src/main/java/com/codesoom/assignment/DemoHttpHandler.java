@@ -6,9 +6,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.InputStreamReader;
+import java.io.ByteArrayOutputStream;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -20,11 +24,7 @@ public class DemoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
     ObjectMapper mapper = new ObjectMapper();
 
-    // 상태 코드 정의
-    int HTTP_STATUS_OK = 200;
-    int HTTP_STATUS_CREATED = 201;
-    int HTTP_STATUS_CREATED_NO_CONTENT = 204;
-    int HTTP_STATUS_NOT_FOUND = 404;
+    Long CONTENT_LENGTH_WHEN_NO_CONTENT = -1L;
 
     String NOT_FOUND_MSG = "Cannot find task by id";
 
@@ -42,32 +42,34 @@ public class DemoHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         // path가 아이디를 가지는지 여부
-        boolean hasTaskId = Pattern.matches("/tasks/[0-9]+$", path);
-
-
+        // TODO task/task/1 같은 경우도 포함되는 조건임
+        boolean hasTaskId = isHasTaskId(path);
 
         // 콘텐츠 초기화
         String content = "";
 
         // 아래 path 조건에 해당이 안되면 잘못된 요청이므로 404로 초기화
-        int statusCode = 404;
+        HttpStatus statusCode = HttpStatus.HTTP_STATUS_NOT_FOUND;
 
+        // TODO 메서드 분리
         // GET /tasks
-        if ("GET".equals(method) && "/tasks".equals(path)) {
-            content = tasksToJson(tasks);
-            statusCode = HTTP_STATUS_OK;
-        }
+        if ("GET".equals(method)) {
+            if ("/tasks".equals(path)) {
+                content = tasksToJson(tasks);
+                statusCode = HttpStatus.HTTP_STATUS_OK;
+            }
 
-        // GET /tasks/{id}
-        if ("GET".equals(method) && hasTaskId) {
-            Long id = extractIdFromPath(path);
-            Task findTask = findTaskById(id);
-            if (findTask == null) {
-                content = NOT_FOUND_MSG;
-                statusCode = HTTP_STATUS_NOT_FOUND;
-            } else {
-                content = taskToJson(findTask);
-                statusCode = HTTP_STATUS_OK;
+            // GET /tasks/{id}
+            if (hasTaskId) {
+                Long id = extractIdFromPath(path);
+                Task findTask = findTaskById(id);
+                if (findTask == null) {
+                    content = NOT_FOUND_MSG;
+                    statusCode = HttpStatus.HTTP_STATUS_NOT_FOUND;
+                } else {
+                    content = taskToJson(findTask);
+                    statusCode = HttpStatus.HTTP_STATUS_OK;
+                }
             }
         }
 
@@ -77,7 +79,7 @@ public class DemoHttpHandler implements HttpHandler {
             content = taskToJson(task);
             tasks.add(task);
 
-            statusCode = HTTP_STATUS_CREATED;
+            statusCode = HttpStatus.HTTP_STATUS_CREATED;
         }
 
         // Delete /tasks/{id}
@@ -87,11 +89,11 @@ public class DemoHttpHandler implements HttpHandler {
 
             if (findTask == null) {
                 content = NOT_FOUND_MSG;
-                statusCode = HTTP_STATUS_NOT_FOUND;
+                statusCode = HttpStatus.HTTP_STATUS_NOT_FOUND;
             } else {
                 tasks.remove(findTask);
                 content = tasksToJson(tasks);
-                statusCode = HTTP_STATUS_CREATED_NO_CONTENT;
+                statusCode = HttpStatus.HTTP_STATUS_CREATED_NO_CONTENT;
             }
         }
 
@@ -102,24 +104,31 @@ public class DemoHttpHandler implements HttpHandler {
             Task findTask = findTaskById(id);
             if (findTask == null) {
                 content = NOT_FOUND_MSG;
-                statusCode = HTTP_STATUS_NOT_FOUND;
+                statusCode = HttpStatus.HTTP_STATUS_NOT_FOUND;
             } else {
                 Task inputTask = toTask(body);
                 findTask.setTitle(inputTask.getTitle());
 
                 content = taskToJson(findTask);
-                statusCode = HTTP_STATUS_OK;
+                statusCode = HttpStatus.HTTP_STATUS_OK;
             }
         }
 
         // 상태코드가 204이면 콘텐츠 길이를 -1로 해준다. -1이 아니면 경고 메시지를 출력하고 강제로 -1로 변환됨
-        long contentLength = statusCode == 204 ? -1L : content.getBytes().length;
+        long contentLength = statusCode == HttpStatus.HTTP_STATUS_CREATED_NO_CONTENT
+                ? CONTENT_LENGTH_WHEN_NO_CONTENT
+                : content.getBytes().length;
 
-        exchange.sendResponseHeaders(statusCode, contentLength);
+        exchange.sendResponseHeaders(statusCode.getCode(), contentLength);
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.write(content.getBytes());
         responseBody.flush();
         responseBody.close();
+    }
+
+    private boolean isHasTaskId(String path) {
+        boolean hasTaskId = Pattern.matches("/tasks/[0-9]+$", path);
+        return hasTaskId;
     }
 
     /**
@@ -159,6 +168,7 @@ public class DemoHttpHandler implements HttpHandler {
                 .filter(t -> t.getId().equals(id))
                 .findFirst()
                 .orElse(null);
+        // TODO 옵셔널 처리
     }
 
     /**
