@@ -30,13 +30,13 @@ public class DemoHttpHandler implements HttpHandler {
         String requestBody = requestInfo.getBody();
 
         String content = "";
-        int codeStatus = 500;
+        int statusCode = 500;
 
         // GET ALL
         if ("GET".equals(requestMethod) && hasTask(requestPath)) {
             List<Task> allTasks = taskManger.getAllTasks();
             content = convertTasksToJson(allTasks);
-            codeStatus = 200;
+            statusCode = 200;
         }
 
         // GET Detail
@@ -45,10 +45,10 @@ public class DemoHttpHandler implements HttpHandler {
                 Long id = getTaskIdFromPath(requestPath);
                 Task resultTask = taskManger.getTaskById(id);
                 content = convertTaskToJson(resultTask);
-                codeStatus = 200;
+                statusCode = 200;
             } catch (NoSuchElementException e) {
                 e.printStackTrace();
-                codeStatus = 404;
+                statusCode = 404;
             }
         }
 
@@ -57,7 +57,7 @@ public class DemoHttpHandler implements HttpHandler {
             Task task = convertJsonToTask(requestBody);
             Task newTask = taskManger.createTask(task.getTitle());
             content = convertTaskToJson(newTask);
-            codeStatus = 201;
+            statusCode = 201;
         }
 
         // PUT & PATCH
@@ -67,10 +67,10 @@ public class DemoHttpHandler implements HttpHandler {
                 Task task = convertJsonToTask(requestBody);
                 taskManger.updateTask(id, task.getTitle());
                 content = convertTaskToJson(taskManger.getTaskById(id));
-                codeStatus = 200;
+                statusCode = 200;
             } catch(NoSuchElementException e) {
                 e.printStackTrace();
-                codeStatus = 404;
+                statusCode = 404;
             }
         }
 
@@ -79,14 +79,14 @@ public class DemoHttpHandler implements HttpHandler {
             try {
                 Long id = getTaskIdFromPath(requestPath);
                 taskManger.removeTask(id);
-                codeStatus = 204;
+                statusCode = 204;
             } catch (NoSuchElementException e) {
                 e.printStackTrace();
-                codeStatus = 404;
+                statusCode = 404;
             }
         }
 
-        exchange.sendResponseHeaders(codeStatus, content.getBytes().length);
+        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
