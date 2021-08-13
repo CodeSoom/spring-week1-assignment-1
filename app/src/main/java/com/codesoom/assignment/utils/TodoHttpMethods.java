@@ -2,6 +2,7 @@ package com.codesoom.assignment.utils;
 
 import com.codesoom.assignment.models.StatusCode;
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.models.TaskIdGenerator;
 import com.codesoom.assignment.models.Title;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -66,11 +67,11 @@ public class TodoHttpMethods {
         writeOutputStream(exchange, content, StatusCode.OK);
     }
 
-    public void handleGetMethodWithParameter(HttpExchange exchange, String body, Map<Long, Task> taskMap) throws IOException {
+    public void handlePostMethodWithParameter(HttpExchange exchange, String body, Map<Long, Task> taskMap) throws IOException {
         Task task = toTask(body);
         taskMap.put(task.getId(), task);
 
-        Long lastSequence = Task.getSequence();
+        Long lastSequence = TaskIdGenerator.getLastSequence();
         Task lastTask = taskMap.get(lastSequence);
 
         content = taskToJSON(lastTask);

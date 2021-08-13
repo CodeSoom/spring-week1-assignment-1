@@ -13,7 +13,7 @@ public enum HttpMethod {
         this.httpMethod = httpMethod;
     }
 
-    public String getHttpMethod() {
-        return httpMethod;
+    public static HttpMethod compare(String method) {
+        return valueOf(method.toUpperCase());
     }
 }

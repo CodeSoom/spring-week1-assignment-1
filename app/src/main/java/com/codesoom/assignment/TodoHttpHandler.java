@@ -27,26 +27,22 @@ public class TodoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        System.out.println(body);
-        if (HttpMethod.GET.getHttpMethod().equals(method)) {
-            todoHttpMethods.handleBasicGetMethod(path, exchange, taskMap);
-            return;
-        }
-        if (HttpMethod.POST.getHttpMethod().equals(method)) {
-            todoHttpMethods.handleGetMethodWithParameter(exchange, body, taskMap);
-            return;
-        }
-        if (HttpMethod.PUT.getHttpMethod().equals(method)) {
-            todoHttpMethods.handlePutMethod(path, exchange, body, taskMap);
-            return;
-        }
-        if (HttpMethod.PATCH.getHttpMethod().equals(method)) {
-            todoHttpMethods.handlePatchMethod(path, exchange, body, taskMap);
-            return;
-        }
-        if (HttpMethod.DELETE.getHttpMethod().equals(method)) {
-            todoHttpMethods.handleDeleteMethod(path, exchange, taskMap);
-            return;
+        switch (HttpMethod.compare(method)) {
+            case GET:
+                todoHttpMethods.handleBasicGetMethod(path, exchange, taskMap);
+                break;
+            case POST:
+                todoHttpMethods.handlePostMethodWithParameter(exchange, body, taskMap);
+                break;
+            case PUT:
+                todoHttpMethods.handlePutMethod(path, exchange, body, taskMap);
+                break;
+            case PATCH:
+                todoHttpMethods.handlePatchMethod(path, exchange, body, taskMap);
+                break;
+            case DELETE:
+                todoHttpMethods.handleDeleteMethod(path, exchange, taskMap);
+                break;
         }
     }
 }
