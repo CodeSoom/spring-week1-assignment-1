@@ -23,6 +23,8 @@ public class DemoHttpHandler implements HttpHandler {
     private static final String DELETE_METHOD = "DELETE";
     private static final String TASKS_PATH = "/tasks";
     private static final String TASK_DETAIL_PATH = "/tasks/";
+    private static final String NO_CONTENTS = "";
+    private static final String PATH_SPLIT_SYMBOL = "/";
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final List<Task> tasks = new ArrayList<>();
@@ -58,7 +60,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         if (requestMethod.equals(DELETE_METHOD) && path.startsWith(TASK_DETAIL_PATH)) {
-            sendResponseBody(exchange, new ResponseData(removeTask(taskId(path)), ""));
+            sendResponseBody(exchange, new ResponseData(removeTask(taskId(path)), NO_CONTENTS));
         }
     }
 
@@ -85,11 +87,11 @@ public class DemoHttpHandler implements HttpHandler {
         if (!Objects.isNull(task)) {
             return new ResponseData(OK, taskToJson(task));
         }
-        return new ResponseData(NOT_FOUND, "");
+        return new ResponseData(NOT_FOUND, NO_CONTENTS);
     }
 
     private Long taskId(String path) {
-        return Long.parseLong(path.split("/")[2]);
+        return Long.parseLong(path.split(PATH_SPLIT_SYMBOL)[2]);
     }
 
     private Task findTask(Long taskId) {
@@ -109,7 +111,7 @@ public class DemoHttpHandler implements HttpHandler {
             return new ResponseData(OK, changeTitle);
         }
 
-        return new ResponseData(NOT_FOUND, "");
+        return new ResponseData(NOT_FOUND, NO_CONTENTS);
     }
 
     private String tasksToJson() throws IOException {
