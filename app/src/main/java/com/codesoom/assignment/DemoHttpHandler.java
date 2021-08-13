@@ -127,8 +127,7 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private boolean isHasTaskId(String path) {
-        boolean hasTaskId = Pattern.matches("/tasks/[0-9]+$", path);
-        return hasTaskId;
+        return Pattern.matches("\\B/tasks/[0-9]+$\\b", path);
     }
 
     /**
