@@ -29,7 +29,6 @@ public class DemoHttpHandler implements HttpHandler {
     private int length = 0;
     private String content = null;
     String[] pathElements = null;
-    String body = null;
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -44,7 +43,7 @@ public class DemoHttpHandler implements HttpHandler {
         String path = uri.getPath();
 
         InputStream inputStream = httpExchange.getRequestBody();
-        body = new BufferedReader(new InputStreamReader(inputStream))
+        String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
 
@@ -68,11 +67,11 @@ public class DemoHttpHandler implements HttpHandler {
         if ("GET".equals(method) && Objects.equals(path, "/tasks")) { //전체 조회
             getTasks();
         } else if ("POST".equals(method) && Objects.equals(path, "/tasks")) { //task 생성
-            generateTask();
+            generateTask(body);
         } else if ("GET".equals(method) && (hasIdVariable)) { //특정 task 조회
             getTask();
         } else if (("PATCH".equals(method) || "PUT".equals(method)) && (hasIdVariable)) { // 특정 task 수정
-            modifyTask();
+            modifyTask(body);
         } else if ("DELETE".equals(method) && (hasIdVariable)) { //특정 task 삭제
             deleteTask();
         }
@@ -86,9 +85,9 @@ public class DemoHttpHandler implements HttpHandler {
 
     }
 
-    private void modifyTask() throws IOException {
+    private void modifyTask(String body) throws IOException {
         id = Long.parseLong(pathElements[pathElements.length - 1]);
-        if (!body.isEmpty() && tasks.get(id) != null) {
+        if (body!= null && !body.isEmpty() && tasks.get(id) != null) {
             Task task = toTask(body);
             task.setId(id);
             tasks.put(id, task);
@@ -113,8 +112,8 @@ public class DemoHttpHandler implements HttpHandler {
         }
     }
 
-    private void generateTask() throws IOException {
-        if (!body.isEmpty()) {
+    private void generateTask(String body) throws IOException {
+        if (body != null && !body.isEmpty()) {
             Task task = toTask(body);
             long tempId = id+1;
             task.setId(tempId);
