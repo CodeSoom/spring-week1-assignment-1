@@ -16,8 +16,8 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
-    private ObjectMapper objectMapper = new ObjectMapper();
-    private TasksStorage tasks = new TasksStorage();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final TasksStorage tasks = new TasksStorage();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
