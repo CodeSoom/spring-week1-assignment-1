@@ -41,7 +41,6 @@ public class TodoHttpHandler implements HttpHandler {
 
     private Response getResponse(Request request) throws IOException {
         String method = request.getMethod();
-        String body = request.getBody();
 
         if ("GET".equals(method) && !request.isPathWithId()) {
             return handleGetRequest();
@@ -52,11 +51,11 @@ public class TodoHttpHandler implements HttpHandler {
         }
 
         if ("POST".equals(method)) {
-            return handlePostRequest(body);
+            return handlePostRequest(request.getRequestContent());
         }
 
         if ("PUT".equals(method)) {
-            return handlePutRequest(request.getPathId(), body);
+            return handlePutRequest(request.getPathId(), request.getRequestContent());
         }
 
         if ("DELETE".equals(method)) {
@@ -80,15 +79,15 @@ public class TodoHttpHandler implements HttpHandler {
         return new Response(HttpStatus.NOT_FOUND);
     }
 
-    private Response handlePostRequest(String body) throws IOException {
-        String title = toRequestContent(body).getTitle();
+    private Response handlePostRequest(RequestContent content) throws IOException {
+        String title = content.getTitle();
         Task task = tasks.create(title);
 
         return new Response(taskToJson(task), HttpStatus.CREATED);
     }
 
-    private Response handlePutRequest(Long id, String body) throws IOException {
-        String title = toRequestContent(body).getTitle();
+    private Response handlePutRequest(Long id, RequestContent content) throws IOException {
+        String title = content.getTitle();
         Task task = tasks.update(id, title);
 
         if(task != null) {
@@ -106,10 +105,6 @@ public class TodoHttpHandler implements HttpHandler {
         }
 
         return new Response(HttpStatus.NOT_FOUND);
-    }
-
-    private RequestContent toRequestContent(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, RequestContent.class);
     }
 
     private String tasksToJson(Collection<Task> tasks) throws IOException {

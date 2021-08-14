@@ -1,5 +1,8 @@
 package com.codesoom.assignment.models;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -7,7 +10,7 @@ public class Request {
     private final String path;
     private final String method;
     private final String body;
-
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final Pattern idPattern;
     private static final String URL_ID_REGEX = "\\d+";
 
@@ -30,8 +33,8 @@ public class Request {
         return method;
     }
 
-    public String getBody() {
-        return body;
+    public RequestContent getRequestContent() throws JsonProcessingException {
+        return objectMapper.readValue(body, RequestContent.class);
     }
 
     public boolean isPathWithId() {
