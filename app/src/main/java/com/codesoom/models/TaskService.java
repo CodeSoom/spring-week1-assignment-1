@@ -3,6 +3,7 @@ package com.codesoom.models;
 import com.codesoom.HttpEnum.HttpStatusCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.net.httpserver.HttpExchange;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -101,6 +102,24 @@ public class TaskService {
     }
 
     /**
+     * 클라이언트에게 보내는 응답 데이터로 HTTP 상태코드와 응답 메시지를 보내주는 메소드입니다.
+     * @param data
+     * @param exchange
+     * @throws IOException
+     */
+    public void sendResponse(SendResponseData data, HttpExchange exchange) throws IOException {
+
+        exchange.sendResponseHeaders(data.getHttpStatusCode(),data.getResponse().getBytes().length);
+
+        OutputStream outputStream = exchange.getResponseBody();
+        outputStream.write(data.getResponse().getBytes());
+        outputStream.flush();
+        outputStream.close();
+
+    }
+
+
+    /**
      * Task 객체를 지우기 위한 DELETE 메소드를 처리해주는 메소드입니다.
      * @param findId - 삭제할 Task 객체의 id 값을 가지고 있는 변수입니다.
      * @return SendResponseData
@@ -151,4 +170,7 @@ public class TaskService {
 
         return outputStream.toString();
     }
+
+
+
 }
