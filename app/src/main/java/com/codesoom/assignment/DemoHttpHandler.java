@@ -1,4 +1,3 @@
-//TODO 상수들 대문자로 바꾸기
 //TODO 2의 의도 더 잘드러나게 하기
 //TODO 테스트코드 통과하기
 //TODO 구조 고민해보기
@@ -130,8 +129,8 @@ public class DemoHttpHandler implements HttpHandler {
     String[] splitBySlash= path.split("/");
     String id = "";
     if(splitBySlash.length > 2) {
-      id = splitBySlash[2];
-      System.out.println(id);
+      int placeOfId = 2;
+      id = splitBySlash[placeOfId];
     }
     return id;
   }
