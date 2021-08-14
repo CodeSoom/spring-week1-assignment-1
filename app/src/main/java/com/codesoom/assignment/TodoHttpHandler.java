@@ -1,8 +1,10 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.models.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.codesoom.assignment.models.Request;
+import com.codesoom.assignment.models.RequestContent;
+import com.codesoom.assignment.models.Response;
+import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.models.TasksStorage;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -11,12 +13,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.Collection;
 import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private final TasksStorage tasks = new TasksStorage();
 
     @Override
@@ -66,14 +65,14 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private Response handleGetRequest() throws IOException {
-        return new Response(tasksToJson(tasks.readAll()), HttpStatus.OK);
+        return new Response(tasks.readAll(), HttpStatus.OK);
     }
 
     private Response handleGetRequest(Long id) throws IOException {
         Task task = tasks.read(id);
 
         if (task != null){
-            return new Response(taskToJson(task), HttpStatus.OK);
+            return new Response(task, HttpStatus.OK);
         }
 
         return new Response(HttpStatus.NOT_FOUND);
@@ -83,7 +82,7 @@ public class TodoHttpHandler implements HttpHandler {
         String title = content.getTitle();
         Task task = tasks.create(title);
 
-        return new Response(taskToJson(task), HttpStatus.CREATED);
+        return new Response(task, HttpStatus.CREATED);
     }
 
     private Response handlePutRequest(Long id, RequestContent content) throws IOException {
@@ -91,7 +90,7 @@ public class TodoHttpHandler implements HttpHandler {
         Task task = tasks.update(id, title);
 
         if(task != null) {
-            return new Response(taskToJson(task), HttpStatus.OK);
+            return new Response(task, HttpStatus.OK);
         }
 
         return new Response(HttpStatus.NOT_FOUND);
@@ -101,23 +100,9 @@ public class TodoHttpHandler implements HttpHandler {
         Task task = tasks.delete(id);
 
         if(task != null) {
-            return new Response(taskToJson(task), HttpStatus.NO_CONTENT);
+            return new Response(task, HttpStatus.NO_CONTENT);
         }
 
         return new Response(HttpStatus.NOT_FOUND);
-    }
-
-    private String tasksToJson(Collection<Task> tasks) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
-
-        return outputStream.toString();
-    }
-
-    private String taskToJson(Task task) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, task);
-
-        return outputStream.toString();
     }
 }

@@ -1,25 +1,32 @@
 package com.codesoom.assignment.models;
 
 import com.codesoom.assignment.HttpStatus;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Collection;
 
 public class Response {
     private final String content;
     private final HttpStatus httpStatus;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final String EMPTY_CONTENT = "";
-
-    public Response() {
-        content = EMPTY_CONTENT;
-        httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-    }
 
     public Response(HttpStatus httpStatus) {
         content = EMPTY_CONTENT;
         this.httpStatus = httpStatus;
     }
 
-    public Response(String content, HttpStatus httpStatus) {
-        this.content = content;
+    public Response(Task task, HttpStatus httpStatus) throws IOException {
+        content = taskToJson(task);
+        this.httpStatus = httpStatus;
+    }
+
+    public Response(Collection<Task> tasks, HttpStatus httpStatus) throws IOException {
+        content = tasksToJson(tasks);
         this.httpStatus = httpStatus;
     }
 
@@ -29,5 +36,19 @@ public class Response {
 
     public Integer getStatusCode() {
         return httpStatus.code();
+    }
+
+    private String tasksToJson(Collection<Task> tasks) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, tasks);
+
+        return outputStream.toString();
+    }
+
+    private String taskToJson(Task task) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, task);
+
+        return outputStream.toString();
     }
 }
