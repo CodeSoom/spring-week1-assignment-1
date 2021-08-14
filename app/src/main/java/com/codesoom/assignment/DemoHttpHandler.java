@@ -155,23 +155,26 @@ public class DemoHttpHandler implements HttpHandler {
         .findFirst().orElse(null);
   }
 
-  private Boolean deleteTask(long ID) throws IOException {
-    for (Task task : tasks) {
-      if (task.getId() == ID) {
-        tasks.remove(task);
-        return true;
-      }
-    }
-    return false;
-  }
-    private Boolean rewriteTask(long ID,String body ) throws IOException {
-    for (Task task : tasks) {
-      if (task.getId() == ID) {
+  private Boolean deleteTask(long id) throws IOException {
+    Task task = findTask(id);
+    if(task !=null){
+      tasks.remove(task);
+
+      return true;
+    }else{
+      return false;
+
+    }}
+
+    private Boolean rewriteTask(long id,String body) throws IOException {
+        Task task = findTask(id);
+        if(task !=null){
         task.setTitle(body);
         return true;
-      }
-    }
-    return false;
-  }
+      }else{
+          return false;
 
-}
+        }
+
+
+}}
