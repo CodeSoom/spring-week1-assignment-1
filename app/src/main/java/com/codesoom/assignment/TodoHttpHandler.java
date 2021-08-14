@@ -67,20 +67,14 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private Response handleGetRequest() throws IOException {
-        String content = tasksToJson(tasks.readAll());
-        HttpStatus httpStatus = HttpStatus.OK;
-
-        return new Response(content, httpStatus);
+        return new Response(tasksToJson(tasks.readAll()), HttpStatus.OK);
     }
 
     private Response handleGetRequest(Long id) throws IOException {
         Task task = tasks.read(id);
 
         if (task != null){
-            String content = taskToJson(task);
-            HttpStatus httpStatus = HttpStatus.OK;
-
-            return new Response(content, httpStatus);
+            return new Response(taskToJson(task), HttpStatus.OK);
         } else {
             return new Response(HttpStatus.NOT_FOUND);
         }
@@ -88,25 +82,17 @@ public class TodoHttpHandler implements HttpHandler {
 
     private Response handlePostRequest(String body) throws IOException {
         String title = toRequestContent(body).getTitle();
-
         Task task = tasks.create(title);
 
-        String content = taskToJson(task);
-        HttpStatus httpStatus = HttpStatus.CREATED;
-
-        return new Response(content, httpStatus);
+        return new Response(taskToJson(task), HttpStatus.CREATED);
     }
 
     private Response handlePutRequest(Long id, String body) throws IOException {
         String title = toRequestContent(body).getTitle();
-
         Task task = tasks.update(id, title);
 
         if(task != null) {
-            String content = taskToJson(task);
-            HttpStatus httpStatus = HttpStatus.OK;
-
-            return new Response(content, httpStatus);
+            return new Response(taskToJson(task), HttpStatus.OK);
         } else {
             return new Response(HttpStatus.NOT_FOUND);
         }
@@ -116,10 +102,7 @@ public class TodoHttpHandler implements HttpHandler {
         Task task = tasks.delete(id);
 
         if(task != null) {
-            String content = taskToJson(task);
-            HttpStatus httpStatus = HttpStatus.NO_CONTENT;
-
-            return new Response(content, httpStatus);
+            return new Response(taskToJson(task), HttpStatus.NO_CONTENT);
         } else {
             return new Response(HttpStatus.NOT_FOUND);
         }
