@@ -1,7 +1,7 @@
 package com.codesoom.assignment.controllers;
 
-import com.codesoom.assignment.JsonConverter;
 import com.codesoom.assignment.services.TaskService;
+import com.codesoom.assignment.utils.JsonConverter;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -23,6 +23,7 @@ public abstract class Controller {
         outputStream.write(content.getBytes(StandardCharsets.UTF_8));
         outputStream.close();
     }
+
     protected void handleGet(final HttpExchange exchange, final Object object) throws IOException {
         final Optional<String> jsonStringOptional = JsonConverter.toJson(object);
         if (jsonStringOptional.isEmpty()) {

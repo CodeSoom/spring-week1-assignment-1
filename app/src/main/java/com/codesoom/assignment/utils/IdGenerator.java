@@ -1,4 +1,4 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.utils;
 
 public final class IdGenerator {
     private Long currentId = 1L;

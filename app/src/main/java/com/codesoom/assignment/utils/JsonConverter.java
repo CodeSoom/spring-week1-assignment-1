@@ -1,4 +1,4 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

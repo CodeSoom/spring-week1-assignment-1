@@ -1,4 +1,4 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.utils;
 
 /*
 https://datatracker.ietf.org/doc/html/rfc2616

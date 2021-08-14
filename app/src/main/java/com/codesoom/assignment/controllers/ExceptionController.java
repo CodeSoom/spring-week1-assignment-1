@@ -1,6 +1,6 @@
 package com.codesoom.assignment.controllers;
 
-import com.codesoom.assignment.TaskHandler;
+import com.codesoom.assignment.handler.TaskHandler;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;

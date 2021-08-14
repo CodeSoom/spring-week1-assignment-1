@@ -1,7 +1,7 @@
 package com.codesoom.assignment.services;
 
-import com.codesoom.assignment.IdGenerator;
 import com.codesoom.assignment.modles.Task;
+import com.codesoom.assignment.utils.IdGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;

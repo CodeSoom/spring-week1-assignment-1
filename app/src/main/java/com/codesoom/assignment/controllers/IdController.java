@@ -1,7 +1,7 @@
 package com.codesoom.assignment.controllers;
 
-import com.codesoom.assignment.HttpMethod;
 import com.codesoom.assignment.modles.Task;
+import com.codesoom.assignment.utils.HttpMethod;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
