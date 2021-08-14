@@ -75,9 +75,9 @@ public class TodoHttpHandler implements HttpHandler {
 
         if (task != null){
             return new Response(taskToJson(task), HttpStatus.OK);
-        } else {
-            return new Response(HttpStatus.NOT_FOUND);
         }
+
+        return new Response(HttpStatus.NOT_FOUND);
     }
 
     private Response handlePostRequest(String body) throws IOException {
@@ -93,9 +93,9 @@ public class TodoHttpHandler implements HttpHandler {
 
         if(task != null) {
             return new Response(taskToJson(task), HttpStatus.OK);
-        } else {
-            return new Response(HttpStatus.NOT_FOUND);
         }
+
+        return new Response(HttpStatus.NOT_FOUND);
     }
 
     private Response handleDeleteRequest(Long id) throws IOException {
@@ -103,9 +103,9 @@ public class TodoHttpHandler implements HttpHandler {
 
         if(task != null) {
             return new Response(taskToJson(task), HttpStatus.NO_CONTENT);
-        } else {
-            return new Response(HttpStatus.NOT_FOUND);
         }
+
+        return new Response(HttpStatus.NOT_FOUND);
     }
 
     private RequestContent toRequestContent(String content) throws JsonProcessingException {
