@@ -41,9 +41,9 @@ public class DemoHttpHandler implements HttpHandler {
 
     System.out.println(getId(path));
 
-    int taskId = 0;
+    Long taskId = null;
     if(getId(path) != ""){
-      taskId = Integer.parseInt(getId(path));
+      taskId = Long.parseLong(getId(path));
     }
 
     InputStream inputStream = exchange.getRequestBody();
@@ -70,15 +70,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     //GET tasks/{taskId}
     if (method.equals("GET") && path.equals("/tasks/" + taskId)) {
-      Task targetTask = null;
-
-      for (Task task : tasks) {
-        if (task.getId() == taskId) {
-          targetTask = task;
-          content = targetTaskToJson(targetTask);
-
-        }
-      }
+      Task targetTask = findTask(taskId);
 
       if (targetTask != null) {
         exchange.sendResponseHeaders(OK_STATUS_CODE, content.getBytes().length);
@@ -156,6 +148,11 @@ public class DemoHttpHandler implements HttpHandler {
     objectMapper.writeValue(outputStream, tasks);
 
     return outputStream.toString();
+  }
+  private Task findTask(Long id){
+    return tasks.stream()
+        .filter(task -> task.getId().equals(id))
+        .findFirst().orElse(null);
   }
 
   private Boolean deleteTask(long ID) throws IOException {
