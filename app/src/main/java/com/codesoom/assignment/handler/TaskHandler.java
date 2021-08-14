@@ -75,7 +75,7 @@ public final class TaskHandler implements HttpHandler {
         }
 
         if (HttpMethod.DELETE.name().equals(method)) {
-            idController.handleDelete(exchange);
+            idController.handleDelete(exchange, taskIdOptional.get());
             return;
         }
 

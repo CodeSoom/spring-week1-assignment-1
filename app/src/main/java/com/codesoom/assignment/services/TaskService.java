@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public final class TaskService {
     private static final String CAN_NOT_FIND_TASK_EXCEPTION = "Can not find task.";
@@ -54,5 +53,10 @@ public final class TaskService {
             throw new Exception(CAN_NOT_FIND_TASK_EXCEPTION);
         }
         return task;
+    }
+
+    public void deleteTask(final Long id) throws Exception {
+        final Task task = getTask(id);
+        tasks.remove(id);
     }
 }

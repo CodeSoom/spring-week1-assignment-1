@@ -1,7 +1,6 @@
 package com.codesoom.assignment.controllers;
 
 import com.codesoom.assignment.modles.Task;
-import com.codesoom.assignment.utils.HttpMethod;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -29,7 +28,13 @@ public class IdController extends Controller {
         }
     }
 
-    public void handleDelete(final HttpExchange exchange) throws IOException {
-        sendResponse(exchange, HttpURLConnection.HTTP_OK, HttpMethod.DELETE.name());
+    public void handleDelete(final HttpExchange exchange, final Long taskId) throws IOException {
+        try {
+            TASK_SERVICE.deleteTask(taskId);
+            sendResponse(exchange, HttpURLConnection.HTTP_OK, "");
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, exception.getMessage());
+        }
     }
 }
