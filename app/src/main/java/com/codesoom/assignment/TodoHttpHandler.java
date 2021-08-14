@@ -63,12 +63,12 @@ public class TodoHttpHandler implements HttpHandler {
             return handleDeleteRequest(request.getPathId());
         }
 
-        return new Response(HttpStatus.InternalServerError);
+        return new Response(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private Response handleGetRequest() throws IOException {
         String content = tasksToJson(tasks.readAll());
-        HttpStatus httpStatus = HttpStatus.Ok;
+        HttpStatus httpStatus = HttpStatus.OK;
 
         return new Response(content, httpStatus);
     }
@@ -78,11 +78,11 @@ public class TodoHttpHandler implements HttpHandler {
 
         if (task != null){
             String content = taskToJson(task);
-            HttpStatus httpStatus = HttpStatus.Ok;
+            HttpStatus httpStatus = HttpStatus.OK;
 
             return new Response(content, httpStatus);
         } else {
-            return new Response(HttpStatus.NotFound);
+            return new Response(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -92,7 +92,7 @@ public class TodoHttpHandler implements HttpHandler {
         Task task = tasks.create(title);
 
         String content = taskToJson(task);
-        HttpStatus httpStatus = HttpStatus.Created;
+        HttpStatus httpStatus = HttpStatus.CREATED;
 
         return new Response(content, httpStatus);
     }
@@ -104,11 +104,11 @@ public class TodoHttpHandler implements HttpHandler {
 
         if(task != null) {
             String content = taskToJson(task);
-            HttpStatus httpStatus = HttpStatus.Ok;
+            HttpStatus httpStatus = HttpStatus.OK;
 
             return new Response(content, httpStatus);
         } else {
-            return new Response(HttpStatus.NotFound);
+            return new Response(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -117,11 +117,11 @@ public class TodoHttpHandler implements HttpHandler {
 
         if(task != null) {
             String content = taskToJson(task);
-            HttpStatus httpStatus = HttpStatus.NoContent;
+            HttpStatus httpStatus = HttpStatus.NO_CONTENT;
 
             return new Response(content, httpStatus);
         } else {
-            return new Response(HttpStatus.NotFound);
+            return new Response(HttpStatus.NOT_FOUND);
         }
     }
 

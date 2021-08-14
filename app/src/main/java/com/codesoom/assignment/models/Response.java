@@ -10,7 +10,7 @@ public class Response {
 
     public Response() {
         content = EMPTY_CONTENT;
-        httpStatus = HttpStatus.InternalServerError;
+        httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
     public Response(HttpStatus httpStatus) {

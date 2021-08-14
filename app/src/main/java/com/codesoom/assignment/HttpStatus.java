@@ -1,11 +1,11 @@
 package com.codesoom.assignment;
 
 public enum HttpStatus {
-    Ok(200),
-    Created(201),
-    NoContent(204),
-    NotFound(404),
-    InternalServerError(500);
+    OK(200),
+    CREATED(201),
+    NO_CONTENT(204),
+    NOT_FOUND(404),
+    INTERNAL_SERVER_ERROR(500);
 
     private final int code;
 
