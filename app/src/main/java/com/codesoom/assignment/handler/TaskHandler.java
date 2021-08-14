@@ -1,4 +1,4 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.handler;
 
 import com.codesoom.assignment.controllers.ExceptionController;
 import com.codesoom.assignment.controllers.IdController;
