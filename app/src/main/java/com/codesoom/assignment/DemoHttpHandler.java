@@ -1,4 +1,3 @@
-//TODO 2의 의도 더 잘드러나게 하기
 //TODO 테스트코드 통과하기
 //TODO 구조 고민해보기
 
@@ -57,7 +56,8 @@ public class DemoHttpHandler implements HttpHandler {
     if (!body.isBlank() && method.equals("POST")) {
 
       Task task = toTask(body);
-      task.setId(++id);
+      id++;
+      task.setId(id);
       tasks.add(task);
     }
 
