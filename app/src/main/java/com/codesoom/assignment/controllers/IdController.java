@@ -12,7 +12,7 @@ public class IdController extends Controller {
     public void handleGet(final HttpExchange exchange, final Long taskId) throws  IOException {
         try {
             final Task task = TASK_SERVICE.getTask(taskId);
-            handleGet(exchange, task);
+            sendObject(exchange, HttpURLConnection.HTTP_OK, task);
         } catch (Exception exception) {
             exception.printStackTrace();
             sendResponse(exchange, HttpURLConnection.HTTP_BAD_REQUEST, exception.getMessage());
@@ -22,7 +22,7 @@ public class IdController extends Controller {
     public void handlePatch(final HttpExchange exchange, final Long taskId, final String requestBody) throws IOException {
         try {
             final Task task = TASK_SERVICE.updateTask(taskId, requestBody);
-            handleGet(exchange, task);
+            sendObject(exchange, HttpURLConnection.HTTP_OK, task);
         } catch (Exception exception) {
             exception.printStackTrace();
             sendResponse(exchange, HttpURLConnection.HTTP_BAD_REQUEST, exception.getMessage());

@@ -26,12 +26,12 @@ public abstract class Controller {
         outputStream.close();
     }
 
-    protected void handleGet(final HttpExchange exchange, final Object object) throws IOException {
+    protected void sendObject(final HttpExchange exchange, final int httpStatusCode, final Object object) throws IOException {
         final Optional<String> jsonStringOptional = JsonConverter.toJson(object);
         if (jsonStringOptional.isEmpty()) {
             sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_JSON_FAIL);
             return;
         }
-        sendResponse(exchange, HttpURLConnection.HTTP_OK, jsonStringOptional.get());
+        sendResponse(exchange, httpStatusCode, jsonStringOptional.get());
     }
 }
