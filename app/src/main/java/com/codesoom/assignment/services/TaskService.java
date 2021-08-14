@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public final class TaskService {
+    private static final String CAN_NOT_FIND_TASK_EXCEPTION = "Can not find task.";
+
     private final Map<Long, Task> tasks;
     private final IdGenerator idGenerator;
 
@@ -21,26 +23,36 @@ public final class TaskService {
         idGenerator = new IdGenerator();
     }
 
-    public synchronized Task createTask(final String content) throws JsonProcessingException {
+    private Task generateTask(final Long id, final String content) throws JsonProcessingException {
         final InjectableValues.Std valueInjector = new InjectableValues.Std();
-        valueInjector.addValue(Long.class, idGenerator.generateId());
+        valueInjector.addValue(Long.class, id);
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setInjectableValues(valueInjector);
-        final Task task = objectMapper.readValue(content, Task.class);
-        tasks.put(task.getId(), task);
-        return task;
-
+        return objectMapper.readValue(content, Task.class);
     }
 
-    public synchronized void setTask(final Task task) {
+    public synchronized Task createTask(final String content) throws JsonProcessingException {
+        final Task task = generateTask(idGenerator.generateId(), content);
         tasks.put(task.getId(), task);
+        return task;
+    }
+
+    public synchronized Task updateTask(final Long id, final String content) throws Exception {
+        final Task task = getTask(id);
+        final Task updatedTask = generateTask(id, content);
+        tasks.put(id, updatedTask);
+        return updatedTask;
     }
 
     public List<Task> getTasks() {
         return new ArrayList<>(tasks.values());
     }
 
-    public Optional<Task> getTask(final Long id) {
-        return Optional.ofNullable(tasks.get(id));
+    public Task getTask(final Long id) throws Exception {
+        final Task task = tasks.get(id);
+        if (task == null) {
+            throw new Exception(CAN_NOT_FIND_TASK_EXCEPTION);
+        }
+        return task;
     }
 }
