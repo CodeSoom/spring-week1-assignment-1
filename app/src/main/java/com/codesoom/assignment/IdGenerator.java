@@ -1,15 +1,11 @@
 package com.codesoom.assignment;
 
 public final class IdGenerator {
-    private static Long CURRENT_ID = 1L;
+    private Long currentId = 1L;
 
-    public static Long generateId() {
-        final Long id = CURRENT_ID;
-        ++CURRENT_ID;
+    public Long generateId() {
+        final Long id = currentId;
+        ++currentId;
         return id;
-    }
-
-    public static void undoIdGeneration() {
-        --CURRENT_ID;
     }
 }

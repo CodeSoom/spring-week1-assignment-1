@@ -13,24 +13,26 @@ import java.util.Map;
 import java.util.Optional;
 
 public final class TaskService {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final InjectableValues.Std VALUE_INJECTOR = new InjectableValues.Std();
-
     private final Map<Long, Task> tasks;
+    private final IdGenerator idGenerator;
 
     public TaskService() {
         tasks = new LinkedHashMap<>();
+        idGenerator = new IdGenerator();
     }
 
-    public Task createTask(final String content) throws JsonProcessingException {
-        final ObjectMapper objectMapper = new ObjectMapper();
+    public synchronized Task createTask(final String content) throws JsonProcessingException {
         final InjectableValues.Std valueInjector = new InjectableValues.Std();
+        valueInjector.addValue(Long.class, idGenerator.generateId());
+        final ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setInjectableValues(valueInjector);
         final Task task = objectMapper.readValue(content, Task.class);
         tasks.put(task.getId(), task);
         return task;
+
     }
 
-    public void setTask(final Task task) {
+    public synchronized void setTask(final Task task) {
         tasks.put(task.getId(), task);
     }
 
