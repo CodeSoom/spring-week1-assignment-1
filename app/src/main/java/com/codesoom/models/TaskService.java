@@ -10,22 +10,48 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * TaskService 클래스는 HTTP 메소드(GET, POST, PUT, DELETE)에 따라 처리하는 메소드를 모아둔 클래스입니다.
+ * @author HyoungUkJJang(김형욱)
+ */
 public class TaskService {
 
+    /**
+     * Json > Task / Task > Json 으로 변환하기 위한 객체 입니다.
+     */
     private ObjectMapper mapper = new ObjectMapper();
-    private Map<Long, Task> tasks = new HashMap<>();
-    private Long autoId = 1L; // 아이디를 자동으로 부여하기 위한 변수
 
+    /**
+     * 등록한 Task의 객체들을 편하게 관리하기 위한 객체 입니다.
+     * Long - id
+     * Task - 등록한 Task 객체
+     */
+    private Map<Long, Task> tasks = new HashMap<>();
+
+    /**
+     * POST 요청이 들어올 때마다 자동으로 고유한 id 값을 부여해주는 변수입니다.
+     */
+    private Long autoId = 1L;
+
+    /**
+     * Task 객체의 전체 목록을 보여주는 GET 메소드를 처리해주는 메소드입니다.
+     * @return SendResponseData
+     * @throws IOException
+     */
     public SendResponseData getAll() throws IOException {
 
         if(!tasks.isEmpty()) {
             return new SendResponseData(HttpStatusCode.OK.getStatus(),toTaskJson());
-        } else {
-            return new SendResponseData(HttpStatusCode.OK.getStatus(),"[]");
         }
-
+        return new SendResponseData(HttpStatusCode.OK.getStatus(),"[]");
     }
 
+    /**
+     * 상세 데이터를 나타내주는 GET 메소드를 처리해주는 메소드입니다.
+     * @param hasId - id 값을 매개변수로 Map에서 해당 Task 객체를 가져옵니다.
+     * @return SendResponseData
+     * @throws IOException
+     */
     public SendResponseData getOne(String hasId) throws IOException{
 
         Task task = tasks.get(Long.parseLong(hasId));
@@ -37,6 +63,12 @@ public class TaskService {
         }
     }
 
+    /**
+     * Task 객체를 등록하기 위한 POST 메소드를 처리해주는 메소드입니다.
+     * @param content - Task 객체를 만들기 위한 변수
+     * @return SendResponseData
+     * @throws IOException
+     */
     public SendResponseData join(String content) throws IOException {
 
         Task task = toTask(content);
@@ -47,6 +79,13 @@ public class TaskService {
 
     }
 
+    /**
+     * Task 객체의 데이터를 수정하기 위한 POST 메소드를 처리해주는 메소드입니다.
+     * @param content 수정할 값을 담고 있는 데이터입니다.
+     * @param findId 수정할 객체의 id값을 담고 있는 데이터입니다.
+     * @return SendResponseData
+     * @throws IOException
+     */
     public SendResponseData edit(String content, String findId) throws IOException {
 
         Task taskPut = toTask(content);
@@ -61,6 +100,12 @@ public class TaskService {
 
     }
 
+    /**
+     * Task 객체를 지우기 위한 DELETE 메소드를 처리해주는 메소드입니다.
+     * @param findId - 삭제할 Task 객체의 id 값을 가지고 있는 변수입니다.
+     * @return SendResponseData
+     * @throws IOException
+     */
     public SendResponseData delete(String findId) throws IOException {
 
         if(tasks.get(Long.parseLong(findId)) == null) {
@@ -72,10 +117,21 @@ public class TaskService {
 
     }
 
+    /**
+     * Json 형태로 들어온 데이터를 Task 객체로 매핑해주는 메소드입니다.
+     * @param content
+     * @return Task
+     * @throws JsonProcessingException
+     */
     private Task toTask(String content) throws JsonProcessingException {
         return mapper.readValue(content,Task.class);
     }
 
+    /**
+     * Task 객체를 Json 형태로 응답 데이터를 보내주기 위해 매핑해 주는 메소드입니다.
+     * @return String
+     * @throws IOException
+     */
     private String toTaskJson() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         mapper.writeValue(outputStream,tasks.values());
@@ -83,6 +139,12 @@ public class TaskService {
         return outputStream.toString();
     }
 
+    /**
+     * 상세 데이터 조회를 할때 하나의 Task 객체를 Json 형태로 매핑해주는 메소드입니다.
+     * @param task - Json 형태로 변환할 Task 객체
+     * @return String
+     * @throws IOException
+     */
     private String toTaskJsonOne(Task task) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         mapper.writeValue(outputStream,task);
