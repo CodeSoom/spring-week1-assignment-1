@@ -19,10 +19,10 @@ public class ExceptionController extends Controller {
     }
 
     public void handleInvalidRequest(final HttpExchange exchange) throws IOException {
-        sendResponse(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid request.");
+        sendResponse(exchange, HttpURLConnection.HTTP_BAD_REQUEST, INVALID_REQUEST);
     }
 
     public void handleInvalidId(final HttpExchange exchange) throws IOException {
-        sendResponse(exchange, HttpURLConnection.HTTP_BAD_REQUEST, "Invalid id.");
+        sendResponse(exchange, HttpURLConnection.HTTP_BAD_REQUEST, INVALID_ID);
     }
 }

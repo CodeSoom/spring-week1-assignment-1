@@ -44,7 +44,7 @@ public final class TaskHandler implements HttpHandler {
     }
 
     private void handleId(
-            final HttpExchange exchange, final String method, final String path
+            final HttpExchange exchange, final String method, final String path, final String requestBody
     ) throws IOException {
 
         if (path.charAt(INDEX_START) != PATH_DELIMITER.charAt(INDEX_START)) {
@@ -70,7 +70,7 @@ public final class TaskHandler implements HttpHandler {
         }
 
         if (HttpMethod.PATCH.name().equals(method)) {
-            idController.handlePatch(exchange);
+            idController.handlePatch(exchange, taskIdOptional.get(), requestBody);
             return;
         }
 
@@ -93,7 +93,7 @@ public final class TaskHandler implements HttpHandler {
                 .lines().collect(Collectors.joining(System.lineSeparator()));
 
         if (!EMPTY_STRING.equals(path)) {
-            handleId(exchange, method, path);
+            handleId(exchange, method, path, requestBody);
             return;
         }
 

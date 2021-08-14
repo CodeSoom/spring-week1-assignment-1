@@ -12,6 +12,8 @@ import java.util.Optional;
 
 public abstract class Controller {
     protected static final String TO_JSON_FAIL = "Json conversion fail.";
+    protected static final String INVALID_REQUEST = "Invalid request.";
+    protected static final String INVALID_ID = "Invalid id";
 
     protected final static TaskService TASK_SERVICE = new TaskService();
 
