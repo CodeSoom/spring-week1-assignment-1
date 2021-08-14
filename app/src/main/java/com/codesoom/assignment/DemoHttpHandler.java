@@ -1,3 +1,7 @@
+//TODO 상수들 대문자로 바꾸기
+//TODO 2의 의도 더 잘드러나게 하기
+//TODO 테스트코드 통과하기
+//TODO 구조 고민해보기
 
 package com.codesoom.assignment;
 
@@ -21,11 +25,11 @@ public class DemoHttpHandler implements HttpHandler {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
   private final List<Task> tasks = new ArrayList<>();
-  static final int createdStatusCode = 201;
-  static final int okStatusCode = 200;
-  static final int badRequestStatusCode = 400;
-  static final int notFoundStatusCode = 404;
-  static final int noContentStatusCode = 204;
+  static final int CREATED_STATUS_CODE = 201;
+  static final int OK_STATUS_CODE = 200;
+  static final int BAD_REQUEST_STATUS_CODE = 400;
+  static final int NOT_FOUND_STATUS_CODE = 404;
+  static final int NO_CONTENT_STATUS_CODE = 204;
 
   Long id = 0L;
 
@@ -61,7 +65,7 @@ public class DemoHttpHandler implements HttpHandler {
     //GET /tasks
     if (method.equals("GET") && path.equals("/tasks")) {
       content = tasksToJson();
-      exchange.sendResponseHeaders(okStatusCode, content.getBytes().length);
+      exchange.sendResponseHeaders(OK_STATUS_CODE, content.getBytes().length);
 
     }
 
@@ -78,9 +82,9 @@ public class DemoHttpHandler implements HttpHandler {
       }
 
       if (targetTask != null) {
-        exchange.sendResponseHeaders(okStatusCode, content.getBytes().length);
+        exchange.sendResponseHeaders(OK_STATUS_CODE, content.getBytes().length);
       }else{
-        exchange.sendResponseHeaders(notFoundStatusCode, content.getBytes().length);
+        exchange.sendResponseHeaders(NOT_FOUND_STATUS_CODE, content.getBytes().length);
 
       }
     }
@@ -88,7 +92,7 @@ public class DemoHttpHandler implements HttpHandler {
     //POST tasks
     if (method.equals("POST") && path.equals("/tasks")) {
       content = "Create a new task";
-      exchange.sendResponseHeaders(createdStatusCode, content.getBytes().length);
+      exchange.sendResponseHeaders(CREATED_STATUS_CODE, content.getBytes().length);
     }
 
 
@@ -96,10 +100,10 @@ public class DemoHttpHandler implements HttpHandler {
       Boolean isTaskRewrite = rewriteTask(taskId, body);
       if (isTaskRewrite == true) {
         content = "target task changed";
-        exchange.sendResponseHeaders(okStatusCode, content.getBytes().length);
+        exchange.sendResponseHeaders(OK_STATUS_CODE, content.getBytes().length);
       } else {
         content = "fail";
-        exchange.sendResponseHeaders(notFoundStatusCode, content.getBytes().length);
+        exchange.sendResponseHeaders(NOT_FOUND_STATUS_CODE, content.getBytes().length);
       }
 
     }
@@ -108,10 +112,10 @@ public class DemoHttpHandler implements HttpHandler {
       Boolean isTaskDeleted = deleteTask(taskId);
       if (isTaskDeleted == true) {
         content = "Delete success";
-        exchange.sendResponseHeaders(noContentStatusCode, content.getBytes().length);
+        exchange.sendResponseHeaders(NO_CONTENT_STATUS_CODE, content.getBytes().length);
       } else {
         content = "fail";
-        exchange.sendResponseHeaders(notFoundStatusCode, content.getBytes().length);
+        exchange.sendResponseHeaders(NOT_FOUND_STATUS_CODE, content.getBytes().length);
       }
     }
 
