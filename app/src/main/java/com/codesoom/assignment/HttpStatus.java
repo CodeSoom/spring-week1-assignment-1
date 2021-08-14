@@ -1,5 +1,10 @@
 package com.codesoom.assignment;
 
+/**
+ * Http 상태코드를 정의합니다.
+ *
+ * @see <a href="https://datatracker.ietf.org/doc/html/rfc2616">RFC 2616</a>
+ */
 public enum HttpStatus {
     OK(200),
     CREATED(201),
