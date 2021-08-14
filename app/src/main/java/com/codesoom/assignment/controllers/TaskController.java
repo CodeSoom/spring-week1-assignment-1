@@ -11,6 +11,10 @@ import java.util.Optional;
 public class TaskController extends Controller {
     private static final String TO_TASK_FAIL = "Task conversion fail.";
 
+    public void handleGet(final HttpExchange exchange) throws  IOException {
+        super.handleGet(exchange, taskService.getTasks());
+    }
+
     public void handlePost(final HttpExchange exchange, final String requestBody) throws IOException {
         final Optional<Task> taskOptional = Task.jsonToTask(requestBody);
         if (taskOptional.isEmpty()) {

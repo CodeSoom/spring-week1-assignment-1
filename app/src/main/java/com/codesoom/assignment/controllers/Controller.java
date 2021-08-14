@@ -27,7 +27,7 @@ public abstract class Controller {
         outputStream.write(content.getBytes(StandardCharsets.UTF_8));
         outputStream.close();
     }
-    public void handleGet(final HttpExchange exchange, final Object object) throws IOException {
+    protected void handleGet(final HttpExchange exchange, final Object object) throws IOException {
         final Optional<String> jsonStringOptional = JsonConverter.toJson(object);
         if (jsonStringOptional.isEmpty()) {
             sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_JSON_FAIL);

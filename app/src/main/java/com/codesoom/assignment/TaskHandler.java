@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.controllers.TaskController;
 import com.codesoom.assignment.modles.Task;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -32,6 +33,13 @@ public final class TaskHandler implements HttpHandler {
     private static final String PATH_DELIMITER = "/";
 
     private final Map<Long, Task> tasks = new HashMap<>();
+
+
+    private final TaskController taskController;
+
+    public TaskHandler() {
+        taskController = new TaskController();
+    }
 
     private Optional<Long> parseId(final String idString) {
         Long taskId = null;
@@ -147,12 +155,12 @@ public final class TaskHandler implements HttpHandler {
         }
 
         if (HttpMethod.GET.name().equals(method)) {
-            handleGet(exchange, tasks);
+            taskController.handleGet(exchange);
             return;
         }
 
         if (HttpMethod.POST.name().equals(method)) {
-            handlePost(exchange, requestBody);
+            taskController.handlePost(exchange, requestBody);
             return;
         }
 
