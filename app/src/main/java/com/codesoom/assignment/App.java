@@ -8,13 +8,13 @@ import java.net.InetSocketAddress;
 
 public class App {
     private static final int PORT = 8000;
-    private static final int ZERO = 0;
+    private static final int BACK_LOG_VALUE = 0;
     private static final String ROOT_PATH = "/";
 
     public static void main(String[] args) {
         try {
             InetSocketAddress inetSocketAddress = new InetSocketAddress(PORT);
-            HttpServer httpServer = HttpServer.create(inetSocketAddress, ZERO);
+            HttpServer httpServer = HttpServer.create(inetSocketAddress, BACK_LOG_VALUE);
             HttpHandler handler = new DemoHttpHandler();
             httpServer.createContext(ROOT_PATH, handler);
             httpServer.start();
