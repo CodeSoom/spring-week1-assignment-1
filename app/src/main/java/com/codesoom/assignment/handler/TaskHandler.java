@@ -14,7 +14,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public final class TaskHandler implements HttpHandler {
-
     public static final String HANDLER_PATH = "/tasks";
 
     private static final int INDEX_START = 0;
@@ -69,8 +68,8 @@ public final class TaskHandler implements HttpHandler {
             return;
         }
 
-        if (HttpMethod.PATCH.name().equals(method)) {
-            idController.handlePatch(exchange, taskIdOptional.get(), requestBody);
+        if (HttpMethod.PATCH.name().equals(method) || HttpMethod.PUT.name().equals(method)) {
+            idController.handlePatchOrPut(exchange, taskIdOptional.get(), requestBody);
             return;
         }
 
@@ -79,7 +78,10 @@ public final class TaskHandler implements HttpHandler {
             return;
         }
 
-        final String[] allowedMethods = new String[] {HttpMethod.GET.name(), HttpMethod.PATCH.name(), HttpMethod.DELETE.name()};
+        final String[] allowedMethods = new String[] {
+                HttpMethod.GET.name(), HttpMethod.PATCH.name(),
+                HttpMethod.PUT.name(), HttpMethod.DELETE.name()
+        };
         exceptionController.handleInvalidMethod(exchange, path, allowedMethods);
     }
 
