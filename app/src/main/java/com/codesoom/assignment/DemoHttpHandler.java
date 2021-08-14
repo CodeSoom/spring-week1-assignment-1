@@ -11,23 +11,24 @@ import java.net.HttpURLConnection;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.codesoom.assignment.HttpMethod.*;
 
 public class DemoHttpHandler implements HttpHandler {
+    public static final int POSITION_BY_ID_FROM_PATH = 2;
     Logger logger = Logger.getLogger(this.getClass().getName());
 
     public static final String PATH_DELIMITER = "/";
     private static final String TASK_PATH = "/tasks";
     private static final Pattern hasIdPattern = Pattern.compile("(/tasks)/(\\d+)/?$");
+    private static final Pattern taskPatternWithoutId = Pattern.compile("(/tasks)/?$");
 
     private final TodoController todoController;
-    private final ObjectMapper om;
+    private final ObjectMapper objectMapper;
 
     public DemoHttpHandler() {
-        om = new ObjectMapper();
+        objectMapper = new ObjectMapper();
         todoController = new TodoController();
     }
 
@@ -38,7 +39,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         printRequestInfo(exchange);
 
-        if (!isExactPath(requestPath)) {
+        if (!isTaskPath(requestPath)) {
             sendResponse404(exchange);
             return;
         }
@@ -49,7 +50,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         if (isFindTask(requestMethod, requestPath)) {
-            sendResponse(exchange, todoController.findOne(extractId(requestPath)));
+            sendResponse(exchange, todoController.findOne(extractIdFromRequestPath(requestPath)));
             return;
         }
 
@@ -60,13 +61,16 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         if (isUpdateTask(requestMethod, requestPath)) {
-            sendResponse(exchange, todoController.updateTask(extractId(requestPath), jsonToTask(exchange)));
+            sendResponse(exchange, todoController.updateTask(extractIdFromRequestPath(requestPath), jsonToTask(exchange)));
             return;
         }
 
         if (isDeleteTask(requestMethod, requestPath)) {
-            sendResponse(exchange, todoController.deleteTask(extractId(requestPath)));
+            sendResponse(exchange, todoController.deleteTask(extractIdFromRequestPath(requestPath)));
+            return;
         }
+
+        sendResponse404(exchange);
     }
 
     private void printRequestInfo(HttpExchange exchange) {
@@ -78,16 +82,22 @@ public class DemoHttpHandler implements HttpHandler {
 
     private Task jsonToTask(HttpExchange exchange) throws IOException {
         final InputStream body = exchange.getRequestBody();
-        return om.readValue(body, Task.class);
+        return objectMapper.readValue(body, Task.class);
     }
 
-    private Long extractId(String requestPath) {
-        return Long.valueOf(requestPath.split(PATH_DELIMITER)[2]);
+    private Long extractIdFromRequestPath(String requestPath) {
+        final String taskIdStr = requestPath.split(PATH_DELIMITER)[POSITION_BY_ID_FROM_PATH];
+
+        return Long.valueOf(taskIdStr);
+    }
+
+    private void sendResponse404(HttpExchange exchange) {
+        sendResponse(exchange, Response.from(HttpURLConnection.HTTP_NOT_FOUND));
     }
 
     private void sendResponse(HttpExchange exchange, Response response) {
         try (final OutputStream os = exchange.getResponseBody()) {
-            final byte[] responseByte = om.writeValueAsBytes(response.getBody());
+            final byte[] responseByte = objectMapper.writeValueAsBytes(response.getBody());
 
             exchange.sendResponseHeaders(response.getStatusCode(), responseByte.length);
             os.write(responseByte);
@@ -98,41 +108,39 @@ public class DemoHttpHandler implements HttpHandler {
         }
     }
 
-    private boolean hasIdBetween(String requestPath) {
-        final Matcher matcher = hasIdPattern.matcher(requestPath);
-        return matcher.matches();
-    }
-
-    private void sendResponse404(HttpExchange exchange) {
-        try {
-            exchange.sendResponseHeaders(HttpURLConnection.HTTP_NOT_FOUND, 0L);
-        } catch (IOException e) {
-            logger.severe(e.getMessage());
-        }
-
-    }
-
-    private boolean isExactPath(String requestPath) {
+    private boolean isTaskPath(String requestPath) {
         return requestPath.startsWith(DemoHttpHandler.TASK_PATH);
     }
 
     private boolean isDeleteTask(String requestMethod, String requestPath) {
-        return DELETE.equals(HttpMethod.from(requestMethod)) && hasIdBetween(requestPath);
+        return DELETE.equals(HttpMethod.from(requestMethod)) && isTaskPathWithId(requestPath);
     }
 
     private boolean isUpdateTask(String requestMethod, String requestPath) {
-        return Arrays.asList(PUT, PATCH).contains(HttpMethod.from(requestMethod)) && hasIdBetween(requestPath);
+        return Arrays.asList(PUT, PATCH).contains(HttpMethod.from(requestMethod)) && isTaskPathWithId(requestPath);
     }
 
     private boolean isSaveTask(String requestMethod, String requestPath) {
-        return POST.equals(HttpMethod.from(requestMethod)) && !hasIdBetween(requestPath);
+        return POST.equals(HttpMethod.from(requestMethod)) && !isTaskPathWithId(requestPath);
     }
 
     private boolean isFindTask(String requestMethod, String requestPath) {
-        return GET.equals(HttpMethod.from(requestMethod)) && hasIdBetween(requestPath);
+        return GET.equals(HttpMethod.from(requestMethod)) && isTaskPathWithId(requestPath);
     }
 
     private boolean isFindAllTask(String requestMethod, String requestPath) {
-        return GET.equals(HttpMethod.from(requestMethod)) && !hasIdBetween(requestPath);
+        return GET.equals(HttpMethod.from(requestMethod)) && isTaskPathWithoutId(requestPath);
+    }
+
+    private boolean isTaskPathWithId(String requestPath) {
+        return matchesPattern(requestPath, hasIdPattern);
+    }
+
+    private boolean isTaskPathWithoutId(String requestPath) {
+        return matchesPattern(requestPath, taskPatternWithoutId);
+    }
+
+    private boolean matchesPattern(String path, Pattern pattern) {
+        return pattern.matcher(path).matches();
     }
 }

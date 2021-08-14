@@ -18,8 +18,8 @@ public class TodoRepository {
     }
 
     public Task save(Task task) {
-        if (isNew(task)) {
-            final Task newTask = new Task(++sequence, task.getTitle());
+        if (isNewTask(task)) {
+            final Task newTask = new Task(generateId(), task.getTitle());
             store.put(newTask.getId(), newTask);
 
             return newTask;
@@ -28,7 +28,12 @@ public class TodoRepository {
         return task;
     }
 
-    private boolean isNew(Task task) {
+    private Long generateId() {
+        sequence += 1;
+        return sequence;
+    }
+
+    private boolean isNewTask(Task task) {
         return task.getId() == null || !store.containsKey(task.getId());
     }
 
