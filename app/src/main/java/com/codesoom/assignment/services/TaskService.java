@@ -55,8 +55,8 @@ public final class TaskService {
         return task;
     }
 
-    public void deleteTask(final Long id) throws Exception {
+    public synchronized void deleteTask(final Long id) throws Exception {
         final Task task = getTask(id);
-        tasks.remove(id);
+        tasks.remove(task.getId());
     }
 }
