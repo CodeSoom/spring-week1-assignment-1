@@ -71,7 +71,7 @@ public class DemoHttpHandler implements HttpHandler {
     //GET tasks/{taskId}
     if (method.equals("GET") && path.equals("/tasks/" + taskId)) {
       Task targetTask = findTask(taskId);
-
+      content = targetTaskToJson(targetTask);
       if (targetTask != null) {
         exchange.sendResponseHeaders(OK_STATUS_CODE, content.getBytes().length);
       }else{
