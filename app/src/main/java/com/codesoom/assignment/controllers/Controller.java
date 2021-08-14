@@ -13,11 +13,7 @@ import java.util.Optional;
 public abstract class Controller {
     protected static final String TO_JSON_FAIL = "Json conversion fail.";
 
-    protected final TaskService taskService;
-
-    protected Controller() {
-        taskService = new TaskService();
-    }
+    protected final static TaskService TASK_SERVICE = new TaskService();
 
     protected void sendResponse(
             final HttpExchange exchange, final int statusCode, final String content

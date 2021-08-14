@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.controllers.IdController;
 import com.codesoom.assignment.controllers.TaskController;
 import com.codesoom.assignment.modles.Task;
 import com.sun.net.httpserver.HttpExchange;
@@ -36,9 +37,11 @@ public final class TaskHandler implements HttpHandler {
 
 
     private final TaskController taskController;
+    private final IdController idController;
 
     public TaskHandler() {
         taskController = new TaskController();
+        idController = new IdController();
     }
 
     private Optional<Long> parseId(final String idString) {
@@ -115,24 +118,18 @@ public final class TaskHandler implements HttpHandler {
             return;
         }
 
-        final Optional<Task> taskOptional = Optional.ofNullable(tasks.get(taskIdOptional.get()));
-        if (taskOptional.isEmpty()) {
-            sendResponse(exchange, HttpURLConnection.HTTP_BAD_REQUEST, INVALID_ID);
-            return;
-        }
-
         if (HttpMethod.GET.name().equals(method)) {
-            handleGet(exchange, taskOptional.get());
+            idController.handleGet(exchange, taskIdOptional.get());
             return;
         }
 
         if (HttpMethod.PATCH.name().equals(method)) {
-            sendResponse(exchange, HttpURLConnection.HTTP_OK, HttpMethod.PATCH.name() + " " + path);
+            idController.handlePatch(exchange);
             return;
         }
 
         if (HttpMethod.DELETE.name().equals(method)) {
-            sendResponse(exchange, HttpURLConnection.HTTP_OK, HttpMethod.DELETE.name() + " " + path);
+            idController.handleDelete(exchange);
             return;
         }
 

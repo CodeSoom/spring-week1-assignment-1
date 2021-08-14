@@ -12,7 +12,7 @@ public class TaskController extends Controller {
     private static final String TO_TASK_FAIL = "Task conversion fail.";
 
     public void handleGet(final HttpExchange exchange) throws  IOException {
-        super.handleGet(exchange, taskService.getTasks());
+        super.handleGet(exchange, TASK_SERVICE.getTasks());
     }
 
     public void handlePost(final HttpExchange exchange, final String requestBody) throws IOException {
@@ -21,7 +21,7 @@ public class TaskController extends Controller {
             sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_TASK_FAIL);
             return;
         }
-        taskService.setTask(taskOptional.get());
+        TASK_SERVICE.setTask(taskOptional.get());
         final Optional<String> jsonStringOptional = JsonConverter.toJson(taskOptional.get());
         if (jsonStringOptional.isEmpty()) {
             sendResponse(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR, TO_JSON_FAIL);
