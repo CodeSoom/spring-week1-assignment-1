@@ -7,16 +7,14 @@ import java.io.OutputStream;
 public abstract class HttpResponse {
 
     private final HttpExchange exchange;
+    private final String content;
 
-    public HttpResponse(HttpExchange exchange) {
+    public HttpResponse(HttpExchange exchange, String content) {
         this.exchange = exchange;
+        this.content = content;
     }
 
     public void send() throws IOException {
-        send("");
-    }
-
-    public void send(String content) throws IOException {
         exchange.sendResponseHeaders(httpStatusCode(), content.getBytes().length);
 
         OutputStream responseBody = exchange.getResponseBody();

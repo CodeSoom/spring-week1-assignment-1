@@ -4,8 +4,8 @@ import com.sun.net.httpserver.HttpExchange;
 
 public class HttpResponseBadRequest extends HttpResponse {
 
-    public HttpResponseBadRequest(HttpExchange httpExchange) {
-        super(httpExchange);
+    public HttpResponseBadRequest(HttpExchange exchange, String content) {
+        super(exchange, content);
     }
 
     @Override

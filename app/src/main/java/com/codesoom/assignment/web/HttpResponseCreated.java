@@ -2,13 +2,12 @@ package com.codesoom.assignment.web;
 
 import com.sun.net.httpserver.HttpExchange;
 
-public class HttpResponseCreated extends HttpResponse{
+public class HttpResponseCreated extends HttpResponse {
 
-    public HttpResponseCreated(HttpExchange exchange) {
-        super(exchange);
+    public HttpResponseCreated(HttpExchange exchange, String content) {
+        super(exchange, content);
     }
 
-    @Override
     protected int httpStatusCode() {
         return 201;
     }
