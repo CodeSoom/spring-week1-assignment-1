@@ -1,9 +1,6 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.models.RequestContent;
-import com.codesoom.assignment.models.Response;
-import com.codesoom.assignment.models.Task;
-import com.codesoom.assignment.models.TasksStorage;
+import com.codesoom.assignment.models.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -21,8 +18,6 @@ import java.util.stream.Collectors;
 public class TodoHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
     private TasksStorage tasks = new TasksStorage();
-    private Response response;
-    private Long id;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -34,33 +29,7 @@ public class TodoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        response = new Response();
-
-        boolean isTasksPath = "/tasks".equals(path);
-        boolean isTasksPathWithId = path.length() > "/tasks/".length();
-
-        if ("GET".equals(method) && isTasksPath) {
-            response = handleGetRequest();
-        }
-
-        if ("GET".equals(method) && isTasksPathWithId) {
-            id = Long.parseLong(path.substring(7));
-            response = handleGetRequest(id);
-        }
-
-        if ("POST".equals(method) && isTasksPath && !body.isBlank()) {
-            response = handlePostRequest(body);
-        }
-
-        if ("PUT".equals(method) && isTasksPathWithId && !body.isBlank()) {
-            id = Long.parseLong(path.substring(7));
-            response = handlePutRequest(id, body);
-        }
-
-        if ("DELETE".equals(method) && isTasksPathWithId) {
-            id = Long.parseLong(path.substring(7));
-            response = handleDeleteRequest(id);
-        }
+        Response response = getResponse(new Request(path, method, body));
 
         exchange.sendResponseHeaders(response.getStatusCode(), response.getContentBytes().length);
 
@@ -68,6 +37,33 @@ public class TodoHttpHandler implements HttpHandler {
         outputStream.write(response.getContentBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private Response getResponse(Request request) throws IOException {
+        String method = request.getMethod();
+        String body = request.getBody();
+
+        if ("GET".equals(method) && !request.isPathWithId()) {
+            return handleGetRequest();
+        }
+
+        if ("GET".equals(method) && request.isPathWithId()) {
+            return handleGetRequest(request.getPathId());
+        }
+
+        if ("POST".equals(method)) {
+            return handlePostRequest(body);
+        }
+
+        if ("PUT".equals(method)) {
+            return handlePutRequest(request.getPathId(), body);
+        }
+
+        if ("DELETE".equals(method)) {
+            return handleDeleteRequest(request.getPathId());
+        }
+
+        return new Response(HttpStatus.InternalServerError);
     }
 
     private Response handleGetRequest() throws IOException {
