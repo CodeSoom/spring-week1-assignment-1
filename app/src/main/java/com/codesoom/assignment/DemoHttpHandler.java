@@ -89,7 +89,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     if ((method.equals("PATCH")||method.equals("PUT") )&& path.equals("/tasks/" + taskId) ) {
       Boolean isTaskRewrite = rewriteTask(taskId, body);
-      if (isTaskRewrite == true) {
+      if (isTaskRewrite ) {
         content = "target task changed";
         exchange.sendResponseHeaders(OK_STATUS_CODE, content.getBytes().length);
       } else {
@@ -101,7 +101,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     if (method.equals("DELETE") && path.equals("/tasks/" + taskId)) {
       Boolean isTaskDeleted = deleteTask(taskId);
-      if (isTaskDeleted == true) {
+      if (isTaskDeleted ) {
         content = "Delete success";
         exchange.sendResponseHeaders(NO_CONTENT_STATUS_CODE, content.getBytes().length);
       } else {
