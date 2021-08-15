@@ -19,8 +19,9 @@ public class App {
 
 
         try {
-            String LOCAL_HOST = "localhost";
-            InetSocketAddress address = new InetSocketAddress(LOCAL_HOST, 8000);
+            final String LOCAL_HOST = "localhost";
+            final int PORT = 8000;
+            InetSocketAddress address = new InetSocketAddress(LOCAL_HOST, PORT);
             HttpServer httpServer = HttpServer.create(address, 0);
             // 404, 500 error를 방지하기 위한 로직
             HttpHandler handler = new DemoHttpHandler();
