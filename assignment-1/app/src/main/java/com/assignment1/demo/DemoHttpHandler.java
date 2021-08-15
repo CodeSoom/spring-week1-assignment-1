@@ -8,6 +8,7 @@
 package com.assignment1.demo;
 
 import com.assignment1.demo.models.Task;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -80,7 +81,8 @@ public class DemoHttpHandler implements HttpHandler {
 
     }
 
-    private Task toTask(String content) {
+    private Task toTask(String content) throws JsonProcessingException {
+        return objectMapper.readValue(content, Task.class);
     }
 
     private String toJSON() throws IOException {
