@@ -54,8 +54,9 @@ public class DemoHttpHandler implements HttpHandler {
             httpResponse = getTasks();
         } else if ("POST".equals(method) && Objects.equals(path, "/tasks")) { //task 생성
             httpResponse = generateTask(body, id);
-            if (httpResponse.getHttpStatusCode() == HttpStatusCode.Success.getStatusCode()) {
-                this.id = id + 1;
+            if (httpResponse.getHttpStatusCode() == HttpStatusCode.Created.getStatusCode()) {
+                id = id + 1;
+                this.id = id;
             }
         } else if ("GET".equals(method) && (hasIdVariable)) { //특정 task 조회
             id = Long.parseLong(pathElements[pathElements.length - 1]);
@@ -104,8 +105,8 @@ public class DemoHttpHandler implements HttpHandler {
         int length = 0;
         if (tasks.get(id) != null) {
             tasks.remove(id);
-            content = "task deleted.";
             httpStatusCode = HttpStatusCode.NoContent.getStatusCode();
+            length = -1;
         } else {
             content = "존재하지 않음";
             httpStatusCode = HttpStatusCode.NotFound.getStatusCode();
@@ -122,7 +123,7 @@ public class DemoHttpHandler implements HttpHandler {
             long tempId = id + 1;
             task.setId(tempId);
             tasks.put(tempId, task);
-            content = taskToJSON(id);
+            content = taskToJSON(tempId);
             length = content.getBytes().length;
             httpStatusCode = HttpStatusCode.Created.getStatusCode();
         } else {
