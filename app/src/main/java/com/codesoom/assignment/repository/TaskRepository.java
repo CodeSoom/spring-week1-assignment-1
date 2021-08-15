@@ -1,4 +1,4 @@
-package com.codesoom.assignment.services;
+package com.codesoom.assignment.repository;
 
 import com.codesoom.assignment.modles.Task;
 import com.codesoom.assignment.utils.IdGenerator;
@@ -11,13 +11,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class TaskService {
+public final class TaskRepository {
     private static final String CAN_NOT_FIND_TASK_EXCEPTION = "Can not find task.";
 
     private final Map<Long, Task> tasks;
     private final IdGenerator idGenerator;
 
-    public TaskService() {
+    public TaskRepository() {
         tasks = new LinkedHashMap<>();
         idGenerator = new IdGenerator();
     }

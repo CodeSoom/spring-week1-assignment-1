@@ -1,6 +1,6 @@
 package com.codesoom.assignment.controllers;
 
-import com.codesoom.assignment.services.TaskService;
+import com.codesoom.assignment.repository.TaskRepository;
 import com.codesoom.assignment.utils.JsonConverter;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -21,7 +21,7 @@ public abstract class Controller {
     /**
      * 데이터 처리를 담당하는 멤버변수
      */
-    protected final static TaskService TASK_SERVICE = new TaskService();
+    protected final static TaskRepository TASK_SERVICE = new TaskRepository();
 
     /**
      * HttpResponse를 전송하는 메서드
