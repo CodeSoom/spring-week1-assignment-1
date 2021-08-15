@@ -11,17 +11,18 @@ public class TaskFactory {
     private final List<Map<String, Task>> tasks = new ArrayList<>();
     private final Map<String, Task> taskMap = new HashMap<>();
 
-    public void createTask(String body) throws JsonProcessingException {
+    public Task createTask(String body) throws JsonProcessingException {
         Task task = jsonConverter.jsonToTask(body);
         task.setId(++sequence);
         taskMap.put(task.getId() + "", task);
         if(tasks.isEmpty()){
             tasks.add(taskMap);
         }
+        return task;
     }
 
     public void deleteTask(String id) {
-        tasks.remove(id);
+        taskMap.remove(id);
     }
 
     public Task updateTask(Task task, String content) throws JsonProcessingException {

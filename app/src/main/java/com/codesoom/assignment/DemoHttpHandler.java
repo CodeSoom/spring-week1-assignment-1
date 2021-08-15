@@ -1,23 +1,14 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.models.Task;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
@@ -36,31 +27,39 @@ public class DemoHttpHandler implements HttpHandler {
 
         String id = checkPathGetId(path);
 
+        httpResponse.setHttpStatusCode(HttpStatus.NOT_FOUND.getCode());
+        httpResponse.setContent("");
+
         // GET /tasks
         if(httpRequest.isGetAllTasks()) {
+            System.out.println("1 = " + 1);
             httpResponse.getAllTasks();
         }
 
         // GET /tasks/{id}
         if(httpRequest.isGetOneTask()) {
+            System.out.println("2 = " + 2);
             httpResponse.getOneTask(id);
         }
 
         // POST /tasks
         if(httpRequest.isCreateTask()){
+            System.out.println("3 = " + 3);
             httpResponse.createTask(body);
         }
 
         // PUT,PATCH /tasks/{id}
         if(httpRequest.isUpdateTask()) {
+            System.out.println("4 = " + 4);
             httpResponse.updateTask(id, body);
         }
 
         // Delete /tasks/{id}
         if(httpRequest.isDeleteTask()) {
+            System.out.println("5 = " + 5);
             httpResponse.deleteTask(id);
         }
-
+        
         exchange.sendResponseHeaders(httpResponse.getHttpStatusCode(), httpResponse.getContent().getBytes().length);
 
         OutputStream outputstream = exchange.getResponseBody();
@@ -80,7 +79,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     private String checkPathGetId(String path) {
         if (path.indexOf("/tasks/") == 0) {
-            return path.substring(7);
+            return path.substring("/tasks/".length());
         }
         return "";
     }

@@ -30,19 +30,12 @@ public class HttpRequest {
     }
 
     private boolean isTasksPath() {
-        if("/tasks".equals(path)){
-            return true;
-        }
-        return false;
+        return "/tasks".equals(path);
     }
 
     private boolean isTasksPathWithId() {
         String id = checkPathGetId(this.path);
-
-        if(("/tasks/"+id).equals(path)){
-            return true;
-        }
-        return false;
+        return ("/tasks/"+id).equals(path);
     }
 
     private String checkPathGetId(String path) {
