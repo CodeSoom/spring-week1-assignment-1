@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Splitter;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -10,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DemoHttpHandler implements HttpHandler {
     //Object
@@ -21,63 +23,70 @@ public class DemoHttpHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         URI uri = exchange.getRequestURI();
         String method = exchange.getRequestMethod();
-        String queryString = uri.getQuery();
-        String content = "Nothing 404";
-
         InputStream inputStream = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.joining("\n"));
-        Path path = Paths.get(uri.getPath());
 
-        System.out.println("uri : " +method + "|" + path + "?" + queryString);
-        System.out.println("body : " + body);
-
-
-        String target = "";
+        //Init
+        String content = "Nothing 404";
+        String targetPath = "";
         String requestId = "";
+        Task targetTask = new Task();
+        Map<String, String> bodyContent = new HashMap<>();
+        if(!body.isBlank() && body.contains("=")){
+            bodyContent = Splitter.on('&').trimResults().withKeyValueSeparator('=').split(body);
+        }
+
+        //Path Parsing
+        Path path = Paths.get(uri.getPath());
         if(path.getNameCount() > 0){
-            target = path.getName(1).toString();
+            targetPath = path.getName(0).toString();
         }
-
         if(path.getNameCount() > 1){
-            requestId = path.getName(2).toString();
+            requestId = path.getName(1).toString();
+            final String id = requestId;
+            Optional<Task> stream = tasks.stream().filter(obj -> id.equals(obj.getId().toString())).findFirst();
+            if(stream.isPresent()){
+                targetTask = stream.get();
+            }
         }
 
-        if("tasks".equals(target) && "GET".equals(method)){
-            content = objectMapper.writeValueAsString(tasks);
+        System.out.println("method : " + method + ", body : " + body);
+        System.out.println("targetPath : " + targetPath + ", requestId : " + requestId);
 
-        }else if("tasks".equals(target) && "POST".equals(method)){
-            String title = body.split("=")[1];
-            int newId = 0;
-            if(tasks.size() != 0){
-                tasks.sort((o1, o2) -> o2.getId().compareTo(o1.getId()));
-                newId = tasks.get(0).getId()+1;
+        if("tasks".equals(targetPath) && "GET".equals(method)){
+            if(requestId.isBlank()){
+                content = objectMapper.writeValueAsString(tasks);
+            }else{
+                content = objectMapper.writeValueAsString(targetTask);
             }
-            Task task = new Task();
-            task.setId(newId);
-            task.setTitle(title);
-            tasks.add(task);
-            content = objectMapper.writeValueAsString(tasks);
 
-        }else if("tasks".equals(target) && "PUT".equals(method)){
-            String title = body.split("=")[1];
-            for (Task task : tasks) {
-                String taskId = Integer.toString(task.getId());
-                if (requestId.equals(taskId)) {
-                    task.setTitle(title);
+        }else if("tasks".equals(targetPath) && "POST".equals(method)){
+            String title = bodyContent.get("title");
+            if(!title.isEmpty()){
+                int newId = 1;
+                if(tasks.size() != 0){
+                    tasks.sort((o1, o2) -> o2.getId().compareTo(o1.getId()));
+                    newId = tasks.get(0).getId()+1;
                 }
+
+                Task task = new Task();
+                task.setId(newId);
+                task.setTitle(title);
+                tasks.add(task);
+                content = objectMapper.writeValueAsString(task);
             }
-            content = objectMapper.writeValueAsString(tasks);
-        }else if("tasks".equals(target) && "DELETE".equals(method)){
-            for(int i=0; i<tasks.size(); i++){
-                String taskId = Integer.toString(tasks.get(i).getId());
-                if(requestId.equals(taskId)){
-                    tasks.remove(i);
-                }
+        }else if("tasks".equals(targetPath) && "PUT".equals(method)){
+            String title = bodyContent.get("title");
+            if(!title.isEmpty() && !requestId.isBlank()){
+                targetTask.setTitle(title);
             }
-            content = objectMapper.writeValueAsString(tasks);
+            content = objectMapper.writeValueAsString(targetTask);
+        }else if("tasks".equals(targetPath) && "DELETE".equals(method)){
+            if(!requestId.isBlank()){
+                final String id = requestId;
+                tasks.removeIf(obj -> id.equals(obj.getId().toString()));
+            }
         }
-
-        //Client가 요청했으니 뭐라도 Response를 전달해야함. 정상상태 200으로.
         exchange.sendResponseHeaders(200, content.getBytes().length); // 영어, 한글 byte길이가 다르므로 byte[]로 넘김.
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());

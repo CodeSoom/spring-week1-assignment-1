@@ -1,11 +1,18 @@
 package com.codesoom.assignment;
 
+import com.google.common.base.Splitter;
+import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -13,15 +20,24 @@ class AppTest {
     @Test
     void appHasAGreeting() throws URISyntaxException {
         App classUnderTest = new App();
-        URI uri = new URI("http://www.naver.com/tasks/12/32");
-        Path path = Paths.get(uri.getPath());
-        System.out.println(path);
-        System.out.println(path.getParent());
-        System.out.println(path.getName(0));
-        String a = path.getName(0).toString();
 
-        /*System.out.println(path.getName(0));
-        System.out.println(path.getName(1));*/
-        System.out.println(path.getNameCount());
+        List<Task> tasks = new ArrayList<>();
+        Task task = new Task();
+        task.setId(1);
+        task.setTitle("111");
+        tasks.add(task);
+
+        Task task2 = new Task();
+        task2.setId(2);
+        task2.setTitle("111");
+        tasks.add(task2);
+
+        tasks.stream().forEach(s -> System.out.println(s.getId()));
+
+        Optional<Task> stream = tasks.stream().filter(obj -> !"12".equals(obj.getId().toString())).findFirst();
+        System.out.println(stream.get().getId());
+        System.out.println(stream.get().getTitle());
+
+
     }
 }
