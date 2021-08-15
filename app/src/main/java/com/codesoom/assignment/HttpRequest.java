@@ -9,6 +9,10 @@ public class HttpRequest {
         this.path = path;
     }
 
+    /**
+     *
+     * @return HttpMethod가 GET이고 PATH에 ID값이 없으면 TRUE
+     */
     public boolean isGetAllTasks(){
         return HttpMethod.GET.getMethod().equals(method) && isTasksPath();
     }
