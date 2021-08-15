@@ -52,14 +52,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     System.out.println(method + " " + path);
 
-    if (!body.isBlank() && method.equals("POST")) {
 
-      Task task = toTask(body);
-      id++;
-      task.setId(id);
-      System.out.println(task);
-      tasks.add(task);
-    }
 
     //GET /tasks
     if (method.equals("GET") && path.equals("/tasks")) {
@@ -81,8 +74,9 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     //POST tasks
-    if (method.equals("POST") && path.equals("/tasks")) {
+    if (method.equals("POST") && path.equals("/tasks") && !body.isBlank()) {
       content = "Create a new task";
+      postTask(body);
       exchange.sendResponseHeaders(CREATED_STATUS_CODE, content.getBytes().length);
     }
 
@@ -115,6 +109,14 @@ public class DemoHttpHandler implements HttpHandler {
     outputStream.flush();
     outputStream.close();
 
+  }
+
+  private void postTask(String body) throws JsonProcessingException {
+    Task task = toTask(body);
+    id++;
+    task.setId(id);
+    System.out.println(task);
+    tasks.add(task);
   }
 
   private String getId(String path) {
