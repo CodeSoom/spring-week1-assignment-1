@@ -28,8 +28,10 @@ public class DemoHttpHandler implements HttpHandler {
   static final int BAD_REQUEST_STATUS_CODE = 400;
   static final int NOT_FOUND_STATUS_CODE = 404;
   static final int NO_CONTENT_STATUS_CODE = 204;
+  static final int INTERNAL_ERROR = 500;
 
   Long id = 0L;
+  int STATUS_CODE = INTERNAL_ERROR;
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {
@@ -57,8 +59,7 @@ public class DemoHttpHandler implements HttpHandler {
     //GET /tasks
     if (method.equals("GET") && path.equals("/tasks")) {
       content = tasksToJson();
-      exchange.sendResponseHeaders(OK_STATUS_CODE, content.getBytes().length);
-
+      STATUS_CODE = OK_STATUS_CODE;
     }
 
     //GET tasks/{taskId}
@@ -66,10 +67,9 @@ public class DemoHttpHandler implements HttpHandler {
       Task targetTask = findTask(taskId);
       content = targetTaskToJson(targetTask);
       if (targetTask != null) {
-        exchange.sendResponseHeaders(OK_STATUS_CODE, content.getBytes().length);
+        STATUS_CODE = OK_STATUS_CODE;
       }else{
-        exchange.sendResponseHeaders(NOT_FOUND_STATUS_CODE, content.getBytes().length);
-
+        STATUS_CODE = NOT_FOUND_STATUS_CODE;
       }
     }
 
@@ -77,7 +77,7 @@ public class DemoHttpHandler implements HttpHandler {
     if (method.equals("POST") && path.equals("/tasks") && !body.isBlank()) {
       content = "Create a new task";
       postTask(body);
-      exchange.sendResponseHeaders(CREATED_STATUS_CODE, content.getBytes().length);
+      STATUS_CODE = CREATED_STATUS_CODE;
     }
 
 
@@ -85,10 +85,10 @@ public class DemoHttpHandler implements HttpHandler {
       Boolean isTaskRewrite = rewriteTask(taskId, body);
       if (isTaskRewrite ) {
         content = "target task changed";
-        exchange.sendResponseHeaders(OK_STATUS_CODE, content.getBytes().length);
+        STATUS_CODE = OK_STATUS_CODE;
       } else {
         content = "fail";
-        exchange.sendResponseHeaders(NOT_FOUND_STATUS_CODE, content.getBytes().length);
+        STATUS_CODE = NOT_FOUND_STATUS_CODE;
       }
 
     }
@@ -97,19 +97,26 @@ public class DemoHttpHandler implements HttpHandler {
       Boolean isTaskDeleted = deleteTask(taskId);
       if (isTaskDeleted ) {
         content = "Delete success";
-        exchange.sendResponseHeaders(NO_CONTENT_STATUS_CODE, content.getBytes().length);
+        STATUS_CODE = NO_CONTENT_STATUS_CODE;
       } else {
         content = "fail";
-        exchange.sendResponseHeaders(NOT_FOUND_STATUS_CODE, content.getBytes().length);
+        STATUS_CODE = NOT_FOUND_STATUS_CODE;
+
       }
     }
 
+    sendResponse(exchange, STATUS_CODE,content);
+
+  }
+
+  private void sendResponse(HttpExchange exchange,int STATUS_CODE, String content) throws IOException {
+    exchange.sendResponseHeaders(STATUS_CODE, content.getBytes().length);
     OutputStream outputStream = exchange.getResponseBody();
     outputStream.write(content.getBytes());
     outputStream.flush();
     outputStream.close();
-
   }
+
 
   private void postTask(String body) throws JsonProcessingException {
     Task task = toTask(body);
@@ -162,20 +169,17 @@ public class DemoHttpHandler implements HttpHandler {
     if(task ==null){
       return false;
     }
-      return tasks.remove(task);;
+      return tasks.remove(task);
 
     }
 
     private Boolean rewriteTask(long id,String body) throws IOException {
         Task task = findTask(id);
-
         if(task ==null){
         return false;
       }
       task.setTitle(body);
       return true;
-
         }
 
-
-}}
+}
