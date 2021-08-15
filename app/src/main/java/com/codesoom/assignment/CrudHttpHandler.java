@@ -44,6 +44,7 @@ public class CrudHttpHandler implements HttpHandler {
             SendResponseData response = taskService.getAll();
 
             taskService.sendResponse(response,exchange);
+            return;
 
         } else if(HttpMethodCode.GET.getStatus().equals(method)  && hasId(path).isPresent()){
 
@@ -51,12 +52,14 @@ public class CrudHttpHandler implements HttpHandler {
             SendResponseData response = taskService.getOne(hasId.get());
 
             taskService.sendResponse(response,exchange);
+            return;
 
         } else if(HttpMethodCode.POST.getStatus().equals(method) && "/tasks".equals(path)) {
 
             SendResponseData response = taskService.join(getContent(exchange));
 
             taskService.sendResponse(response,exchange);
+            return;
 
         } else if( (HttpMethodCode.PUT.getStatus().equals(method) || HttpMethodCode.PATCH.getStatus().equals(method) ) && hasId(path).isPresent()) {
 
@@ -64,6 +67,7 @@ public class CrudHttpHandler implements HttpHandler {
             SendResponseData response = taskService.edit(getContent(exchange), hasId.get());
 
             taskService.sendResponse(response,exchange);
+            return;
 
         } else if(HttpMethodCode.DELETE.getStatus().equals(method) && hasId(path).isPresent() ) {
 
@@ -71,6 +75,7 @@ public class CrudHttpHandler implements HttpHandler {
             SendResponseData response = taskService.delete(hasId.get());
 
             taskService.sendResponse(response,exchange);
+            return;
 
         }
 
