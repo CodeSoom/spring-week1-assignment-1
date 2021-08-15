@@ -18,15 +18,18 @@ public class HttpRequest {
     }
 
     public boolean isUpdateTask() {
-        return HttpMethod.PUT.getMethod().equals(method) || HttpMethod.PATCH.equals(method) && isTasksPathWithId();
+        return HttpMethod.PUT.getMethod().equals(method) || HttpMethod.PATCH.equals(method)
+                && isTasksPathWithId();
     }
 
     public boolean isCreateTask() {
-        return HttpMethod.POST.getMethod().equals(method) && isTasksPath();
+        return HttpMethod.POST.getMethod().equals(method)
+                && isTasksPath();
     }
 
     public boolean isGetOneTask() {
-        return HttpMethod.GET.getMethod().equals(method) && isTasksPathWithId();
+        return HttpMethod.GET.getMethod().equals(method)
+                && isTasksPathWithId();
     }
 
     private boolean isTasksPath() {
@@ -40,7 +43,7 @@ public class HttpRequest {
 
     private String checkPathGetId(String path) {
         if (path.indexOf("/tasks/") == 0) {
-            return this.path.substring(7);
+            return path.substring("/tasks/".length());
         }
         return "";
     }

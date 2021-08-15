@@ -12,8 +12,7 @@ public class TaskFactory {
     private final Map<String, Task> taskMap = new HashMap<>();
 
     public Task createTask(String body) throws JsonProcessingException {
-        Task task = jsonConverter.jsonToTask(body);
-        task.setId(++sequence);
+        Task task = newId(body);
         taskMap.put(task.getId() + "", task);
         if(tasks.isEmpty()){
             tasks.add(taskMap);
@@ -42,5 +41,11 @@ public class TaskFactory {
             return task;
         }
         return task.of(findTask);
+    }
+
+    private Task newId(String body) throws JsonProcessingException {
+        Task task = jsonConverter.jsonToTask(body);
+        task.setId(++sequence);
+        return task;
     }
 }

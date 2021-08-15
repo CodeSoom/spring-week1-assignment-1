@@ -32,31 +32,26 @@ public class DemoHttpHandler implements HttpHandler {
 
         // GET /tasks
         if(httpRequest.isGetAllTasks()) {
-            System.out.println("1 = " + 1);
             httpResponse.getAllTasks();
         }
 
         // GET /tasks/{id}
         if(httpRequest.isGetOneTask()) {
-            System.out.println("2 = " + 2);
             httpResponse.getOneTask(id);
         }
 
         // POST /tasks
         if(httpRequest.isCreateTask()){
-            System.out.println("3 = " + 3);
             httpResponse.createTask(body);
         }
 
         // PUT,PATCH /tasks/{id}
         if(httpRequest.isUpdateTask()) {
-            System.out.println("4 = " + 4);
             httpResponse.updateTask(id, body);
         }
 
         // Delete /tasks/{id}
         if(httpRequest.isDeleteTask()) {
-            System.out.println("5 = " + 5);
             httpResponse.deleteTask(id);
         }
         
