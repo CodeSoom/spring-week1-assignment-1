@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Http 요청 정보
+ */
 public class Request {
     private final String path;
     private final String method;
@@ -23,6 +26,10 @@ public class Request {
         idPattern = Pattern.compile(URL_ID_REGEX);
     }
 
+    /**
+     * 요청한 URI 에서 id 값을 찾아서 리턴합니다.
+     * @return path 내의 id 값
+     */
     public Long getPathId() {
         Matcher idMatcher = idPattern.matcher(path);
         idMatcher.find();
@@ -30,6 +37,11 @@ public class Request {
         return Long.parseLong(idMatcher.group(0));
     }
 
+    /**
+     * String 으로 저장된 메소드를 {@link RequestMethod}으로 변환시켜 리턴합니다.
+     * @return {@link RequestMethod}
+     * @throws AssertionError   요청 메소드가 RequestMethod 에 없는 경우
+     */
     public RequestMethod getRequestMethod() {
         switch (method) {
             case "GET":
@@ -47,10 +59,19 @@ public class Request {
         }
     }
 
+    /**
+     * String 으로 저장된 메소드를 RequestMethod 로 변환시켜 리턴합니다.
+     * @return {@link RequestContent}
+     * @throws JsonProcessingException  Json 에서 RequestContent 로 변환시 에러가 있는 경우
+     */
     public RequestContent getRequestContent() throws JsonProcessingException {
         return objectMapper.readValue(body, RequestContent.class);
     }
 
+    /**
+     * path 내에 id 존재 여부를 리턴합니다.
+     * @return path 내의 id 존재 여부
+     */
     public boolean isPathWithId() {
         return idPattern.matcher(path).find();
     }

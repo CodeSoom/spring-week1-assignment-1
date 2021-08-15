@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
 
+/**
+ * Http 응답 정보
+ */
 public class Response {
     private final String content;
     private final HttpStatus httpStatus;

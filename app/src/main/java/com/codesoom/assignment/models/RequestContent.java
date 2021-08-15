@@ -1,5 +1,8 @@
 package com.codesoom.assignment.models;
 
+/**
+ * Json 을 deserialize 하기 위한 타입 정의
+ */
 public class RequestContent {
     private String title;
 

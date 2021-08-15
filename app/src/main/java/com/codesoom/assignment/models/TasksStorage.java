@@ -4,6 +4,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
 
+/**
+ * 할 일 목록
+ */
 public class TasksStorage {
     private final HashMap<Long, Task> tasks = new HashMap<>();
     private Long newId;
