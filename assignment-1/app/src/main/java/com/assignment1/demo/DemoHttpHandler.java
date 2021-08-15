@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
+    private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
 
     public DemoHttpHandler() {
@@ -80,12 +81,9 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private Task toTask(String content) {
-        ObjectMapper objectMapper = new ObjectMapper();
     }
 
     private String toJSON() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
 
