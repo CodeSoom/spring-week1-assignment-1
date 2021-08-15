@@ -2,7 +2,7 @@ package com.codesoom.assignment.models;
 
 public class Task {
     private final Long id;
-    private String title;
+    private final String title;
 
     public Task(Long id, String title) {
         this.id = id;
@@ -13,12 +13,8 @@ public class Task {
         return id;
     }
 
-    public String getTitle() {
+    public String getTitle(){
         return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public String toString() {

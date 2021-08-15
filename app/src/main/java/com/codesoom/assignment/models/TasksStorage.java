@@ -30,15 +30,13 @@ public class TasksStorage {
     }
 
     public synchronized Optional<Task> update(Long id, String title) {
-        Task task = tasks.get(id);
+        if (tasks.containsKey(id)) {
+            Task task = new Task(id, title);
+            tasks.replace(id, task);
 
-        // TODO: Change to set new Task
-        if(task == null) {
-            return Optional.ofNullable(task);
+            return Optional.of(task);
         }
-
-        task.setTitle(title);
-        return Optional.ofNullable(task);
+        return Optional.empty();
     }
 
     public synchronized Optional<Task> delete(Long id) {
