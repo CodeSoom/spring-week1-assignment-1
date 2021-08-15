@@ -22,7 +22,7 @@ public class TaskController extends Controller {
      * @throws IOException
      */
     public void handleGet(final HttpExchange exchange) throws  IOException {
-        sendObject(exchange, HttpURLConnection.HTTP_OK, TASK_SERVICE.getTasks());
+        sendObject(exchange, HttpURLConnection.HTTP_OK, TASK_REPOSITORY.getTasks());
     }
 
     /**
@@ -36,7 +36,7 @@ public class TaskController extends Controller {
      */
     public void handlePost(final HttpExchange exchange, final String requestBody) throws IOException {
         try {
-            final Task task = TASK_SERVICE.createTask(requestBody);
+            final Task task = TASK_REPOSITORY.createTask(requestBody);
             sendObject(exchange, HttpURLConnection.HTTP_CREATED, task);
         } catch (JsonProcessingException e) {
             e.printStackTrace();

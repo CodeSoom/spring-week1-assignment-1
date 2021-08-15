@@ -21,7 +21,7 @@ public abstract class Controller {
     /**
      * 데이터 처리를 담당하는 멤버변수
      */
-    protected final static TaskRepository TASK_SERVICE = new TaskRepository();
+    protected final static TaskRepository TASK_REPOSITORY = new TaskRepository();
 
     /**
      * HttpResponse를 전송하는 메서드

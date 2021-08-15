@@ -24,7 +24,7 @@ public class IdController extends Controller {
      */
     public void handleGet(final HttpExchange exchange, final Long taskId) throws  IOException {
         try {
-            final Task task = TASK_SERVICE.getTask(taskId);
+            final Task task = TASK_REPOSITORY.getTask(taskId);
             sendObject(exchange, HttpURLConnection.HTTP_OK, task);
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -44,7 +44,7 @@ public class IdController extends Controller {
      */
     public void handlePatchOrPut(final HttpExchange exchange, final Long taskId, final String requestBody) throws IOException {
         try {
-            final Task task = TASK_SERVICE.updateTask(taskId, requestBody);
+            final Task task = TASK_REPOSITORY.updateTask(taskId, requestBody);
             sendObject(exchange, HttpURLConnection.HTTP_OK, task);
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -62,7 +62,7 @@ public class IdController extends Controller {
      */
     public void handleDelete(final HttpExchange exchange, final Long taskId) throws IOException {
         try {
-            TASK_SERVICE.deleteTask(taskId);
+            TASK_REPOSITORY.deleteTask(taskId);
             sendResponse(exchange, HttpURLConnection.HTTP_NO_CONTENT, EMPTY_BODY);
         } catch (Exception exception) {
             exception.printStackTrace();
