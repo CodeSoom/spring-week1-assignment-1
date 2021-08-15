@@ -67,6 +67,7 @@ public class DemoHttpHandler implements HttpHandler {
         if (method.equals("POST") && path.equals("/tasks")) {
             content = "Create a new task!";
             exchange.sendResponseHeaders(201, content.getBytes().length);
+            exchange.sendResponseHeaders(201, content.getBytes().length);
         }
 
 
