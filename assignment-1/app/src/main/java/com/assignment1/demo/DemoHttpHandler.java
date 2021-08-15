@@ -52,6 +52,7 @@ public class DemoHttpHandler implements HttpHandler {
         System.out.println(method + " " + path);
         if (!body.isBlank()) {
             System.out.println(body);
+
             Task task = toTask(body);
             System.out.println(task);
         }
