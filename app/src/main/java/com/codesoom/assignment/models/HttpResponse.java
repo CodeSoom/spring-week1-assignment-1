@@ -1,7 +1,7 @@
 package com.codesoom.assignment.models;
 
 public class HttpResponse {
-    private long httpStatusCode;
+    private int httpStatusCode;
     private String content;
     private int length;
 
@@ -9,7 +9,7 @@ public class HttpResponse {
 
     }
 
-    public HttpResponse(long httpStatusCode, String content, int length) {
+    public HttpResponse(int httpStatusCode, String content, int length) {
         this.httpStatusCode = httpStatusCode;
         this.content = content;
         this.length = length;
@@ -19,7 +19,7 @@ public class HttpResponse {
         return httpStatusCode;
     }
 
-    public void setHttpStatusCode(long httpStatusCode) {
+    public void setHttpStatusCode(int httpStatusCode) {
         this.httpStatusCode = httpStatusCode;
     }
 
