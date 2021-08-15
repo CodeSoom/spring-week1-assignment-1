@@ -4,14 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.codesoom.assignment.HttpMethod.*;
 
@@ -36,6 +35,8 @@ public class DemoHttpHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         final String requestPath = exchange.getRequestURI().getPath();
         final String requestMethod = exchange.getRequestMethod();
+        final String requestBody = getRequestBody(exchange);
+
 
         printRequestInfo(exchange);
 
@@ -55,13 +56,13 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         if (isSaveTask(requestMethod, requestPath)) {
-            Task newTask = jsonToTask(exchange);
+            Task newTask = jsonToTask(requestBody);
             sendResponse(exchange, todoController.saveTask(newTask));
             return;
         }
 
         if (isUpdateTask(requestMethod, requestPath)) {
-            sendResponse(exchange, todoController.updateTask(extractIdFromRequestPath(requestPath), jsonToTask(exchange)));
+            sendResponse(exchange, todoController.updateTask(extractIdFromRequestPath(requestPath), jsonToTask(requestBody)));
             return;
         }
 
@@ -73,6 +74,11 @@ public class DemoHttpHandler implements HttpHandler {
         sendResponse404(exchange);
     }
 
+    private String getRequestBody(HttpExchange exchange) {
+        return new BufferedReader((new InputStreamReader(exchange.getRequestBody())))
+                .lines().collect(Collectors.joining(System.lineSeparator()));
+    }
+
     private void printRequestInfo(HttpExchange exchange) {
         final String logFormat = String.format("[%s] %s %s", LocalDateTime.now(),
                 exchange.getRequestMethod(),
@@ -80,15 +86,14 @@ public class DemoHttpHandler implements HttpHandler {
         logger.info(logFormat);
     }
 
-    private Task jsonToTask(HttpExchange exchange) throws IOException {
-        final InputStream body = exchange.getRequestBody();
-        return objectMapper.readValue(body, Task.class);
+    private Task jsonToTask(String requestBody) throws IOException {
+        return objectMapper.readValue(requestBody, Task.class);
     }
 
     private Long extractIdFromRequestPath(String requestPath) {
-        final String taskIdStr = requestPath.split(PATH_DELIMITER)[POSITION_BY_ID_FROM_PATH];
+        final String taskId = requestPath.split(PATH_DELIMITER)[POSITION_BY_ID_FROM_PATH];
 
-        return Long.valueOf(taskIdStr);
+        return Long.valueOf(taskId);
     }
 
     private void sendResponse404(HttpExchange exchange) {
