@@ -53,17 +53,18 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         if (requestMethod.equals(POST) && path.equals(TASKS_PATH)) {
-            Task addTask = bodyToTask(body);
-            addTask.setId(increaseId());
-            this.tasks.add(addTask);
-            sendResponseBody(exchange, new ResponseData(CREATED, taskToJson(addTask)));
+            Task task = bodyToTask(body);
+            task.setId(increaseId());
+            this.tasks.add(task);
+            sendResponseBody(exchange, new ResponseData(CREATED, taskToJson(task)));
             return;
         }
 
         if ((requestMethod.equals(PUT) || requestMethod.equals(PATCH)) && path.startsWith(TASK_DETAIL_PATH)) {
             try {
                 Task task = findTask(taskId(path));
-                sendResponseBody(exchange, taskModifyResponseData(task, body));
+                task.setTitle(body);
+                sendResponseBody(exchange, new ResponseData(OK, body));
             } catch (NoSuchElementException ne) {
                 sendResponseBody(exchange, new ResponseData(NOT_FOUND, NO_CONTENTS));
             }
@@ -111,15 +112,6 @@ public class DemoHttpHandler implements HttpHandler {
 
     private Long increaseId() {
         return this.id += 1L;
-    }
-
-    private ResponseData taskModifyResponseData(Task task, String changeTitle) {
-        if (!Objects.isNull(task)) {
-            task.setTitle(changeTitle);
-            return new ResponseData(OK, changeTitle);
-        }
-
-        return new ResponseData(NOT_FOUND, NO_CONTENTS);
     }
 
     private String tasksToJson() throws IOException {
