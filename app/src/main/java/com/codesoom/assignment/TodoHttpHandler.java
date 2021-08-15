@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
@@ -69,10 +70,10 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private Response handleGetRequest(Long id) throws IOException {
-        Task task = tasks.read(id);
+        Optional<Task> task = tasks.read(id);
 
-        if (task != null){
-            return new Response(task, HttpStatus.OK);
+        if (task.isPresent()){
+            return new Response(task.orElseThrow(), HttpStatus.OK);
         }
 
         return new Response(HttpStatus.NOT_FOUND);
@@ -87,20 +88,20 @@ public class TodoHttpHandler implements HttpHandler {
 
     private Response handlePutRequest(Long id, RequestContent content) throws IOException {
         String title = content.getTitle();
-        Task task = tasks.update(id, title);
+        Optional<Task> task = tasks.update(id, title);
 
-        if(task != null) {
-            return new Response(task, HttpStatus.OK);
+        if(task.isPresent()) {
+            return new Response(task.orElseThrow(), HttpStatus.OK);
         }
 
         return new Response(HttpStatus.NOT_FOUND);
     }
 
     private Response handleDeleteRequest(Long id) throws IOException {
-        Task task = tasks.delete(id);
+        Optional<Task> task = tasks.delete(id);
 
-        if(task != null) {
-            return new Response(task, HttpStatus.NO_CONTENT);
+        if(task.isPresent()) {
+            return new Response(task.orElseThrow(), HttpStatus.NO_CONTENT);
         }
 
         return new Response(HttpStatus.NOT_FOUND);
