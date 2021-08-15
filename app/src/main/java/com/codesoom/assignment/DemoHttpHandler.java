@@ -142,20 +142,14 @@ public class DemoHttpHandler implements HttpHandler {
 
 
   private String targetTaskToJson(Task task) throws IOException {
-    ObjectMapper objectMapper = new ObjectMapper();
     OutputStream outputStream = new ByteArrayOutputStream();
-
     objectMapper.writeValue(outputStream, task);
-
     return outputStream.toString();
   }
 
   private String tasksToJson() throws IOException {
-    ObjectMapper objectMapper = new ObjectMapper();
     OutputStream outputStream = new ByteArrayOutputStream();
-
     objectMapper.writeValue(outputStream, tasks);
-
     return outputStream.toString();
   }
   private Task findTask(Long id){
@@ -164,7 +158,7 @@ public class DemoHttpHandler implements HttpHandler {
         .findFirst().orElse(null);
   }
 
-  private Boolean deleteTask(long id) throws IOException {
+  private Boolean deleteTask(Long id) throws IOException {
     Task task = findTask(id);
     if(task ==null){
       return false;
@@ -173,7 +167,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     }
 
-    private Boolean rewriteTask(long id,String body) throws IOException {
+    private Boolean rewriteTask(Long id,String body) throws IOException {
         Task task = findTask(id);
         if(task ==null){
         return false;
