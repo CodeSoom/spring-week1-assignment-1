@@ -35,7 +35,7 @@ public class Response {
     }
 
     public Integer getStatusCode() {
-        return httpStatus.code();
+        return httpStatus.getCode();
     }
 
     private String tasksToJson(Collection<Task> tasks) throws IOException {
