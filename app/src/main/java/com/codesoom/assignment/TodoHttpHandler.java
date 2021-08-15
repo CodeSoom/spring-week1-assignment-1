@@ -80,15 +80,14 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private Response handlePostRequest(RequestContent content) throws IOException {
-        String title = content.getTitle();
-        Task task = tasks.create(title);
-
-        return new Response(task, HttpStatus.CREATED);
+        return new Response(
+                tasks.create(content.getTitle()),
+                HttpStatus.CREATED
+        );
     }
 
     private Response handlePutRequest(Long id, RequestContent content) throws IOException {
-        String title = content.getTitle();
-        Optional<Task> task = tasks.update(id, title);
+        Optional<Task> task = tasks.update(id, content.getTitle());
 
         if(task.isPresent()) {
             return new Response(task.orElseThrow(), HttpStatus.OK);
