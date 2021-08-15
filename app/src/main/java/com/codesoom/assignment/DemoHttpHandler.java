@@ -34,11 +34,10 @@ public class DemoHttpHandler implements HttpHandler {
   @Override
   public void handle(HttpExchange exchange) throws IOException {
     String content = "Hello codesoom";
-
     String method = exchange.getRequestMethod();
     URI uri = exchange.getRequestURI();
     String path = uri.getPath();
-
+    System.out.println(uri);
     System.out.println(getId(path));
 
     Long taskId = null;
@@ -58,6 +57,7 @@ public class DemoHttpHandler implements HttpHandler {
       Task task = toTask(body);
       id++;
       task.setId(id);
+      System.out.println(task);
       tasks.add(task);
     }
 
@@ -157,22 +157,21 @@ public class DemoHttpHandler implements HttpHandler {
 
   private Boolean deleteTask(long id) throws IOException {
     Task task = findTask(id);
-    if(task !=null){
-      tasks.remove(task);
-
-      return true;
-    }else{
+    if(task ==null){
       return false;
+    }
+      return tasks.remove(task);;
 
-    }}
+    }
 
     private Boolean rewriteTask(long id,String body) throws IOException {
         Task task = findTask(id);
-        if(task !=null){
-        task.setTitle(body);
-        return true;
-      }else{
-          return false;
+
+        if(task ==null){
+        return false;
+      }
+      task.setTitle(body);
+      return true;
 
         }
 
