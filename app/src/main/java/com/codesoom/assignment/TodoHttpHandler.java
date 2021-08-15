@@ -40,25 +40,25 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private Response getResponse(Request request) throws IOException {
-        String method = request.getMethod();
+        RequestMethod method = request.getRequestMethod();
 
-        if ("GET".equals(method) && !request.isPathWithId()) {
+        if (method == RequestMethod.GET && !request.isPathWithId()) {
             return handleGetRequest();
         }
 
-        if ("GET".equals(method) && request.isPathWithId()) {
+        if (method == RequestMethod.GET && request.isPathWithId()) {
             return handleGetRequest(request.getPathId());
         }
 
-        if ("POST".equals(method)) {
+        if (method == RequestMethod.POST) {
             return handlePostRequest(request.getRequestContent());
         }
 
-        if ("PUT".equals(method)) {
+        if (method == RequestMethod.PUT) {
             return handlePutRequest(request.getPathId(), request.getRequestContent());
         }
 
-        if ("DELETE".equals(method)) {
+        if (method == RequestMethod.DELETE) {
             return handleDeleteRequest(request.getPathId());
         }
 

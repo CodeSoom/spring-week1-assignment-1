@@ -1,5 +1,6 @@
 package com.codesoom.assignment.models;
 
+import com.codesoom.assignment.RequestMethod;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -29,8 +30,21 @@ public class Request {
         return Long.parseLong(idMatcher.group(0));
     }
 
-    public String getMethod() {
-        return method;
+    public RequestMethod getRequestMethod() {
+        switch (method) {
+            case "GET":
+                return RequestMethod.GET;
+            case "POST":
+                return RequestMethod.POST;
+            case "PUT":
+                return RequestMethod.PUT;
+            case "PATCH":
+                return RequestMethod.PATCH;
+            case "DELETE":
+                return RequestMethod.DELETE;
+            default:
+                throw new AssertionError();
+        }
     }
 
     public RequestContent getRequestContent() throws JsonProcessingException {
