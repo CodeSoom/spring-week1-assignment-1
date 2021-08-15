@@ -72,12 +72,14 @@ public class DemoHttpHandler implements HttpHandler {
         if (httpResponse != null) {
             httpExchange.sendResponseHeaders(httpResponse.getHttpStatusCode(), httpResponse.getLength());
 
-            if (httpResponse.getContent() != null) {
-                OutputStream outputStream = httpExchange.getResponseBody();
+            OutputStream outputStream = httpExchange.getResponseBody();
+            if (httpExchange.getResponseBody() != null && httpResponse.getContent() != null) {
                 outputStream.write(httpResponse.getContent().getBytes());
-                outputStream.flush();
-                outputStream.close();
             }
+            outputStream.flush();
+            outputStream.close();
+        } else {
+            httpExchange.sendResponseHeaders(HttpStatusCode.InternalServerError.getStatusCode(), 0);
         }
 
     }
