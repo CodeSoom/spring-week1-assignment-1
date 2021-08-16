@@ -12,7 +12,8 @@ public class TaskManager {
     private List<Task> tasks = new ArrayList<>();
 
     public void create(String title) {
-        Task newTask = new Task(this.nextId++, title);
+        Long newId = this.nextId++;
+        Task newTask = new Task(newId, title);
         this.tasks.add(newTask);
     }
 
