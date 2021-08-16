@@ -22,27 +22,27 @@ public class DemoHttpHandler implements HttpHandler {
         Response response = new Response();
         // GET ALL
         if ("GET".equals(method) && path.has("tasks")) {
-            response = taskService.getAll();
+            response = handleGetAll();
         }
 
         // GET Detail
         if ("GET".equals(method) && path.hasIdOf("tasks")) {
-            response = taskService.getOne(path);
+            response = handleGetOne(path);
         }
 
         // POST
         if ("POST".equals(method) && path.has("tasks")) {
-            response = taskService.create(body);
+            response = handlePost(body);
         }
 
         // PUT & PATCH
         if (("PUT".equals(method) || "PATCH".equals(method)) && path.hasIdOf("tasks")) {
-            response = taskService.update(path, body);
+            response = handlePut(path, body);
         }
 
         // DELETE
         if ("DELETE".equals(method) && path.hasIdOf("tasks")) {
-            response = taskService.remove(path);
+            response = handleDelete(path);
         }
 
         exchange.sendResponseHeaders(response.getStatusCode(), response.getContent().getBytes().length);
@@ -67,5 +67,80 @@ public class DemoHttpHandler implements HttpHandler {
         return new BufferedReader(new InputStreamReader(inputStream, "utf-8"))
                 .lines()
                 .collect(Collectors.joining("\n"));
+    }
+
+    private Response handlePost(String body) {
+        String content;
+        int statusCode;
+
+        try {
+            content = taskService.create(body);
+            statusCode = 201;
+        } catch (IOException e) {
+            content = e.toString();
+            statusCode = 500;
+        }
+
+        return new Response(statusCode, content);
+    }
+
+    public Response handleGetAll() {
+        String content;
+        int statusCode;
+
+        try {
+            content = taskService.getAll();
+            statusCode = 200;
+        } catch (IOException e) {
+            content = e.toString();
+            statusCode = 500;
+        }
+
+        return new Response(statusCode, content);
+    }
+
+    public Response handleGetOne(Path path) {
+        String content;
+        int statusCode;
+
+        try {
+            content = taskService.getOne(path);
+            statusCode = 200;
+        } catch (NoSuchElementException | IOException e) {
+            content = e.toString();
+            statusCode = 404;
+        }
+
+        return new Response(statusCode, content);
+    }
+
+    public Response handleDelete(Path path) {
+        String content;
+        int statusCode;
+
+        try {
+            content = taskService.remove(path);
+            statusCode = 204;
+        } catch (NoSuchElementException e) {
+            content = e.toString();
+            statusCode = 404;
+        }
+
+        return new Response(statusCode, content);
+    }
+
+    public Response handlePut(Path path, String body) {
+        String content;
+        int statusCode;
+
+        try {
+            content = taskService.update(path, body)
+            statusCode = 200;
+        } catch(NoSuchElementException | IOException e) {
+            content = e.toString();
+            statusCode = 404;
+        }
+
+        return new Response(statusCode, content);
     }
 }
