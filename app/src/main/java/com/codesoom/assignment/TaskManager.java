@@ -48,12 +48,11 @@ public class TaskManager {
     }
 
     private boolean exist(Long id) {
-        long countResult = tasks.stream()
+        return tasks.stream()
                 .filter(task->task.getId().equals(id))
-                .count();
-
-        return countResult > 0;
-    }
+                .findFirst()
+                .isPresent();
+  }
 
 
 }
