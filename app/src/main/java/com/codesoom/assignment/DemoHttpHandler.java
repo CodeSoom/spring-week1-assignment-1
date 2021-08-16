@@ -44,36 +44,65 @@ public class DemoHttpHandler implements HttpHandler {
 
         System.out.println(method + " " + path + " " + body);
         String[] pathElements = null;
-        HttpResponse httpResponse = null;
+
         if (path != null) {
             pathElements = path.split("/");
         }
 
         boolean hasIdVariable = false;
+        Long pathId = null;
         if (pathElements != null && pathElements.length > 2) {
-            hasIdVariable = true;
+            pathId = Long.parseLong(pathElements[pathElements.length - 1]);
         }
-        long id = this.id;
+        long tempId = this.id;
 
-        if ("GET".equals(method) && Objects.equals(path, "/tasks")) { //전체 조회
-            httpResponse = getTasks();
-        } else if ("POST".equals(method) && Objects.equals(path, "/tasks")) { //task 생성
-            httpResponse = generateTask(body, id);
-            if (httpResponse.getHttpStatusCode() == HttpStatusCode.Created.getStatusCode()) {
-                id = id + 1;
-                this.id = id;
-            }
-        } else if ("GET".equals(method) && (hasIdVariable)) { //특정 task 조회
-            id = Long.parseLong(pathElements[pathElements.length - 1]);
-
-            httpResponse = getTask(id);
-        } else if (("PATCH".equals(method) || "PUT".equals(method)) && (hasIdVariable)) { // 특정 task 수정
-            id = Long.parseLong(pathElements[pathElements.length - 1]);
-            httpResponse = modifyTask(body, id);
-        } else if ("DELETE".equals(method) && (hasIdVariable)) { //특정 task 삭제
-            id = Long.parseLong(pathElements[pathElements.length - 1]);
-            httpResponse = deleteTask(id);
+        if ("GET".equals(method)) {
+            handleGetMethod(tasks, httpExchange, path, pathId);
+        } else if ("POST".equals(method)) { //task 생성
+            handlePostMethod(tasks, httpExchange, body, tempId);
+        } else if ("PATCH".equals(method) || "PUT".equals(method)) { // 특정 task 수정
+            handlePatchMethod(tasks, httpExchange, body, pathId);
+        } else if ("DELETE".equals(method)) { //특정 task 삭제
+            handleDeleteMethod(httpExchange, pathId);
         }
+
+    }
+
+    private void handleGetMethod(HashMap<Long, Task> tasks, HttpExchange httpExchange, String path, Long pathId) throws IOException {
+        HttpResponse httpResponse = null;
+        if (Objects.equals(path, "/tasks")) { //전체 조회
+            httpResponse = getTasks(tasks);
+        } else if (pathId != null) { //특정 task 조회
+            httpResponse = getTask(tasks, pathId);
+        }
+        sendResponse(httpExchange, httpResponse);
+    }
+
+    private void handlePostMethod(HashMap<Long, Task> tasks, HttpExchange httpExchange, String body, long tempId) throws IOException {
+        HttpResponse httpResponse = generateTask(tasks, body, tempId);
+        if (httpResponse.getHttpStatusCode() == HttpStatusCode.Created.getStatusCode()) {
+            this.id = tempId + 1;
+        }
+        sendResponse(httpExchange, httpResponse);
+    }
+
+    private void handlePatchMethod(HashMap<Long, Task> tasks, HttpExchange httpExchange, String body, Long pathId) throws IOException {
+        HttpResponse httpResponse = null;
+        if (pathId != null) {
+            httpResponse = modifyTask(tasks, body, pathId);
+        }
+        sendResponse(httpExchange, httpResponse);
+    }
+
+    private void handleDeleteMethod(HttpExchange httpExchange, Long pathId) throws IOException {
+        HttpResponse httpResponse = null;
+        if (pathId != null) {
+            httpResponse = deleteTask(pathId);
+        }
+        sendResponse(httpExchange, httpResponse);
+    }
+
+    private void sendResponse(HttpExchange httpExchange, HttpResponse httpResponse) throws IOException {
         if (httpResponse != null) {
             httpExchange.sendResponseHeaders(httpResponse.getHttpStatusCode(), httpResponse.getLength());
 
@@ -86,10 +115,9 @@ public class DemoHttpHandler implements HttpHandler {
         } else {
             httpExchange.sendResponseHeaders(HttpStatusCode.InternalServerError.getStatusCode(), 0);
         }
-
     }
 
-    private HttpResponse modifyTask(String body, Long id) throws IOException {
+    private HttpResponse modifyTask(HashMap<Long, Task> tasks, String body, Long id) throws IOException {
         String content = null;
         int httpStatusCode;
         int length = 0;
@@ -97,7 +125,7 @@ public class DemoHttpHandler implements HttpHandler {
             Task task = toTask(body);
             task.setId(id);
             tasks.put(id, task);
-            content = taskToJSON(id);
+            content = taskToJSON(tasks, id);
             httpStatusCode = HttpStatusCode.Success.getStatusCode();
             length = content.getBytes().length;
         } else {
@@ -121,7 +149,7 @@ public class DemoHttpHandler implements HttpHandler {
         return new HttpResponse(httpStatusCode, content, length);
     }
 
-    private HttpResponse generateTask(String body, Long id) throws IOException {
+    private HttpResponse generateTask(HashMap<Long, Task> tasks, String body, Long id) throws IOException {
         String content = null;
         int httpStatusCode;
         int length = 0;
@@ -130,7 +158,7 @@ public class DemoHttpHandler implements HttpHandler {
             long tempId = id + 1;
             task.setId(tempId);
             tasks.put(tempId, task);
-            content = taskToJSON(tempId);
+            content = taskToJSON(tasks, tempId);
             length = content.getBytes().length;
             httpStatusCode = HttpStatusCode.Created.getStatusCode();
         } else {
@@ -139,20 +167,20 @@ public class DemoHttpHandler implements HttpHandler {
         return new HttpResponse(httpStatusCode, content, length);
     }
 
-    private HttpResponse getTasks() throws IOException {
-        String content = tasksToJSON();
+    private HttpResponse getTasks(HashMap<Long, Task> tasks) throws IOException {
+        String content = tasksToJSON(tasks);
         System.out.println("/tasks");
         int length = content.getBytes().length;
         int httpStatusCode = HttpStatusCode.Success.getStatusCode();
         return new HttpResponse(httpStatusCode, content, length);
     }
 
-    private HttpResponse getTask(Long id) throws IOException {
+    private HttpResponse getTask(HashMap<Long, Task> tasks, Long id) throws IOException {
         String content = null;
         int httpStatusCode;
         int length = 0;
         if (tasks.get(id) != null) {
-            content = taskToJSON(id);
+            content = taskToJSON(tasks, id);
             httpStatusCode = HttpStatusCode.Success.getStatusCode();
             length = content.getBytes().length;
         } else {
@@ -165,7 +193,7 @@ public class DemoHttpHandler implements HttpHandler {
         return objectMapper.readValue(content, Task.class);
     }
 
-    private String tasksToJSON() throws IOException {
+    private String tasksToJSON(HashMap<Long, Task> tasks) throws IOException {
 
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, new ArrayList<>(tasks.values()));
@@ -173,7 +201,7 @@ public class DemoHttpHandler implements HttpHandler {
         return outputStream.toString();
     }
 
-    private String taskToJSON(Long id) throws IOException {
+    private String taskToJSON(HashMap<Long, Task> tasks, Long id) throws IOException {
 
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks.get(id));
