@@ -15,13 +15,6 @@ public class TodoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    public TodoHttpHandler() {
-        Task task = new Task();
-        task.setId(1L);
-        task.setTitle("Do nothing");
-        tasks.add(task);
-    }
-
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
