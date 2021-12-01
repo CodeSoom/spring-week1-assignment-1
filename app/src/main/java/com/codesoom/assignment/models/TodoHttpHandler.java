@@ -14,6 +14,9 @@ public class TodoHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
+        String content = "Hello, world!";
+
+        exchange.sendResponseHeaders(200, content.getBytes().length);
         System.out.println(method + " " + path);
     }
 }
