@@ -3,9 +3,9 @@ package com.codesoom.assignment.models;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
+import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
 
@@ -15,7 +15,15 @@ public class TodoHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
+        InputStream inputStream = exchange.getRequestBody();
+        String body = new BufferedReader(new InputStreamReader(inputStream))
+                .lines().collect(Collectors.joining("\n"));
+
         String content = "Hello, world!";
+
+        if(!body.isBlank()) {
+            System.out.println(body);
+        }
 
         if(method.equals("GET") && path.equals("/tasks")) {
             content = "[]";
