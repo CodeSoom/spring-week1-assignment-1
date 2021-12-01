@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 
 public class TodoHttpHandler implements HttpHandler {
@@ -16,7 +17,16 @@ public class TodoHttpHandler implements HttpHandler {
 
         String content = "Hello, world!";
 
+        if(method.equals("GET") && path.equals("/tasks")) {
+            content = "[]";
+        }
+
         exchange.sendResponseHeaders(200, content.getBytes().length);
+
+        OutputStream outputStream = exchange.getResponseBody();
+        outputStream.write(content.getBytes());
+        outputStream.close();
+
         System.out.println(method + " " + path);
     }
 }
