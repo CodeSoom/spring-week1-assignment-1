@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -28,10 +29,16 @@ public class TodoHttpHandler implements HttpHandler {
         String content = "Hello, world!";
 
         if(!body.isBlank()) {
-            System.out.println(body);
+            Task task = toTask(body);
+            task.setId((long) tasks.size() + 1);
+            tasks.add(task);
         }
 
         if(method.equals("GET") && path.equals("/tasks")) {
+            content = TaskToJSON();
+        }
+
+        if(method.equals("POST") && path.equals("/tasks")) {
             content = TaskToJSON();
         }
 
@@ -42,6 +49,10 @@ public class TodoHttpHandler implements HttpHandler {
         outputStream.close();
 
         System.out.println(method + " " + path);
+    }
+
+    private Task toTask(String content) throws JsonProcessingException {
+        return objectMapper.readValue(content, Task.class);
     }
 
     private String TaskToJSON() throws IOException {
