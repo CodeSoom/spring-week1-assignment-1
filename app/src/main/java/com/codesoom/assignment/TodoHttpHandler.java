@@ -26,21 +26,13 @@ public class TodoHttpHandler implements HttpHandler {
         String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines().collect(Collectors.joining("\n"));
 
-        String content = "Hello, world!";
-
         if(!body.isBlank()) {
             Task task = toTask(body);
             task.setId((long) tasks.size() + 1);
             tasks.add(task);
         }
 
-        if(method.equals("GET") && path.equals("/tasks")) {
-            content = TaskToJSON();
-        }
-
-        if(method.equals("POST") && path.equals("/tasks")) {
-            content = TaskToJSON();
-        }
+        String content = TaskToJSON();
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
