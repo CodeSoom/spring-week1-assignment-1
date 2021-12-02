@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 public class TodoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
     private ObjectMapper objectMapper = new ObjectMapper();
+    private Long id = 1L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -28,15 +29,15 @@ public class TodoHttpHandler implements HttpHandler {
         String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines().collect(Collectors.joining("\n"));
 
-        if (!body.isBlank()) {
-            Task task = toTask(body);
-            task.setId((long) tasks.size() + 1);
-            tasks.add(task);
-        }
         String content = TasksToJSON();
 
         if(method.equals("GET") && taskId != null) {
             Task task = findTaskById(taskId);
+            content = TaskToJSON(task);
+        } else if(method.equals("POST") && !body.isBlank()) {
+            Task task = toTask(body);
+            task.setId(id++);
+            tasks.add(task);
             content = TaskToJSON(task);
         }
 
