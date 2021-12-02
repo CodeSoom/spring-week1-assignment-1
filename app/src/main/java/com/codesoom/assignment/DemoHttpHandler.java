@@ -19,6 +19,17 @@ public class DemoHttpHandler implements HttpHandler {
 
         String content = "it's content";
 
+        if (method.equals("GET") && path.equals("/tasks")) {
+            System.out.println(method + ", " + path);
+            content = "[{\"id\": 1, \"title\": \"it's title\"}]";
+        }
+
+        if (method.equals("POST") && path.equals("/tasks")) {
+            System.out.println(method + ", " + path);
+            content = "create a new task";
+        }
+
+
         // response Code, response Length 필수 필수인듯.
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
