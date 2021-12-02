@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
+    private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
 
     DemoHttpHandler() {
@@ -31,7 +33,7 @@ public class DemoHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
-        InputStream inputStream =  exchange.getRequestBody();
+        InputStream inputStream = exchange.getRequestBody();
         // while 문을 돌아 read 해야 하는걸 BufferedReader 가 해결해준다.
         // 예제를 보니 아래와 비슷한 형태인듯
 //        int data = inputStream.read();
@@ -43,9 +45,10 @@ public class DemoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        System.out.println(body);
-
-
+        if (!body.isBlank()) {
+            Task task = toTask(body);
+            tasks.add(task);
+        }
 
 
         String content = "it's content";
@@ -80,8 +83,12 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
+    public Task toTask(String content) throws JsonProcessingException {
+        // content 를 해당 class 의 valueType 으로 바인딩 해주는듯
+        return objectMapper.readValue(content, Task.class);
+    }
+
     public String tasksToJson() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
         OutputStream outputStream = new ByteArrayOutputStream();
 
         // writeValue 는 mapper 가 tasks 를 바인딩해서 outputStream 에 write 해주는 메서드 인가?
