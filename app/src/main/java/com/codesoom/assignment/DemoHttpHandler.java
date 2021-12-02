@@ -1,13 +1,26 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.models.Task;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DemoHttpHandler implements HttpHandler {
+    private List<Task> tasks = new ArrayList<>();
+
+    DemoHttpHandler() {
+        Task task = new Task();
+        // Long 타입은 L을 붙여준다
+        task.setId(1L);
+        task.setTitle("제목 입니다");
+
+        tasks.add(task);
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -21,7 +34,9 @@ public class DemoHttpHandler implements HttpHandler {
 
         if (method.equals("GET") && path.equals("/tasks")) {
             System.out.println(method + ", " + path);
-            content = "[{\"id\": 1, \"title\": \"it's title\"}]";
+
+            // content 타입은 String 이므로 toString()
+            content = tasks.toString();
         }
 
         if (method.equals("POST") && path.equals("/tasks")) {
