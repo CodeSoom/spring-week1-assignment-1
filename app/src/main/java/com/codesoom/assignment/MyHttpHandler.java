@@ -43,13 +43,20 @@ public class MyHttpHandler implements HttpHandler {
         }
 
         if (method.equals("POST") && path.equals("/tasks")) {
-            Task task = toTask(requestBody);
+            try {
+                Task task = toTask(requestBody);
 
-            long newId = tasks.size() == 0 ? 1 : tasks.get(tasks.size() - 1).getId() + 1;
-            task.setId(newId);
-            tasks.add(task);
+                long newId = tasks.size() == 0 ? 1 : tasks.get(tasks.size() - 1).getId() + 1;
+                task.setId(newId);
+                tasks.add(task);
 
-            exchange.sendResponseHeaders(201, content.getBytes().length);
+                content = taskToJson(task);
+
+                exchange.sendResponseHeaders(201, content.getBytes().length);
+            } catch (JsonProcessingException e) {
+                //e.printStackTrace();
+                exchange.sendResponseHeaders(400, content.getBytes().length);
+            }
         }
 
 
@@ -66,6 +73,14 @@ public class MyHttpHandler implements HttpHandler {
 
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
+
+        return outputStream.toString();
+    }
+
+    private String taskToJson(Task task) throws IOException {
+
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, task);
 
         return outputStream.toString();
     }
