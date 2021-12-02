@@ -47,9 +47,15 @@ public class DemoHttpHandler implements HttpHandler {
             content = tasksToJSON();
 
         } else if (method.equals("GET") && path.contains("/tasks/")) {
-            Long id = getId(path);
-            Task task = getTaskById(id);
-            content = toJSON(task);
+            try {
+                Long id = getId(path);
+                Task task = getTaskById(id);
+                content = toJSON(task);
+
+            } catch (NumberFormatException e) {
+                code = 400;
+                content = "Bad Request";
+            }
 
         } else if (method.equals("POST") && path.equals("/tasks")) {
             Task task = insertTask(body);
@@ -57,13 +63,25 @@ public class DemoHttpHandler implements HttpHandler {
             code = 201;
 
         } else if ("PATCH, PUT".contains(method) && path.contains("/tasks/")) {
-            Long id = getId(path);
-            Task task = updateTask(id, body);
-            content = toJSON(task);
+            try {
+                Long id = getId(path);
+                Task task = updateTask(id, body);
+                content = toJSON(task);
+
+            } catch (NumberFormatException e) {
+                code = 400;
+                content = "Bad Request";
+            }
 
         } else if (method.equals("DELETE") && path.contains("/tasks/")) {
-            Long id = getId(path);
-            deleteTask(id);
+            try {
+                Long id = getId(path);
+                deleteTask(id);
+
+            } catch (NumberFormatException e) {
+                code = 400;
+                content = "Bad Request";
+            }
 
         } else {
             code = 404;
