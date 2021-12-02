@@ -11,13 +11,17 @@ public class App {
         return "Hello World!";
     }
 
+    // 상수 일 경우 변수명을 대문자로 표기 해야한다
+    final static int PORT = 8000;
+    final static int BACKLOG = 0;
+
     public static void main(String[] args) {
 
         System.out.println(new App().getGreeting());
 
         try {
-            InetSocketAddress address = new InetSocketAddress(8000);
-            HttpServer httpServer = HttpServer.create(address, 0);
+            InetSocketAddress address = new InetSocketAddress(PORT);
+            HttpServer httpServer = HttpServer.create(address, BACKLOG);
 
             HttpHandler handler = new DemoHttpHandler();
             httpServer.createContext("/", handler);
@@ -25,8 +29,6 @@ public class App {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
 
     }
 }
