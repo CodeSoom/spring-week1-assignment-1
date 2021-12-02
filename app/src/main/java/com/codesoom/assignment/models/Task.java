@@ -2,9 +2,9 @@ package com.codesoom.assignment.models;
 
 public class Task {
 
-    private Long id;
+    private Long id; //고유번호
 
-    private String title;
+    private String title; //제목
 
     public Long getId() {
         return id;

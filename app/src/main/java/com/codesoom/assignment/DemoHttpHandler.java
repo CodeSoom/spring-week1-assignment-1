@@ -8,9 +8,6 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,57 +20,58 @@ public class DemoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
-        URI uri = exchange.getRequestURI();
-        String path = uri.getPath();
+        String method = exchange.getRequestMethod(); //요청받은 http method
+        URI uri = exchange.getRequestURI();  //요청받은 uri
+        String path = uri.getPath(); //요청받은 path
+        String content = null; //응답 body
+        int code = 200; //응답 코드
 
         InputStream inputStream = exchange.getRequestBody();
         InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
         String body = new BufferedReader(inputStreamReader)
                 .lines()
-                .collect(Collectors.joining("\n"));
+                .collect(Collectors.joining("\n")); //요청받은 body
 
+        //서버 콘솔 출력
         System.out.println(method + " " + path);
 
         if (!body.isBlank()) {
             System.out.println(body);
         }
 
-        String content = null;
-        int code = 200;
-        long responseLength = 0L;
+        //클라이언트에서 받은 요청 처리
+        if (method.equals("GET") && path.equals("/")) {
+            content = "Hello, World!";
 
-        if (method.equals("GET") && path.equals("/tasks")) {
+        } else if (method.equals("GET") && path.equals("/tasks")) {
             content = tasksToJSON();
-        }
 
-        if (method.equals("GET") && path.contains("/tasks/")) {
+        } else if (method.equals("GET") && path.contains("/tasks/")) {
             Long id = getId(path);
-            content = taskToJSON(id);
-        }
+            Task task = getTaskById(id);
+            content = toJSON(task);
 
-        if (method.equals("POST") && path.equals("/tasks")) {
-            Task task = toTask(body);
-            task.setId(++autoId);
-            tasks.add(task);
-
+        } else if (method.equals("POST") && path.equals("/tasks")) {
+            Task task = insertTask(body);
             content = toJSON(task);
             code = 201;
-        }
 
-        if ("PATCH, PUT".contains(method) && path.contains("/tasks/")) {
+        } else if ("PATCH, PUT".contains(method) && path.contains("/tasks/")) {
             Long id = getId(path);
             Task task = updateTask(id, body);
             content = toJSON(task);
-        }
 
-        if (method.equals("DELETE") && path.contains("/tasks/")) {
+        } else if (method.equals("DELETE") && path.contains("/tasks/")) {
             Long id = getId(path);
             deleteTask(id);
             content = null;
+
+        } else {
+            code = 404;
+            content = "Not Found";
         }
 
-
+        //서버에서 클라이언트로 응답 처리
         int responseBodyLength = content != null ? content.getBytes().length : 0;
         byte[] responseBody = content != null ? content.getBytes() : new byte[0];
 
@@ -85,11 +83,21 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
+    //==편의 메서드==//
+
+    /**
+     * 클라이언트에서 받은 path에서 Task의 id 얻기
+     */
     private Long getId(String path) {
         String[] split = path.split("/tasks/");
         return Long.valueOf(split[1]);
     }
 
+    //==json 변환 메서드==//
+
+    /**
+     * Task를 JSON으로 포맷하기
+     */
     private String toJSON(Task task) {
         OutputStream outputStream = new ByteArrayOutputStream();
 
@@ -102,16 +110,22 @@ public class DemoHttpHandler implements HttpHandler {
         return outputStream.toString();
     }
 
-    private Task toTask(String body) throws JsonProcessingException {
-        return objectMapper.readValue(body, Task.class);
+    /**
+     * json을 Task로 포맷하기
+     */
+    private Task toTask(String json) throws JsonProcessingException {
+        return objectMapper.readValue(json, Task.class);
     }
 
-    private String taskToJSON(Long id) {
-        String result = null;
+    /**
+     * Task 컬렉션에서 Task의 id에 해당하는 객체 얻기
+     */
+    private Task getTaskById(Long id) {
+        Task result = null;
 
         for (Task task : tasks) {
             if (task.getId() == id) {
-                result = toJSON(task);
+                result = task;
                 break;
             }
         }
@@ -119,6 +133,9 @@ public class DemoHttpHandler implements HttpHandler {
         return result;
     }
 
+    /**
+     * Task 컬렉션을 json으로 포맷하기
+     */
     private String tasksToJSON() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
@@ -126,6 +143,21 @@ public class DemoHttpHandler implements HttpHandler {
         return outputStream.toString();
     }
 
+    //==CRUD 메서드==//
+
+    /**
+     * Task 저장
+     */
+    private Task insertTask(String body) throws JsonProcessingException {
+        Task task = toTask(body);
+        task.setId(++autoId);
+        tasks.add(task);
+        return task;
+    }
+
+    /**
+     * Task 수정
+     */
     private Task updateTask(Long id, String body) throws JsonProcessingException {
 
         Task findTask = toTask(body);
@@ -143,6 +175,9 @@ public class DemoHttpHandler implements HttpHandler {
         return result;
     }
 
+    /**
+     * Task 삭제
+     */
     private void deleteTask(Long id) {
         for (Task task : tasks) {
             if (task.getId() == id) {

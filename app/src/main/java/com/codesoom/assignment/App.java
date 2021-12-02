@@ -15,10 +15,10 @@ public class App {
         System.out.println(new App().getGreeting());
 
         try {
-            InetSocketAddress address = new InetSocketAddress(8000);
+            InetSocketAddress address = new InetSocketAddress(8000); //서버 정보
             HttpServer httpServer = HttpServer.create(address, 0);
 
-            HttpHandler handler = new DemoHttpHandler();
+            HttpHandler handler = new DemoHttpHandler(); //클라이언트 요청 처리하는 클래스
             httpServer.createContext("/", handler);
 
             httpServer.start();
