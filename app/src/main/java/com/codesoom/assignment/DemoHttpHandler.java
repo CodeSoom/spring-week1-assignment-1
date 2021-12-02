@@ -8,6 +8,9 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,7 +39,11 @@ public class DemoHttpHandler implements HttpHandler {
             System.out.println(body);
         }
 
-        String content = "Hello, World!";
+        //error: unmappable character (0xED) for encoding x-windows-949
+        String test = URLEncoder.encode("과제하기", StandardCharsets.UTF_8);
+        String test2 = URLDecoder.decode(test, StandardCharsets.UTF_8);
+
+        String content = null;
         int code = 200;
         long responseLength = 0L;
 
