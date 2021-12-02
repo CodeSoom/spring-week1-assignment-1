@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.HttpStatusCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -23,6 +24,8 @@ public class MyHttpHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
         URI requestURI = exchange.getRequestURI();
+
+
         String path = requestURI.toString();
         InputStream inputStream = exchange.getRequestBody();
         String requestBody = new BufferedReader(new InputStreamReader(inputStream))
@@ -36,10 +39,11 @@ public class MyHttpHandler implements HttpHandler {
 
 
         String content = "";
+        HttpStatusCode httpStatusCode = HttpStatusCode.NOT_FOUND;
 
         if (method.equals("GET") && path.equals("/tasks")) {
             content = tasksToJson();
-            exchange.sendResponseHeaders(200, content.getBytes().length);
+            httpStatusCode = HttpStatusCode.OK;
         }
 
         if (method.equals("POST") && path.equals("/tasks")) {
@@ -52,14 +56,42 @@ public class MyHttpHandler implements HttpHandler {
 
                 content = taskToJson(task);
 
-                exchange.sendResponseHeaders(201, content.getBytes().length);
+                httpStatusCode = HttpStatusCode.CREATED;
             } catch (JsonProcessingException e) {
-                //e.printStackTrace();
-                exchange.sendResponseHeaders(400, content.getBytes().length);
+                e.printStackTrace();
+                httpStatusCode = HttpStatusCode.BAD_REQUEST;
             }
         }
 
+        if (method.equals("GET") && path.startsWith("/tasks/")) {
+            try {
+                String idStr = path.substring(path.lastIndexOf("/") + 1);
+                System.out.println(idStr);
+                long id = Long.parseLong(idStr);
 
+                for (Task task : tasks) {
+                    if (task.getId() == id) {
+                        content = taskToJson(task);
+                        httpStatusCode = HttpStatusCode.OK;
+                        break;
+                    }
+                }
+                if (httpStatusCode != HttpStatusCode.OK)
+                    httpStatusCode = HttpStatusCode.NOT_FOUND;
+
+            } catch (IndexOutOfBoundsException e) {
+                e.printStackTrace();
+                httpStatusCode = HttpStatusCode.NOT_FOUND;
+            } catch (IOException e) {
+                e.printStackTrace();
+                httpStatusCode = HttpStatusCode.INTERNAL_SERVER_ERROR;
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                httpStatusCode = HttpStatusCode.NOT_FOUND;
+            }
+        }
+
+        exchange.sendResponseHeaders(httpStatusCode.getValue(), content.getBytes().length);
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.write(content.getBytes());
         responseBody.close();
