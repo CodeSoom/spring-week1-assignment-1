@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -13,16 +14,9 @@ import java.util.stream.Collectors;
 
 public class MyHttpHandler implements HttpHandler {
     List<Task> tasks = new ArrayList<>();
+    ObjectMapper objectMapper = new ObjectMapper();
 
     public MyHttpHandler() {
-        Task task = new Task();
-        task.setId(1);
-        task.setTitle("test");
-        tasks.add(task);
-        Task task2 = new Task();
-        task2.setId(2);
-        task2.setTitle("test2");
-        tasks.add(task2);
     }
 
     @Override
@@ -45,17 +39,30 @@ public class MyHttpHandler implements HttpHandler {
 
         if (method.equals("GET") && path.equals("/tasks")) {
             content = tasksToJson();
+            exchange.sendResponseHeaders(200, content.getBytes().length);
         }
 
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+        if (method.equals("POST") && path.equals("/tasks")) {
+            Task task = toTask(requestBody);
+
+            long newId = tasks.size() == 0 ? 1 : tasks.get(tasks.size() - 1).getId() + 1;
+            task.setId(newId);
+            tasks.add(task);
+
+            exchange.sendResponseHeaders(201, content.getBytes().length);
+        }
+
 
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.write(content.getBytes());
         responseBody.close();
     }
 
+    private Task toTask(String requestBody) throws JsonProcessingException {
+        return objectMapper.readValue(requestBody, Task.class);
+    }
+
     private String tasksToJson() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
 
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
