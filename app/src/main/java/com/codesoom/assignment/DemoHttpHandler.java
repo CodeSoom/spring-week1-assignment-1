@@ -39,10 +39,6 @@ public class DemoHttpHandler implements HttpHandler {
             System.out.println(body);
         }
 
-        //error: unmappable character (0xED) for encoding x-windows-949
-        String test = URLEncoder.encode("과제하기", StandardCharsets.UTF_8);
-        String test2 = URLDecoder.decode(test, StandardCharsets.UTF_8);
-
         String content = null;
         int code = 200;
         long responseLength = 0L;
