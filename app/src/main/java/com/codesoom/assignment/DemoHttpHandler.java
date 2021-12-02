@@ -58,7 +58,7 @@ public class DemoHttpHandler implements HttpHandler {
             code = 201;
         }
 
-        if (method.equals("PATCH") && path.contains("/tasks/")) {
+        if ("PATCH, PUT".contains(method) && path.contains("/tasks/")) {
             Long id = getId(path);
             Task task = updateTask(id, body);
             content = toJSON(task);
@@ -70,13 +70,15 @@ public class DemoHttpHandler implements HttpHandler {
             content = null;
         }
 
-        responseLength = content != null ? content.getBytes().length : 0;
-        exchange.sendResponseHeaders(code, responseLength);
+
+        int responseBodyLength = content != null ? content.getBytes().length : 0;
+        byte[] responseBody = content != null ? content.getBytes() : new byte[0];
+
+        exchange.sendResponseHeaders(code, responseBodyLength);
 
         OutputStream outputStream = exchange.getResponseBody();
-        if (content != null) {
-            outputStream.write(content.getBytes());
-        }
+        outputStream.write(responseBody);
+        outputStream.flush();
         outputStream.close();
     }
 
