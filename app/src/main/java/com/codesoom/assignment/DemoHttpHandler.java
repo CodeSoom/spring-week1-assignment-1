@@ -5,12 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
@@ -31,6 +30,23 @@ public class DemoHttpHandler implements HttpHandler {
         String method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
+
+        InputStream inputStream =  exchange.getRequestBody();
+        // while 문을 돌아 read 해야 하는걸 BufferedReader 가 해결해준다.
+        // 예제를 보니 아래와 비슷한 형태인듯
+//        int data = inputStream.read();
+//        while(data != -1) {
+//            data = inputStream.read();
+//        }
+
+        String body = new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
+
+        System.out.println(body);
+
+
+
 
         String content = "it's content";
 
