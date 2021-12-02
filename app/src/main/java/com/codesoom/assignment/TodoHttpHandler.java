@@ -10,6 +10,7 @@ import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
@@ -21,18 +22,23 @@ public class TodoHttpHandler implements HttpHandler {
         String method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
+        Long taskId = parseTaskId(uri);
 
         InputStream inputStream = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines().collect(Collectors.joining("\n"));
 
-        if(!body.isBlank()) {
+        if (!body.isBlank()) {
             Task task = toTask(body);
             task.setId((long) tasks.size() + 1);
             tasks.add(task);
         }
+        String content = TasksToJSON();
 
-        String content = TaskToJSON();
+        if(method.equals("GET") && taskId != null) {
+            Task task = findTaskById(taskId);
+            content = TaskToJSON(task);
+        }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
@@ -40,17 +46,49 @@ public class TodoHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes());
         outputStream.close();
 
-        System.out.println(method + " " + path);
+        System.out.println(method + " " + path + " " + taskId);
     }
 
     private Task toTask(String content) throws JsonProcessingException {
         return objectMapper.readValue(content, Task.class);
     }
 
-    private String TaskToJSON() throws IOException {
+    private String TaskToJSON(Task task) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, task);
+
+        return outputStream.toString();
+    }
+
+    private String TasksToJSON() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
 
         return outputStream.toString();
+    }
+
+    private Long parseTaskId(URI uri) {
+        String path = uri.getPath();
+        String pattern = "^\\/tasks\\/\\d+$";
+
+        if(!Pattern.matches(pattern, path)) {
+            return null;
+        }
+
+        try {
+            Long id = Long.parseLong(path.substring(path.lastIndexOf('/') + 1));
+            return id;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private Task findTaskById(Long id) {
+        for(Task task : tasks) {
+            if(task.getId().equals(id)) {
+                return task;
+            }
+        }
+        return null;
     }
 }
