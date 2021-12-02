@@ -64,7 +64,6 @@ public class DemoHttpHandler implements HttpHandler {
         } else if (method.equals("DELETE") && path.contains("/tasks/")) {
             Long id = getId(path);
             deleteTask(id);
-            content = null;
 
         } else {
             code = 404;
@@ -124,7 +123,7 @@ public class DemoHttpHandler implements HttpHandler {
         Task result = null;
 
         for (Task task : tasks) {
-            if (task.getId() == id) {
+            if (task.getId().equals(id)) {
                 result = task;
                 break;
             }
@@ -165,7 +164,7 @@ public class DemoHttpHandler implements HttpHandler {
         Task result = null;
 
         for (Task task : tasks) {
-            if (task.getId() == id) {
+            if (task.getId().equals(id)) {
                 task.setTitle(findTask.getTitle());
                 result = task;
                 break;
@@ -180,7 +179,7 @@ public class DemoHttpHandler implements HttpHandler {
      */
     private void deleteTask(Long id) {
         for (Task task : tasks) {
-            if (task.getId() == id) {
+            if (task.getId().equals(id)) {
                 tasks.remove(task);
                 break;
             }
