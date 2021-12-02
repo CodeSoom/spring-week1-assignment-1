@@ -65,6 +65,12 @@ public class DemoHttpHandler implements HttpHandler {
             content = "create a new task";
         }
 
+        if (method.equals("DELETE") && path.equals("/tasks")) {
+            System.out.println(method + ", " + path);
+            deleteTask(1L);
+            System.out.println(tasks);
+        }
+
 
         // response Code, response Length 필수 필수인듯.
         exchange.sendResponseHeaders(200, content.getBytes().length);
@@ -83,12 +89,12 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
-    public Task toTask(String content) throws JsonProcessingException {
+    private Task toTask(String content) throws JsonProcessingException {
         // content 를 해당 class 의 valueType 으로 바인딩 해주는듯
         return objectMapper.readValue(content, Task.class);
     }
 
-    public String tasksToJson() throws IOException {
+    private String tasksToJson() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
 
         // writeValue 는 mapper 가 tasks 를 바인딩해서 outputStream 에 write 해주는 메서드 인가?
@@ -98,6 +104,10 @@ public class DemoHttpHandler implements HttpHandler {
         objectMapper.writeValue(outputStream, tasks);
 
         return outputStream.toString();
+    }
+
+    private void deleteTask(Long id) {
+        tasks.removeIf((t) -> t.getId().equals(id));
     }
 }
 
