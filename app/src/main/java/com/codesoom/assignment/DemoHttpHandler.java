@@ -1,9 +1,11 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
@@ -36,7 +38,7 @@ public class DemoHttpHandler implements HttpHandler {
             System.out.println(method + ", " + path);
 
             // content 타입은 String 이므로 toString()
-            content = tasks.toString();
+            content = tasksToJson();
         }
 
         if (method.equals("POST") && path.equals("/tasks")) {
@@ -60,6 +62,19 @@ public class DemoHttpHandler implements HttpHandler {
 
         // outputStream 에 관련된 리소스 모두 해제
         outputStream.close();
+    }
+
+    public String tasksToJson() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        OutputStream outputStream = new ByteArrayOutputStream();
+
+        // writeValue 는 mapper 가 tasks 를 바인딩해서 outputStream 에 write 해주는 메서드 인가?
+        // 뒤에 outputStream.write 가 있는데 왜 여기서도 outputStream ...
+        // 데이터를 전달 할 때 마다 outputStream 이 필요한건가..
+        // ByteArrayOutputStream 는 tasks 를 전달하기 위한 stream 이고 뒤에 outputStream 은 ResponseBody 에 데이터를 담기 위한 outputStream 인가.
+        objectMapper.writeValue(outputStream, tasks);
+
+        return outputStream.toString();
     }
 }
 
