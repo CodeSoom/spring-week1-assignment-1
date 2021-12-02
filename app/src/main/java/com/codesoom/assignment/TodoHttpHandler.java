@@ -39,6 +39,10 @@ public class TodoHttpHandler implements HttpHandler {
             task.setId(id++);
             tasks.add(task);
             content = TaskToJSON(task);
+        } else if(method.equals("DELETE") && taskId != null) {
+            Task task = findTaskById(taskId);
+            tasks.remove(task);
+            content = TasksToJSON();
         }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
