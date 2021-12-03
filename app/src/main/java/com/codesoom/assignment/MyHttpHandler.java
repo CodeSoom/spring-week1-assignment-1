@@ -36,8 +36,31 @@ public class MyHttpHandler implements HttpHandler {
             readTask(exchange, path);
         }
 
+        if (method.equals("DELETE") && path.startsWith("/tasks/")){
+            deleteTask(exchange, path);
+        }
+
         String content = "";
         sendResponse(exchange, HttpStatusCode.NOT_FOUND, content);
+    }
+
+
+
+    private void deleteTask(HttpExchange exchange, String path) throws IOException {
+        String idStr = path.substring(path.lastIndexOf("/") + 1);
+        try {
+            long id = Long.parseLong(idStr);
+            taskManager.deleteTask(id);
+            sendResponse(exchange, HttpStatusCode.NO_CONTENT, "");
+        }
+        catch (NumberFormatException e){
+            e.printStackTrace();
+            sendResponse(exchange, HttpStatusCode.BAD_REQUEST, "");
+        }
+        catch (NoSuchElementException e){
+            e.printStackTrace();
+            sendResponse(exchange, HttpStatusCode.NOT_FOUND, "");
+        }
     }
 
 
