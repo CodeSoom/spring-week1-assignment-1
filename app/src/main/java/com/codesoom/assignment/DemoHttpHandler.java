@@ -6,7 +6,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.*;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,9 +41,9 @@ public class DemoHttpHandler implements HttpHandler {
         // 2. Path - "/", "/tasks", "/tasks/1", ...
         // 3. Headers, Body(Content)
 
-        String method = exchange.getRequestMethod();
-        URI uri = exchange.getRequestURI();
-        String path = uri.getPath();
+        final String method = exchange.getRequestMethod();
+        final URI uri = exchange.getRequestURI();
+        final String path = uri.getPath();
 
         InputStream inputStream = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(inputStream))
