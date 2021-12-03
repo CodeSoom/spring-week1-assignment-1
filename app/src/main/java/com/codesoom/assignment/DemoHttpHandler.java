@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
-    private List<Task> tasks = new ArrayList<>();
-    private static Long autoId = 0L;
+    private List<Task> tasks = new ArrayList<>(); //할일 목록
+    private static Long autoId = 0L; //Task에서 자동증가한 id의 마지막 값
 
     private ObjectMapper objectMapper = new ObjectMapper();
 

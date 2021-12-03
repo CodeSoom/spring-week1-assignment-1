@@ -1,5 +1,8 @@
 package com.codesoom.assignment.models;
 
+/**
+ * To do 할일을 기록하는 클래스
+ */
 public class Task {
 
     private Long id; //고유번호
