@@ -10,6 +10,7 @@ import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
@@ -49,8 +50,11 @@ public class DemoHttpHandler implements HttpHandler {
         } else if (method.equals("GET") && path.contains("/tasks/")) {
             try {
                 Long id = getId(path);
-                Task task = findTaskById(id);
-                content = toJSON(task);
+                Optional<Task> taskOptional = findTaskById(id);
+
+                if (taskOptional.isPresent()) {
+                    content = toJSON(taskOptional.get());
+                }
 
             } catch (NumberFormatException e) {
                 code = 400;
@@ -137,12 +141,12 @@ public class DemoHttpHandler implements HttpHandler {
     /**
      * 할일(Task) 목록에서 주어인 아이디를 가진 할일(Task)을 찾기
      */
-    private Task findTaskById(Long id) {
-        Task result = null;
+    private Optional<Task> findTaskById(Long id) {
+        Optional<Task> result = Optional.empty();
 
         for (Task task : tasks) {
             if (task.getId().equals(id)) {
-                result = task;
+                result = Optional.of(task);
                 break;
             }
         }
