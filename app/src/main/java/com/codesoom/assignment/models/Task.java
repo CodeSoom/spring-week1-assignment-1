@@ -26,6 +26,6 @@ public class Task {
     }
 
     public String toString() {
-        return "Task - title: " + title;
+        return String.format("Task - title: %s", title);
     }
 }

@@ -34,7 +34,7 @@ public class DemoHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n")); //요청받은 body
 
         //서버 콘솔 출력
-        System.out.println(method + " " + path);
+        System.out.printf("%s %s%n", method, path);
 
         if (!body.isBlank()) {
             System.out.println(body);
