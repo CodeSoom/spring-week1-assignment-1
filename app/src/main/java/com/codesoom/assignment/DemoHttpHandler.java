@@ -25,33 +25,20 @@ public class DemoHttpHandler implements HttpHandler {
         final URI uri = exchange.getRequestURI();  //요청받은 uri
         final String path = uri.getPath(); //요청받은 path
 
-        String content = null; //응답 body
-        int code = 200; //응답 코드
-
-        InputStream inputStream = exchange.getRequestBody();
-        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-        String body = new BufferedReader(inputStreamReader)
-                .lines()
-                .collect(Collectors.joining("\n")); //요청받은 body
-
         //서버 콘솔 출력
         System.out.printf("%s %s%n", method, path);
 
-        if (!body.isBlank()) {
-            System.out.println(body);
-        }
-        
-        //404처리
-//        if (path.equals("/") || path.equals("/tasks") || path.equals("/tasks/")) {
-//            code = 404;
-//        }
+        String responseBody = null; //응답 body
+        int code = 200; //응답 코드
+
+        String json = resolveRequestBody(exchange);
 
         //클라이언트에서 받은 요청 처리
         if (method.equals("GET") && path.equals("/")) {
-            content = "Hello, World!";
+            responseBody = "Hello, World!";
 
         } else if (method.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJSON();
+            responseBody = tasksToJSON();
 
         } else if (method.equals("GET") && path.contains("/tasks/")) {
             try {
@@ -59,35 +46,34 @@ public class DemoHttpHandler implements HttpHandler {
                 Optional<Task> taskOptional = findTaskById(id);
 
                 if (taskOptional.isPresent()) {
-                    content = toJSON(taskOptional.get());
+                    responseBody = toJSON(taskOptional.get());
                 }
 
             } catch (NumberFormatException e) {
                 code = 400;
-                content = "Bad Request";
+                responseBody = "Bad Request";
             }
 
         } else if (method.equals("POST") && path.equals("/tasks")) {
-            Task task = toTask(body);
+            Task task = toTask(json);
             insertTask(task);
-
-            content = toJSON(task);
+            responseBody = toJSON(task);
             code = 201;
 
         } else if ("PATCH, PUT".contains(method) && path.contains("/tasks/")) {
             try {
                 Long id = getId(path);
-                Task taskRequst = toTask(body); //클라이언트에서 요청받은 할일
-                Optional<Task> taskOptional = updateTask(id, taskRequst);
+                Task taskRequest = toTask(json);
+                Optional<Task> taskOptional = updateTask(id, taskRequest);
 
                 if (taskOptional.isPresent()) {
                     Task task = taskOptional.get();
-                    content = toJSON(task);
+                    responseBody = toJSON(task);
                 }
 
             } catch (NumberFormatException e) {
                 code = 400;
-                content = "Bad Request";
+                responseBody = "Bad Request";
             }
 
         } else if (method.equals("DELETE") && path.contains("/tasks/")) {
@@ -97,15 +83,32 @@ public class DemoHttpHandler implements HttpHandler {
 
             } catch (NumberFormatException e) {
                 code = 400;
-                content = "Bad Request";
+                responseBody = "Bad Request";
             }
 
         } else {
             code = 404;
-            content = "Not Found";
+            responseBody = "Not Found";
         }
 
-        resolveResponse(exchange, content, code);
+        resolveResponse(exchange, responseBody, code);
+    }
+
+    /**
+     * 클라이언트의 요청 body를 해결해 주는 메서드
+     */
+    private String resolveRequestBody(HttpExchange exchange) {
+        InputStream inputStream = exchange.getRequestBody();
+        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+        String json = new BufferedReader(inputStreamReader)
+                .lines()
+                .collect(Collectors.joining("\n")); //요청받은 body
+
+        if (!json.isBlank()) {
+            System.out.println(json);
+        }
+
+        return json;
     }
 
     //==편의 메서드==//
