@@ -23,6 +23,8 @@ public class Task {
     }
 
     public String toString() {
-        return "id: " + id + " " +"title: "+ title;
+        String id = "id";
+        String title = "title";
+        return String.format("Task-> id: %s, title: %s", id, title);
     }
 }

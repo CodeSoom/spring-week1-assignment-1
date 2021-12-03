@@ -1,14 +1,9 @@
 package com.codesoom.assignment;
 
 
-
 public enum HttpStatus {
 
-    HTTP_OK(200),
-    HTTP_CREATE(201),
-    HTTP_NO_CONTENT(204),
-    HTTP_NOT_FOUND(404);
-
+    HTTP_OK(200), HTTP_CREATE(201), HTTP_NO_CONTENT(204), HTTP_NOT_FOUND(404);
 
     private int status;
 
