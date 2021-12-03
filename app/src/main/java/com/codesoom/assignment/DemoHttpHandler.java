@@ -49,7 +49,7 @@ public class DemoHttpHandler implements HttpHandler {
         } else if (method.equals("GET") && path.contains("/tasks/")) {
             try {
                 Long id = getId(path);
-                Task task = getTaskById(id);
+                Task task = findTaskById(id);
                 content = toJSON(task);
 
             } catch (NumberFormatException e) {
@@ -135,9 +135,9 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     /**
-     * Task 컬렉션에서 Task의 id에 해당하는 객체 얻기
+     * 할일(Task) 목록에서 주어인 아이디를 가진 할일(Task)을 찾기
      */
-    private Task getTaskById(Long id) {
+    private Task findTaskById(Long id) {
         Task result = null;
 
         for (Task task : tasks) {
