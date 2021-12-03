@@ -17,13 +17,14 @@ public class DemoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>(); //할일 목록
     private static Long autoId = 0L; //Task에서 자동증가한 id의 마지막 값
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper(); //jackson 라이브러리 클래스
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod(); //요청받은 http method
-        URI uri = exchange.getRequestURI();  //요청받은 uri
-        String path = uri.getPath(); //요청받은 path
+        final String method = exchange.getRequestMethod(); //요청받은 http method
+        final URI uri = exchange.getRequestURI();  //요청받은 uri
+        final String path = uri.getPath(); //요청받은 path
+
         String content = null; //응답 body
         int code = 200; //응답 코드
 
@@ -100,8 +101,8 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         //서버에서 클라이언트로 응답 처리
-        int responseBodyLength = content != null ? content.getBytes().length : 0;
-        byte[] responseBody = content != null ? content.getBytes() : new byte[0];
+        final int responseBodyLength = content != null ? content.getBytes().length : 0;
+        final byte[] responseBody = content != null ? content.getBytes() : new byte[0];
 
         exchange.sendResponseHeaders(code, responseBodyLength);
 

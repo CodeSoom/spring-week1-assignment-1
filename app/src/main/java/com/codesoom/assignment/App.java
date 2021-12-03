@@ -15,8 +15,8 @@ public class App {
         System.out.println(new App().getGreeting());
 
         try {
-            int port = 8000; //포트번호
-            int backlog = 0; //클라이언트가 요청이 오면 대기열에서 기다리는 갯수
+            final int port = 8000; //포트번호
+            final int backlog = 0; //클라이언트가 요청이 오면 대기열에서 기다리는 갯수
             InetSocketAddress address = new InetSocketAddress(port); //서버 정보
             HttpServer httpServer = HttpServer.create(address, backlog);
 
