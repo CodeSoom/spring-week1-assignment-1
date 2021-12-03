@@ -71,8 +71,13 @@ public class DemoHttpHandler implements HttpHandler {
         } else if ("PATCH, PUT".contains(method) && path.contains("/tasks/")) {
             try {
                 Long id = getId(path);
-                Task task = updateTask(id, body);
-                content = toJSON(task);
+                Task taskRequst = toTask(body); //클라이언트에서 요청받은 할일
+                Optional<Task> taskOptional = updateTask(id, taskRequst);
+
+                if (taskOptional.isPresent()) {
+                    Task task = taskOptional.get();
+                    content = toJSON(task);
+                }
 
             } catch (NumberFormatException e) {
                 code = 400;
@@ -179,32 +184,21 @@ public class DemoHttpHandler implements HttpHandler {
     /**
      * Task 수정
      */
-    private Task updateTask(Long id, String body) throws JsonProcessingException {
+    private Optional<Task> updateTask(Long id, Task taskRequest) {
+        Optional<Task> taskOptional = findTaskById(id);
 
-        Task findTask = toTask(body);
-
-        Task result = null;
-
-        for (Task task : tasks) {
-            if (task.getId().equals(id)) {
-                task.setTitle(findTask.getTitle());
-                result = task;
-                break;
-            }
+        if (taskOptional.isPresent()) {
+            Task task = taskOptional.get();
+            task.setTitle(taskRequest.getTitle());
         }
 
-        return result;
+        return taskOptional;
     }
 
     /**
      * Task 삭제
      */
     private void deleteTask(Long id) {
-        for (Task task : tasks) {
-            if (task.getId().equals(id)) {
-                tasks.remove(task);
-                break;
-            }
-        }
+        findTaskById(id).ifPresent(tasks::remove);
     }
 }
