@@ -62,7 +62,9 @@ public class DemoHttpHandler implements HttpHandler {
             }
 
         } else if (method.equals("POST") && path.equals("/tasks")) {
-            Task task = insertTask(body);
+            Task task = toTask(body);
+            insertTask(task);
+
             content = toJSON(task);
             code = 201;
 
@@ -169,11 +171,9 @@ public class DemoHttpHandler implements HttpHandler {
     /**
      * Task 저장
      */
-    private Task insertTask(String body) throws JsonProcessingException {
-        Task task = toTask(body);
+    private void insertTask(Task task) {
         task.setId(++autoId);
         tasks.add(task);
-        return task;
     }
 
     /**
