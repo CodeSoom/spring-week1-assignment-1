@@ -45,9 +45,9 @@ public class TaskHttpHandler implements HttpHandler {
 
         switch (method) {
             case "GET":
-                if (pathsLength == 3 && taskValidator.validTaskId(paths[2])) {
+                if (compareLengthTo(pathsLength, 3) && taskValidator.validTaskId(paths[2])) {
                     content = handleGetRequest(Integer.parseInt(paths[2]));
-                } else if (pathsLength == 2) {
+                } else if (compareLengthTo(pathsLength, 2)) {
                     content = handleGetRequest();
                 } else {
                     handleResponse(400, exchange, "올바른 형식이 아닙니다.");
@@ -69,7 +69,7 @@ public class TaskHttpHandler implements HttpHandler {
 
             case "PUT":
             case "PATCH":
-                if (pathsLength != 3 || !taskValidator.validTaskId(paths[2])) {
+                if (!compareLengthTo(pathsLength, 3) || !taskValidator.validTaskId(paths[2])) {
                     handleResponse(400, exchange, "올바른 형식이 아닙니다.");
                 }
                 if (!taskValidator.vaildBody(body)) {
@@ -86,7 +86,7 @@ public class TaskHttpHandler implements HttpHandler {
                 content = handlePutRequest(Integer.parseInt(paths[2]), task);
                 break;
             case "DELETE":
-                if (pathsLength != 3 || !taskValidator.validTaskId(paths[2])) {
+                if (!compareLengthTo(pathsLength, 3)  || !taskValidator.validTaskId(paths[2])) {
                     handleResponse(400, exchange, "올바른 형식이 아닙니다.");
                 }
 
@@ -152,8 +152,12 @@ public class TaskHttpHandler implements HttpHandler {
         tasks.remove(task);
     }
 
-
     private Task toTask(String content) throws JsonProcessingException {
         return objectMapper.readValue(content, Task.class);
+    }
+
+
+    private Boolean compareLengthTo(int length, int targetLength) {
+        return length == targetLength;
     }
 }
