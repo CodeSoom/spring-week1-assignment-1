@@ -15,11 +15,14 @@ public class App {
         System.out.println(new App().getGreeting());
 
         try {
-            InetSocketAddress address = new InetSocketAddress(8000); //서버 정보
-            HttpServer httpServer = HttpServer.create(address, 0);
+            int port = 8000; //포트번호
+            int backlog = 0; //클라이언트가 요청이 오면 대기열에서 기다리는 갯수
+            InetSocketAddress address = new InetSocketAddress(port); //서버 정보
+            HttpServer httpServer = HttpServer.create(address, backlog);
 
+            String path = "/"; //클라이언트의 요청을 받아들일 수 있는 최소한의 path
             HttpHandler handler = new DemoHttpHandler(); //클라이언트 요청 처리하는 클래스
-            httpServer.createContext("/", handler);
+            httpServer.createContext(path, handler);
 
             httpServer.start();
         } catch (IOException e) {
