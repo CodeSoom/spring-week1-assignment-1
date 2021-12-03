@@ -40,11 +40,30 @@ public class MyHttpHandler implements HttpHandler {
             deleteTask(exchange, path);
         }
 
+        if ((method.equals("PUT") || method.equals("PATCH")) && path.startsWith("/tasks/")){
+            updateTask(exchange, path, body);
+        }
+
         String content = "";
         sendResponse(exchange, HttpStatusCode.NOT_FOUND, content);
     }
 
-
+    private void updateTask(HttpExchange exchange, String path, String body) throws IOException {
+        String idStr = path.substring(path.lastIndexOf("/") + 1);
+        try {
+            long id = Long.parseLong(idStr);
+            Task task = toTask(body);
+            taskManager.updateTask(id, task);
+            String content = taskToJson(task);
+            sendResponse(exchange, HttpStatusCode.OK, content);
+        } catch (NoSuchElementException | NumberFormatException e){
+            e.printStackTrace();
+            sendResponse(exchange, HttpStatusCode.NOT_FOUND, "");
+        } catch (JsonProcessingException e){
+            e.printStackTrace();
+            sendResponse(exchange, HttpStatusCode.BAD_REQUEST, "");
+        }
+    }
 
     private void deleteTask(HttpExchange exchange, String path) throws IOException {
         String idStr = path.substring(path.lastIndexOf("/") + 1);
@@ -80,8 +99,9 @@ public class MyHttpHandler implements HttpHandler {
     private void readTask(HttpExchange exchange, String path) throws IOException {
         String idStr = path.substring(path.lastIndexOf("/") + 1);
         String content = "";
-        long id = Long.parseLong(idStr);
+
         try {
+            long id = Long.parseLong(idStr);
             Task task = taskManager.readTask(id);
             content = taskToJson(task);
             sendResponse(exchange, HttpStatusCode.OK, content);
@@ -90,6 +110,11 @@ public class MyHttpHandler implements HttpHandler {
             e.printStackTrace();
             sendResponse(exchange, HttpStatusCode.NOT_FOUND, content);
         }
+        catch (NumberFormatException e){
+            e.printStackTrace();
+            sendResponse(exchange, HttpStatusCode.NOT_FOUND, "");
+        }
+
     }
 
     private void readTasks(HttpExchange exchange) throws IOException {
