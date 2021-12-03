@@ -40,6 +40,11 @@ public class DemoHttpHandler implements HttpHandler {
         if (!body.isBlank()) {
             System.out.println(body);
         }
+        
+        //404처리
+//        if (path.equals("/") || path.equals("/tasks") || path.equals("/tasks/")) {
+//            code = 404;
+//        }
 
         //클라이언트에서 받은 요청 처리
         if (method.equals("GET") && path.equals("/")) {
@@ -100,16 +105,7 @@ public class DemoHttpHandler implements HttpHandler {
             content = "Not Found";
         }
 
-        //서버에서 클라이언트로 응답 처리
-        final int responseBodyLength = content != null ? content.getBytes().length : 0;
-        final byte[] responseBody = content != null ? content.getBytes() : new byte[0];
-
-        exchange.sendResponseHeaders(code, responseBodyLength);
-
-        OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(responseBody);
-        outputStream.flush();
-        outputStream.close();
+        resolveResponse(exchange, content, code);
     }
 
     //==편의 메서드==//
@@ -120,6 +116,21 @@ public class DemoHttpHandler implements HttpHandler {
     private Long getId(String path) {
         String[] split = path.split("/tasks/");
         return Long.valueOf(split[1]);
+    }
+
+    /**
+     * 클라이언트에 응답을 해결해 줄 메서드
+     */
+    private void resolveResponse(HttpExchange exchange, String content, int code) throws IOException {
+        final int responseBodyLength = content != null ? content.getBytes().length : 0;
+        final byte[] responseBody = content != null ? content.getBytes() : new byte[0];
+
+        exchange.sendResponseHeaders(code, responseBodyLength);
+
+        OutputStream outputStream = exchange.getResponseBody();
+        outputStream.write(responseBody);
+        outputStream.flush();
+        outputStream.close();
     }
 
     //==json 변환 메서드==//
