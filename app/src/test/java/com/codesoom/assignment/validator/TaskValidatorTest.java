@@ -1,13 +1,10 @@
 package com.codesoom.assignment.validator;
 
-import com.codesoom.assignment.domain.Task;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TaskValidatorTest {
 
@@ -26,9 +23,10 @@ class TaskValidatorTest {
     }
 
     @Test
+    @DisplayName("Body 값 체크")
     void testValidBody() {
         String testString1 = "";
-        String testString2 = "asdf";
+        String testString2 = "{\"id\":\"1\", \"title\":\"작업하기\"}";
 
         assertFalse(taskValidator.vaildBody(testString1));
         assertTrue(taskValidator.vaildBody(testString2));

@@ -156,7 +156,6 @@ public class TaskHttpHandler implements HttpHandler {
         return objectMapper.readValue(content, Task.class);
     }
 
-
     private Boolean compareLengthTo(int length, int targetLength) {
         return length == targetLength;
     }

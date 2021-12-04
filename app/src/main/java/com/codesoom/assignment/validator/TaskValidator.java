@@ -1,10 +1,5 @@
 package com.codesoom.assignment.validator;
 
-import com.codesoom.assignment.domain.Task;
-
-import java.util.List;
-import java.util.Optional;
-
 public class TaskValidator {
 
     public boolean validTaskId(String id) {
