@@ -8,11 +8,11 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -41,6 +41,7 @@ public class TaskHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
         String content = "";
+
         Task task = null;
 
         switch (method) {
@@ -82,7 +83,6 @@ public class TaskHttpHandler implements HttpHandler {
                     handleResponse(400, exchange, "title은 필수 값입니다.");
                 }
 
-
                 content = handlePutRequest(Integer.parseInt(paths[2]), task);
                 break;
             case "DELETE":
@@ -111,45 +111,39 @@ public class TaskHttpHandler implements HttpHandler {
 
     private String handleGetRequest() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
+
+        objectMapper.writeValue(outputStream, findTaskAll());
 
         return outputStream.toString();
     }
 
     private String handleGetRequest(int id) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream,
-                tasks.stream().filter(it -> it.getId() == id).findFirst().get());
+
+        objectMapper.writeValue(outputStream, findByTaskId(id));
 
         return outputStream.toString();
     }
 
     private String handlePostRequest(Task task) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        long index = tasks.size();
-        task.setId(index + 1);
-        tasks.add(task);
 
-        objectMapper.writeValue(outputStream, task);
+        objectMapper.writeValue(outputStream, saveTask(task));
 
         return outputStream.toString();
     }
 
-    private String handlePutRequest(int id, Task newTask) throws JsonProcessingException {
-        Task task = tasks.stream().filter(it -> it.getId() == id).findFirst().get();
-        tasks.remove(task);
+    private String handlePutRequest(int id, Task newTask) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
 
-        long index = tasks.size();
-        newTask.setId(task.getId());
-        tasks.add(newTask);
+        objectMapper.writeValue(outputStream, updateTask(id, newTask));
 
-        tasks.sort(Comparator.comparing(Task::getId));
-        return objectMapper.writeValueAsString(newTask);
+        return outputStream.toString();
     }
 
     private void handleDeleteRequest(int id) {
-        Task task = tasks.stream().filter(it -> it.getId() == id).findFirst().get();
-        tasks.remove(task);
+        Task task = findByTaskId(id);
+        removeTask(task);
     }
 
     private Task toTask(String content) throws JsonProcessingException {
@@ -158,5 +152,38 @@ public class TaskHttpHandler implements HttpHandler {
 
     private Boolean compareLengthTo(int length, int targetLength) {
         return length == targetLength;
+    }
+
+
+    private List<Task> findTaskAll() {
+        return tasks;
+    }
+
+    private Task findByTaskId(long id) {
+        return tasks.stream().filter(it -> it.getId() == id).findFirst().get();
+    }
+
+    private Task saveTask(Task task) {
+        long index = tasks.size();
+        task.setId(index + 1);
+        tasks.add(task);
+
+        return task;
+    }
+
+    private Task updateTask(int id, Task newTask) {
+        Task task = findByTaskId(id);
+        tasks.remove(task);
+
+        newTask.setId(task.getId());
+        tasks.add(newTask);
+
+        tasks.sort(Comparator.comparing(Task::getId));
+
+        return newTask;
+    }
+
+    private void removeTask(Task task) {
+        tasks.remove(task);
     }
 }
