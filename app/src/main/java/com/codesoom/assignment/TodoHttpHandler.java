@@ -54,13 +54,10 @@ public class TodoHttpHandler implements HttpHandler {
 
         if(method.equals("PUT") || method.equals("PATCH")) {
             String body = getBody(exchange);
+            Task source = toTask(body);
 
-            Task updateTask = toTask(body);
-
-            updateTask.setId(task.getId());
-            tasks.set(tasks.indexOf(task), updateTask);
-
-            send(exchange, 200, toJSON(updateTask));
+            task.setTitle(source.getTitle());
+            send(exchange, 200, toJSON(task));
         }
     }
 
