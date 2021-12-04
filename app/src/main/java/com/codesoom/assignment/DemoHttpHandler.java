@@ -9,14 +9,13 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>(); //할일 목록
-    private static Long autoId = 0L; //Task에서 자동증가한 id의 마지막 값
+    private static Long insertTaskId = 0L; //저장할 때 사용할 Task의 id
 
     private final ObjectMapper objectMapper = new ObjectMapper(); //jackson 라이브러리 클래스
 
@@ -193,8 +192,8 @@ public class DemoHttpHandler implements HttpHandler {
      */
     private Task insertTask(String json) throws JsonProcessingException {
         Task task = toTask(json);
-        autoId++;
-        task.setId(autoId);
+        insertTaskId++;
+        task.setId(insertTaskId);
 
         tasks.add(task);
 
