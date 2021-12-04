@@ -30,26 +30,36 @@ public class TodoHttpHandler implements HttpHandler {
             return;
         }
 
-        if (method.equals("GET") && taskId != null) {
-            Task task = findTaskById(taskId);
+        if(path.startsWith("/tasks/")) {
+            Long id = Long.parseLong(path.substring("/tasks/".length()));
+            handleItem(exchange, method, id);
+            return;
+        }
+    }
+
+    private void handleItem(HttpExchange exchange, String method, Long id) throws IOException {
+        if (method.equals("GET") && id != null) {
+            Task task = findTaskById(id);
             send(exchange, 200, toJSON(task));
-        } else if(method.equals("DELETE") && taskId != null) {
-            Task task = findTaskById(taskId);
+        }
+
+        if(method.equals("DELETE") && id != null) {
+            Task task = findTaskById(id);
             tasks.remove(task);
             send(exchange, 200, "");
-        } else if(method.equals("PUT") && taskId != null) {
+        }
+
+        if(method.equals("PUT") && id != null) {
             String body = getBody(exchange);
 
             Task updateTask = toTask(body);
-            Task originalTask = findTaskById(taskId);
+            Task originalTask = findTaskById(id);
 
             updateTask.setId(originalTask.getId());
             tasks.set(tasks.indexOf(originalTask), updateTask);
 
             send(exchange, 200, toJSON(updateTask));
         }
-
-        System.out.println(method + " " + path + " " + taskId);
     }
 
     private void handleCollection(HttpExchange exchange, String method) throws IOException {
