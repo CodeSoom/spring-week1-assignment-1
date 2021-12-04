@@ -1,4 +1,4 @@
-package com.codesoom.assignment.validator;
+package com.codesoom.assignment.task.validator;
 
 public class TaskValidator {
 

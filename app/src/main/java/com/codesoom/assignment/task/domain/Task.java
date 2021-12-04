@@ -1,4 +1,4 @@
-package com.codesoom.assignment.domain;
+package com.codesoom.assignment.task.domain;
 
 import com.codesoom.assignment.storage.ListStorageEntity;
 import lombok.Builder;

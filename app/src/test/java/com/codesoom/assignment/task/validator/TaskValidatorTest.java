@@ -1,5 +1,6 @@
-package com.codesoom.assignment.validator;
+package com.codesoom.assignment.task.validator;
 
+import com.codesoom.assignment.task.validator.TaskValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

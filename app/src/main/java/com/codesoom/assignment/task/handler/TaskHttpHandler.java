@@ -1,7 +1,8 @@
-package com.codesoom.assignment.handler;
+package com.codesoom.assignment.task.handler;
 
-import com.codesoom.assignment.domain.Task;
-import com.codesoom.assignment.validator.TaskValidator;
+import com.codesoom.assignment.task.domain.Task;
+import com.codesoom.assignment.task.repository.TaskRepository;
+import com.codesoom.assignment.task.validator.TaskValidator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -22,11 +23,10 @@ public class TaskHttpHandler implements HttpHandler {
 
     public static final String PATH = "/tasks";
 
-    private TaskValidator taskValidator = new TaskValidator();
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final TaskRepository taskRepository = new TaskRepository();
+    private final TaskValidator taskValidator = new TaskValidator();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private List<Task> tasks = new ArrayList<>();
-    private long newId = 0L;
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -73,11 +73,7 @@ public class TaskHttpHandler implements HttpHandler {
         }
     }
 
-    private String handleCollection(HttpExchange httpExchange, String method) throws IOException {
-        Task task = null;
-        String content = "";
-        String body = "";
-
+    private void handleCollection(HttpExchange httpExchange, String method) throws IOException {
         switch (method) {
             case "GET":
                 handleList(httpExchange);
@@ -91,8 +87,6 @@ public class TaskHttpHandler implements HttpHandler {
                 handleResponse(404, httpExchange, "지원하지 않는 HTTP Method 입니다.");
                 break;
         }
-
-        return content;
     }
 
     private void handleSave(HttpExchange httpExchange) throws IOException {
@@ -114,7 +108,8 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private void handleList(HttpExchange httpExchange) throws IOException {
-        handleResponse(200, httpExchange, toJson(tasks));
+
+        handleResponse(200, httpExchange, toJson(findALL()));
     }
 
     private void handleDetail(HttpExchange httpExchange, Task task) throws IOException {
@@ -172,32 +167,24 @@ public class TaskHttpHandler implements HttpHandler {
         return outputStream.toString();
     }
 
-    private Long generateId() {
-        newId += 1;
-        return newId;
+    private Task findByTaskId(long id) {
+        return taskRepository.findById(id);
     }
 
-    private Task findByTaskId(long id) {
-        return tasks.stream()
-                .filter(task -> task.getId() == id)
-                .findFirst()
-                .orElse(null);
+    private List<Task> findALL() {
+        return taskRepository.findAll();
     }
 
     private Task saveTask(Task task) {
-        task.setId(generateId());
-        tasks.add(task);
-
-        return task;
+        return taskRepository.save(task);
     }
 
     private Task updateTask(Task task, Task source) {
-        task.setTitle(source.getTitle());
 
-        return task;
+        return taskRepository.update(task, source);
     }
 
     private void removeTask(Task task) {
-        tasks.remove(task);
+        taskRepository.delete(task);
     }
 }

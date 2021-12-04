@@ -5,12 +5,12 @@ import java.util.List;
 
 public class ListStorageRepositoryAbstract<T extends ListStorageEntity> implements ListStorageIfs<T> {
 
-    private final List<T> list = new ArrayList<>();
+    protected final List<T> list = new ArrayList<>();
     private long newId = 0L;
 
 
     @Override
-    public T findById(int id) {
+    public T findById(long id) {
         return list.stream().filter(it -> it.getId() == id).findFirst().orElse(null);
     }
 
@@ -21,19 +21,26 @@ public class ListStorageRepositoryAbstract<T extends ListStorageEntity> implemen
         if (optionalEntity.isEmpty()) {
             entity.setId(generateId());
         } else {
-            entity.setId(optionalEntity.get().getId());
+            delete(optionalEntity.get());
         }
+
+        list.add(entity);
 
         return entity;
     }
 
     @Override
-    public void deleteById(int id) {
+    public void deleteById(long id) {
         var optionalEntity = list.stream().filter(it -> it.getId() == id).findFirst();
 
         if (optionalEntity.isPresent()) {
             list.remove(optionalEntity.get());
         }
+    }
+
+    @Override
+    public void delete(T entity) {
+        list.remove(entity);
     }
 
     @Override
@@ -43,6 +50,10 @@ public class ListStorageRepositoryAbstract<T extends ListStorageEntity> implemen
 
     private Long generateId() {
         newId += 1;
+        return newId;
+    }
+
+    public long lastId() {
         return newId;
     }
 }
