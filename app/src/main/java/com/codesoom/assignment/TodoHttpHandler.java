@@ -27,20 +27,20 @@ public class TodoHttpHandler implements HttpHandler {
 
         String body = getBody(exchange);
 
-        String content = TasksToJSON();
+        String content = toJSON(tasks);
 
         if(method.equals("GET") && taskId != null) {
             Task task = findTaskById(taskId);
-            content = TaskToJSON(task);
+            content = toJSON(task);
         } else if(method.equals("POST") && !body.isBlank()) {
             Task task = toTask(body);
             task.setId(id++);
             tasks.add(task);
-            content = TaskToJSON(task);
+            content = toJSON(task);
         } else if(method.equals("DELETE") && taskId != null) {
             Task task = findTaskById(taskId);
             tasks.remove(task);
-            content = TasksToJSON();
+            content = toJSON(tasks);
         } else if(method.equals("PUT") && taskId != null && !body.isBlank()) {
             Task updateTask = toTask(body);
             Task originalTask = findTaskById(taskId);
@@ -48,7 +48,7 @@ public class TodoHttpHandler implements HttpHandler {
             updateTask.setId(originalTask.getId());
             tasks.set(tasks.indexOf(originalTask), updateTask);
 
-            content = TaskToJSON(updateTask);
+            content = toJSON(updateTask);
         }
 
         send(exchange, 200, content);
@@ -74,16 +74,9 @@ public class TodoHttpHandler implements HttpHandler {
         return objectMapper.readValue(content, Task.class);
     }
 
-    private String TaskToJSON(Task task) throws IOException {
+    private String toJSON(Object object) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, task);
-
-        return outputStream.toString();
-    }
-
-    private String TasksToJSON() throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
+        objectMapper.writeValue(outputStream, object);
 
         return outputStream.toString();
     }
