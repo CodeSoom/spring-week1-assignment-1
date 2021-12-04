@@ -53,13 +53,17 @@ public class TodoHttpHandler implements HttpHandler {
             content = TaskToJSON(updateTask);
         }
 
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+        send(exchange, 200, content);
+
+        System.out.println(method + " " + path + " " + taskId);
+    }
+
+    private void send(HttpExchange exchange, int statusCode, String content) throws IOException {
+        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.close();
-
-        System.out.println(method + " " + path + " " + taskId);
     }
 
     private Task toTask(String content) throws JsonProcessingException {
