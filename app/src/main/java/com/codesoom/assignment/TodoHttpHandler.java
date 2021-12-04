@@ -39,12 +39,12 @@ public class TodoHttpHandler implements HttpHandler {
 
     private void handleItem(HttpExchange exchange, String method, Long id) throws IOException {
         if (method.equals("GET") && id != null) {
-            Task task = findTaskById(id);
+            Task task = findTask(id);
             send(exchange, 200, toJSON(task));
         }
 
         if(method.equals("DELETE") && id != null) {
-            Task task = findTaskById(id);
+            Task task = findTask(id);
             tasks.remove(task);
             send(exchange, 200, "");
         }
@@ -53,7 +53,7 @@ public class TodoHttpHandler implements HttpHandler {
             String body = getBody(exchange);
 
             Task updateTask = toTask(body);
-            Task originalTask = findTaskById(id);
+            Task originalTask = findTask(id);
 
             updateTask.setId(originalTask.getId());
             tasks.set(tasks.indexOf(originalTask), updateTask);
@@ -119,12 +119,10 @@ public class TodoHttpHandler implements HttpHandler {
         }
     }
 
-    private Task findTaskById(Long id) {
-        for(Task task : tasks) {
-            if(task.getId().equals(id)) {
-                return task;
-            }
-        }
-        return null;
+    private Task findTask(Long id) {
+        return tasks.stream()
+                .filter(task -> task.getId().equals(id))
+                .findFirst()
+                .orElse(null);
     }
 }
