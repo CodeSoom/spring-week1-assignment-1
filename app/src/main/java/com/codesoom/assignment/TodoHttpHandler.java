@@ -43,38 +43,58 @@ public class TodoHttpHandler implements HttpHandler {
         }
 
         if (method.equals("GET")) {
-            send(exchange, 200, toJSON(task));
+            handleDetail(exchange, task);
         }
 
         if(method.equals("DELETE")) {
-            tasks.remove(task);
-
-            send(exchange, 200, "");
+            handleDelete(exchange, task);
         }
 
         if(method.equals("PUT") || method.equals("PATCH")) {
-            String body = getBody(exchange);
-            Task source = toTask(body);
-
-            task.setTitle(source.getTitle());
-            send(exchange, 200, toJSON(task));
+            handleUpdate(exchange, task);
         }
     }
 
     private void handleCollection(HttpExchange exchange, String method) throws IOException {
         if(method.equals("GET")) {
-            send(exchange, 200, toJSON(tasks));
+            handleList(exchange);
         }
 
         if(method.equals("POST")) {
-            String body = getBody(exchange);
-
-            Task task = toTask(body);
-            task.setId(generateId());
-            tasks.add(task);
-
-            send(exchange, 201, toJSON(task));
+            handleCreate(exchange);
         }
+    }
+
+    private void handleList(HttpExchange exchange) throws IOException {
+        send(exchange, 200, toJSON(tasks));
+    }
+
+    private void handleDetail(HttpExchange exchange, Task task) throws IOException {
+        send(exchange, 200, toJSON(task));
+    }
+
+    private void handleCreate(HttpExchange exchange) throws IOException {
+        String body = getBody(exchange);
+
+        Task task = toTask(body);
+        task.setId(generateId());
+        tasks.add(task);
+
+        send(exchange, 201, toJSON(task));
+    }
+
+    private void handleUpdate(HttpExchange exchange, Task task) throws IOException {
+        String body = getBody(exchange);
+        Task source = toTask(body);
+
+        task.setTitle(source.getTitle());
+        send(exchange, 200, toJSON(task));
+    }
+
+    private void handleDelete(HttpExchange exchange, Task task) throws IOException {
+        tasks.remove(task);
+
+        send(exchange, 200, "");
     }
 
     private String getBody(HttpExchange exchange) {
