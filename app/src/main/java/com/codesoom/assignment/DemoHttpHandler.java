@@ -9,6 +9,7 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -116,8 +117,8 @@ public class DemoHttpHandler implements HttpHandler {
      * 클라이언트에서 받은 path에서 Task의 id 얻기
      */
     private Long getId(String path) {
-        String[] split = path.split("/tasks/");
-        return Long.valueOf(split[1]);
+        String[] pathNames = path.split("/");
+        return Long.valueOf(pathNames[2]);
     }
 
     /**
