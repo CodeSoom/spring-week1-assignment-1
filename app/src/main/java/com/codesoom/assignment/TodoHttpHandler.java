@@ -58,11 +58,15 @@ public class TodoHttpHandler implements HttpHandler {
     private void handleCollection(HttpExchange exchange, String method) throws IOException {
         if(method.equals("GET")) {
             handleList(exchange);
+            return;
         }
 
         if(method.equals("POST")) {
             handleCreate(exchange);
+            return;
         }
+
+        send(exchange, 404, "");
     }
 
     private void handleList(HttpExchange exchange) throws IOException {
