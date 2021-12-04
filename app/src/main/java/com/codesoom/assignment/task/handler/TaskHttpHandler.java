@@ -1,5 +1,9 @@
 package com.codesoom.assignment.task.handler;
 
+import com.codesoom.assignment.response.ResponseBadRequest;
+import com.codesoom.assignment.response.ResponseCreate;
+import com.codesoom.assignment.response.ResponseNotFound;
+import com.codesoom.assignment.response.ResponseSuccess;
 import com.codesoom.assignment.task.domain.Task;
 import com.codesoom.assignment.task.repository.TaskRepository;
 import com.codesoom.assignment.task.service.TaskService;
@@ -28,7 +32,6 @@ public class TaskHttpHandler implements HttpHandler {
     private final TaskValidator taskValidator = new TaskValidator();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         String method = httpExchange.getRequestMethod();
@@ -42,7 +45,7 @@ public class TaskHttpHandler implements HttpHandler {
         if (path.startsWith("/tasks/")) {
             String stId = path.substring("/tasks/".length());
             if (!taskValidator.validTaskId(stId)) {
-                handleResponse(400, httpExchange, "올바른 형식이 아닙니다.");
+                new ResponseBadRequest(httpExchange).send("올바른 형식이 아닙니다.");
             }
 
             Long id = Long.parseLong(stId);
@@ -54,7 +57,7 @@ public class TaskHttpHandler implements HttpHandler {
         Task task = taskService.findByTaskId(id);
 
         if (task == null) {
-            handleResponse(404, httpExchange, "");
+            new ResponseNotFound(httpExchange).send("");
             return;
         }
 
@@ -85,7 +88,7 @@ public class TaskHttpHandler implements HttpHandler {
                 break;
 
             default:
-                handleResponse(404, httpExchange, "지원하지 않는 HTTP Method 입니다.");
+                new ResponseNotFound(httpExchange).send("지원하지 않는 HTTP Method 입니다.");
                 break;
         }
     }
@@ -94,59 +97,50 @@ public class TaskHttpHandler implements HttpHandler {
         String body = getBody(httpExchange);
 
         if (!taskValidator.vaildBody(body)) {
-            handleResponse(400, httpExchange, "title은 필수 값입니다.");
+            new ResponseBadRequest(httpExchange).send("title은 필수 값입니다.");
         }
 
         Task task = toTask(body);
 
         if (!taskValidator.vaildTaskTitle(task.getTitle())) {
-            handleResponse(400, httpExchange, "title은 필수 값입니다.");
+            new ResponseBadRequest(httpExchange).send("title은 필수 값입니다.");
         }
 
         Task newTask = taskService.saveTask(task);
 
-        handleResponse(201, httpExchange, toJson(newTask));
+        new ResponseCreate(httpExchange).send(toJson(newTask));
     }
 
     private void handleList(HttpExchange httpExchange) throws IOException {
-        handleResponse(200, httpExchange, toJson(taskService.findALL()));
+        new ResponseSuccess(httpExchange).send(toJson(taskService.findALL()));
     }
 
     private void handleDetail(HttpExchange httpExchange, Task task) throws IOException {
-        handleResponse(200, httpExchange, toJson(task));
+        new ResponseSuccess(httpExchange).send(toJson(task));
     }
 
     private void handleUpdate(HttpExchange httpExchange, Task task) throws IOException {
         String body = getBody(httpExchange);
 
         if (!taskValidator.vaildBody(body)) {
-            handleResponse(400, httpExchange, "body 값은 필수 값입니다.");
+            new ResponseBadRequest(httpExchange).send("body 값은 필수 값입니다.");
         }
 
         Task source = toTask(body);
 
         if (!taskValidator.vaildTaskTitle(source.getTitle())) {
-            handleResponse(400, httpExchange, "title은 필수 값입니다.");
+            new ResponseBadRequest(httpExchange).send("title은 필수 값입니다.");
         }
 
         taskService.updateTask(task, source);
 
-        handleResponse(200, httpExchange, toJson(task));
+        new ResponseSuccess(httpExchange).send(toJson(task));
     }
 
     private void handleDelete(HttpExchange httpExchange, Task task) throws IOException {
         taskService.removeTask(task);
 
-        handleResponse(200, httpExchange, "");
-    }
-
-    private void handleResponse(int httpCode, HttpExchange httpExchange, String content) throws IOException {
-        httpExchange.sendResponseHeaders(httpCode, content.getBytes().length);
-
-        OutputStream outputStream = httpExchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
+        new ResponseSuccess(httpExchange).send("");
     }
 
     private String getBody(HttpExchange httpExchange) {
