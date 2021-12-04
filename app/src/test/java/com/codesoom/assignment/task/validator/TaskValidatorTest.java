@@ -12,7 +12,7 @@ class TaskValidatorTest {
     TaskValidator taskValidator = new TaskValidator();
 
     @Test
-    @DisplayName("Task ID 형식이 맞는지")
+    @DisplayName("Task ID Vaild 체크")
     void testValidTaskId() {
         String testNumber1 = "-1";
         String testNumber2 = "abd";
@@ -24,7 +24,7 @@ class TaskValidatorTest {
     }
 
     @Test
-    @DisplayName("Body 값 체크")
+    @DisplayName("Body 값 Vaild 체크")
     void testValidBody() {
         String testString1 = "";
         String testString2 = "{\"id\":\"1\", \"title\":\"작업하기\"}";

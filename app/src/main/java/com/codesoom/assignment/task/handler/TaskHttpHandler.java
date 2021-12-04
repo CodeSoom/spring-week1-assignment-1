@@ -2,6 +2,7 @@ package com.codesoom.assignment.task.handler;
 
 import com.codesoom.assignment.task.domain.Task;
 import com.codesoom.assignment.task.repository.TaskRepository;
+import com.codesoom.assignment.task.service.TaskService;
 import com.codesoom.assignment.task.validator.TaskValidator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +24,7 @@ public class TaskHttpHandler implements HttpHandler {
 
     public static final String PATH = "/tasks";
 
-    private final TaskRepository taskRepository = new TaskRepository();
+    private final TaskService taskService = new TaskService();
     private final TaskValidator taskValidator = new TaskValidator();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -50,7 +51,7 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private void handleItem(HttpExchange httpExchange, String method, Long id) throws IOException {
-        Task task = findByTaskId(id);
+        Task task = taskService.findByTaskId(id);
 
         if (task == null) {
             handleResponse(404, httpExchange, "");
@@ -102,14 +103,13 @@ public class TaskHttpHandler implements HttpHandler {
             handleResponse(400, httpExchange, "title은 필수 값입니다.");
         }
 
-        Task newTask = saveTask(task);
+        Task newTask = taskService.saveTask(task);
 
         handleResponse(201, httpExchange, toJson(newTask));
     }
 
     private void handleList(HttpExchange httpExchange) throws IOException {
-
-        handleResponse(200, httpExchange, toJson(findALL()));
+        handleResponse(200, httpExchange, toJson(taskService.findALL()));
     }
 
     private void handleDetail(HttpExchange httpExchange, Task task) throws IOException {
@@ -129,13 +129,13 @@ public class TaskHttpHandler implements HttpHandler {
             handleResponse(400, httpExchange, "title은 필수 값입니다.");
         }
 
-        updateTask(task, source);
+        taskService.updateTask(task, source);
 
         handleResponse(200, httpExchange, toJson(task));
     }
 
     private void handleDelete(HttpExchange httpExchange, Task task) throws IOException {
-        removeTask(task);
+        taskService.removeTask(task);
 
         handleResponse(200, httpExchange, "");
     }
@@ -167,24 +167,5 @@ public class TaskHttpHandler implements HttpHandler {
         return outputStream.toString();
     }
 
-    private Task findByTaskId(long id) {
-        return taskRepository.findById(id);
-    }
 
-    private List<Task> findALL() {
-        return taskRepository.findAll();
-    }
-
-    private Task saveTask(Task task) {
-        return taskRepository.save(task);
-    }
-
-    private Task updateTask(Task task, Task source) {
-
-        return taskRepository.update(task, source);
-    }
-
-    private void removeTask(Task task) {
-        taskRepository.delete(task);
-    }
 }
