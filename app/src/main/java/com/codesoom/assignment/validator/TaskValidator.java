@@ -30,5 +30,4 @@ public class TaskValidator {
         }
         return true;
     }
-
 }

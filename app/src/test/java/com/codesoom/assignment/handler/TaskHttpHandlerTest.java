@@ -7,12 +7,16 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TaskHttpHandlerTest {
 
@@ -47,7 +51,7 @@ class TaskHttpHandlerTest {
         long testIndex = 3L;
         String testTitle = "포스팅하기";
 
-        Task task = tasks.stream().filter(it -> it.getId() == testIndex).findFirst().get();
+        Task task = tasks.stream().filter(it -> it.getId() == testIndex).findFirst().orElse(null);
 
         assertEquals(task.getTitle(), testTitle);
 
@@ -65,7 +69,7 @@ class TaskHttpHandlerTest {
                 .build();
 
         tasks.add(task);
-        Task newTask = tasks.stream().filter(it -> it.getId() == id).findFirst().get();
+        Task newTask = tasks.stream().filter(it -> it.getId() == id).findFirst().orElse(null);
 
         assertEquals(newTask.getTitle(), newTitle);
 
@@ -78,19 +82,12 @@ class TaskHttpHandlerTest {
         long id = 1L;
         String updateTitle = "첫번째꺼 업데이트";
         Task task = tasks.stream().filter(it -> it.getId() == id).findFirst().get();
-        tasks.remove(task);
-
-        Task newTask = Task.builder()
-                .id(task.getId())
-                .title(updateTitle)
-                .build();
-
-        tasks.add(newTask);
-        tasks.sort(Comparator.comparing(Task::getId));
-        tasks.forEach(System.out::println);
+        task.setTitle(updateTitle);
 
         Task compareTask = tasks.stream().filter(it -> it.getId() == id).findFirst().get();
         assertEquals(compareTask.getTitle(), updateTitle);
+
+        tasks.forEach(System.out::println);
     }
 
     @Test
@@ -115,5 +112,18 @@ class TaskHttpHandlerTest {
         assertNotNull(task);
 
         System.out.println(task);
+    }
+
+    @Test
+    @DisplayName("Json 으로 변경 테스트")
+    void testToJson() throws IOException {
+        Task task = Task.builder().id(10L).title("테스트하기").build();
+
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, task);
+
+        assertNotNull(outputStream);
+
+        System.out.println(outputStream.toString());
     }
 }

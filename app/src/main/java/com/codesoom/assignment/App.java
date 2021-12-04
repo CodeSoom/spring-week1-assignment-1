@@ -24,6 +24,5 @@ public class App {
         } catch (IllegalStateException e) {
             e.printStackTrace();
         }
-
     }
 }
