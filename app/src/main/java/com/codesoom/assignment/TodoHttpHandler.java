@@ -10,6 +10,8 @@ import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
@@ -29,10 +31,20 @@ public class TodoHttpHandler implements HttpHandler {
         }
 
         if(path.startsWith("/tasks/")) {
-            Long id = Long.parseLong(path.substring("/tasks/".length()));
+            Long id = getTaskId(path);
             handleItem(exchange, method, id);
             return;
         }
+    }
+
+    private Long getTaskId(String path) {
+        Pattern pattern = Pattern.compile("^\\/tasks\\/(\\d+)$");
+        Matcher matcher = pattern.matcher(path);
+
+        if(matcher.find()) {
+            return Long.parseLong(matcher.group(1));
+        }
+        return null;
     }
 
     private void handleItem(HttpExchange exchange, String method, Long id) throws IOException {
