@@ -29,7 +29,7 @@ public class DemoHttpHandler implements HttpHandler {
         //서버 콘솔 출력
         System.out.printf("%s %s%n", method, path);
 
-        String responseBody = null; //응답 body
+        String responseBody = ""; //응답 body
         int code = 200; //응답 코드
 
         String json = resolveRequestBody(exchange);
@@ -124,9 +124,9 @@ public class DemoHttpHandler implements HttpHandler {
     /**
      * 클라이언트에 응답을 해결해 줄 메서드
      */
-    private void resolveResponse(HttpExchange exchange, String content, int code) throws IOException {
-        final int responseBodyLength = content != null ? content.getBytes().length : 0;
-        final byte[] responseBody = content != null ? content.getBytes() : new byte[0];
+    private void resolveResponse(HttpExchange exchange, String responseBodyParam, int code) throws IOException {
+        byte[] responseBody = responseBodyParam.getBytes();
+        int responseBodyLength = responseBody.length;
 
         exchange.sendResponseHeaders(code, responseBodyLength);
 
