@@ -10,7 +10,6 @@ import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
@@ -23,7 +22,6 @@ public class TodoHttpHandler implements HttpHandler {
         String method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
-        Long taskId = parseTaskId(uri);
 
         if(path.equals("/tasks")) {
             handleCollection(exchange, method);
@@ -101,22 +99,6 @@ public class TodoHttpHandler implements HttpHandler {
         objectMapper.writeValue(outputStream, object);
 
         return outputStream.toString();
-    }
-
-    private Long parseTaskId(URI uri) {
-        String path = uri.getPath();
-        String pattern = "^\\/tasks\\/\\d+$";
-
-        if(!Pattern.matches(pattern, path)) {
-            return null;
-        }
-
-        try {
-            Long id = Long.parseLong(path.substring(path.lastIndexOf('/') + 1));
-            return id;
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     private Task findTask(Long id) {
