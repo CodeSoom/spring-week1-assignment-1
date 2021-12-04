@@ -52,7 +52,7 @@ public class TodoHttpHandler implements HttpHandler {
             send(exchange, 200, "");
         }
 
-        if(method.equals("PUT")) {
+        if(method.equals("PUT") || method.equals("PATCH")) {
             String body = getBody(exchange);
 
             Task updateTask = toTask(body);
@@ -76,7 +76,7 @@ public class TodoHttpHandler implements HttpHandler {
             task.setId(generateId());
             tasks.add(task);
 
-            send(exchange, 200, toJSON(task));
+            send(exchange, 201, toJSON(task));
         }
     }
 
