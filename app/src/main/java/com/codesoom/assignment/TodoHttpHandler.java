@@ -25,9 +25,7 @@ public class TodoHttpHandler implements HttpHandler {
         String path = uri.getPath();
         Long taskId = parseTaskId(uri);
 
-        InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream))
-                .lines().collect(Collectors.joining("\n"));
+        String body = getBody(exchange);
 
         String content = TasksToJSON();
 
@@ -56,6 +54,12 @@ public class TodoHttpHandler implements HttpHandler {
         send(exchange, 200, content);
 
         System.out.println(method + " " + path + " " + taskId);
+    }
+
+    private String getBody(HttpExchange exchange) {
+        InputStream inputStream = exchange.getRequestBody();
+        return new BufferedReader(new InputStreamReader(inputStream))
+                .lines().collect(Collectors.joining("\n"));
     }
 
     private void send(HttpExchange exchange, int statusCode, String content) throws IOException {
