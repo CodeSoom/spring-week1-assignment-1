@@ -1,36 +1,28 @@
 package com.codesoom.assignment.task.handler;
 
 import com.codesoom.assignment.response.ResponseBadRequest;
-import com.codesoom.assignment.response.ResponseCreate;
 import com.codesoom.assignment.response.ResponseNotFound;
-import com.codesoom.assignment.response.ResponseSuccess;
 import com.codesoom.assignment.task.domain.Task;
-import com.codesoom.assignment.task.repository.TaskRepository;
+import com.codesoom.assignment.task.handler.crud.DeleteTaskHandler;
+import com.codesoom.assignment.task.handler.crud.DetailTaskHandler;
+import com.codesoom.assignment.task.handler.crud.ListTaskHandler;
+import com.codesoom.assignment.task.handler.crud.SaveTaskHandler;
+import com.codesoom.assignment.task.handler.crud.UpdateTaskHandler;
 import com.codesoom.assignment.task.service.TaskService;
 import com.codesoom.assignment.task.validator.TaskValidator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class TaskHttpHandler implements HttpHandler {
 
     public static final String PATH = "/tasks";
+    private static final String PATH_INCLUDE_SLASH = "/tasks/";
 
     private final TaskService taskService = new TaskService();
     private final TaskValidator taskValidator = new TaskValidator();
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -38,14 +30,14 @@ public class TaskHttpHandler implements HttpHandler {
         URI uri = httpExchange.getRequestURI();
         String path = uri.getPath();
 
-        if (path.equals("/tasks")) {
+        if (path.equals(PATH)) {
             handleCollection(httpExchange, method);
         }
 
-        if (path.startsWith("/tasks/")) {
-            String stId = path.substring("/tasks/".length());
+        if (path.startsWith(PATH_INCLUDE_SLASH)) {
+            String stId = path.substring(PATH_INCLUDE_SLASH.length());
             if (!taskValidator.validTaskId(stId)) {
-                new ResponseBadRequest(httpExchange).send("올바른 형식이 아닙니다.");
+                new ResponseBadRequest(httpExchange).send("");
             }
 
             Long id = Long.parseLong(stId);
@@ -63,16 +55,16 @@ public class TaskHttpHandler implements HttpHandler {
 
         switch (method){
             case "GET":
-                handleDetail(httpExchange, task);
+                new DetailTaskHandler(taskService).doHandle(httpExchange, task);
                 break;
 
             case "PUT":
             case "PATCH":
-                handleUpdate(httpExchange, task);
+                new UpdateTaskHandler(taskService).doHandle(httpExchange, task);
                 break;
 
             case "DELETE":
-                handleDelete(httpExchange, task);
+                new DeleteTaskHandler(taskService).doHandle(httpExchange, task);
                 break;
         }
     }
@@ -80,86 +72,16 @@ public class TaskHttpHandler implements HttpHandler {
     private void handleCollection(HttpExchange httpExchange, String method) throws IOException {
         switch (method) {
             case "GET":
-                handleList(httpExchange);
+                new ListTaskHandler(taskService).doHandle(httpExchange);
                 break;
 
             case "POST":
-                handleSave(httpExchange);
+                new SaveTaskHandler(taskService).doHandle(httpExchange);
                 break;
 
             default:
-                new ResponseNotFound(httpExchange).send("지원하지 않는 HTTP Method 입니다.");
+                new ResponseNotFound(httpExchange).send("올바르지 않는 HTTP 메소드 입니다.");
                 break;
         }
     }
-
-    private void handleSave(HttpExchange httpExchange) throws IOException {
-        String body = getBody(httpExchange);
-
-        if (!taskValidator.vaildBody(body)) {
-            new ResponseBadRequest(httpExchange).send("title은 필수 값입니다.");
-        }
-
-        Task task = toTask(body);
-
-        if (!taskValidator.vaildTaskTitle(task.getTitle())) {
-            new ResponseBadRequest(httpExchange).send("title은 필수 값입니다.");
-        }
-
-        Task newTask = taskService.saveTask(task);
-
-        new ResponseCreate(httpExchange).send(toJson(newTask));
-    }
-
-    private void handleList(HttpExchange httpExchange) throws IOException {
-        new ResponseSuccess(httpExchange).send(toJson(taskService.findALL()));
-    }
-
-    private void handleDetail(HttpExchange httpExchange, Task task) throws IOException {
-        new ResponseSuccess(httpExchange).send(toJson(task));
-    }
-
-    private void handleUpdate(HttpExchange httpExchange, Task task) throws IOException {
-        String body = getBody(httpExchange);
-
-        if (!taskValidator.vaildBody(body)) {
-            new ResponseBadRequest(httpExchange).send("body 값은 필수 값입니다.");
-        }
-
-        Task source = toTask(body);
-
-        if (!taskValidator.vaildTaskTitle(source.getTitle())) {
-            new ResponseBadRequest(httpExchange).send("title은 필수 값입니다.");
-        }
-
-        taskService.updateTask(task, source);
-
-        new ResponseSuccess(httpExchange).send(toJson(task));
-    }
-
-    private void handleDelete(HttpExchange httpExchange, Task task) throws IOException {
-        taskService.removeTask(task);
-
-        new ResponseSuccess(httpExchange).send("");
-    }
-
-    private String getBody(HttpExchange httpExchange) {
-        InputStream inputStream = httpExchange.getRequestBody();
-        return new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
-    }
-
-    private Task toTask(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
-    }
-
-    private String toJson(Object object) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, object);
-
-        return outputStream.toString();
-    }
-
-
 }
