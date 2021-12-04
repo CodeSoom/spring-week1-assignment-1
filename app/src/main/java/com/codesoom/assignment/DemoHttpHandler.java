@@ -43,10 +43,10 @@ public class DemoHttpHandler implements HttpHandler {
         } else if (method.equals("GET") && path.contains("/tasks/")) {
             try {
                 Long id = getId(path);
-                Optional<Task> taskOptional = findTaskById(id);
+                Optional<Task> findTask = findTaskById(id);
 
-                if (taskOptional.isPresent()) {
-                    responseBody = toJSON(taskOptional.get());
+                if (findTask.isPresent()) {
+                    responseBody = toJSON(findTask.get());
                 }
 
             } catch (NumberFormatException e) {
@@ -63,10 +63,10 @@ public class DemoHttpHandler implements HttpHandler {
             try {
                 Long id = getId(path);
                 Task taskRequest = toTask(json);
-                Optional<Task> taskOptional = updateTask(id, taskRequest);
+                Optional<Task> findTask = updateTask(id, taskRequest);
 
-                if (taskOptional.isPresent()) {
-                    Task task = taskOptional.get();
+                if (findTask.isPresent()) {
+                    Task task = findTask.get();
                     responseBody = toJSON(task);
                 }
 
@@ -204,14 +204,14 @@ public class DemoHttpHandler implements HttpHandler {
      * Task 수정
      */
     private Optional<Task> updateTask(Long id, Task taskRequest) {
-        Optional<Task> taskOptional = findTaskById(id);
+        Optional<Task> findTask = findTaskById(id);
 
-        if (taskOptional.isPresent()) {
-            Task task = taskOptional.get();
+        if (findTask.isPresent()) {
+            Task task = findTask.get();
             task.setTitle(taskRequest.getTitle());
         }
 
-        return taskOptional;
+        return findTask;
     }
 
     /**
