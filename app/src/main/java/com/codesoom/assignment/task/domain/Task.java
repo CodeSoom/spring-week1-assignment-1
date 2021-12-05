@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@NoArgsConstructor
 @Getter
 public class Task extends ListStorageEntity {
 
@@ -14,7 +15,7 @@ public class Task extends ListStorageEntity {
 
     @Builder
     public Task(Long id, String title) {
-        super(id);
+        this.setId(id);
         this.title = title;
     }
 
