@@ -1,3 +1,6 @@
+//TODO
+//Java Bean => 완료
+
 package com.codesoom.assignment.models;
 
 /**

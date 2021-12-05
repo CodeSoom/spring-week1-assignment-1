@@ -1,3 +1,10 @@
+//TODO
+//Read - Collection => 완료
+//Read - item/element => 완료
+//Create => 완료
+//Update => 완료
+//Delete => 완료
+
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
