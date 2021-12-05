@@ -29,34 +29,32 @@ public class DemoHttpHandler implements HttpHandler {
         System.out.printf("%s %s%n", method, path);
 
         //클라이언트에서 받은 요청 처리
-        if (method.equals("GET") && path.equals("/")) {
-            int code = 200;
-            String responseBody = "Hello, World!";
-            resolveResponse(exchange, responseBody, code);
+        if (path.equals("/")) {
+            resolvePathWellcome(exchange);
 
-        } else if (method.equals("GET") && path.equals("/tasks")) {
+        } else if (path.equals("/tasks")) {
+            resolvePathTasks(exchange, method);
+
+        } else if (path.startsWith("/tasks/")) {
+            resolvePathTask(exchange, method, path);
+        } else {
+            resolvePath404(exchange);
+        }
+    }
+
+    private void resolvePathWellcome(HttpExchange exchange) throws IOException {
+        int code = 200;
+        String responseBody = "Hello, World!";
+        resolveResponse(exchange, responseBody, code);
+    }
+
+    private void resolvePathTasks(HttpExchange exchange, String method) throws IOException {
+        if (method.equals("GET")) {
             int code = 200;
             String responseBody = tasksToJSON();
             resolveResponse(exchange, responseBody, code);
 
-        } else if (method.equals("GET") && path.contains("/tasks/")) {
-            try {
-                Long id = getId(path);
-                Optional<Task> findTask = findTaskById(id);
-
-                if (findTask.isPresent()) {
-                    int code = 200;
-                    String responseBody = toJSON(findTask.get());
-                    resolveResponse(exchange, responseBody, code);
-                }
-
-            } catch (NumberFormatException e) {
-                int code = 400;
-                String responseBody = "Bad Request";
-                resolveResponse(exchange, responseBody, code);
-            }
-
-        } else if (method.equals("POST") && path.equals("/tasks")) {
+        } else if (method.equals("POST")) {
             String json = resolveRequestBody(exchange);
 
             if (json.isBlank()) {
@@ -71,56 +69,71 @@ public class DemoHttpHandler implements HttpHandler {
             int code = 201;
             String responseBody = toJSON(task);
             resolveResponse(exchange, responseBody, code);
+        }
+    }
 
-        } else if ("PATCH, PUT".contains(method) && path.contains("/tasks/")) {
-            try {
-                Long id = getId(path);
-                String json = resolveRequestBody(exchange);
+    private void resolvePathTask(HttpExchange exchange, String method, String path) throws IOException {
+        Long id = null;
 
-                if (json.isBlank()) {
-                    int code = 400;
-                    String responseBody = "Bad Request";
-                    resolveResponse(exchange, responseBody, code);
-                    return;
-                }
+        try {
+            id = getId(path);
+        } catch (NumberFormatException e) {
+            int code = 400;
+            String responseBody = "Bad Request";
+            resolveResponse(exchange, responseBody, code);
+            return;
+        }
 
-                Task taskRequest = toTask(json);
-                Optional<Task> findTask = updateTask(id, taskRequest);
+        Optional<Task> findTask = findTaskById(id);
 
-                if (findTask.isPresent()) {
-                    Task task = findTask.get();
+        if (method.equals("GET")) {
+            if (findTask.isPresent()) {
+                int code = 200;
+                String responseBody = toJSON(findTask.get());
+                resolveResponse(exchange, responseBody, code);
+                return;
+            }
 
-                    int code = 200;
-                    String responseBody = toJSON(task);
-                    resolveResponse(exchange, responseBody, code);
-                }
+        } else if ("PATCH, PUT".contains(method)) {
+            String json = resolveRequestBody(exchange);
 
-            } catch (NumberFormatException e) {
+            if (json.isBlank()) {
                 int code = 400;
                 String responseBody = "Bad Request";
                 resolveResponse(exchange, responseBody, code);
+                return;
             }
 
-        } else if (method.equals("DELETE") && path.contains("/tasks/")) {
-            try {
-                Long id = getId(path);
-                deleteTask(id);
+            if (findTask.isPresent()) {
+                Task task = findTask.get();
+                updateTask(task, json);
+
+                int code = 200;
+                String responseBody = toJSON(task);
+                resolveResponse(exchange, responseBody, code);
+                return;
+            }
+
+        } else if (method.equals("DELETE")) {
+            if (findTask.isPresent()) {
+                deleteTask(findTask.get());
 
                 int code = 200;
                 String responseBody = "";
                 resolveResponse(exchange, responseBody, code);
-
-            } catch (NumberFormatException e) {
-                int code = 400;
-                String responseBody = "Bad Request";
-                resolveResponse(exchange, responseBody, code);
+                return;
             }
-
-        } else {
-            int code = 404;
-            String responseBody = "Not Found";
-            resolveResponse(exchange, responseBody, code);
         }
+
+        int code = 500;
+        String responseBody = "Internal Server Error";
+        resolveResponse(exchange, responseBody, code);
+    }
+
+    private void resolvePath404(HttpExchange exchange) throws IOException {
+        int code = 404;
+        String responseBody = "Not Found";
+        resolveResponse(exchange, responseBody, code);
     }
 
     /**
@@ -239,26 +252,19 @@ public class DemoHttpHandler implements HttpHandler {
 
     /**
      * Task 수정
-     * @param id 수정할 Task의 id
-     * @param taskRequest 클라이언트에게 받은 Task의 속성을 담고 있는 객체
-     * @return Optional의 수정된 Task 객체
+     * @param task 수정할 Task 객체
+     * @param json 클라이언트에게 받은 요청 json 파라미터 문자열
      */
-    private Optional<Task> updateTask(Long id, Task taskRequest) {
-        Optional<Task> findTask = findTaskById(id);
-
-        if (findTask.isPresent()) {
-            Task task = findTask.get();
-            task.setTitle(taskRequest.getTitle());
-        }
-
-        return findTask;
+    private void updateTask(Task task, String json) throws JsonProcessingException {
+        Task source = toTask(json);
+        task.setTitle(source.getTitle());
     }
 
     /**
      * Task 삭제
-     * @param id 삭제할 Task의 id
+     * @param task 삭제할 Task 객체
      */
-    private void deleteTask(Long id) {
-        findTaskById(id).ifPresent(tasks::remove);
+    private void deleteTask(Task task) {
+        tasks.remove(task);
     }
 }
