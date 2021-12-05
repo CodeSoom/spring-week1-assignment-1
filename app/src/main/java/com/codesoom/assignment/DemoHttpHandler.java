@@ -28,17 +28,16 @@ public class DemoHttpHandler implements HttpHandler {
         //서버 콘솔 출력
         System.out.printf("%s %s%n", method, path);
 
-        String responseBody = ""; //응답 body
-        int code = 200; //응답 코드
-
-        String json = resolveRequestBody(exchange);
-
         //클라이언트에서 받은 요청 처리
         if (method.equals("GET") && path.equals("/")) {
-            responseBody = "Hello, World!";
+            int code = 200;
+            String responseBody = "Hello, World!";
+            resolveResponse(exchange, responseBody, code);
 
         } else if (method.equals("GET") && path.equals("/tasks")) {
-            responseBody = tasksToJSON();
+            int code = 200;
+            String responseBody = tasksToJSON();
+            resolveResponse(exchange, responseBody, code);
 
         } else if (method.equals("GET") && path.contains("/tasks/")) {
             try {
@@ -46,33 +45,44 @@ public class DemoHttpHandler implements HttpHandler {
                 Optional<Task> findTask = findTaskById(id);
 
                 if (findTask.isPresent()) {
-                    responseBody = toJSON(findTask.get());
+                    int code = 200;
+                    String responseBody = toJSON(findTask.get());
+                    resolveResponse(exchange, responseBody, code);
                 }
 
             } catch (NumberFormatException e) {
-                code = 400;
-                responseBody = "Bad Request";
+                int code = 400;
+                String responseBody = "Bad Request";
+                resolveResponse(exchange, responseBody, code);
             }
 
         } else if (method.equals("POST") && path.equals("/tasks")) {
+            String json = resolveRequestBody(exchange);
             Task task = insertTask(json);
-            responseBody = toJSON(task);
-            code = 201;
+
+            int code = 201;
+            String responseBody = toJSON(task);
+            resolveResponse(exchange, responseBody, code);
 
         } else if ("PATCH, PUT".contains(method) && path.contains("/tasks/")) {
             try {
                 Long id = getId(path);
+                String json = resolveRequestBody(exchange);
                 Task taskRequest = toTask(json);
                 Optional<Task> findTask = updateTask(id, taskRequest);
 
                 if (findTask.isPresent()) {
                     Task task = findTask.get();
-                    responseBody = toJSON(task);
+
+                    int code = 200;
+                    String responseBody = toJSON(task);
+                    resolveResponse(exchange, responseBody, code);
                 }
 
             } catch (NumberFormatException e) {
-                code = 400;
-                responseBody = "Bad Request";
+                int code = 400;
+                String responseBody = "Bad Request";
+                resolveResponse(exchange, responseBody, code);
             }
 
         } else if (method.equals("DELETE") && path.contains("/tasks/")) {
@@ -80,17 +90,21 @@ public class DemoHttpHandler implements HttpHandler {
                 Long id = getId(path);
                 deleteTask(id);
 
+                int code = 200;
+                String responseBody = "";
+                resolveResponse(exchange, responseBody, code);
+
             } catch (NumberFormatException e) {
-                code = 400;
-                responseBody = "Bad Request";
+                int code = 400;
+                String responseBody = "Bad Request";
+                resolveResponse(exchange, responseBody, code);
             }
 
         } else {
-            code = 404;
-            responseBody = "Not Found";
+            int code = 404;
+            String responseBody = "Not Found";
+            resolveResponse(exchange, responseBody, code);
         }
-
-        resolveResponse(exchange, responseBody, code);
     }
 
     /**
