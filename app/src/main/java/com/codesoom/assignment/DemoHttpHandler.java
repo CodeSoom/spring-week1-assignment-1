@@ -58,6 +58,14 @@ public class DemoHttpHandler implements HttpHandler {
 
         } else if (method.equals("POST") && path.equals("/tasks")) {
             String json = resolveRequestBody(exchange);
+
+            if (json.isBlank()) {
+                int code = 400;
+                String responseBody = "Bad Request";
+                resolveResponse(exchange, responseBody, code);
+                return;
+            }
+
             Task task = insertTask(json);
 
             int code = 201;
@@ -68,6 +76,14 @@ public class DemoHttpHandler implements HttpHandler {
             try {
                 Long id = getId(path);
                 String json = resolveRequestBody(exchange);
+
+                if (json.isBlank()) {
+                    int code = 400;
+                    String responseBody = "Bad Request";
+                    resolveResponse(exchange, responseBody, code);
+                    return;
+                }
+
                 Task taskRequest = toTask(json);
                 Optional<Task> findTask = updateTask(id, taskRequest);
 
@@ -113,15 +129,9 @@ public class DemoHttpHandler implements HttpHandler {
     private String resolveRequestBody(HttpExchange exchange) {
         InputStream inputStream = exchange.getRequestBody();
         InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-        String json = new BufferedReader(inputStreamReader)
+        return new BufferedReader(inputStreamReader)
                 .lines()
                 .collect(Collectors.joining("\n")); //요청받은 body
-
-        if (!json.isBlank()) {
-            System.out.println(json);
-        }
-
-        return json;
     }
 
     //==편의 메서드==//
