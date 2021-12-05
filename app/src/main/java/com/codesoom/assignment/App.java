@@ -7,12 +7,12 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class App {
+    static final int PORT = 8000; //포트번호
+    static final int BACKLOG = 0; //클라이언트가 요청이 오면 대기열에서 기다리는 갯수
+
     public String getGreeting() {
         return "Hello World!";
     }
-
-    static final int PORT = 8000; //포트번호
-    static final int BACKLOG = 0; //클라이언트가 요청이 오면 대기열에서 기다리는 갯수
 
     public static void main(String[] args) {
         System.out.println(new App().getGreeting());
