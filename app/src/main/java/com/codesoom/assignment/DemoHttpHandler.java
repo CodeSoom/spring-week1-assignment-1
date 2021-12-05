@@ -200,16 +200,13 @@ public class DemoHttpHandler implements HttpHandler {
      * @return Optional의 Task 객체
      */
     private Optional<Task> findTaskById(Long id) {
-        Optional<Task> result = Optional.empty();
-
         for (Task task : tasks) {
             if (task.getId().equals(id)) {
-                result = Optional.of(task);
-                break;
+                return Optional.of(task);
             }
         }
 
-        return result;
+        return Optional.empty();
     }
 
     /**
