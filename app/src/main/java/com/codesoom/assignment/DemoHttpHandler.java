@@ -190,18 +190,12 @@ public class DemoHttpHandler implements HttpHandler {
 
     /**
      * Task를 JSON으로 포맷하기
-     * @param task Task 객체
-     * @return Task의 속성을 json으로 포맷한 문자열
+     * @param object json으로 포맷할 객체
+     * @return 객체를 json으로 포맷한 문자열
      */
-    private String toJSON(Task task) {
+    private String toJSON(Object object) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-
-        try {
-            objectMapper.writeValue(outputStream, task);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        objectMapper.writeValue(outputStream, object);
         return outputStream.toString();
     }
 
