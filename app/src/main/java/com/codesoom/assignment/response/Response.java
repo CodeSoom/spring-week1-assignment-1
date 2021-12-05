@@ -1,5 +1,6 @@
 package com.codesoom.assignment.response;
 
+import com.codesoom.assignment.enums.HttpStatusCode;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -13,7 +14,7 @@ public abstract class Response {
     }
 
     public void send(String content) throws IOException {
-        httpExchange.sendResponseHeaders(httpStatusCode(), content.getBytes().length);
+        httpExchange.sendResponseHeaders(httpStatusCode().value(), content.getBytes().length);
 
         OutputStream outputStream = httpExchange.getResponseBody();
         outputStream.write(content.getBytes());
@@ -21,5 +22,5 @@ public abstract class Response {
         outputStream.close();
     }
 
-    protected abstract int httpStatusCode();
+    protected abstract HttpStatusCode httpStatusCode();
 }

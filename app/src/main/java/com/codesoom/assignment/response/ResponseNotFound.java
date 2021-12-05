@@ -1,5 +1,6 @@
 package com.codesoom.assignment.response;
 
+import com.codesoom.assignment.enums.HttpStatusCode;
 import com.sun.net.httpserver.HttpExchange;
 
 public class ResponseNotFound extends Response{
@@ -9,7 +10,7 @@ public class ResponseNotFound extends Response{
     }
 
     @Override
-    protected int httpStatusCode() {
-        return 404;
+    protected HttpStatusCode httpStatusCode() {
+        return HttpStatusCode.NOT_FOUND;
     }
 }
