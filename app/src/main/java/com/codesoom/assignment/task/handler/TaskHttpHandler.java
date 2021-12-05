@@ -32,16 +32,20 @@ public class TaskHttpHandler implements HttpHandler {
 
         if (path.equals(PATH)) {
             handleCollection(httpExchange, method);
+            return;
         }
 
         if (path.startsWith(PATH_INCLUDE_SLASH)) {
             String stId = path.substring(PATH_INCLUDE_SLASH.length());
+
             if (!taskValidator.validTaskId(stId)) {
                 new ResponseBadRequest(httpExchange).send("");
+                return;
             }
 
             Long id = Long.parseLong(stId);
             handleItem(httpExchange, method, id);
+            return;
         }
     }
 
