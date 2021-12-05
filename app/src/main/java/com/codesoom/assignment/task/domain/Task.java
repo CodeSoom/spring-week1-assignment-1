@@ -8,15 +8,13 @@ import lombok.Setter;
 
 @Getter
 public class Task extends ListStorageEntity {
+
+    @Setter
     private String title;
 
     @Builder
     public Task(Long id, String title) {
         super(id);
-        this.title = title;
-    }
-
-    public void setTitle(String title) {
         this.title = title;
     }
 
