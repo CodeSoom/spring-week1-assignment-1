@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>(); //할일 목록
-    private static Long insertTaskId = 0L; //저장할 때 사용할 Task의 id
+    private static Long taskId = 0L; //저장할 때 사용할 Task의 id
 
     private final ObjectMapper objectMapper = new ObjectMapper(); //jackson 라이브러리 클래스
 
@@ -192,8 +192,8 @@ public class DemoHttpHandler implements HttpHandler {
      */
     private Task insertTask(String json) throws JsonProcessingException {
         Task task = toTask(json);
-        insertTaskId++;
-        task.setId(insertTaskId);
+        taskId++;
+        task.setId(taskId);
 
         tasks.add(task);
 
