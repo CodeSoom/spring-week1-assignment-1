@@ -125,6 +125,8 @@ public class DemoHttpHandler implements HttpHandler {
 
     /**
      * 클라이언트의 요청 body를 해결해 주는 메서드
+     * @param exchange 요청 파라미터를 얻을 수 있는 HttpExchange 객체
+     * @return 요청 파라미터 문자열
      */
     private String resolveRequestBody(HttpExchange exchange) {
         InputStream inputStream = exchange.getRequestBody();
@@ -138,6 +140,8 @@ public class DemoHttpHandler implements HttpHandler {
 
     /**
      * 클라이언트에서 받은 path에서 Task의 id 얻기
+     * @param path http의 path 문자열
+     * @return Task의 id
      */
     private Long getId(String path) {
         String[] pathNames = path.split("/");
@@ -146,6 +150,9 @@ public class DemoHttpHandler implements HttpHandler {
 
     /**
      * 클라이언트에 응답을 해결해 줄 메서드
+     * @param exchange 클라이언트에 응답을 보낼 수 있는 HttpExchange 객체
+     * @param responseBodyParam 클라이언트에 응답을 보낼 body
+     * @param code 클라이언트에 응답할 상태코드
      */
     private void resolveResponse(HttpExchange exchange, String responseBodyParam, int code) throws IOException {
         byte[] responseBody = responseBodyParam.getBytes();
@@ -163,6 +170,8 @@ public class DemoHttpHandler implements HttpHandler {
 
     /**
      * Task를 JSON으로 포맷하기
+     * @param task Task 객체
+     * @return Task의 속성을 json으로 포맷한 문자열
      */
     private String toJSON(Task task) {
         OutputStream outputStream = new ByteArrayOutputStream();
@@ -178,6 +187,8 @@ public class DemoHttpHandler implements HttpHandler {
 
     /**
      * json을 Task로 포맷하기
+     * @param json json 문자열
+     * @return Task 객체
      */
     private Task toTask(String json) throws JsonProcessingException {
         return objectMapper.readValue(json, Task.class);
@@ -185,6 +196,8 @@ public class DemoHttpHandler implements HttpHandler {
 
     /**
      * 할일(Task) 목록에서 주어인 아이디를 가진 할일(Task)을 찾기
+     * @param id 조회할 Task의 id
+     * @return Optional의 Task 객체
      */
     private Optional<Task> findTaskById(Long id) {
         Optional<Task> result = Optional.empty();
@@ -201,6 +214,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     /**
      * Task 컬렉션을 json으로 포맷하기
+     * @return 할일 목록을 json으로 포맷한 문자열
      */
     private String tasksToJSON() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
@@ -213,6 +227,8 @@ public class DemoHttpHandler implements HttpHandler {
 
     /**
      * Task 저장
+     * @param json json 문자열
+     * @return 저장된 Task 객체
      */
     private Task insertTask(String json) throws JsonProcessingException {
         Task task = toTask(json);
@@ -226,6 +242,9 @@ public class DemoHttpHandler implements HttpHandler {
 
     /**
      * Task 수정
+     * @param id 수정할 Task의 id
+     * @param taskRequest 클라이언트에게 받은 Task의 속성을 담고 있는 객체
+     * @return Optional의 수정된 Task 객체
      */
     private Optional<Task> updateTask(Long id, Task taskRequest) {
         Optional<Task> findTask = findTaskById(id);
@@ -240,6 +259,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     /**
      * Task 삭제
+     * @param id 삭제할 Task의 id
      */
     private void deleteTask(Long id) {
         findTaskById(id).ifPresent(tasks::remove);
