@@ -1,10 +1,13 @@
 package com.codesoom.assignment.storage;
 
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class ListStorageEntity {
     private Long id;
+
+    public ListStorageEntity(Long id) {
+        this.id = id;
+    }
+    
 }
