@@ -16,7 +16,7 @@ public class MyHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
+        HttpMethod method = getMethod(exchange.getRequestMethod());
         String path = exchange.getRequestURI().toString();
         String body = new BufferedReader(new InputStreamReader(exchange.getRequestBody()))
                 .lines()
@@ -24,28 +24,44 @@ public class MyHttpHandler implements HttpHandler {
 
         printRequestInfo(method, path, body);
 
-        if (method.equals("GET") && path.equals("/tasks")) {
+        if (method == HttpMethod.GET && path.equals("/tasks")) {
             readTasks(exchange);
         }
 
-        if (method.equals("POST") && path.equals("/tasks")) {
+        if (method == HttpMethod.POST && path.equals("/tasks")) {
             createTask(exchange, body);
         }
 
-        if (method.equals("GET") && path.startsWith("/tasks/")) {
+        if (method == HttpMethod.GET && path.startsWith("/tasks/")) {
             readTask(exchange, path);
         }
 
-        if (method.equals("DELETE") && path.startsWith("/tasks/")){
+        if (method == HttpMethod.DELETE && path.startsWith("/tasks/")) {
             deleteTask(exchange, path);
         }
 
-        if ((method.equals("PUT") || method.equals("PATCH")) && path.startsWith("/tasks/")){
+        if ((method == HttpMethod.PUT || method == HttpMethod.PATCH) && path.startsWith("/tasks/")) {
             updateTask(exchange, path, body);
         }
 
         String content = "";
         sendResponse(exchange, HttpStatusCode.NOT_FOUND, content);
+    }
+
+    private HttpMethod getMethod(String stringMethod) {
+        switch (stringMethod) {
+            case "GET":
+            default:
+                return HttpMethod.GET;
+            case "POST":
+                return HttpMethod.POST;
+            case "PATCH":
+                return HttpMethod.PATCH;
+            case "PUT":
+                return HttpMethod.PUT;
+            case "DELETE":
+                return HttpMethod.DELETE;
+        }
     }
 
     private void updateTask(HttpExchange exchange, String path, String body) throws IOException {
@@ -56,10 +72,10 @@ public class MyHttpHandler implements HttpHandler {
             taskManager.updateTask(id, task);
             String content = taskToJson(task);
             sendResponse(exchange, HttpStatusCode.OK, content);
-        } catch (NoSuchElementException | NumberFormatException e){
+        } catch (NoSuchElementException | NumberFormatException e) {
             e.printStackTrace();
             sendResponse(exchange, HttpStatusCode.NOT_FOUND, "");
-        } catch (JsonProcessingException e){
+        } catch (JsonProcessingException e) {
             e.printStackTrace();
             sendResponse(exchange, HttpStatusCode.BAD_REQUEST, "");
         }
@@ -71,12 +87,10 @@ public class MyHttpHandler implements HttpHandler {
             long id = Long.parseLong(idStr);
             taskManager.deleteTask(id);
             sendResponse(exchange, HttpStatusCode.NO_CONTENT, "");
-        }
-        catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             e.printStackTrace();
             sendResponse(exchange, HttpStatusCode.BAD_REQUEST, "");
-        }
-        catch (NoSuchElementException e){
+        } catch (NoSuchElementException e) {
             e.printStackTrace();
             sendResponse(exchange, HttpStatusCode.NOT_FOUND, "");
         }
@@ -105,12 +119,10 @@ public class MyHttpHandler implements HttpHandler {
             Task task = taskManager.readTask(id);
             content = taskToJson(task);
             sendResponse(exchange, HttpStatusCode.OK, content);
-        }
-        catch (NoSuchElementException e){
+        } catch (NoSuchElementException e) {
             e.printStackTrace();
             sendResponse(exchange, HttpStatusCode.NOT_FOUND, content);
-        }
-        catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             e.printStackTrace();
             sendResponse(exchange, HttpStatusCode.NOT_FOUND, "");
         }
@@ -122,8 +134,8 @@ public class MyHttpHandler implements HttpHandler {
         sendResponse(exchange, HttpStatusCode.OK, content);
     }
 
-    private void printRequestInfo(String method, String path, String requestBody) {
-        System.out.println(method + " - " + path);
+    private void printRequestInfo(HttpMethod method, String path, String requestBody) {
+        System.out.println(method.getValue() + " - " + path);
         if (!requestBody.isBlank()) {
             System.out.println(requestBody);
         }
