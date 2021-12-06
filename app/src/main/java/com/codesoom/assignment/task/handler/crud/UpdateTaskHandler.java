@@ -1,6 +1,7 @@
 package com.codesoom.assignment.task.handler.crud;
 
 import com.codesoom.assignment.response.ResponseBadRequest;
+import com.codesoom.assignment.response.ResponseNotFound;
 import com.codesoom.assignment.response.ResponseSuccess;
 import com.codesoom.assignment.task.domain.Task;
 import com.codesoom.assignment.task.service.TaskService;
@@ -18,13 +19,13 @@ public class UpdateTaskHandler extends CrudTaskHandler{
         String body = getBody(httpExchange);
 
         if (!taskValidator.vaildBody(body)) {
-            new ResponseBadRequest(httpExchange).send("body 값은 필수 값입니다.");
+            new ResponseNotFound(httpExchange).send("body 값은 필수 값입니다.");
         }
 
         Task source = toTask(body);
 
         if (!taskValidator.vaildTaskTitle(source.getTitle())) {
-            new ResponseBadRequest(httpExchange).send("title은 필수 값입니다.");
+            new ResponseNotFound(httpExchange).send("title은 필수 값입니다.");
         }
 
         taskService.updateTask(task, source);

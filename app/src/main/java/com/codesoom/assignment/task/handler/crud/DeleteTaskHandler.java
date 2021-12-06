@@ -1,6 +1,6 @@
 package com.codesoom.assignment.task.handler.crud;
 
-import com.codesoom.assignment.response.ResponseSuccess;
+import com.codesoom.assignment.response.ResponseNoContent;
 import com.codesoom.assignment.task.domain.Task;
 import com.codesoom.assignment.task.service.TaskService;
 import com.sun.net.httpserver.HttpExchange;
@@ -16,6 +16,6 @@ public class DeleteTaskHandler extends CrudTaskHandler{
     public void doHandle(HttpExchange httpExchange, Task task) throws IOException {
         taskService.removeTask(task);
 
-        new ResponseSuccess(httpExchange).send("");
+        new ResponseNoContent(httpExchange).send("");
     }
 }

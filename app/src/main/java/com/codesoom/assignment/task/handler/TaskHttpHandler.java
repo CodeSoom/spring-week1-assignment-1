@@ -1,6 +1,5 @@
 package com.codesoom.assignment.task.handler;
 
-import com.codesoom.assignment.response.ResponseBadRequest;
 import com.codesoom.assignment.response.ResponseNotFound;
 import com.codesoom.assignment.task.domain.Task;
 import com.codesoom.assignment.task.handler.crud.DeleteTaskHandler;
@@ -39,7 +38,7 @@ public class TaskHttpHandler implements HttpHandler {
             String stId = path.substring(PATH_INCLUDE_SLASH.length());
 
             if (!taskValidator.validTaskId(stId)) {
-                new ResponseBadRequest(httpExchange).send("");
+                new ResponseNotFound(httpExchange).send("");
                 return;
             }
 
