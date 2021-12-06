@@ -1,10 +1,11 @@
 package com.codesoom.assignment;
 
-/*
-    Written based on RFC2616 section 10
-    https://datatracker.ietf.org/doc/html/rfc2616#section-10
-*/
-
+/**
+ * Enumerated type for HTTP status code
+ * written based on RFC2616 section-10
+ *
+ * @link https://datatracker.ietf.org/doc/html/rfc2616#section-10
+ */
 public enum HttpStatusCode {
 
     OK(200),
