@@ -141,6 +141,14 @@ public class MyHttpHandler implements HttpHandler {
         }
     }
 
+    /**
+     * 아래의 파라미터들로 response를 보내는 메소드
+     *
+     * @param exchange       getResponseBody를 호출하기 위한 변수
+     * @param httpStatusCode response에 담아 보낼 상태코드
+     * @param content        responseBody에 쓸 String
+     * @throws IOException
+     */
     private void sendResponse(HttpExchange exchange, HttpStatusCode httpStatusCode, String content) throws IOException {
         exchange.sendResponseHeaders(httpStatusCode.getValue(), content.getBytes().length);
         OutputStream responseBody = exchange.getResponseBody();
