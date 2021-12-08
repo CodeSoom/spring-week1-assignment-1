@@ -6,87 +6,123 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
-
-    DemoHttpHandler() {
-        Task task = new Task();
-        // Long 타입은 L을 붙여준다
-        task.setId(1L);
-        task.setTitle("제목 입니다");
-
-        tasks.add(task);
-    }
+    private Long newId = 0L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        // HttpExchange 클래스는 http 관리하는듯. req + res?
-
         String method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
-        InputStream inputStream = exchange.getRequestBody();
-        // while 문을 돌아 read 해야 하는걸 BufferedReader 가 해결해준다.
-        // 예제를 보니 아래와 비슷한 형태인듯
-//        int data = inputStream.read();
-//        while(data != -1) {
-//            data = inputStream.read();
-//        }
-
-        String body = new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
-
-        if (!body.isBlank()) {
-            Task task = toTask(body);
-            tasks.add(task);
+        if (path.equals("/tasks")) {
+            handleCollection(exchange, method);
+            return;
         }
 
-
-        String content = "it's content";
-
-        if (method.equals("GET") && path.equals("/tasks")) {
-            System.out.println(method + ", " + path);
-
-            // content 타입은 String 이므로 toString()
-            content = tasksToJson();
+        if (path.startsWith("/tasks/")) {
+            Long id = Long.parseLong(path.substring("/tasks/".length()));
+            handleItem(exchange, method, id);
+            return;
         }
 
-        if (method.equals("POST") && path.equals("/tasks")) {
-            System.out.println(method + ", " + path);
-            content = "create a new task";
+        send(exchange, 200, "hello world");
+    }
+
+    private void handleCollection(HttpExchange exchange, String method) throws IOException {
+        if (method.equals("GET")) {
+            send(exchange, 200, toJson(tasks));
         }
 
-        if (method.equals("DELETE") && path.equals("/tasks")) {
-            System.out.println(method + ", " + path);
-            deleteTask(1L);
-            System.out.println(tasks);
+        if (method.equals("POST")) {
+            handleCreate(exchange);
+        }
+    }
+
+    private void handleItem(HttpExchange exchange, String method, Long id) throws IOException {
+        Task task = findTask(id);
+
+        if(task == null) {
+            send(exchange, 404, "");
         }
 
+        if (method.equals("GET")) {
+            send(exchange, 200, toJson(task));
+        }
 
-        // response Code, response Length 필수 필수인듯.
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+        if (method.equals("PUT") || method.equals("PATCH")) {
+            handleUpdate(exchange, task);
+        }
 
-        // response 에 사용할 body 객체 생성?
-        // request 는 InputStream 을 사용하는듯하고 response 는 OutputStream 사용하는듯?
+        if (method.equals("DELETE")) {
+            handleDelete(exchange, task);
+        }
+    }
+
+    private void handleDelete(HttpExchange exchange, Task task) throws IOException {
+        tasks.remove(task);
+        send(exchange, 200, "");
+    }
+
+    private void handleUpdate(HttpExchange exchange, Task task) throws IOException {
+        String body = getBody(exchange);
+        Task source = toTask(body);
+
+        task.setTitle(source.getTitle());
+        send(exchange, 200, toJson(task));
+    }
+
+    private void handleCreate(HttpExchange exchange) throws IOException {
+        String body = getBody(exchange);
+        Task task = toTask(body);
+        task.setId(generateId());
+        tasks.add(task);
+
+        send(exchange, 201, toJson(tasks));
+    }
+
+    private Task findTask(Long id) {
+        return tasks.stream()
+                .filter(task -> task.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void send(HttpExchange exchange, int statusCode, String content) throws IOException {
+
+        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
 
-        // outputStream 에 내용을 기입하는듯
         outputStream.write(content.getBytes());
 
-        // outputStream 내용을 출력하는듯
         outputStream.flush();
-
-        // outputStream 에 관련된 리소스 모두 해제
         outputStream.close();
+    }
+
+    private String getBody(HttpExchange exchange) {
+        InputStream inputStream = exchange.getRequestBody();
+        return new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
+    }
+
+    private Long generateId() {
+        newId += 1;
+        return newId;
     }
 
     private Task toTask(String content) throws JsonProcessingException {
@@ -94,15 +130,9 @@ public class DemoHttpHandler implements HttpHandler {
         return objectMapper.readValue(content, Task.class);
     }
 
-    private String tasksToJson() throws IOException {
+    private String toJson(Object object) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-
-        // writeValue 는 mapper 가 tasks 를 바인딩해서 outputStream 에 write 해주는 메서드 인가?
-        // 뒤에 outputStream.write 가 있는데 왜 여기서도 outputStream ...
-        // 데이터를 전달 할 때 마다 outputStream 이 필요한건가..
-        // ByteArrayOutputStream 는 tasks 를 전달하기 위한 stream 이고 뒤에 outputStream 은 ResponseBody 에 데이터를 담기 위한 outputStream 인가.
-        objectMapper.writeValue(outputStream, tasks);
-
+        objectMapper.writeValue(outputStream, object);
         return outputStream.toString();
     }
 
