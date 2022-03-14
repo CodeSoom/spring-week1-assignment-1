@@ -27,6 +27,10 @@ dependencies {
     implementation 'com.google.guava:guava:29.0-jre'
 
     // Jackson for JSON.
+//    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.13.0'
+//    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.13.0'
+    // 위와 같은 group, name, version 을 : 으로 구분하여 아래와 같이  축약 할 수 있다.
+
     implementation 'com.fasterxml.jackson.core:jackson-core:2.11.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.3'
 }
