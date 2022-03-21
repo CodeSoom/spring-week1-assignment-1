@@ -38,3 +38,39 @@ $ npm install
 ```bash
 $ npm run test
 ```
+
+## 작업목록 및 순서
+1. 초기 세팅
+   1. Http server 만들기 : no connection -> 404 -> 500 넘어가는 흐름 파악
+   2. handler 생성
+   3. header, body response & log 세팅
+   4. Jackson lib dependency
+   5. models package 생성 > Task model 생성
+      1. id
+      2. title 
+   6. task to json / json to task 공통 매소드 만들기
+2. ToDo 목록 얻기 & 테스트
+   1. 경로 : GET /tasks
+   2. 기능 : tasks 목록 응답
+3. ToDo 상세 조회하기 & 테스트
+   1. 경로 : GET /tasks/{id}
+   2. 기능 : path 의 id에 해당하는 task 내용 응답 
+   3. 예외처리
+      1. id 가 0 이하일때 오류메시지 응답
+4. ToDo 생성하기 & 테스트
+   1. 경로 : POST /tasks
+   2. 기능 : 마지막 id + 1에 해당하는 신규 task 추가
+   3. 예외처리
+      1. task title 형식이 안맞을 때 오류 응답 : 문자가 아니거나 비어있으면 안됨
+5. ToDo 제목 수정하기 & 테스트
+   1. 경로 : PUT/PATCH /tasks/{id}
+   2. 기능 : id에 맞는 task 찾아서 제목 수정하기
+   3. 예외처리
+      1. id 에 맞는 task 가 존재하지 않을 때 오류 응답
+      2. 수정하려는 값이 적절하지 않을 때 오류 응답 : 문자가 아니거나 비어있으면 안됨ㄴ
+6. ToDo 삭제하기 & 테스트
+   1. 경로 : DELETE /tasks/{id}
+   2. 기능 : id에 맞는 값을 찾아서 삭제한다. 
+   3. 예외처리
+      1. id 에 맞는 task 가 존재하지 않을 때 오류 응답
+7. tests > 전체 테스트
