@@ -3,6 +3,7 @@ package com.codesoom.assignment;
 import com.codesoom.assignment.domain.Task;
 import com.codesoom.assignment.domain.TaskList;
 import com.codesoom.assignment.dto.TaskDto;
+import com.codesoom.assignment.http.HttpMethod;
 import com.codesoom.assignment.http.HttpStatusCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -12,9 +13,12 @@ import java.io.*;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.codesoom.assignment.http.HttpMethod.*;
 import static com.codesoom.assignment.http.HttpStatusCode.*;
 
 public class DemoHttpHandler implements HttpHandler {
+
+    private static final String PATH_SEPARATOR = "/";
 
     private static final long EMPTY_RESPONSE_LENGTH = 0;
 
@@ -33,27 +37,27 @@ public class DemoHttpHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
-        String path = exchange.getRequestURI().getPath();
+        String pathURI = exchange.getRequestURI().getPath();
 
-        if (!path.startsWith("/tasks")) {
+        if (!pathURI.startsWith("/tasks")) {
             response(exchange, NOT_FOUND);
             return;
         }
 
-        String[] pathArr = path.split("/");
-        String httpMethod = exchange.getRequestMethod();
+        String[] pathArr = pathURI.split(PATH_SEPARATOR);
+        HttpMethod httpMethod = HttpMethod.valueOf(exchange.getRequestMethod());
 
-        if (httpMethod.equals("POST") && pathArr.length == 2) {
+        if (httpMethod.equals(POST) && pathArr.length == 2) {
             saveTask(exchange);
-        } else if (httpMethod.equals("GET") && pathArr.length == 2) {
+        } else if (httpMethod.equals(GET) && pathArr.length == 2) {
             getTasks(exchange);
-        } else if (httpMethod.equals("GET") && pathArr.length == 3) {
+        } else if (httpMethod.equals(GET) && pathArr.length == 3) {
             getTask(exchange, pathArr);
-        } else if (httpMethod.equals("PATCH") && pathArr.length == 3) {
+        } else if (httpMethod.equals(PATCH) && pathArr.length == 3) {
             modifyTask(exchange, pathArr);
-        } else if (httpMethod.equals("PUT") && pathArr.length == 3) {
+        } else if (httpMethod.equals(PUT) && pathArr.length == 3) {
             changeTask(exchange, pathArr);
-        } else if (httpMethod.equals("DELETE") && pathArr.length == 3) {
+        } else if (httpMethod.equals(DELETE) && pathArr.length == 3) {
             deleteTask(exchange, pathArr);
         } else {
             response(exchange, BAD_REQUEST);
