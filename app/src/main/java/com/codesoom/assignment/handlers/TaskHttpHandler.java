@@ -17,7 +17,10 @@ import java.util.stream.Collectors;
 public class TaskHttpHandler implements HttpHandler {
 
     private ObjectMapper objectMapper = new ObjectMapper();
+
     private List<Task> tasks;
+
+    private static final String PATH = "/tasks";
 
     private static final int HTTP_STATUS_OK = 200;
     private static final int HTTP_STATUS_CREATE = 201;
@@ -29,6 +32,8 @@ public class TaskHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
+        String requestURI = exchange.getRequestURI().getPath();
+
         System.out.println(exchange.getRequestMethod() + " " + exchange.getRequestURI());
 
         Headers responseHeaders = exchange.getResponseHeaders();
@@ -36,31 +41,36 @@ public class TaskHttpHandler implements HttpHandler {
 
         OutputStream outputStream = exchange.getResponseBody();
         String responseBody = "";
+        int httpStatus = 0;
 
-        if (HttpMethod.GET.name().equals(exchange.getRequestMethod())) {
-            System.out.println(" - ToDo 전체 조회 요청");
+        if (PATH.equals(requestURI)) {
+            if (HttpMethod.GET.name().equals(exchange.getRequestMethod())) {
+                System.out.println(" - ToDo 전체 조회 요청");
 
-            responseBody = tasksToJSON();
-            exchange.sendResponseHeaders(HTTP_STATUS_OK, responseBody.getBytes(StandardCharsets.UTF_8).length);
-        }
+                responseBody = tasksToJSON();
+                httpStatus = HTTP_STATUS_OK;
+            }
 
-        if (HttpMethod.POST.name().equals(exchange.getRequestMethod())) {
-            System.out.println(" - ToDo 추가 요청");
+            if (HttpMethod.POST.name().equals(exchange.getRequestMethod())) {
+                System.out.println(" - ToDo 추가 요청");
 
-            final String requestBody = getRequestBody(exchange.getRequestBody());
-            if (requestBody.isBlank()) {
-                System.out.println(" - ToDo 추가 ERROR: 요청 값이 없음");
-                responseBody = "할 일을 입력해 주세요.";
-                exchange.sendResponseHeaders(HTTP_STATUS_BAD_REQUEST, responseBody.getBytes(StandardCharsets.UTF_8).length);
-            } else {
-                Task newTask = toTask(requestBody);
-                addTask(newTask);
+                final String requestBody = getRequestBody(exchange.getRequestBody());
+                if (requestBody.isBlank()) {
+                    System.out.println(" - ToDo 추가 ERROR: 요청 값이 없음");
+                    responseBody = "할 일을 입력해 주세요.";
+                    httpStatus = HTTP_STATUS_BAD_REQUEST;
 
-                responseBody = taskToJSON(newTask);
-                exchange.sendResponseHeaders(HTTP_STATUS_CREATE, responseBody.getBytes(StandardCharsets.UTF_8).length);
+                } else {
+                    Task newTask = toTask(requestBody);
+                    addTask(newTask);
+
+                    responseBody = taskToJSON(newTask);
+                    httpStatus = HTTP_STATUS_CREATE;
+                }
             }
         }
 
+        exchange.sendResponseHeaders(httpStatus, responseBody.getBytes(StandardCharsets.UTF_8).length);
         outputStream.write(responseBody.getBytes(StandardCharsets.UTF_8));
         outputStream.flush();
         outputStream.close();
