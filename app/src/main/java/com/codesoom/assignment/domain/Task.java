@@ -22,6 +22,7 @@ public class Task {
     public static Task registerTask(String title) {
         var taskId = RandomStringUtils.randomAlphabetic(8);
         var task = new Task(taskId, title, LocalDateTime.now(), LocalDateTime.now());
+
         return task;
     }
 
