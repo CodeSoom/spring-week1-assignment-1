@@ -41,13 +41,13 @@ $ npm run test
 
 ## 작업목록 및 순서
 1. 초기 세팅
-   ~~1. Http server 만들기 : no connection -> 404 -> 500 넘어가는 흐름 파악~~
-   ~~2. handler 생성~~
-   ~~3. header, body response & log 세팅~~
-   4. Jackson lib dependency
-   5. models package 생성 > Task model 생성
+   1. Http server 만들기 : no connection -> 404 -> 500 넘어가는 흐름 파악
+   2. handler 생성
+   3. header, body response & log 세팅
+   4. models package 생성 > Task model 생성
       1. id
       2. title 
+   5. Jackson lib dependency 
    6. task to json / json to task 공통 매소드 만들기
 2. ToDo 목록 얻기 & 테스트
    1. 경로 : GET /tasks
