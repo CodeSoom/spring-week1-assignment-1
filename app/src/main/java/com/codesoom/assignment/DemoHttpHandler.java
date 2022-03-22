@@ -18,6 +18,8 @@ import static com.codesoom.assignment.http.HttpStatusCode.*;
 
 public class DemoHttpHandler implements HttpHandler {
 
+    private static final String LINE_BREAK = "\n";
+
     private static final String PATH_SEPARATOR = "/";
 
     private static final long EMPTY_RESPONSE_LENGTH = 0;
@@ -196,7 +198,7 @@ public class DemoHttpHandler implements HttpHandler {
         InputStream inputStream = exchange.getRequestBody();
         return new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
-                .collect(Collectors.joining("\n"));
+                .collect(Collectors.joining(LINE_BREAK));
     }
 
     private Long getTaskId(final String[] pathArr) throws NumberFormatException {
