@@ -10,6 +10,7 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.codesoom.assignment.http.HttpStatusCode.*;
@@ -38,13 +39,15 @@ public class DemoHttpHandler implements HttpHandler {
         String path = exchange.getRequestURI().getPath();
 
         if (!path.startsWith("/tasks")) {
-            responseHandle(exchange, NOT_FOUND);
+            response(exchange, NOT_FOUND);
             return;
         }
 
+        String[] pathArr = splitPath(path);
+
         String httpMethod = exchange.getRequestMethod();
 
-        if (httpMethod.equals("POST")) {
+        if (httpMethod.equals("POST") && pathArr.length == 2) {
             InputStream inputStream = exchange.getRequestBody();
             String requestBody = new BufferedReader(new InputStreamReader(inputStream))
                     .lines()
@@ -57,91 +60,68 @@ public class DemoHttpHandler implements HttpHandler {
 
             String content = objectMapper.writeValueAsString(newTask);
 
-            responseHandle(exchange, CREATED, content);
+            response(exchange, CREATED, content);
             return;
         }
 
-        if (httpMethod.equals("GET")) {
+        if (httpMethod.equals("GET") && pathArr.length == 2) {
+            OutputStream outputStream = new ByteArrayOutputStream();
+            objectMapper.writeValue(outputStream, taskList);
+            String content = outputStream.toString();
+            response(exchange, OK, content);
+            return;
+        }
 
-            String[] split = path.split("/");
-            if (split.length < 3) {
-                OutputStream outputStream = new ByteArrayOutputStream();
-                objectMapper.writeValue(outputStream, taskList);
-                String content = outputStream.toString();
-                responseHandle(exchange, OK, content);
+        if (httpMethod.equals("GET") && pathArr.length == 3) {
+
+            Optional<Task> taskOptional = findTaskById(pathArr);
+            if (taskOptional.isEmpty()) {
+                response(exchange, NOT_FOUND);
                 return;
             }
-
-            Long taskId = parsePathAndGetTaskId(split);
-
-            Task findTask = taskList.stream()
-                    .filter(t -> t.getId().equals(taskId))
-                    .findFirst()
-                    .orElse(null);
-
-            if (findTask == null) {
-                responseHandle(exchange, NOT_FOUND);
-                return;
-            }
+            Task findTask = taskOptional.get();
 
             String content = objectMapper.writeValueAsString(findTask);
-            responseHandle(exchange, OK, content);
+            response(exchange, OK, content);
             return;
         }
 
-        if (httpMethod.equals("PATCH")) {
-
-            String[] split = path.split("/");
-            if (split.length < 3) {
-                responseHandle(exchange, BAD_REQUEST);
+        if (httpMethod.equals("PATCH") && pathArr.length == 3) {
+            Optional<Task> taskOptional = findTaskById(pathArr);
+            if (taskOptional.isEmpty()) {
+                response(exchange, NOT_FOUND);
                 return;
             }
-
-            Long taskId = parsePathAndGetTaskId(split);
-
-            Task findTask = findTaskById(taskId);
-
-            if (findTask == null) {
-                responseHandle(exchange, NOT_FOUND);
-                return;
-            }
+            Task findTask = taskOptional.get();
 
             InputStream inputStream = exchange.getRequestBody();
-            String body = new BufferedReader(new InputStreamReader(inputStream))
+            String requestBody = new BufferedReader(new InputStreamReader(inputStream))
                     .lines()
                     .collect(Collectors.joining("\n"));
 
-            if (body.isBlank()) {
-                responseHandle(exchange, BAD_REQUEST);
+            if (requestBody.isBlank()) {
+                response(exchange, BAD_REQUEST);
                 return;
             }
 
-            TaskDto taskDto = objectMapper.readValue(body, TaskDto.class);
+            TaskDto taskDto = objectMapper.readValue(requestBody, TaskDto.class);
 
             if (taskDto.getTitle() != null) {
                 findTask.setTitle(taskDto.getTitle());
             }
 
             String content = objectMapper.writeValueAsString(findTask);
-            responseHandle(exchange, OK, content);
+            response(exchange, OK, content);
             return;
         }
 
-        if (httpMethod.equals("PUT")) {
-            String[] split = path.split("/");
-            if (split.length < 3) {
-                responseHandle(exchange, BAD_REQUEST);
+        if (httpMethod.equals("PUT") && pathArr.length == 3) {
+            Optional<Task> taskOptional = findTaskById(pathArr);
+            if (taskOptional.isEmpty()) {
+                response(exchange, NOT_FOUND);
                 return;
             }
-
-            Long taskId = parsePathAndGetTaskId(split);
-
-            Task findTask = findTaskById(taskId);
-
-            if (findTask == null) {
-                responseHandle(exchange, NOT_FOUND);
-                return;
-            }
+            Task findTask = taskOptional.get();
 
             InputStream inputStream = exchange.getRequestBody();
             String body = new BufferedReader(new InputStreamReader(inputStream))
@@ -153,38 +133,27 @@ public class DemoHttpHandler implements HttpHandler {
             findTask.setTitle(taskDto.getTitle());
 
             String content = objectMapper.writeValueAsString(findTask);
-            responseHandle(exchange, OK, content);
+            response(exchange, OK, content);
             return;
         }
 
-        if (httpMethod.equals("DELETE")) {
-            String[] split = path.split("/");
-
-            if (split.length < 3) {
-                responseHandle(exchange, BAD_REQUEST);
+        if (httpMethod.equals("DELETE") && pathArr.length == 3) {
+            Optional<Task> taskOptional = findTaskById(pathArr);
+            if (taskOptional.isEmpty()) {
+                response(exchange, NOT_FOUND);
                 return;
             }
 
-            Long taskId = parsePathAndGetTaskId(split);
-
-            Task findTask = findTaskById(taskId);
-
-            if (findTask == null) {
-                responseHandle(exchange, NOT_FOUND);
-                return;
-            }
-
+            Task findTask = taskOptional.get();
             taskList.remove(findTask);
-            responseHandle(exchange, NO_CONTENT);
+            response(exchange, NO_CONTENT);
             return;
         }
-
-        responseHandle(exchange, OK);
+        response(exchange, BAD_REQUEST);
     }
 
-    private Long parsePathAndGetTaskId(String[] split) {
-        String key = split[2];
-        return Long.valueOf(key);
+    private String[] splitPath(String path) {
+        return path.split("/");
     }
 
     // TODO - START - 분리 예정 -> task repository
@@ -196,8 +165,25 @@ public class DemoHttpHandler implements HttpHandler {
     }
     // TODO - END
 
-    private void responseHandle(final HttpExchange exchange,
-                                final HttpStatusCode statusCode) throws IOException {
+    private Optional<Task> findTaskById(String[] split) {
+
+        if(split.length != 3) {
+            return Optional.empty();
+        }
+
+        Long taskId = Long.valueOf(split[2]);
+
+        Task findTask = findTaskById(taskId);
+
+        if(findTask == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(findTask);
+    }
+
+    private void response(final HttpExchange exchange,
+                          final HttpStatusCode statusCode) throws IOException {
 
         long responseLength = statusCode.equals(NO_CONTENT) ? NO_CONTENT_RESPONSE_LENGTH : EMPTY_RESPONSE_LENGTH;
 
@@ -207,9 +193,9 @@ public class DemoHttpHandler implements HttpHandler {
         responseOutputStream.close();
     }
 
-    private void responseHandle(final HttpExchange exchange,
-                                final HttpStatusCode statusCode,
-                                final String content) throws IOException {
+    private void response(final HttpExchange exchange,
+                          final HttpStatusCode statusCode,
+                          final String content) throws IOException {
 
         exchange.sendResponseHeaders(statusCode.getCode(), content.getBytes().length);
 
