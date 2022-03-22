@@ -17,13 +17,6 @@ public class DemoHttpHandler implements HttpHandler {
 
     private List<Task> tasks = new ArrayList<>();
 
-    public DemoHttpHandler() {
-        Task task = new Task();
-        task.setId(1L);
-        task.setTitle("Do nothing...");
-
-        tasks.add(task);
-    }
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -42,22 +35,56 @@ public class DemoHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         System.out.println(method + " " + path);
-        if(!body.isEmpty()) {
-            Task task = toTask(body);
-            tasks.add(task);
-        }
 
         String content = "Hello, World!";
 
         if(method.equals("GET") && path.equals("/tasks")) {
             content = tasksToJSON();
+
+            httpExchange.sendResponseHeaders(200, content.getBytes().length);
         }
 
-        if(method.equals("POST") && path.equals("/tasks")) {
-            content = "Create a new task.";
+        if(method.equals("GET") && path.contains("/tasks/")
+                && path.lastIndexOf("/") != path.length() - 1) {
+            String numberString = path.substring(path.lastIndexOf("/") + 1);
+            Integer number = Integer.valueOf(numberString) - 1;
+
+            content = getTaskToJSON(number);
+            httpExchange.sendResponseHeaders(200, content.getBytes().length);
         }
 
-        httpExchange.sendResponseHeaders(200, content.getBytes().length);
+        if(method.equals("DELETE") && path.contains("/tasks/")
+                && path.lastIndexOf("/") != path.length() - 1) {
+            String numberString = path.substring(path.lastIndexOf("/") + 1);
+            Integer number = Integer.valueOf(numberString) - 1;
+
+            tasks.remove(number);
+            httpExchange.sendResponseHeaders(200, content.getBytes().length);
+        }
+
+        if(!body.isEmpty() && method.equals("POST") && path.equals("/tasks")) {
+            Task task = toTask(body);
+            task.setId(tasks.size() + 1L);
+            tasks.add(task);
+
+            content = latestTaskToJSON();
+            httpExchange.sendResponseHeaders(201, content.getBytes().length);
+        }
+
+        if(!body.isEmpty() && method.equals("PUT") && path.contains("/tasks/")
+        && path.lastIndexOf("/") != path.length() - 1) {
+            String numberString = path.substring(path.lastIndexOf("/") + 1);
+            Integer number = Integer.valueOf(numberString) - 1;
+            Task task = toTask(body);
+            task.setId(number + 1L);
+
+            tasks.set(number, task);
+
+
+            content = getTaskToJSON(number);
+
+            httpExchange.sendResponseHeaders(200, content.getBytes().length);
+        }
 
         OutputStream outputStream = httpExchange.getResponseBody();
         outputStream.write(content.getBytes());
@@ -72,6 +99,20 @@ public class DemoHttpHandler implements HttpHandler {
     private String tasksToJSON() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
+
+        return outputStream.toString();
+    }
+
+    private String latestTaskToJSON() throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, tasks.get(tasks.size() - 1));
+
+        return outputStream.toString();
+    }
+
+    private String getTaskToJSON(int index) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, tasks.get(index));
 
         return outputStream.toString();
     }
