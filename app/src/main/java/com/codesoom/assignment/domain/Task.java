@@ -1,7 +1,5 @@
 package com.codesoom.assignment.domain;
 
-import java.util.Objects;
-
 public class Task {
 
     private Long id;
