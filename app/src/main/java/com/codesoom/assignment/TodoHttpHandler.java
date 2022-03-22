@@ -52,6 +52,12 @@ public class TodoHttpHandler implements HttpHandler {
             content = tasksToJSON();
         }
 
+        if (method.equals("GET") && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
+            Long id = Long.valueOf(path.split("/")[2]);
+
+            content = taskToJSON(id);
+        }
+
         if (method.equals("POST") && path.equals("/tasks")) {
             content = "Create a new task.";
 
@@ -73,6 +79,16 @@ public class TodoHttpHandler implements HttpHandler {
 
     private Task toTask(String content) throws JsonProcessingException {
         return objectMapper.readValue(content, Task.class);
+    }
+
+    private String taskToJSON(Long id) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, tasks
+                .stream()
+                .filter(task -> task.getId().equals(id))
+                .collect(Collectors.toList()));
+
+        return outputStream.toString();
     }
 
     private String tasksToJSON() throws IOException {
