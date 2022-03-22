@@ -44,10 +44,6 @@ public class TodoHttpHandler implements HttpHandler {
 
         if (!body.isBlank()) {
             System.out.println(body);
-
-            Task task = toTask(body);
-            System.out.println(task);
-            tasks.add(task);
         }
 
         String content = "Hello, World!";
@@ -58,6 +54,10 @@ public class TodoHttpHandler implements HttpHandler {
 
         if (method.equals("POST") && path.equals("/tasks")) {
             content = "Create a new task.";
+
+            Task task = toTask(body);
+            System.out.println(task);
+            tasks.add(task);
         }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
