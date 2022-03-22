@@ -1,13 +1,10 @@
-package com.codesoom.assignment.domain;
+package com.codesoom.assignment.domain.task;
 
-
-import org.apache.commons.lang3.RandomStringUtils;
-
-import java.time.LocalDateTime;
 
 public class TaskCommand {
 
     public static class CreateTaskRequest{
+        private String title;
 
     }
 
