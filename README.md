@@ -40,7 +40,7 @@ $ npm run test
 ```
 
 ## 작업목록 및 순서
-1. 초기 세팅
+1. 초기 세팅 ✅
    1. Http server 만들기 : no connection -> 404 -> 500 넘어가는 흐름 파악
    2. handler 생성
    3. header, body response & log 세팅
@@ -74,3 +74,12 @@ $ npm run test
    3. 예외처리
       1. id 에 맞는 task 가 존재하지 않을 때 오류 응답
 7. tests > 전체 테스트
+
+## 추가 작업목록 (from feedback)
+### 2022.03.22
+1. Object Mapper 이용하지 않고 json - task 간 parsing 하도록 수정하기
+2. 경로 Path validation 
+   1. GET /tasks/ 처럼 뒤쪽에 `/` 붙은 경로들 대응하기
+3. 일반 숫자, 문자들 상수로 분리하기
+4. `import *` 처럼 전체 import 사용하지 않고 필요한 라이브러리만 import 하기
+
