@@ -56,8 +56,11 @@ public class TodoHttpHandler implements HttpHandler {
             content = "Create a new task.";
 
             Task task = toTask(body);
-            System.out.println(task);
+            Long nextId = tasks.get(tasks.size() - 1).getId() + 1;
+            task.setId(nextId);
+
             tasks.add(task);
+            System.out.println(task);
         }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
