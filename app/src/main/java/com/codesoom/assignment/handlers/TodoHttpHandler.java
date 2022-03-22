@@ -2,8 +2,7 @@ package com.codesoom.assignment.handlers;
 
 import com.codesoom.assignment.enums.HttpMethod;
 import com.codesoom.assignment.models.Task;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.codesoom.assignment.utils.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -16,7 +15,6 @@ import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks;
 
     public TodoHttpHandler() {
@@ -44,13 +42,13 @@ public class TodoHttpHandler implements HttpHandler {
 
         logRequest(reqMethod, reqUri, reqPath, reqBody);
 
-
         String resBody = "No Content";
 
         if (reqMethod.equals(HttpMethod.GET.getMethod()) && reqPath.equals("/tasks")) {
-            resBody = toJson();
+            resBody = JsonParser.toJsonString(tasks);
         }
 
+        httpExchange.getResponseHeaders().set("Content-Type", "application/json");
         httpExchange.sendResponseHeaders(200, resBody.getBytes(StandardCharsets.UTF_8).length);
 
         OutputStream outputStream = httpExchange.getResponseBody();
@@ -59,18 +57,6 @@ public class TodoHttpHandler implements HttpHandler {
         outputStream.close();
 
         logResponse(resBody);
-    }
-
-
-    private String toJson() throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
-
-        return outputStream.toString();
-    }
-
-    private Task toTask(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
     }
 
     private void logRequest(String requestMethod,
@@ -83,7 +69,7 @@ public class TodoHttpHandler implements HttpHandler {
         System.out.println("requestURI = " + requestURI);
         System.out.println("requestPath = " + requestPath);
 
-        if (requestBody != null && requestBody.isEmpty()) {
+        if (requestBody != null && !requestBody.isEmpty()) {
             System.out.println("requestBody = " + requestBody);
         }
     }
