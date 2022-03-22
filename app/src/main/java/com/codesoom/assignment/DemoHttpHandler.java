@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.domain.Task;
+import com.codesoom.assignment.domain.TaskList;
 import com.codesoom.assignment.dto.TaskDto;
 import com.codesoom.assignment.http.HttpStatusCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,8 +9,6 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -24,13 +23,9 @@ public class DemoHttpHandler implements HttpHandler {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final List<Task> taskList = new ArrayList<>();
-
-    private long sequenceId = 0;
+    private final TaskList taskList = new TaskList();
 
     public DemoHttpHandler() {
-        Task task = new Task(++sequenceId, "title");
-        taskList.add(task);
     }
 
     @Override
@@ -55,10 +50,9 @@ public class DemoHttpHandler implements HttpHandler {
 
             TaskDto taskDto = objectMapper.readValue(requestBody, TaskDto.class);
 
-            Task newTask = new Task(++sequenceId, taskDto.getTitle());
-            taskList.add(newTask);
+            Task savedTask = taskList.save(taskDto);
 
-            String content = objectMapper.writeValueAsString(newTask);
+            String content = objectMapper.writeValueAsString(savedTask);
 
             response(exchange, CREATED, content);
             return;
@@ -66,7 +60,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         if (httpMethod.equals("GET") && pathArr.length == 2) {
             OutputStream outputStream = new ByteArrayOutputStream();
-            objectMapper.writeValue(outputStream, taskList);
+            objectMapper.writeValue(outputStream, taskList.getTasks());
             String content = outputStream.toString();
             response(exchange, OK, content);
             return;
@@ -74,7 +68,9 @@ public class DemoHttpHandler implements HttpHandler {
 
         if (httpMethod.equals("GET") && pathArr.length == 3) {
 
-            Optional<Task> taskOptional = findTaskById(pathArr);
+            Long taskId = Long.valueOf(pathArr[2]);
+            Optional<Task> taskOptional = taskList.findTaskById(taskId);
+
             if (taskOptional.isEmpty()) {
                 response(exchange, NOT_FOUND);
                 return;
@@ -87,7 +83,10 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         if (httpMethod.equals("PATCH") && pathArr.length == 3) {
-            Optional<Task> taskOptional = findTaskById(pathArr);
+
+            Long taskId = Long.valueOf(pathArr[2]);
+            Optional<Task> taskOptional = taskList.findTaskById(taskId);
+
             if (taskOptional.isEmpty()) {
                 response(exchange, NOT_FOUND);
                 return;
@@ -116,7 +115,9 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         if (httpMethod.equals("PUT") && pathArr.length == 3) {
-            Optional<Task> taskOptional = findTaskById(pathArr);
+
+            Long taskId = Long.valueOf(pathArr[2]);
+            Optional<Task> taskOptional = taskList.findTaskById(taskId);
             if (taskOptional.isEmpty()) {
                 response(exchange, NOT_FOUND);
                 return;
@@ -138,7 +139,8 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         if (httpMethod.equals("DELETE") && pathArr.length == 3) {
-            Optional<Task> taskOptional = findTaskById(pathArr);
+            Long taskId = Long.valueOf(pathArr[2]);
+            Optional<Task> taskOptional = taskList.findTaskById(taskId);
             if (taskOptional.isEmpty()) {
                 response(exchange, NOT_FOUND);
                 return;
@@ -154,32 +156,6 @@ public class DemoHttpHandler implements HttpHandler {
 
     private String[] splitPath(String path) {
         return path.split("/");
-    }
-
-    // TODO - START - 분리 예정 -> task repository
-    private Task findTaskById(Long taskId) {
-        return taskList.stream()
-                .filter(t -> t.getId().equals(taskId))
-                .findFirst()
-                .orElse(null);
-    }
-    // TODO - END
-
-    private Optional<Task> findTaskById(String[] split) {
-
-        if(split.length != 3) {
-            return Optional.empty();
-        }
-
-        Long taskId = Long.valueOf(split[2]);
-
-        Task findTask = findTaskById(taskId);
-
-        if(findTask == null) {
-            return Optional.empty();
-        }
-
-        return Optional.of(findTask);
     }
 
     private void response(final HttpExchange exchange,
