@@ -6,7 +6,7 @@ import java.util.List;
 public class TaskList {
 
     private static TaskList taskList;
-    private List<Task> tasks;
+    private final List<Task> tasks;
 
     private TaskList() {
         tasks = new ArrayList<>();
@@ -32,4 +32,10 @@ public class TaskList {
         tasks.add(new Task(4L, "codesoom lecture complete 4"));
     }
 
+    public void addTask(Task newTask) {
+        long lastIdx = tasks.size() == 0 ? 0L : tasks.get(tasks.size()-1).getId();
+        newTask.setId(lastIdx + 1);
+
+        tasks.add(newTask);
+    }
 }

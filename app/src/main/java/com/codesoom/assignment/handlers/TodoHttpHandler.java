@@ -2,6 +2,7 @@ package com.codesoom.assignment.handlers;
 
 import com.codesoom.assignment.controllers.TodoController;
 import com.codesoom.assignment.enums.HttpMethod;
+import com.codesoom.assignment.utils.JsonParser;
 import com.codesoom.assignment.utils.Logger;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -35,7 +36,7 @@ public class TodoHttpHandler implements HttpHandler {
         logger.logRequest(reqMethod, reqUri, reqPath, reqBody);
 
 
-        String resBody = proceed(reqMethod, reqPath);
+        String resBody = proceed(reqMethod, reqPath, reqBody);
 
 
         httpExchange.getResponseHeaders().set("Content-Type", "application/json");
@@ -49,7 +50,7 @@ public class TodoHttpHandler implements HttpHandler {
         logger.logResponse(resBody);
     }
 
-    private String proceed(String reqMethod, String reqPath) throws IOException {
+    private String proceed(String reqMethod, String reqPath, String reqBody) throws IOException {
         if (reqMethod.equals(HttpMethod.GET.getMethod()) && reqPath.equals("/tasks")) {
             return todoController.getTodos();
         }
@@ -60,8 +61,7 @@ public class TodoHttpHandler implements HttpHandler {
         }
 
         if (reqMethod.equals(HttpMethod.POST.getMethod()) && reqPath.equals("/tasks")) {
-            //TODO
-            return null;
+            return todoController.postTodo(JsonParser.toTask(reqBody));
         }
 
         if (reqMethod.equals(HttpMethod.PUT.getMethod()) && reqPath.equals("/tasks/{id}")) {

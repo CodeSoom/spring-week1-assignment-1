@@ -1,5 +1,6 @@
 package com.codesoom.assignment.controllers;
 
+import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.services.TodoService;
 
 import java.io.IOException;
@@ -16,4 +17,7 @@ public class TodoController {
         return todoService.getTodos();
     }
 
+    public String postTodo(Task newTask) {
+        return todoService.addTodo(newTask);
+    }
 }

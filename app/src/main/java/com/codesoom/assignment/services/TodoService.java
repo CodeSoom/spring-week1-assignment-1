@@ -1,5 +1,7 @@
 package com.codesoom.assignment.services;
 
+import com.codesoom.assignment.enums.HttpStatusCode;
+import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.models.TaskList;
 import com.codesoom.assignment.utils.JsonParser;
 
@@ -17,4 +19,9 @@ public class TodoService {
         return JsonParser.toJsonString(taskList.getTasks());
     }
 
+    public String addTodo(Task newTask) {
+        taskList.addTask(newTask);
+
+        return HttpStatusCode.CREATED.getMessage();
+    }
 }
