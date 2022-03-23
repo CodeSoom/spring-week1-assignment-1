@@ -87,12 +87,23 @@ public class TodoHttpHandler implements HttpHandler {
             content = taskToChange(task);
         }
 
+        if (method.equals("DELETE") && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
+            Long id = Long.valueOf(path.split("/")[2]);
+
+            content = taskToRemove(id);
+        }
+
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private String taskToRemove(Long id) {
+        tasks.removeIf(task -> task.getId().equals(id));
+        return "Delete a task.";
     }
 
     private String taskToChange(Task task) {
