@@ -3,6 +3,7 @@ package com.codesoom.assignment.handlers;
 import com.codesoom.assignment.enums.HttpMethod;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.utils.JsonParser;
+import com.codesoom.assignment.utils.Logger;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -15,10 +16,13 @@ import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
 
+    private Logger logger;
     private List<Task> tasks;
 
     public TodoHttpHandler() {
+        logger = new Logger();
         tasks = new ArrayList<>();
+
         dummyDatas();
     }
 
@@ -40,9 +44,9 @@ public class TodoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        logRequest(reqMethod, reqUri, reqPath, reqBody);
+        logger.logRequest(reqMethod, reqUri, reqPath, reqBody);
 
-        String resBody = "No Content";
+        String resBody = "";
 
         if (reqMethod.equals(HttpMethod.GET.getMethod()) && reqPath.equals("/tasks")) {
             resBody = JsonParser.toJsonString(tasks);
@@ -56,28 +60,7 @@ public class TodoHttpHandler implements HttpHandler {
         outputStream.flush();
         outputStream.close();
 
-        logResponse(resBody);
-    }
-
-    private void logRequest(String requestMethod,
-                            URI requestURI,
-                            String requestPath,
-                            String requestBody) {
-
-        System.out.println("=====> REQUEST");
-        System.out.println("requestMethod = " + requestMethod);
-        System.out.println("requestURI = " + requestURI);
-        System.out.println("requestPath = " + requestPath);
-
-        if (requestBody != null && !requestBody.isEmpty()) {
-            System.out.println("requestBody = " + requestBody);
-        }
-    }
-
-    private void logResponse(String responseContent) {
-        System.out.println("=====> RESPONSE");
-        System.out.println("responseContent = " + responseContent);
-        System.out.println();
+        logger.logResponse(resBody);
     }
 
 }
