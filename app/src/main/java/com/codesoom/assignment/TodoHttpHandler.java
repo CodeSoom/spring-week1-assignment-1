@@ -69,12 +69,35 @@ public class TodoHttpHandler implements HttpHandler {
             System.out.println(task);
         }
 
+        if (method.equals("PUT") && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
+            Long id = Long.valueOf(path.split("/")[2]);
+
+            Task task = toTask(body);
+            task.setId(id);
+
+            content = taskToChange(task);
+        }
+
+        if (method.equals("PATCH") && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
+            Long id = Long.valueOf(path.split("/")[2]);
+
+            Task task = toTask(body);
+            task.setId(id);
+
+            content = taskToChange(task);
+        }
+
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private String taskToChange(Task task) {
+        tasks.get(task.getId().intValue() - 1).setTitle(task.getTitle());
+        return "Update a task.";
     }
 
     private Task toTask(String content) throws JsonProcessingException {
