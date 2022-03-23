@@ -6,5 +6,6 @@ import com.codesoom.assignment.common.response.HttpResponse;
 
 
 public interface HttpMapping {
+
     HttpResponse process(HttpRequest httpRequest);
 }

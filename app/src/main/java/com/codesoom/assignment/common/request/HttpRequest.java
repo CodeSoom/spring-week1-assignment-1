@@ -33,6 +33,7 @@ public class HttpRequest {
         return path.split("/")[2];
     }
 
+
     public static class HttpRequestBuilder implements Builder<HttpRequest> {
 
         private String path;
