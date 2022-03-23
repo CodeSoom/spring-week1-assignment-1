@@ -2,6 +2,7 @@ package com.codesoom.assignment.handlers;
 
 import com.codesoom.assignment.controllers.TodoController;
 import com.codesoom.assignment.enums.HttpMethod;
+import com.codesoom.assignment.enums.HttpStatusCode;
 import com.codesoom.assignment.utils.JsonParser;
 import com.codesoom.assignment.utils.Logger;
 import com.sun.net.httpserver.HttpExchange;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
 
+    private static final String PATH_REGEX = "/";
     private final Logger logger;
     private final TodoController todoController;
 
@@ -51,30 +53,47 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private String proceed(String reqMethod, String reqPath, String reqBody) throws IOException {
-        if (reqMethod.equals(HttpMethod.GET.getMethod()) && reqPath.equals("/tasks")) {
+
+        if (reqMethod.equals(HttpMethod.GET.getMethod()) && matchPathDepthOne(reqPath, "/tasks")) {
             return todoController.getTodos();
         }
 
-        if (reqMethod.equals(HttpMethod.GET.getMethod()) && reqPath.equals("/tasks/{id}")) {
-            //TODO
+        if (reqMethod.equals(HttpMethod.GET.getMethod()) && matchPathDepthTwo(reqPath, "/tasks/{id}")) {
             return null;
         }
 
-        if (reqMethod.equals(HttpMethod.POST.getMethod()) && reqPath.equals("/tasks")) {
+        if (reqMethod.equals(HttpMethod.POST.getMethod()) && matchPathDepthOne(reqPath, "/tasks")) {
             return todoController.postTodo(JsonParser.toTask(reqBody));
         }
 
-        if (reqMethod.equals(HttpMethod.PUT.getMethod()) && reqPath.equals("/tasks/{id}")) {
+        if (reqMethod.equals(HttpMethod.PUT.getMethod()) && matchPathDepthTwo(reqPath, "/tasks/{id}")) {
             //TODO
             return null;
         }
 
-        if (reqMethod.equals(HttpMethod.DELETE.getMethod()) && reqPath.equals("/tasks/{id}")) {
+        if (reqMethod.equals(HttpMethod.DELETE.getMethod()) && matchPathDepthTwo(reqPath, "/tasks/{id}")) {
             //TODO
             return null;
         }
 
-        return "";
+        return HttpStatusCode.BAD_REQUEST.getMessage();
+    }
+
+    private boolean matchPathDepthOne(String reqPath, String mappedPath) {
+        String[] pathElements = reqPath.split(PATH_REGEX);
+        String[] mappedPathElements = mappedPath.split(PATH_REGEX);
+
+        return pathElements.length == mappedPathElements.length
+                && pathElements[1].equals(mappedPathElements[1]);
+    }
+
+    private boolean matchPathDepthTwo(String reqPath, String mappedPath) {
+        String[] pathElements = reqPath.split(PATH_REGEX);
+        String[] mappedPathElements = mappedPath.split(PATH_REGEX);
+
+        return pathElements.length == mappedPathElements.length
+                && pathElements[1].equals(mappedPathElements[1])
+                && pathElements[2].chars().allMatch(Character::isDigit);
     }
 
 }
