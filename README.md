@@ -39,7 +39,7 @@ $ npm install
 $ npm run test
 ```
 
-## 작업목록 및 순서
+## 작업 목록 및 순서
 1. 초기 세팅 ✅
    1. Http server 만들기 : no connection -> 404 -> 500 넘어가는 흐름 파악
    2. handler 생성
@@ -75,7 +75,7 @@ $ npm run test
       1. id 에 맞는 task 가 존재하지 않을 때 오류 응답
 7. tests > 전체 테스트
 
-## 추가 작업목록 (from feedback)
+## 추가 작업 목록 (from feedback)
 ### 2022.03.22
 1. Object Mapper 이용하지 않고 json - task 간 parsing 하도록 수정하기
 2. 경로 Path validation 
