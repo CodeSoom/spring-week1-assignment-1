@@ -2,7 +2,6 @@ package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
 
-import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -14,6 +13,7 @@ import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
+    private BodyContent bodyContent;
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -30,65 +30,15 @@ public class DemoHttpHandler implements HttpHandler {
         String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
+        bodyContent = new BodyContent(body);
 
         System.out.println(method + " " + path);
 
-        String content = "Hello, World!";
+        String content = makeContent(method, path);
 
         int statusCode = 200;
-
-        if(method.equals("GET") && (path.equals("/tasks") || path.equals("/tasks/"))) {
-            content = getAlltasksToJSON();
-        }
-
-        if(method.equals("GET") && path.contains("/tasks/")
-                && path.lastIndexOf("/") != path.length() - 1) {
-            String numberString = path.substring(path.lastIndexOf("/") + 1);
-            try {
-                int number = Integer.valueOf(numberString) - 1;
-                content = getTaskToJSON(number);
-            } catch (NumberFormatException e) {
-                content = "id의 숫자를 입력해주세요.";
-            }
-        }
-
-        if(method.equals("DELETE") && path.contains("/tasks/")
-                && path.lastIndexOf("/") != path.length() - 1) {
-            String numberString = path.substring(path.lastIndexOf("/") + 1);
-            try {
-                int number = Integer.valueOf(numberString) - 1;
-                tasks.remove(number);
-                content = "";
-            } catch (NumberFormatException e) {
-                content = "id의 숫자를 입력해주세요.";
-            }
-        }
-
-        if(!body.isEmpty() && method.equals("POST")
-                && (path.equals("/tasks") || path.equals("/tasks/"))) {
-            Task task = toTask(body);
-            task.setId(tasks.size() + 1L);
-            tasks.add(task);
-
-            content = getLatestTaskToJSON();
-
+        if(method.equals("POST")) {
             statusCode = 201;
-        }
-
-        if(!body.isEmpty() && method.equals("PUT") && path.contains("/tasks/")
-        && path.lastIndexOf("/") != path.length() - 1) {
-            String numberString = path.substring(path.lastIndexOf("/") + 1);
-            try {
-                int number = Integer.valueOf(numberString) - 1;
-                Task task = toTask(body);
-                task.setId(number + 1L);
-
-                tasks.set(number, task);
-
-                content = getTaskToJSON(number);
-            } catch (NumberFormatException e) {
-                content = "id의 숫자를 입력해주세요.";
-            }
         }
 
         httpExchange.sendResponseHeaders(statusCode, content.getBytes().length);
@@ -97,25 +47,6 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
-    }
-
-    private Task toTask(String content) {
-        // 유니코드를 한글로 변환할 버퍼 선언
-        StringBuffer sb = new StringBuffer();
-        // 글자를 하나하나 탐색하면서 유니코드만 버퍼에 담는다.
-        for (int i = 0; i < content.length(); i++) {
-            // 조합이 u로 시작하면 6글자를 변환한다.
-            if ('\\' == content.charAt(i) && 'u' == content.charAt(i + 1)) {
-                // 그 뒤 네글자는 유니코드의 16진수 코드이다. int형으로 바꾸어서 다시 char 타입으로 강제 변환한다.
-                Character r = (char) Integer.parseInt(content.substring(i + 2, i + 6), 16);
-                // 유니코드에서 한글로 변환된 글자를 버퍼에 넣는다.
-                sb.append(r);
-                // for의 증가 값 1과 5를 합해 6글자를 점프
-                i += 5;
-            }
-        }
-        // 결과 리턴
-        return new Task(null, sb.toString());
     }
 
     private String getAlltasksToJSON() {
@@ -135,6 +66,106 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private String getTaskToJSON(int index)  {
+        if(index >= tasks.size()) {
+            return "해당 id는 tasks에 없습니다.";
+        }
         return tasks.get(index).toString();
+    }
+
+    private String makeContent(String method, String path) {
+        String content = "";
+        if(method.equals("GET")) {
+            content = make_READ_content(path);
+        }
+
+        if(method.equals("DELETE")) {
+            content = make_DELETE_content(path);
+        }
+
+        if(method.equals("POST")) {
+            content = make_CREATE_content(path);
+        }
+
+        if(method.equals("PUT") || method.equals("PATCH")) {
+            content = make_UPDATE_content(path);
+        }
+
+        return content;
+    }
+
+    private String make_UPDATE_content(String path) {
+        String content = "";
+        if(!bodyContent.getContent().equals("")
+                && path.contains("/tasks/") && path.lastIndexOf("/") != path.length() - 1) {
+            String numberString = path.substring(path.lastIndexOf("/") + 1);
+            try {
+                int number = Integer.valueOf(numberString) - 1;
+                Task task = new Task(number + 1L, bodyContent.getContent());
+                if(number >= tasks.size()) {
+                    return "해당 id는 tasks에 없습니다.";
+                }
+                tasks.set(number, task);
+
+                content = getTaskToJSON(number);
+            } catch (NumberFormatException e) {
+                content = "id의 숫자를 입력해주세요.";
+            }
+        }
+
+        return content;
+    }
+
+    private String make_CREATE_content(String path) {
+        String content = "";
+        if(!bodyContent.getContent().equals("")
+                && (path.equals("/tasks") || path.equals("/tasks/"))) {
+            Task task = new Task(tasks.size() + 1L, bodyContent.getContent());
+            tasks.add(task);
+
+            content = getLatestTaskToJSON();
+        }
+
+        return content;
+    }
+
+    private String make_DELETE_content(String path) {
+        String content = "";
+        if(path.contains("/tasks/") && path.lastIndexOf("/") != path.length() - 1) {
+            String numberString = path.substring(path.lastIndexOf("/") + 1);
+            try {
+                int number = Integer.valueOf(numberString) - 1;
+                if(number >= tasks.size()) {
+                    return "해당 id는 tasks에 없습니다.";
+                }
+                tasks.remove(number);
+            } catch (NumberFormatException e) {
+                content = "id의 숫자를 입력해주세요.";
+            }
+        }
+
+        return content;
+    }
+
+    private String make_READ_content(String path) {
+        String content = "";
+        if(path.equals("/tasks") || path.equals("/tasks/")) {
+            content = getAlltasksToJSON();
+        }
+
+        if(path.contains("/tasks/") && path.lastIndexOf("/") != path.length() - 1) {
+            String numberString = path.substring(path.lastIndexOf("/") + 1);
+            try {
+                int number = Integer.valueOf(numberString) - 1;
+                content = getTaskToJSON(number);
+            } catch (NumberFormatException e) {
+                content = "id의 숫자를 입력해주세요.";
+            }
+        }
+
+        if(path.equals("/")) {
+            content = "Hello World!";
+        }
+
+        return content;
     }
 }
