@@ -71,11 +71,15 @@ public class TaskHttpHandler implements HttpHandler {
                     httpStatus = HTTP_STATUS_BAD_REQUEST;
 
                 } else {
-                    Task newTask = toTask(requestBody);
-                    addTask(newTask);
-
-                    responseBody = taskToJSON(newTask);
-                    httpStatus = HTTP_STATUS_CREATE;
+                    try {
+                        Task newTask = toTask(requestBody);
+                        addTask(newTask);
+                        responseBody = taskToJSON(newTask);
+                        httpStatus = HTTP_STATUS_CREATE;
+                    } catch (IllegalArgumentException e) {
+                        responseBody = e.getMessage();
+                        httpStatus = HTTP_STATUS_BAD_REQUEST;
+                    }
                 }
             }
         } else if (isMatch(requestURI)) {
@@ -113,9 +117,15 @@ public class TaskHttpHandler implements HttpHandler {
     /**
      * 요청받은 할 일을 Task 객체로 변환하여 반환한다.
      * */
-    private Task toTask(String content) throws JsonProcessingException {
+    private Task toTask(String content) {
         System.out.println("content = " + content);
-        return objectMapper.readValue(content, Task.class);
+        Pattern pattern = Pattern.compile("\\{[\\n\\t\\s]*\"title\": \"(.*?)\"[\\n\\t\\s]*}");
+        final Matcher matcher = pattern.matcher(content);
+        if (matcher.find()) {
+            return new Task(generateId(), matcher.group(1));
+        } else {
+            throw new IllegalArgumentException("not JSON format");
+        }
     }
 
     /**
