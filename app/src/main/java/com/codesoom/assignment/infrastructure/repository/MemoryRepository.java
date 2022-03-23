@@ -2,7 +2,7 @@ package com.codesoom.assignment.infrastructure.repository;
 
 import com.codesoom.assignment.common.response.ErrorCode;
 import com.codesoom.assignment.domain.repository.Repository;
-import com.codesoom.assignment.domain.task.Task;
+import com.codesoom.assignment.domain.todo.Todo;
 
 import java.util.List;
 import java.util.Map;
@@ -12,28 +12,28 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class MemoryRepository implements Repository {
-    private static Map<String, Task> store = new ConcurrentHashMap<>();
+    private static Map<String, Todo> store = new ConcurrentHashMap<>();
 
     @Override
-    public Task save(Task task) {
-        store.put(task.getTaskId(), task);
-        return task;
+    public Todo save(Todo todo) {
+        store.put(todo.getTodoId(), todo);
+        return todo;
     }
 
     @Override
-    public Optional<Task> findById(String taskId) {
-        return Optional.ofNullable(store.get(taskId));
+    public Optional<Todo> findById(String todoId) {
+        return Optional.ofNullable(store.get(todoId));
     }
 
     @Override
-    public Task getById(String taskId) {
-        Task task = findById(taskId).orElseThrow(() -> new NoSuchElementException(ErrorCode.NO_TASK.getErrorMsg()));
-        return task;
+    public Todo getById(String todoId) {
+        Todo todo = findById(todoId).orElseThrow(() -> new NoSuchElementException(ErrorCode.NO_TASK.getErrorMsg()));
+        return todo;
     }
 
 
     @Override
-    public List<Task> allTasks() {
+    public List<Todo> allTodos() {
         return store.values().stream().collect(Collectors.toList());
     }
 }

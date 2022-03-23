@@ -1,7 +1,8 @@
 package com.codesoom.assignment.common.response;
 
 public enum ErrorCode {
-    NO_TASK("찾으시는 할일이 존재하지 않습니다");
+    NO_TASK("NO TASK"),
+    NOT_INCLUDE_PATH("NOT_INCLUDE_PATH");
     private final String errorMsg;
 
     ErrorCode(String errorMsg) {

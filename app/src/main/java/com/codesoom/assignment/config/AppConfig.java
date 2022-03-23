@@ -1,16 +1,16 @@
 package com.codesoom.assignment.config;
 
-import com.codesoom.assignment.domain.task.TaskService;
+import com.codesoom.assignment.domain.todo.TodoService;
 import com.codesoom.assignment.infrastructure.repository.MemoryRepository;
-import com.codesoom.assignment.infrastructure.task.TaskServiceImpl;
+import com.codesoom.assignment.infrastructure.todo.TodoServiceImpl;
 
 public class AppConfig {
-    public final static int PORT = 8080;
+    public final static int PORT = 1238;
     public final static int BACK_LOG = 0;
-    public final static String HOST="127.0.0.1";
+    public final static String HOST="localhost";
 
 
-    public TaskService taskService() {
-        return new TaskServiceImpl(new MemoryRepository());
+    public TodoService todoService() {
+        return new TodoServiceImpl(new MemoryRepository());
     }
 }
