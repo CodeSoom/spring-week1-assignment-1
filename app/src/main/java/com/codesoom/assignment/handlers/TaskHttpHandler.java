@@ -12,6 +12,8 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class TaskHttpHandler implements HttpHandler {
@@ -28,6 +30,14 @@ public class TaskHttpHandler implements HttpHandler {
 
     public TaskHttpHandler() {
         this.tasks = new ArrayList<>();
+    }
+
+    private boolean isMatch(String requestURI) {
+        final String regex = "^\\/tasks\\/[0-9]+$";
+        final Pattern pattern = Pattern.compile(regex);
+
+        final Matcher matcher = pattern.matcher(requestURI);
+        return matcher.matches();
     }
 
     @Override
@@ -68,6 +78,10 @@ public class TaskHttpHandler implements HttpHandler {
                     httpStatus = HTTP_STATUS_CREATE;
                 }
             }
+        } else if (isMatch(requestURI)) {
+            System.out.println("/tasks/{id} 요청");
+        } else {
+            System.out.println("올바르지 않은 경로 요청");
         }
 
         exchange.sendResponseHeaders(httpStatus, responseBody.getBytes(StandardCharsets.UTF_8).length);
@@ -100,6 +114,7 @@ public class TaskHttpHandler implements HttpHandler {
      * 요청받은 할 일을 Task 객체로 변환하여 반환한다.
      * */
     private Task toTask(String content) throws JsonProcessingException {
+        System.out.println("content = " + content);
         return objectMapper.readValue(content, Task.class);
     }
 
@@ -112,6 +127,9 @@ public class TaskHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
     }
 
+    /**
+     * 증가된 id를 반환한다.
+     * */
     private Long generateId() {
         if (tasks.isEmpty() || tasks == null) {
             return 1L;
@@ -124,8 +142,10 @@ public class TaskHttpHandler implements HttpHandler {
         return maxId + 1L;
     }
 
+    /**
+     * 새로운 할 일을 추가한다.
+     * */
     private void addTask(Task task) {
-        task.setId(generateId());
         tasks.add(task);
     }
 
