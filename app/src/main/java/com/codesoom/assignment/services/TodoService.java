@@ -31,4 +31,28 @@ public class TodoService {
                 ? JsonParser.toJsonString(selected)
                 : HttpStatusCode.NOT_FOUND.getMessage();
     }
+
+    public String editTask(Long taskId, Task task) {
+        Task selected = taskList.getTask(taskId);
+
+        if (selected == null) {
+            return HttpStatusCode.NOT_FOUND.getMessage();
+        }
+
+        selected.setTitle(task.getTitle());
+
+        return HttpStatusCode.OK.getMessage();
+    }
+
+    public String deleteTask(Long taskId) {
+        Task selected = taskList.getTask(taskId);
+
+        if (selected == null) {
+            return HttpStatusCode.NOT_FOUND.getMessage();
+        }
+
+        taskList.deleteTask(taskId);
+
+        return HttpStatusCode.OK.getMessage();
+    }
 }

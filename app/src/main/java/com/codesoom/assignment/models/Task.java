@@ -42,4 +42,8 @@ public class Task {
     public boolean equalTaskId(Long taskId) {
         return Objects.equals(id, taskId);
     }
+
+    public boolean hasValidContent() {
+        return title != null && !title.isEmpty();
+    }
 }

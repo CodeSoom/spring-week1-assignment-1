@@ -66,13 +66,11 @@ public class TodoHttpHandler implements HttpHandler {
         }
 
         if (reqMethod.equals(HttpMethod.PUT.getMethod()) && matchPathDepthTwo(reqPath, "/tasks/{id}")) {
-            //TODO. editTodo(id);
-            return null;
+            return todoController.editTask(getPathVariable(reqPath, 2), JsonParser.toTask(reqBody));
         }
 
         if (reqMethod.equals(HttpMethod.DELETE.getMethod()) && matchPathDepthTwo(reqPath, "/tasks/{id}")) {
-            //TODO. deleteTodo(id);
-            return null;
+            return todoController.deleteTodo(getPathVariable(reqPath, 2));
         }
 
         return HttpStatusCode.BAD_REQUEST.getMessage();

@@ -48,4 +48,8 @@ public class TaskList {
 
         return null;
     }
+
+    public void deleteTask(Long taskId) {
+        tasks.removeIf(task -> task.equalTaskId(taskId));
+    }
 }

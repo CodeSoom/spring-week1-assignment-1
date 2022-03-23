@@ -11,7 +11,8 @@ public enum HttpStatusCode {
     /**
      * CUSTOM ERRORS
      * */
-    WRONG_TASK_ID(600, "잘못된 task id 입니다.");
+    WRONG_TASK_ID(600, "잘못된 task id 입니다."),
+    BAD_CONTENT_FORMAT(601, "잘못된 콘텐츠 형식입니다.");
 
     private final int code;
 
