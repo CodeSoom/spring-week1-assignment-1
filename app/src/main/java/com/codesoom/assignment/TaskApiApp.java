@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.handler.TaskHttpHandler;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
@@ -18,7 +19,7 @@ public class TaskApiApp {
         HttpServer httpServer = HttpServer.create(address, 0);
         HttpHandler handler = new TaskHttpHandler();
 
-        httpServer.createContext("/", handler);
+        httpServer.createContext("/tasks", handler);
         httpServer.start();
     }
 }
