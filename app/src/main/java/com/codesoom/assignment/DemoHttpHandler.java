@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
-    private BodyContent bodyContent;
+    private String content;
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -30,11 +30,11 @@ public class DemoHttpHandler implements HttpHandler {
         String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
-        bodyContent = new BodyContent(body);
+        content = makeBodyContent(body);
 
         System.out.println(method + " " + path);
 
-        String content = makeContent(method, path);
+        content = makeContent(method, path);
 
         int statusCode = 200;
         if(method.equals("POST")) {
@@ -95,12 +95,12 @@ public class DemoHttpHandler implements HttpHandler {
 
     private String make_UPDATE_content(String path) {
         String content = "";
-        if(!bodyContent.getContent().equals("")
+        if(!this.content.equals("")
                 && path.contains("/tasks/") && path.lastIndexOf("/") != path.length() - 1) {
             String numberString = path.substring(path.lastIndexOf("/") + 1);
             try {
                 int number = Integer.valueOf(numberString) - 1;
-                Task task = new Task(number + 1L, bodyContent.getContent());
+                Task task = new Task(number + 1L, this.content);
                 if(number >= tasks.size()) {
                     return "해당 id는 tasks에 없습니다.";
                 }
@@ -117,9 +117,9 @@ public class DemoHttpHandler implements HttpHandler {
 
     private String make_CREATE_content(String path) {
         String content = "";
-        if(!bodyContent.getContent().equals("")
+        if(!this.content.equals("")
                 && (path.equals("/tasks") || path.equals("/tasks/"))) {
-            Task task = new Task(tasks.size() + 1L, bodyContent.getContent());
+            Task task = new Task(tasks.size() + 1L, this.content);
             tasks.add(task);
 
             content = getLatestTaskToJSON();
@@ -167,5 +167,41 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         return content;
+    }
+
+    private String makeBodyContent(String content) {
+        if(content.equals("")) {
+            return content;
+        }
+
+        if(!content.contains("title\":")) {
+            return "올바른 형식으로 title을 입력해야 합니다.";
+        }
+
+        content = content.substring(11);
+        content = content.substring(0, content.length() - 2);
+        // 유니코드를 한글로 변환할 버퍼 선언
+        StringBuffer sb = new StringBuffer();
+        // 글자를 하나하나 탐색하면서 유니코드만 버퍼에 담는다.
+        for (int i = 0; i < content.length(); i++) {
+            // 조합이 u로 시작하면 6글자를 변환한다.
+            if ('\\' == content.charAt(i) && 'u' == content.charAt(i + 1)) {
+                // 그 뒤 네글자는 유니코드의 16진수 코드이다. int형으로 바꾸어서 다시 char 타입으로 강제 변환한다.
+                Character r = (char) Integer.parseInt(content.substring(i + 2, i + 6), 16);
+                // 유니코드에서 한글로 변환된 글자를 버퍼에 넣는다.
+                sb.append(r);
+                // for의 증가 값 1과 5를 합해 6글자를 점프
+                i += 5;
+            }
+        }
+
+        String temp = sb.toString();
+        //영문이나 숫자이면 그대로 반환
+        if(temp.equals("")) {
+            return content;
+        }
+
+        //유니코드를 한글로 변환한 결과를 반환
+        return temp;
     }
 }
