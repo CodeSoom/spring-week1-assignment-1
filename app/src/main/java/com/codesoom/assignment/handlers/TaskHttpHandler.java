@@ -2,7 +2,7 @@ package com.codesoom.assignment.handlers;
 
 import com.codesoom.assignment.http.HttpMethod;
 import com.codesoom.assignment.models.Task;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.codesoom.assignment.models.TaskDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
@@ -27,6 +27,7 @@ public class TaskHttpHandler implements HttpHandler {
     private static final int HTTP_STATUS_OK = 200;
     private static final int HTTP_STATUS_CREATE = 201;
     private static final int HTTP_STATUS_BAD_REQUEST = 400;
+    private static final int HTTP_STATUS_NOT_FOUND = 404;
 
     public TaskHttpHandler() {
         this.tasks = new ArrayList<>();
@@ -40,11 +41,17 @@ public class TaskHttpHandler implements HttpHandler {
         return matcher.matches();
     }
 
+    private Long getPathVariable(String requestURI) {
+        String[] splitPaths = requestURI.split("/");
+        return Long.valueOf(splitPaths[2]);
+    }
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String requestURI = exchange.getRequestURI().getPath();
 
-        System.out.println(exchange.getRequestMethod() + " " + exchange.getRequestURI());
+        String requestMethod = exchange.getRequestMethod();
+        System.out.println(requestMethod + " " + exchange.getRequestURI());
 
         Headers responseHeaders = exchange.getResponseHeaders();
         responseHeaders.add("Content-Type", "application/json");
@@ -54,14 +61,14 @@ public class TaskHttpHandler implements HttpHandler {
         int httpStatus = 0;
 
         if (PATH.equals(requestURI)) {
-            if (HttpMethod.GET.name().equals(exchange.getRequestMethod())) {
+            if (HttpMethod.GET.name().equals(requestMethod)) {
                 System.out.println(" - ToDo 전체 조회 요청");
 
                 responseBody = tasksToJSON();
                 httpStatus = HTTP_STATUS_OK;
             }
 
-            if (HttpMethod.POST.name().equals(exchange.getRequestMethod())) {
+            if (HttpMethod.POST.name().equals(requestMethod)) {
                 System.out.println(" - ToDo 추가 요청");
 
                 final String requestBody = getRequestBody(exchange.getRequestBody());
@@ -72,9 +79,8 @@ public class TaskHttpHandler implements HttpHandler {
 
                 } else {
                     try {
-                        Task newTask = toTask(requestBody);
-                        addTask(newTask);
-                        responseBody = taskToJSON(newTask);
+                        TaskDto taskDto = toTask(requestBody);
+                        responseBody = taskToJSON(addTask(taskDto));
                         httpStatus = HTTP_STATUS_CREATE;
                     } catch (IllegalArgumentException e) {
                         responseBody = e.getMessage();
@@ -83,9 +89,24 @@ public class TaskHttpHandler implements HttpHandler {
                 }
             }
         } else if (isMatch(requestURI)) {
-            System.out.println("/tasks/{id} 요청");
+            Long taskId = getPathVariable(requestURI);
+            if (HttpMethod.GET.name().equals(requestMethod)) {
+                Task findTask = findTaskById(taskId);
+                responseBody = taskToJSON(findTask);
+                httpStatus = HTTP_STATUS_OK;
+            }
+            if (HttpMethod.PATCH.name().equals(requestMethod)) {
+                final String requestBody = getRequestBody(exchange.getRequestBody());
+                responseBody = taskToJSON(updateTaskById(taskId, toTask(requestBody).getTitle()));
+                httpStatus = HTTP_STATUS_OK;
+            }
+            if (HttpMethod.DELETE.name().equals(requestMethod)) {
+                deleteTaskById(taskId);
+                httpStatus = HTTP_STATUS_OK;
+            }
         } else {
             System.out.println("올바르지 않은 경로 요청");
+            httpStatus = HTTP_STATUS_NOT_FOUND;
         }
 
         exchange.sendResponseHeaders(httpStatus, responseBody.getBytes(StandardCharsets.UTF_8).length);
@@ -117,12 +138,12 @@ public class TaskHttpHandler implements HttpHandler {
     /**
      * 요청받은 할 일을 Task 객체로 변환하여 반환한다.
      * */
-    private Task toTask(String content) {
+    private TaskDto toTask(String content) {
         System.out.println("content = " + content);
-        Pattern pattern = Pattern.compile("\\{[\\n\\t\\s]*\"title\": \"(.*?)\"[\\n\\t\\s]*}");
+        Pattern pattern = Pattern.compile("\\{[\\n\\t\\s]*\"title\"[\\n\\t\\s]*:[\\n\\t\\s]*\"(.*?)\"[\\n\\t\\s]*}");
         final Matcher matcher = pattern.matcher(content);
         if (matcher.find()) {
-            return new Task(generateId(), matcher.group(1));
+            return new TaskDto(matcher.group(1));
         } else {
             throw new IllegalArgumentException("not JSON format");
         }
@@ -155,8 +176,33 @@ public class TaskHttpHandler implements HttpHandler {
     /**
      * 새로운 할 일을 추가한다.
      * */
-    private void addTask(Task task) {
-        tasks.add(task);
+    private Task addTask(TaskDto taskDto) {
+        Task newTask = taskDto.toTask(generateId());
+        tasks.add(newTask);
+        return newTask;
     }
 
+    /**
+     * id로 할 일을 찾아 반환한다.
+     * */
+    private Task findTaskById(Long id) {
+        return tasks.stream()
+                .filter(task -> task.getId() == id)
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
+    }
+
+    /**
+     * 할 일의 제목을 수정한다.
+     * */
+    private Task updateTaskById(Long id, String title) {
+        return findTaskById(id).updateTitle(title);
+    }
+
+    /**
+     * id로 할 일을 삭제한다.
+     * */
+    private void deleteTaskById(Long id) {
+        tasks.remove(findTaskById(id));
+    }
 }

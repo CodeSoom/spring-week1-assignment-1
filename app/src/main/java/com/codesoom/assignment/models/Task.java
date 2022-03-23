@@ -22,8 +22,9 @@ public class Task {
         return id;
     }
 
-    public void updateTitle(String title) {
+    public Task updateTitle(String title) {
         this.title = title;
+        return this;
     }
 
     @Override
