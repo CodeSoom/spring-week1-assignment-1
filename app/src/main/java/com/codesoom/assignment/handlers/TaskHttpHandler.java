@@ -1,8 +1,10 @@
 package com.codesoom.assignment.handlers;
 
 import com.codesoom.assignment.http.HttpMethod;
+import com.codesoom.assignment.models.ResponseDto;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.models.TaskDto;
+import com.codesoom.assignment.services.TaskService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
@@ -10,7 +12,6 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,7 +21,7 @@ public class TaskHttpHandler implements HttpHandler {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    private List<Task> tasks;
+    private final TaskService taskService;
 
     private static final String PATH = "/tasks";
 
@@ -28,9 +29,10 @@ public class TaskHttpHandler implements HttpHandler {
     private static final int HTTP_STATUS_CREATE = 201;
     private static final int HTTP_STATUS_BAD_REQUEST = 400;
     private static final int HTTP_STATUS_NOT_FOUND = 404;
+    private static final int HTTP_STATUS_SERVER_ERROR = 500;
 
     public TaskHttpHandler() {
-        this.tasks = new ArrayList<>();
+        this.taskService = new TaskService();
     }
 
     private boolean isMatch(String requestURI) {
@@ -48,77 +50,77 @@ public class TaskHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String requestURI = exchange.getRequestURI().getPath();
-
         String requestMethod = exchange.getRequestMethod();
+        String requestURI = exchange.getRequestURI().getPath();
+        String requestBody = getRequestBody(exchange.getRequestBody());
+
         System.out.println(requestMethod + " " + exchange.getRequestURI());
 
         Headers responseHeaders = exchange.getResponseHeaders();
         responseHeaders.add("Content-Type", "application/json");
 
+        ResponseDto responseDto = handleRequest(requestMethod, requestURI, requestBody);
+
         OutputStream outputStream = exchange.getResponseBody();
-        String responseBody = "";
-        int httpStatus = 0;
-
-        if (PATH.equals(requestURI)) {
-            if (HttpMethod.GET.name().equals(requestMethod)) {
-                System.out.println(" - ToDo 전체 조회 요청");
-
-                responseBody = tasksToJSON();
-                httpStatus = HTTP_STATUS_OK;
-            }
-
-            if (HttpMethod.POST.name().equals(requestMethod)) {
-                System.out.println(" - ToDo 추가 요청");
-
-                final String requestBody = getRequestBody(exchange.getRequestBody());
-                if (requestBody.isBlank()) {
-                    System.out.println(" - ToDo 추가 ERROR: 요청 값이 없음");
-                    responseBody = "할 일을 입력해 주세요.";
-                    httpStatus = HTTP_STATUS_BAD_REQUEST;
-
-                } else {
-                    try {
-                        TaskDto taskDto = toTask(requestBody);
-                        responseBody = taskToJSON(addTask(taskDto));
-                        httpStatus = HTTP_STATUS_CREATE;
-                    } catch (IllegalArgumentException e) {
-                        responseBody = e.getMessage();
-                        httpStatus = HTTP_STATUS_BAD_REQUEST;
-                    }
-                }
-            }
-        } else if (isMatch(requestURI)) {
-            Long taskId = getPathVariable(requestURI);
-            if (HttpMethod.GET.name().equals(requestMethod)) {
-                Task findTask = findTaskById(taskId);
-                responseBody = taskToJSON(findTask);
-                httpStatus = HTTP_STATUS_OK;
-            }
-            if (HttpMethod.PATCH.name().equals(requestMethod)) {
-                final String requestBody = getRequestBody(exchange.getRequestBody());
-                responseBody = taskToJSON(updateTaskById(taskId, toTask(requestBody).getTitle()));
-                httpStatus = HTTP_STATUS_OK;
-            }
-            if (HttpMethod.DELETE.name().equals(requestMethod)) {
-                deleteTaskById(taskId);
-                httpStatus = HTTP_STATUS_OK;
-            }
-        } else {
-            System.out.println("올바르지 않은 경로 요청");
-            httpStatus = HTTP_STATUS_NOT_FOUND;
-        }
-
-        exchange.sendResponseHeaders(httpStatus, responseBody.getBytes(StandardCharsets.UTF_8).length);
-        outputStream.write(responseBody.getBytes(StandardCharsets.UTF_8));
+        exchange.sendResponseHeaders(responseDto.getHttpStatus(), responseDto.getResponseBody().getBytes(StandardCharsets.UTF_8).length);
+        outputStream.write(responseDto.getResponseBody().getBytes(StandardCharsets.UTF_8));
         outputStream.flush();
         outputStream.close();
+    }
+
+    private ResponseDto handleRequest(String httpMethod, String requestURI, String requestBody) throws IOException {
+        if (PATH.equals(requestURI) && HttpMethod.GET.name().equals(httpMethod)) {
+            return getTasks();
+        }
+        if (PATH.equals(requestURI) && HttpMethod.POST.name().equals(httpMethod)) {
+            return createTask(toTask(requestBody));
+        }
+        if (isMatch(requestURI) && HttpMethod.GET.name().equals(httpMethod)) {
+            return getTask(getPathVariable(requestURI));
+        }
+        if (isMatch(requestURI) && HttpMethod.PATCH.name().equals(httpMethod)) {
+            return updateTask(getPathVariable(requestURI), toTask(requestBody));
+        }
+        if (isMatch(requestURI) && HttpMethod.DELETE.name().equals(httpMethod)) {
+            return deleteTask(getPathVariable(requestURI));
+        }
+
+        return handleError(HTTP_STATUS_NOT_FOUND, "Not Found");
+    }
+
+
+    private ResponseDto getTasks() throws IOException {
+        return new ResponseDto(HTTP_STATUS_OK, tasksToJSON(taskService.getTasks()));
+    }
+
+    private ResponseDto createTask(TaskDto requestDto) throws IOException {
+        final Task newTask = taskService.addTask(requestDto);
+        return new ResponseDto(HTTP_STATUS_CREATE, taskToJSON(newTask));
+    }
+
+    private ResponseDto getTask(Long id) throws IOException {
+        final Task findTask = taskService.findTaskById(id);
+        return new ResponseDto(HTTP_STATUS_OK, taskToJSON(findTask));
+    }
+
+    private ResponseDto updateTask(Long id, TaskDto requestDto) throws IOException {
+        final Task updatedTask = taskService.updateTaskById(id, requestDto);
+        return new ResponseDto(HTTP_STATUS_OK, taskToJSON(updatedTask));
+    }
+
+    private ResponseDto deleteTask(Long id) {
+        taskService.deleteTaskById(id);
+        return new ResponseDto(HTTP_STATUS_OK, "");
+    }
+
+    private ResponseDto handleError(int httpStatus, String message) {
+        return new ResponseDto(httpStatus, message);
     }
 
     /**
      * 모든 Task 목록을 JSON 형식으로 반환한다.
      * */
-    private String tasksToJSON() throws IOException {
+    private String tasksToJSON(List<Task> tasks) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
 
@@ -158,51 +160,4 @@ public class TaskHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
     }
 
-    /**
-     * 증가된 id를 반환한다.
-     * */
-    private Long generateId() {
-        if (tasks.isEmpty() || tasks == null) {
-            return 1L;
-        }
-
-        Long maxId = Long.MIN_VALUE;
-        for (Task task : tasks) {
-            maxId = task.getId() > maxId ? task.getId() : maxId;
-        }
-        return maxId + 1L;
-    }
-
-    /**
-     * 새로운 할 일을 추가한다.
-     * */
-    private Task addTask(TaskDto taskDto) {
-        Task newTask = taskDto.toTask(generateId());
-        tasks.add(newTask);
-        return newTask;
-    }
-
-    /**
-     * id로 할 일을 찾아 반환한다.
-     * */
-    private Task findTaskById(Long id) {
-        return tasks.stream()
-                .filter(task -> task.getId() == id)
-                .findFirst()
-                .orElseThrow(IllegalArgumentException::new);
-    }
-
-    /**
-     * 할 일의 제목을 수정한다.
-     * */
-    private Task updateTaskById(Long id, String title) {
-        return findTaskById(id).updateTitle(title);
-    }
-
-    /**
-     * id로 할 일을 삭제한다.
-     * */
-    private void deleteTaskById(Long id) {
-        tasks.remove(findTaskById(id));
-    }
 }
