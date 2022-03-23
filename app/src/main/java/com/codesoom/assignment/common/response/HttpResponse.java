@@ -17,6 +17,7 @@ public class HttpResponse {
 
     }
 
+
     public static HttpResponse fail(int statusCode) {
         return new HttpResponseBuilder().statusCode(statusCode)
                                         .result(Result.FAIL)
