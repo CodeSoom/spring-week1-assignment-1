@@ -8,7 +8,7 @@ import java.net.InetSocketAddress;
 
 public class App {
     public String getGreeting() {
-        return "Hello World!";
+        return "App Start!!";
     }
 
     public static void main(String[] args) {
@@ -17,8 +17,12 @@ public class App {
         try {
             InetSocketAddress address = new InetSocketAddress(8000);
             HttpServer httpServer = HttpServer.create(address, 0);
-            HttpHandler handler = new DemoHttpHandler();
-            httpServer.createContext("/", handler);
+
+            HttpHandler todoHttpHandler = new TodoHttpHandler();
+            HttpHandler demoHttpHandler = new TodoHttpHandler();
+
+            httpServer.createContext("/", demoHttpHandler);
+            httpServer.createContext("/tasks", todoHttpHandler);
             httpServer.start();
         } catch (IOException e) {
             e.printStackTrace();
