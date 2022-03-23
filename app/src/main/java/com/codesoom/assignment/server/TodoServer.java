@@ -8,10 +8,11 @@ import java.net.InetSocketAddress;
 
 public class TodoServer {
     private final HttpServer httpServer;
+
     public TodoServer(AppConfig appConfig) throws IOException {
         InetSocketAddress address = new InetSocketAddress(AppConfig.HOST, AppConfig.PORT);
         httpServer = HttpServer.create(address, 0);
-        httpServer.createContext("/", new TodoServerHandler(appConfig.taskService()));
+        httpServer.createContext("/", new TodoServerHandler(appConfig));
     }
 
     public void start() {
