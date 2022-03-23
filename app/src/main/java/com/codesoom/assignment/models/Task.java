@@ -1,5 +1,7 @@
 package com.codesoom.assignment.models;
 
+import java.util.Objects;
+
 public class Task {
 
     private Long id;
@@ -35,5 +37,9 @@ public class Task {
                 "id=" + id +
                 ", title='" + title + '\'' +
                 '}';
+    }
+
+    public boolean equalTaskId(Long taskId) {
+        return Objects.equals(id, taskId);
     }
 }

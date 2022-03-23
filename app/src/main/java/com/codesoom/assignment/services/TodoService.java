@@ -24,4 +24,11 @@ public class TodoService {
 
         return HttpStatusCode.CREATED.getMessage();
     }
+
+    public String getTodo(Long taskId) throws IOException {
+        Task selected = taskList.getTask(taskId);
+        return selected != null
+                ? JsonParser.toJsonString(selected)
+                : HttpStatusCode.NOT_FOUND.getMessage();
+    }
 }

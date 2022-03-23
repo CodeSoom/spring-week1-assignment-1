@@ -53,13 +53,12 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private String proceed(String reqMethod, String reqPath, String reqBody) throws IOException {
-
         if (reqMethod.equals(HttpMethod.GET.getMethod()) && matchPathDepthOne(reqPath, "/tasks")) {
             return todoController.getTodos();
         }
 
         if (reqMethod.equals(HttpMethod.GET.getMethod()) && matchPathDepthTwo(reqPath, "/tasks/{id}")) {
-            return null;
+            return todoController.getTodo(getPathVariable(reqPath, 2));
         }
 
         if (reqMethod.equals(HttpMethod.POST.getMethod()) && matchPathDepthOne(reqPath, "/tasks")) {
@@ -67,16 +66,21 @@ public class TodoHttpHandler implements HttpHandler {
         }
 
         if (reqMethod.equals(HttpMethod.PUT.getMethod()) && matchPathDepthTwo(reqPath, "/tasks/{id}")) {
-            //TODO
+            //TODO. editTodo(id);
             return null;
         }
 
         if (reqMethod.equals(HttpMethod.DELETE.getMethod()) && matchPathDepthTwo(reqPath, "/tasks/{id}")) {
-            //TODO
+            //TODO. deleteTodo(id);
             return null;
         }
 
         return HttpStatusCode.BAD_REQUEST.getMessage();
+    }
+
+    private Long getPathVariable(String reqPath, int index) {
+        String[] pathElements = reqPath.split(PATH_REGEX);
+        return Long.valueOf(pathElements[index]);
     }
 
     private boolean matchPathDepthOne(String reqPath, String mappedPath) {
@@ -89,10 +93,8 @@ public class TodoHttpHandler implements HttpHandler {
 
     private boolean matchPathDepthTwo(String reqPath, String mappedPath) {
         String[] pathElements = reqPath.split(PATH_REGEX);
-        String[] mappedPathElements = mappedPath.split(PATH_REGEX);
 
-        return pathElements.length == mappedPathElements.length
-                && pathElements[1].equals(mappedPathElements[1])
+        return matchPathDepthOne(reqPath, mappedPath)
                 && pathElements[2].chars().allMatch(Character::isDigit);
     }
 

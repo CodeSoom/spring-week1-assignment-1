@@ -38,4 +38,14 @@ public class TaskList {
 
         tasks.add(newTask);
     }
+
+    public Task getTask(Long taskId) {
+        for (Task task : tasks) {
+            if (task.equalTaskId(taskId)) {
+                return task;
+            }
+        }
+
+        return null;
+    }
 }

@@ -13,6 +13,13 @@ public class JsonParser {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    public static String toJsonString(Task task) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, task);
+
+        return outputStream.toString();
+    }
+
     public static String toJsonString(List<Task> tasks) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
