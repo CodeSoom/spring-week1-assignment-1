@@ -13,7 +13,6 @@ public class Todo {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-
     private Todo(String title) {
         this.todoId = generateTodoId();
         this.title = title;

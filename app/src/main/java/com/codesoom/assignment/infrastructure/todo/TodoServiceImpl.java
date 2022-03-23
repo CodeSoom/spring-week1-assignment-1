@@ -18,7 +18,6 @@ public class TodoServiceImpl implements TodoService {
         return repository.save(todo);
     }
 
-
     @Override
     public Todo update(String todoId, String title) {
         Todo todo = getById(todoId);
