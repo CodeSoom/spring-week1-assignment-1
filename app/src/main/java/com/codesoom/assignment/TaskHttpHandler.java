@@ -1,21 +1,17 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TaskHttpHandler implements HttpHandler {
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final OutputStream outputStream = new ByteArrayOutputStream();
-    private List<Task> tasks = new ArrayList<>();
+    private final List<Task> tasks = new ArrayList<>();
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -24,14 +20,18 @@ public class TaskHttpHandler implements HttpHandler {
         String path = uri.getPath();
 
         InputStream inputStream = httpExchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.joining("\n"));
+        String body = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                .lines()
+                .collect(Collectors.joining("\n"));
 
         System.out.println(method + " " + path);
+
         String content = "Hello, world!";
 
-        if (!body.isBlank()) {
-            Task task = toTask(body);
-            tasks.add(task);
+        Long pathId = Long.parseLong(getPathId(path));
+
+        if (method.equals("GET") && path.equals("/tasks/" + pathId)) {
+            content = taskToJson(pathId);
         }
 
         if (method.equals("GET") && path.equals("/tasks")) {
@@ -39,43 +39,94 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         if (method.equals("POST") && path.equals("/tasks")) {
-            content = "Create a new task.";
+            Task task = toTask(body);
+            tasks.add(task);
+            content = task.toString();
         }
 
-        httpExchange.sendResponseHeaders(200, content.getBytes().length);
+        if (method.equals("PUT") && path.equals("/tasks/" + pathId)) {
+            content = modifyTaskById(body, pathId);
+        }
+
+        if (method.equals("DELETE") && path.equals("/tasks/" + pathId)) {
+            content = deleteTaskById(pathId);
+        }
+
+
+        httpExchange.sendResponseHeaders(setStatusCode(method), content.getBytes().length);
         OutputStream outputStream = httpExchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
     }
 
-    private Task toTask(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
+    private int setStatusCode(String method) {
+        if (method.equals("POST")) {
+            return 201;
+        }
+        return 200;
     }
 
-    private String tasksToJson() throws IOException {
-        objectMapper.writeValue(outputStream, tasks);
-
-        return outputStream.toString();
+    private String getPathId(String path) {
+        String[] splitedPath = path.split("/");
+        if (splitedPath.length > 2) {
+            return splitedPath[splitedPath.length - 1];
+        }
+        return "0";
     }
 
-    private String taskToJson(Long id) throws IOException {
-        Task findTask = tasks.stream()
+    private Optional<Task> getOneTaskById(Long id) {
+        return tasks.stream()
+                .filter(task -> task.getId().equals(id))
+                .findFirst();
+    }
+
+    private String getTitleByBody(String content) {
+        return content.split(": ")[1].split("}")[0];
+    }
+
+    private Task toTask(String content) {
+        Long id = getLastId();
+        // Value를 추출할때 split을 사용하여 value 추출
+        String title = getTitleByBody(content);
+        return new Task((id + 1L), title);
+    }
+
+    // Task List
+    private String tasksToJson() {
+        return tasks.toString();
+    }
+
+    // Find One Task By Id
+    private String taskToJson(Long id) {
+        return tasks.stream()
                 .filter(task -> task.getId().equals(id))
                 .findFirst()
-                .orElseThrow(IllegalArgumentException::new);
-
-        objectMapper.writeValue(outputStream, findTask);
-        return outputStream.toString();
+                .orElseThrow(() -> { throw new IllegalArgumentException("Not Found Task"); }).toString();
     }
 
+    // Modify One Task By Id
+    private String modifyTaskById(String content, Long id) {
+        Task findTask = getOneTaskById(id).orElseThrow(() -> { throw new NoSuchElementException("Not Found Element"); });
+        int findTaskIdx = tasks.indexOf(findTask);
+        findTask.setTitle(getTitleByBody(content));
+        tasks.set(findTaskIdx, findTask);
+        return findTask.toString();
+    }
+
+    // Delete Task By Id
+    private String deleteTaskById(Long id) {
+        Task findTask = getOneTaskById(id).orElseThrow(() -> { throw new NoSuchElementException("Not Found Element"); });
+        tasks.remove(findTask);
+        return findTask.toString();
+    }
+
+    // 마지막 ID 추출
     private Long getLastId() {
-        Long lastId;
         if (tasks.isEmpty()) {
-            lastId = 0L;
-        } else {
-            lastId = tasks.get(tasks.size() - 1).getId();
+            return 0L;
         }
-        return lastId;
+        return tasks.get(tasks.size() - 1).getId();
     }
+
 }

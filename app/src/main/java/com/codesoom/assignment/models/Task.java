@@ -22,11 +22,18 @@ public class Task {
         this.title = title;
     }
 
+    public Task() {};
+
+    public Task(Long id, String title) {
+        this.id = id;
+        this.title = title;
+    }
+
     @Override
     public String toString() {
-        return "Task{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
+        return "{" +
+                "\"id\": " + id +
+                ", \"title\": " + title +
                 '}';
     }
 }
