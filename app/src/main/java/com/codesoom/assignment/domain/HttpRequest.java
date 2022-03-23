@@ -6,12 +6,16 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class HttpRequest {
     private final String method;
     private final String body;
     private final String path;
+    private final List<String> pathVariables = new ArrayList<>();
 
     public HttpRequest(String method, String body, String path) {
         this.method = method;
@@ -24,6 +28,24 @@ public class HttpRequest {
         InputStream httpBodyInputStream = httpExchange.getRequestBody();
         this.body = parseInputStream(httpBodyInputStream);
         this.path = httpExchange.getRequestURI().getPath();
+        getPathVariable();
+    }
+
+    private void getPathVariable() {
+        String[] pathSplitBySlash = this.path.split("/");
+
+        pathVariables.addAll(
+                Arrays.asList(pathSplitBySlash)
+                        .subList(2, pathSplitBySlash.length));
+    }
+
+    public boolean hasPathVariable() {
+        return pathVariables.size() >= 1;
+    }
+
+    public String[] getPathVariables() {
+        // 함부로 List 를 참조해서 변환할 수 없게 한다.
+        return pathVariables.toArray(new String[]{});
     }
 
     /**
@@ -48,4 +70,5 @@ public class HttpRequest {
     public String getPath() {
         return path;
     }
+
 }
