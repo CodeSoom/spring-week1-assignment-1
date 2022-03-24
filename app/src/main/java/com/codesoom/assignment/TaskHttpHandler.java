@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 public class TaskHttpHandler implements HttpHandler {
     private final List<Task> tasks = new ArrayList<>();
+    int statusCode;
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -19,52 +20,67 @@ public class TaskHttpHandler implements HttpHandler {
         URI uri = httpExchange.getRequestURI();
         String path = uri.getPath();
 
+
         InputStream inputStream = httpExchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))
-                .lines()
-                .collect(Collectors.joining("\n"));
+
 
         System.out.println(method + " " + path);
 
         String content = "Hello, world!";
 
         Long pathId = Long.parseLong(getPathId(path));
+        try {
+            statusCode = 200;
+            if (method.equals("GET") && path.equals("/tasks/" + pathId)) {
+                content = taskToJson(pathId);
+            }
 
-        if (method.equals("GET") && path.equals("/tasks/" + pathId)) {
-            content = taskToJson(pathId);
+            if (method.equals("GET") && path.equals("/tasks")) {
+                content = tasksToJson();
+            }
+
+            if (method.equals("POST") && path.equals("/tasks")) {
+                Task task = toTask(getBody(inputStream));
+                tasks.add(task);
+                content = task.toString();
+                statusCode = 201;
+            }
+
+            if (method.equals("PUT") && path.equals("/tasks/" + pathId)) {
+                content = modifyTaskById(getBody(inputStream), pathId);
+            }
+
+            if (method.equals("DELETE") && path.equals("/tasks/" + pathId)) {
+                content = deleteTaskById(pathId);
+            }
+
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            statusCode = 400;
+            content = "옳바른 요청이 아닙니다.";
+        } catch (NoSuchElementException e) {
+            e.printStackTrace();
+            statusCode = 404;
+            content = "요청에 해당하는 원소가 존재하지 않습니다.";
         }
 
-        if (method.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJson();
-        }
 
-        if (method.equals("POST") && path.equals("/tasks")) {
-            Task task = toTask(body);
-            tasks.add(task);
-            content = task.toString();
-        }
-
-        if (method.equals("PUT") && path.equals("/tasks/" + pathId)) {
-            content = modifyTaskById(body, pathId);
-        }
-
-        if (method.equals("DELETE") && path.equals("/tasks/" + pathId)) {
-            content = deleteTaskById(pathId);
-        }
-
-
-        httpExchange.sendResponseHeaders(setStatusCode(method), content.getBytes().length);
+        httpExchange.sendResponseHeaders(statusCode, content.getBytes().length);
         OutputStream outputStream = httpExchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
     }
 
-    private int setStatusCode(String method) {
-        if (method.equals("POST")) {
-            return 201;
+    // Get Request Body
+    private String getBody(InputStream inputStream) throws IllegalArgumentException {
+        String body = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                .lines()
+                .collect(Collectors.joining("\n"));
+        if (body.isEmpty()) {
+            throw new IllegalArgumentException("옳바른 요청이 아닙니다.");
         }
-        return 200;
+        return body;
     }
 
     private String getPathId(String path) {
@@ -102,12 +118,12 @@ public class TaskHttpHandler implements HttpHandler {
         return tasks.stream()
                 .filter(task -> task.getId().equals(id))
                 .findFirst()
-                .orElseThrow(() -> { throw new IllegalArgumentException("Not Found Task"); }).toString();
+                .orElseThrow(() -> { throw new NoSuchElementException("요청에 해당하는 원소가 존재하지 않습니다."); }).toString();
     }
 
     // Modify One Task By Id
-    private String modifyTaskById(String content, Long id) {
-        Task findTask = getOneTaskById(id).orElseThrow(() -> { throw new NoSuchElementException("Not Found Element"); });
+    private String modifyTaskById(String content, Long id) throws IllegalArgumentException, NoSuchElementException {
+        Task findTask = getOneTaskById(id).orElseThrow(() -> { throw new NoSuchElementException("요청에 해당하는 원소가 존재하지 않습니다."); });
         int findTaskIdx = tasks.indexOf(findTask);
         findTask.setTitle(getTitleByBody(content));
         tasks.set(findTaskIdx, findTask);
@@ -116,7 +132,7 @@ public class TaskHttpHandler implements HttpHandler {
 
     // Delete Task By Id
     private String deleteTaskById(Long id) {
-        Task findTask = getOneTaskById(id).orElseThrow(() -> { throw new NoSuchElementException("Not Found Element"); });
+        Task findTask = getOneTaskById(id).orElseThrow(() -> { throw new NoSuchElementException("해당 아이디에 맞는 원소를 찾을수 없습니다."); });
         tasks.remove(findTask);
         return findTask.toString();
     }
