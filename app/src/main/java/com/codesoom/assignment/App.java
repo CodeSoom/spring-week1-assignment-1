@@ -19,10 +19,7 @@ public class App {
             HttpServer httpServer = HttpServer.create(address, 0);
 
             HttpHandler todoHttpHandler = new TodoHttpHandler();
-            HttpHandler demoHttpHandler = new TodoHttpHandler();
-
-            httpServer.createContext("/", demoHttpHandler);
-            httpServer.createContext("/tasks", todoHttpHandler);
+            httpServer.createContext("/", todoHttpHandler);
             httpServer.start();
         } catch (IOException e) {
             e.printStackTrace();

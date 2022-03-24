@@ -2,6 +2,7 @@ package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.service.TodoService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -10,6 +11,7 @@ import java.io.*;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
 
@@ -45,8 +47,20 @@ public class TodoHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String method = exchange.getRequestMethod();
         String path = uri.getPath();
+
+        InputStream inputStream = exchange.getRequestBody();
+        String body = new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("/n"));
+        Task requestBody = new Task();
+
+
         String[] splitedPath = path.split("/");
         String response  = "";
+
+        if(!body.isBlank()) {
+            requestBody = toTask(body);
+        }
 
         if("GET".equals(method)) {
             if(splitedPath.length == 2 && splitedPath[0].equals("") && splitedPath[1].equals("tasks")) {
@@ -59,6 +73,10 @@ public class TodoHttpHandler implements HttpHandler {
             }
 
         } else if("POST".equals(method)) {
+            if(splitedPath.length == 2 && splitedPath[0].equals("") && splitedPath[1].equals("tasks")) {
+                Task task = todoService.saveTask(requestBody);
+                response = taskToJson(task);
+            }
 
         } else if("PUT".equals(method) || "PATCH".equals(method)) {
 
@@ -84,12 +102,16 @@ public class TodoHttpHandler implements HttpHandler {
         return outputStream.toString();
     }
 
-    private String taskToJson(Task tasks) throws IOException {
+    private String taskToJson(Task task) throws IOException {
 
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
+        objectMapper.writeValue(outputStream, task);
 
         return outputStream.toString();
+    }
+
+    private Task toTask(String content) throws JsonProcessingException {
+        return objectMapper.readValue(content, Task.class);
     }
 
 }

@@ -18,4 +18,8 @@ public class TodoService {
         return todoRepository.findTaskById(id);
     }
 
+    public Task saveTask(Task task) {
+        return todoRepository.save(task);
+    }
+
 }
