@@ -1,23 +1,16 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.models.Task;
-import com.codesoom.assignment.service.TodoService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.codesoom.assignment.controller.TodoController;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
-import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
 
-    private ObjectMapper objectMapper = new ObjectMapper();
-
-    private TodoService todoService = new TodoService();
+    private TodoController todoController = new TodoController();
 
     public TodoHttpHandler() {
 
@@ -35,6 +28,52 @@ public class TodoHttpHandler implements HttpHandler {
         return number;
     }
 
+    public String getRequestBody(InputStream inputStream) {
+        String body = new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("/n"));
+        return body;
+    }
+
+    public HttpResponse handleHttpMethod(HttpExchange exchange) {
+        URI uri = exchange.getRequestURI();
+        String method = exchange.getRequestMethod();
+        String path = uri.getPath();
+
+        String[] splitedPath = path.split("/");
+        String body = getRequestBody(exchange.getRequestBody());
+
+        switch (method) {
+            case "GET":
+                if(splitedPath.length == 2 && splitedPath[0].equals("") && splitedPath[1].equals("tasks")) {
+                    return todoController.findAllTasks();
+                } else if(splitedPath.length == 3 && splitedPath[0].equals("") && splitedPath[1].equals("tasks") && convertStringToLong(splitedPath[2]) != null) {
+                    return todoController.findTaskById(convertStringToLong(splitedPath[2]));
+                }
+                break;
+            case "POST":
+                if(splitedPath.length == 2 && splitedPath[0].equals("") && splitedPath[1].equals("tasks")) {
+                    return todoController.createTask(body);
+                }
+                break;
+            case "PUT":
+            case "PATCH":
+                if(splitedPath.length == 3 && splitedPath[0].equals("") && splitedPath[1].equals("tasks") && convertStringToLong(splitedPath[2]) != null) {
+                    return todoController.updateTask(convertStringToLong(splitedPath[2]), body);
+                }
+                break;
+            case "DELETE":
+                if(splitedPath.length == 3 && splitedPath[0].equals("") && splitedPath[1].equals("tasks") && convertStringToLong(splitedPath[2]) != null) {
+                    return todoController.deleteTaskById(convertStringToLong(splitedPath[2]));
+                }
+                break;
+            default:
+                return new HttpResponse(404, "잘못된 요청입니다!");
+        }
+        return new HttpResponse(200, "");
+
+    }
+
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -44,74 +83,13 @@ public class TodoHttpHandler implements HttpHandler {
         // 4. PUT/PATCH /tasks/{id}
         // 5. DELETE /tasks/{id}
 
-        URI uri = exchange.getRequestURI();
-        String method = exchange.getRequestMethod();
-        String path = uri.getPath();
+        HttpResponse httpResponse = handleHttpMethod(exchange);
 
-        InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("/n"));
-        Task requestBody = new Task();
-
-
-        String[] splitedPath = path.split("/");
-        String response  = "";
-
-        if(!body.isBlank()) {
-            requestBody = toTask(body);
-        }
-
-        if("GET".equals(method)) {
-            if(splitedPath.length == 2 && splitedPath[0].equals("") && splitedPath[1].equals("tasks")) {
-                List<Task> tasks = todoService.findAllTasks();
-                response = tasksToJson(tasks);
-            } else if(splitedPath.length == 3 && splitedPath[0].equals("") && splitedPath[1].equals("tasks") && convertStringToLong(splitedPath[2]) != null) {
-                Optional<Task> task = todoService.findTaskById(convertStringToLong(splitedPath[2]));
-                if(task.isPresent()) response = taskToJson(task.get());
-                else response = "없는 Task입니다!";
-            }
-
-        } else if("POST".equals(method)) {
-            if(splitedPath.length == 2 && splitedPath[0].equals("") && splitedPath[1].equals("tasks")) {
-                Task task = todoService.saveTask(requestBody);
-                response = taskToJson(task);
-            }
-
-        } else if("PUT".equals(method) || "PATCH".equals(method)) {
-
-        } else if("DELETE".equals(method)) {
-
-        }
-
-
-
-
-        exchange.sendResponseHeaders(200, response.getBytes().length);
+        exchange.sendResponseHeaders(httpResponse.getStatusCode(), httpResponse.getResponse().getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(response.getBytes());
+        outputStream.write(httpResponse.getResponse().getBytes());
         outputStream.flush();
         outputStream.close();
-    }
-
-    private String tasksToJson(List<Task> tasks) throws IOException {
-
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
-
-        return outputStream.toString();
-    }
-
-    private String taskToJson(Task task) throws IOException {
-
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, task);
-
-        return outputStream.toString();
-    }
-
-    private Task toTask(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
     }
 
 }

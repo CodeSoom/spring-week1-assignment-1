@@ -35,4 +35,8 @@ public class TodoRepository {
         tasks.add(task);
         return task;
     }
+
+    public void deleteTask(Task task) {
+        tasks.remove(task);
+    }
 }

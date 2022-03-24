@@ -22,4 +22,16 @@ public class TodoService {
         return todoRepository.save(task);
     }
 
+    public Task updateTask(Task task, Task requestTaskInfo) {
+
+        task.setTitle(requestTaskInfo.getTitle());
+
+        return task;
+    }
+
+    public void deleteTask(Task task) {
+
+        todoRepository.deleteTask(task);
+    }
+
 }
