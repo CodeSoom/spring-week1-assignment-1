@@ -10,7 +10,7 @@ public class TodoServer {
     private final HttpServer httpServer;
 
     public TodoServer(AppConfig appConfig) throws IOException {
-        InetSocketAddress address = new InetSocketAddress(AppConfig.HOST, AppConfig.PORT);
+        InetSocketAddress address = new InetSocketAddress(appConfig.getHost(), appConfig.getPort());
         httpServer = HttpServer.create(address, 0);
         httpServer.createContext("/", new TodoServerHandler(appConfig));
     }
