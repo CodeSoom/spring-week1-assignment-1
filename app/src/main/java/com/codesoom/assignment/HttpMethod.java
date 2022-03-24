@@ -100,11 +100,22 @@ public enum HttpMethod {
                 .orElseThrow(() -> new IllegalArgumentException("Allow: POST, GET, PUT, DELETE"));
     }
 
+    public StatusCode findByStatusCode() {
+        if(this.isPOST()) {
+            return StatusCode.Created;
+        }
+        return StatusCode.OK;
+    }
+
     public String operate(Resource resource, Tasks tasks){
         return operation.apply(resource, tasks);
     }
 
     public String getMethod() {
         return method;
+    }
+
+    public boolean isPOST() {
+        return this == HttpMethod.POST;
     }
 }

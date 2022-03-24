@@ -36,10 +36,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         String content = method.operate(resource, tasks);
 
-        StatusCode statusCode = StatusCode.OK;
-        if(method.getMethod().equals("POST")) {
-            statusCode = StatusCode.Created;
-        }
+        StatusCode statusCode = method.findByStatusCode();
 
         httpExchange.sendResponseHeaders(statusCode.getStatusNumber(), content.getBytes().length);
 
