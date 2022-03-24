@@ -19,16 +19,12 @@ public class Task {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void nextId(Long lastIdx) {
+        this.id = lastIdx + 1;
     }
 
     public String getTitle() {
         return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     @Override
@@ -45,5 +41,14 @@ public class Task {
 
     public boolean hasValidContent() {
         return title != null && !title.isEmpty();
+    }
+
+    public boolean equalTaskTitle(String title) {
+        return hasValidContent() && Objects.equals(this.title, title);
+    }
+
+    public Task editTaskTitle(String title) {
+        this.title = title;
+        return this;
     }
 }

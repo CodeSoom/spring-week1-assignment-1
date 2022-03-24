@@ -24,6 +24,8 @@ public class App {
         httpServer.createContext(ROOT_PATH, handler);
 
         httpServer.start();
+
+        System.out.println("http server started");
     }
 
 }

@@ -1,5 +1,7 @@
 package com.codesoom.assignment.models;
 
+import com.codesoom.assignment.enums.HttpStatusCode;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,11 +26,13 @@ public class TaskList {
         return tasks;
     }
 
-    public void addTask(Task newTask) {
+    public Task addTask(Task newTask) {
         long lastIdx = tasks.size() == 0 ? 0L : tasks.get(tasks.size()-1).getId();
-        newTask.setId(lastIdx + 1);
+        newTask.nextId(lastIdx);
 
         tasks.add(newTask);
+
+        return getTask(newTask.getTitle());
     }
 
     public Task getTask(Long taskId) {
@@ -41,7 +45,17 @@ public class TaskList {
         return null;
     }
 
+    public Task getTask(String title) {
+        for (Task task : tasks) {
+            if (task.equalTaskTitle(title)) {
+                return task;
+            }
+        }
+        return null;
+    }
+
     public void deleteTask(Long taskId) {
         tasks.removeIf(task -> task.equalTaskId(taskId));
     }
+
 }

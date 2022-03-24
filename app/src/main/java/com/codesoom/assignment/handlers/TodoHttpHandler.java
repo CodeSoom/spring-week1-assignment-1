@@ -3,6 +3,8 @@ package com.codesoom.assignment.handlers;
 import com.codesoom.assignment.controllers.TodoController;
 import com.codesoom.assignment.enums.HttpMethod;
 import com.codesoom.assignment.enums.HttpStatusCode;
+import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.networks.BaseResponse;
 import com.codesoom.assignment.utils.JsonParser;
 import com.codesoom.assignment.utils.Logger;
 import com.sun.net.httpserver.HttpExchange;
@@ -36,28 +38,39 @@ public class TodoHttpHandler implements HttpHandler {
         String reqPath = reqUri.getPath();
 
         InputStream inputStream = httpExchange.getRequestBody();
-        String reqBody = new BufferedReader(new InputStreamReader(inputStream))
+        String reqBodyString = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
+
+        Task reqBody = null;
+        if (!reqBodyString.isEmpty()) {
+            reqBody = JsonParser.toTask(reqBodyString);
+        }
 
         logger.logRequest(reqMethod, reqUri, reqPath, reqBody);
 
 
-        String resBody = proceed(reqMethod, reqPath, reqBody);
+        BaseResponse resBody = proceed(reqMethod, reqPath, reqBody);
 
+        int httpStatusCode = resBody.getStatusCode();
+        String resContent = resBody.getStatusMessage();
+        Object body = resBody.getBody();
 
-        httpExchange.getResponseHeaders().set("Content-Type", "application/json");
-        httpExchange.sendResponseHeaders(200, resBody.getBytes(StandardCharsets.UTF_8).length);
+        if (body != null) {
+            resContent = JsonParser.toJsonString(body);
+        }
+
+        httpExchange.sendResponseHeaders(httpStatusCode, resContent.getBytes(StandardCharsets.UTF_8).length);
 
         OutputStream outputStream = httpExchange.getResponseBody();
-        outputStream.write(resBody.getBytes(StandardCharsets.UTF_8));
+        outputStream.write(resContent.getBytes(StandardCharsets.UTF_8));
         outputStream.flush();
         outputStream.close();
 
         logger.logResponse(resBody);
     }
 
-    private String proceed(String reqMethod, String reqPath, String reqBody) throws IOException {
+    private BaseResponse proceed(String reqMethod, String reqPath, Task reqBody) {
         if (reqMethod.equals(HttpMethod.GET.getMethod()) && matchPathDepthOne(reqPath, "/tasks")) {
             return todoController.getTodos();
         }
@@ -67,18 +80,20 @@ public class TodoHttpHandler implements HttpHandler {
         }
 
         if (reqMethod.equals(HttpMethod.POST.getMethod()) && matchPathDepthOne(reqPath, "/tasks")) {
-            return todoController.postTodo(JsonParser.toTask(reqBody));
+            return todoController.postTodo(reqBody);
         }
 
-        if (reqMethod.equals(HttpMethod.PUT.getMethod()) && matchPathDepthTwo(reqPath, "/tasks/{id}")) {
-            return todoController.editTask(getPathVariable(reqPath, 2), JsonParser.toTask(reqBody));
+
+        if ((reqMethod.equals(HttpMethod.PUT.getMethod()) || reqMethod.equals(HttpMethod.PATCH.getMethod()))
+                && matchPathDepthTwo(reqPath, "/tasks/{id}")) {
+            return todoController.editTask(getPathVariable(reqPath, 2), reqBody);
         }
 
         if (reqMethod.equals(HttpMethod.DELETE.getMethod()) && matchPathDepthTwo(reqPath, "/tasks/{id}")) {
             return todoController.deleteTodo(getPathVariable(reqPath, 2));
         }
 
-        return HttpStatusCode.BAD_REQUEST.getMessage();
+        return new BaseResponse<>(HttpStatusCode.BAD_REQUEST);
     }
 
     private Long getPathVariable(String reqPath, int index) {

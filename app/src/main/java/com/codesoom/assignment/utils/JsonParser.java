@@ -7,22 +7,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
 
 public class JsonParser {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public static String toJsonString(Task task) throws IOException {
+    public static String toJsonString(Object obj) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, task);
-
-        return outputStream.toString();
-    }
-
-    public static String toJsonString(List<Task> tasks) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
+        objectMapper.writeValue(outputStream, obj);
 
         return outputStream.toString();
     }

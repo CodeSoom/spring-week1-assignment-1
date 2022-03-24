@@ -1,18 +1,17 @@
 package com.codesoom.assignment.enums;
 
+/**
+ * https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+ * https://datatracker.ietf.org/doc/html/rfc7231#section-6.1
+ * */
 public enum HttpStatusCode {
 
-    OK(200, "정상적으로 처리되었습니다."),
-    CREATED(201, "정상적으로 생성되었습니다."),
+    OK(200, "OK"),
+    CREATED(201, "Created"),
+    NO_CONTENT(204, "No Content"),
 
-    BAD_REQUEST(400, "잘못된 요청입니다."),
-    NOT_FOUND(404, "결과를 찾을 수 없습니다."),
-
-    /**
-     * CUSTOM ERRORS
-     * */
-    WRONG_TASK_ID(600, "잘못된 task id 입니다."),
-    BAD_CONTENT_FORMAT(601, "잘못된 콘텐츠 형식입니다.");
+    BAD_REQUEST(400, "Bad Request"),
+    NOT_FOUND(404, "Not Found");
 
     private final int code;
 
@@ -21,6 +20,10 @@ public enum HttpStatusCode {
     HttpStatusCode(int code, String message) {
         this.code = code;
         this.message = message;
+    }
+
+    public int getCode() {
+        return code;
     }
 
     public String getMessage() {

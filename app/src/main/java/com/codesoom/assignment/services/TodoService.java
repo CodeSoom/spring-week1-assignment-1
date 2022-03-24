@@ -3,9 +3,9 @@ package com.codesoom.assignment.services;
 import com.codesoom.assignment.enums.HttpStatusCode;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.models.TaskList;
-import com.codesoom.assignment.utils.JsonParser;
+import com.codesoom.assignment.networks.BaseResponse;
 
-import java.io.IOException;
+import java.util.List;
 
 public class TodoService {
 
@@ -15,44 +15,37 @@ public class TodoService {
         taskList = TaskList.getTaskList();
     }
 
-    public String getTodos() throws IOException {
-        return JsonParser.toJsonString(taskList.getTasks());
+    public List<Task> getTodos() {
+        return taskList.getTasks();
     }
 
-    public String addTodo(Task newTask) {
-        taskList.addTask(newTask);
-
-        return HttpStatusCode.CREATED.getMessage();
+    public Task addTodo(Task newTask) {
+        return taskList.addTask(newTask);
     }
 
-    public String getTodo(Long taskId) throws IOException {
-        Task selected = taskList.getTask(taskId);
-        return selected != null
-                ? JsonParser.toJsonString(selected)
-                : HttpStatusCode.NOT_FOUND.getMessage();
+    public Task getTodo(Long taskId) {
+        return taskList.getTask(taskId);
     }
 
-    public String editTask(Long taskId, Task task) {
+    public BaseResponse<Task> editTask(Long taskId, Task task) {
         Task selected = taskList.getTask(taskId);
 
         if (selected == null) {
-            return HttpStatusCode.NOT_FOUND.getMessage();
+            return new BaseResponse<>(HttpStatusCode.NOT_FOUND);
         }
 
-        selected.setTitle(task.getTitle());
-
-        return HttpStatusCode.OK.getMessage();
+        return new BaseResponse<>(HttpStatusCode.OK, selected.editTaskTitle(task.getTitle()));
     }
 
-    public String deleteTask(Long taskId) {
+    public HttpStatusCode deleteTask(Long taskId) {
         Task selected = taskList.getTask(taskId);
 
         if (selected == null) {
-            return HttpStatusCode.NOT_FOUND.getMessage();
+            return HttpStatusCode.NOT_FOUND;
         }
 
         taskList.deleteTask(taskId);
 
-        return HttpStatusCode.OK.getMessage();
+        return HttpStatusCode.NO_CONTENT;
     }
 }

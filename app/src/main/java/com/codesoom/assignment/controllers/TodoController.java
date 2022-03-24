@@ -2,9 +2,10 @@ package com.codesoom.assignment.controllers;
 
 import com.codesoom.assignment.enums.HttpStatusCode;
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.networks.BaseResponse;
 import com.codesoom.assignment.services.TodoService;
 
-import java.io.IOException;
+import java.util.List;
 
 public class TodoController {
 
@@ -14,40 +15,46 @@ public class TodoController {
         this.todoService = new TodoService();
     }
 
-    public String getTodos() throws IOException {
-        return todoService.getTodos();
+    public BaseResponse<List<Task>> getTodos() {
+        return new BaseResponse<>(HttpStatusCode.OK, todoService.getTodos());
     }
 
-    public String postTodo(Task newTask) {
-        return todoService.addTodo(newTask);
+    public BaseResponse<Task> postTodo(Task newTask) {
+        return new BaseResponse<>(HttpStatusCode.CREATED, todoService.addTodo(newTask));
     }
 
-    public String getTodo(Long taskId) throws IOException {
+    public BaseResponse<Task> getTodo(Long taskId) {
         if (!isValidTaskId(taskId)) {
-            return HttpStatusCode.WRONG_TASK_ID.getMessage();
+            return new BaseResponse<>(HttpStatusCode.NOT_FOUND);
         }
 
-        return todoService.getTodo(taskId);
+        Task selectedTask = todoService.getTodo(taskId);
+
+        if (selectedTask == null) {
+            return new BaseResponse<>(HttpStatusCode.NOT_FOUND);
+        }
+
+        return new BaseResponse<>(HttpStatusCode.OK, selectedTask);
     }
 
-    public String editTask(Long taskId, Task task) {
+    public BaseResponse editTask(Long taskId, Task task) {
         if (!isValidTaskId(taskId)) {
-            return HttpStatusCode.WRONG_TASK_ID.getMessage();
+            return new BaseResponse<>(HttpStatusCode.NOT_FOUND);
         }
 
         if (!task.hasValidContent()) {
-            return HttpStatusCode.BAD_CONTENT_FORMAT.getMessage();
+            return new BaseResponse<>(HttpStatusCode.BAD_REQUEST);
         }
 
         return todoService.editTask(taskId, task);
     }
 
-    public String deleteTodo(Long taskId) {
+    public BaseResponse deleteTodo(Long taskId) {
         if (!isValidTaskId(taskId)) {
-            return HttpStatusCode.WRONG_TASK_ID.getMessage();
+            return new BaseResponse<>(HttpStatusCode.NOT_FOUND);
         }
 
-        return todoService.deleteTask(taskId);
+        return new BaseResponse<>(todoService.deleteTask(taskId));
     }
 
     private boolean isValidTaskId(Long taskId) {
