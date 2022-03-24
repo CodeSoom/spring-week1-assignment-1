@@ -1,40 +1,52 @@
 package com.codesoom.assignment.common.response;
 
-import com.codesoom.assignment.common.request.HttpRequest;
-import com.codesoom.assignment.common.util.TodoUtils;
 import com.codesoom.assignment.domain.Builder;
 
-public class HttpResponse {
+import java.io.Serializable;
+
+public class HttpResponse<T> implements Serializable {
     private final Result result;
     private final int statusCode;
-    private final String body;
+    private final String message;
+    private final T data;
 
 
     private HttpResponse(HttpResponseBuilder httpResponseBuilder) {
         this.statusCode = httpResponseBuilder.statusCode;
-        this.body = httpResponseBuilder.body;
+        this.data = (T) httpResponseBuilder.data;
         this.result = httpResponseBuilder.result;
+        this.message = httpResponseBuilder.message;
 
     }
 
     public static HttpResponse fail(int statusCode) {
         return new HttpResponseBuilder().statusCode(statusCode)
-                                        .result(Result.FAIL)
-                                        .builder();
-    }
-    public static HttpResponse fail(int statusCode,String errorMessage) {
-        return new HttpResponseBuilder().statusCode(statusCode)
-                                        .body(errorMessage)
-                                        .result(Result.FAIL)
-                                        .builder();
+                .result(Result.FAIL)
+                .builder();
     }
 
-    public static HttpResponse success(int statusCode,Object body){
+    public static HttpResponse fail(int statusCode, String errorMessage) {
         return new HttpResponseBuilder().statusCode(statusCode)
-                                        .body(TodoUtils.transferJsonToString (body))
-                                        .result(Result.SUCCESS)
-                                        .builder();
+                .message(errorMessage)
+                .result(Result.FAIL)
+                .builder();
     }
+
+    public static HttpResponse success(int statusCode, Object data) {
+        return new HttpResponseBuilder().statusCode(statusCode)
+                .data(data)
+                .result(Result.SUCCESS)
+                .builder();
+    }
+
+    public static HttpResponse success(int statusCode, String message, Object data) {
+        return new HttpResponseBuilder().statusCode(statusCode)
+                .data(data)
+                .message(message)
+                .result(Result.SUCCESS)
+                .builder();
+    }
+
 
     public int getStatusCode() {
         return statusCode;
@@ -44,15 +56,17 @@ public class HttpResponse {
         return result;
     }
 
-    public String getBody() {
-        return body;
+    public T getData() {
+        return data;
     }
 
-
+    public String getMessage() {
+        return message;
+    }
 
     public static class HttpResponseBuilder implements Builder<HttpResponse> {
         private int statusCode;
-        private String body;
+        private Object data;
         private Result result;
         private String message;
 
@@ -65,8 +79,8 @@ public class HttpResponse {
             return this;
         }
 
-        public HttpResponseBuilder body(String body) {
-            this.body = body;
+        public HttpResponseBuilder data(Object data) {
+            this.data = data;
             return this;
         }
 

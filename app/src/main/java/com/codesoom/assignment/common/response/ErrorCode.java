@@ -2,7 +2,7 @@ package com.codesoom.assignment.common.response;
 
 public enum ErrorCode {
     NO_TASK("NO TASK"),
-    NOT_INCLUDE_PATH("NOT_INCLUDE_PATH");
+    EMPTY_TITLE("Title does not allow empty");
     private final String errorMsg;
 
     ErrorCode(String errorMsg) {

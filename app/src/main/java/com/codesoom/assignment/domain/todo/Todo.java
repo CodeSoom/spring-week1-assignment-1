@@ -1,12 +1,14 @@
 package com.codesoom.assignment.domain.todo;
 
 
+import com.codesoom.assignment.common.response.ErrorCode;
 import com.codesoom.assignment.domain.Builder;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public class Todo {
+public class Todo implements Serializable {
 
     private String todoId;
     private String title;
@@ -55,6 +57,10 @@ public class Todo {
 
         }
         public TodoBuilder title(String title) {
+            if(title.isEmpty()){
+                throw  new IllegalArgumentException(ErrorCode.EMPTY_TITLE.getErrorMsg());
+            }
+
             this.title = title;
             return this;
         }

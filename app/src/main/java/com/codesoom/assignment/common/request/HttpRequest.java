@@ -29,8 +29,8 @@ public class HttpRequest {
         return requestBody;
     }
 
-    public String getTodoId() {
-        return path.split("/")[2];
+    public String getPathVariable(String pathRegex,int index) throws ArrayIndexOutOfBoundsException{
+        return path.split(pathRegex)[index];
     }
 
     public static class HttpRequestBuilder implements Builder<HttpRequest> {
