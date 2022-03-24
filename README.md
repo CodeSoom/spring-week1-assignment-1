@@ -40,7 +40,7 @@ $ npm run test
 ```
 
 ## 작업 목록 및 순서
-1. 초기 세팅 ✅
+1. 초기 세팅
    1. Http server 만들기 : no connection -> 404 -> 500 넘어가는 흐름 파악
    2. handler 생성
    3. header, body response & log 세팅
@@ -82,4 +82,19 @@ $ npm run test
    1. GET /tasks/ 처럼 뒤쪽에 `/` 붙은 경로들 대응하기
 3. 일반 숫자, 문자들 상수로 분리하기
 4. `import *` 처럼 전체 import 사용하지 않고 필요한 라이브러리만 import 하기
+
+### 2022.03.23
+1. git PR 상단에 TODO list 만드는 법 조사 후 적용해보기
+2. HttpMethod
+   1. http method 정의된 RFC 문서 링크 주석으로 남겨둬서 편하게 읽을 수 있도록 하기
+      1. https://datatracker.ietf.org/doc/html/rfc7231#section-4.3
+   2. 응답 메시지 : RFC 7231에 명시된 Reason-Phrase를 적어주는 방식으로 수정하기
+      1. https://datatracker.ietf.org/doc/html/rfc7231#section-6.1
+   3. response code : http method 에 정의해준 enum 활용하기
+3. TodoHttpHandler > matchPathDepthOne, matchPathDepthTwo 
+   1. Path regex : 매소드 인자로 받게 고치기
+   2. 매소드 이름 좀 더 일반적인 의미로 수정하기 
+   3. 해당 매소드 다른 클래스로 옮기고 public 으로 접근제한 풀기
+   4. Junit test code 작성하기
+   5. Junit > @Nested 사용해서 계층형 테스트 코드 작성하기
 
