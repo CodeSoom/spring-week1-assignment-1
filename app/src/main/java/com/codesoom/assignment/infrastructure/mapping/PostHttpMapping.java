@@ -28,7 +28,6 @@ public class PostHttpMapping implements HttpMapping {
         return HttpResponse.fail(404, ErrorCode.NOT_INCLUDE_PATH.getErrorMsg());
     }
 
-
     private HttpResponse save(String title){
         Todo todo = new Todo.TodoBuilder()
                             .title(title)

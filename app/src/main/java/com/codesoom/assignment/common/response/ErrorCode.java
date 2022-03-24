@@ -9,7 +9,6 @@ public enum ErrorCode {
         this.errorMsg = errorMsg;
     }
 
-
     public String getErrorMsg(Object... arg) {
         return String.format(errorMsg, arg);
     }

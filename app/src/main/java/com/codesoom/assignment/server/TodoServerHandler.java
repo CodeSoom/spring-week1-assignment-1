@@ -13,7 +13,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
+ 
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -44,10 +44,11 @@ public class TodoServerHandler implements HttpHandler {
         HttpResponse httpResponse = httpMapping.process(httpRequest);
         writeHttpResponse(exchange, httpResponse);
 
+
     }
 
     private HttpRequest toHttpRequest(String path, String method, String requestBody) {
-        return new HttpRequest.HttpRequestBuilder()
+          return new HttpRequest.HttpRequestBuilder()
                 .path(path)
                 .method(method)
                 .requestBody(requestBody)
@@ -55,7 +56,7 @@ public class TodoServerHandler implements HttpHandler {
     }
 
     private Map<String, Function<TodoService, HttpMapping>> getHttpMethodToConstructorMap() {
-        Map<String, Function<TodoService, HttpMapping>> httpMethodToConstructorMap = new HashMap<>();
+      Map<String, Function<TodoService, HttpMapping>> httpMethodToConstructorMap = new HashMap<>();
         httpMethodToConstructorMap.put("get", GetHttpMapping::new);
         httpMethodToConstructorMap.put("post", PostHttpMapping::new);
         httpMethodToConstructorMap.put("put", PutHttpMapping::new);
@@ -65,7 +66,7 @@ public class TodoServerHandler implements HttpHandler {
     }
 
     private void writeHttpResponse(HttpExchange httpExchange, HttpResponse httpResponse) {
-        try (OutputStream outputStream = httpExchange.getResponseBody()) {
+     try (OutputStream outputStream = httpExchange.getResponseBody()) {
             byte[] body = httpResponse.getBody().getBytes();
             httpExchange.sendResponseHeaders(httpResponse.getStatusCode(), body.length);
             outputStream.write(body);

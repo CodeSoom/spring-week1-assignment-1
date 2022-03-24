@@ -8,7 +8,6 @@ import com.codesoom.assignment.domain.todo.TodoService;
 public class GetHttpMapping implements HttpMapping {
     private final TodoService todoService;
 
-
     public GetHttpMapping(TodoService todoService) {
         this.todoService = todoService;
     }
