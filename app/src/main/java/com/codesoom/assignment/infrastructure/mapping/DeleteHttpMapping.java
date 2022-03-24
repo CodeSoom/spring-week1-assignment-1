@@ -6,7 +6,6 @@ import com.codesoom.assignment.domain.mapping.HttpMapping;
 import com.codesoom.assignment.domain.todo.TodoService;
 
 public class DeleteHttpMapping implements HttpMapping {
-
     private final TodoService todoService;
     public DeleteHttpMapping(TodoService todoService){
         this.todoService= todoService;
