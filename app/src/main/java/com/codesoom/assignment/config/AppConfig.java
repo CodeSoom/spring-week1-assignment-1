@@ -6,10 +6,27 @@ import com.codesoom.assignment.infrastructure.todo.TodoServiceImpl;
 
 public class AppConfig {
 
-    public final static int PORT = 1238;
-    public final static int BACK_LOG = 0;
-    public final static String HOST="localhost";
+    private final int port;
+    private final int backLog;
+    private final String host;
 
+    public AppConfig(int port, int backLog, String host) {
+        this.port = port;
+        this.backLog = backLog;
+        this.host = host;
+    }
+
+    public int getBackLog() {
+        return backLog;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public String getHost() {
+        return host;
+    }
 
     public TodoService todoService() {
         return new TodoServiceImpl(new MemoryRepository());

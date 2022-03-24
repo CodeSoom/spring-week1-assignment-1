@@ -2,6 +2,7 @@ package com.codesoom.assignment;
 
 import com.codesoom.assignment.config.AppConfig;
 import com.codesoom.assignment.server.TodoServer;
+
 import java.io.IOException;
 
 public class App {
@@ -14,8 +15,8 @@ public class App {
 
     public void runTodoServer() {
         try {
-            AppConfig appConfig =new AppConfig();
-            TodoServer todoServer =new TodoServer(appConfig);
+            AppConfig appConfig = new AppConfig(1238, 0, "localhost");
+            TodoServer todoServer = new TodoServer(appConfig);
             todoServer.start();
         } catch (IOException e) {
             System.out.printf("{}", e.getMessage());
