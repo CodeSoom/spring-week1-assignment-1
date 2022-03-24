@@ -45,6 +45,7 @@ public final class Log extends Formatter {
         buf.append(record.getMessage());
         buf.append("\n");
 
+
         return buf.toString();
     }
 

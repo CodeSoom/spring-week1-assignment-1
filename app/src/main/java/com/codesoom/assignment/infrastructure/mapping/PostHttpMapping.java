@@ -26,6 +26,7 @@ public class PostHttpMapping implements HttpMapping {
             title = (String) httpRequest.getRequestBody().getOrDefault("title", "");
             return save(title);
         }
+
         return HttpResponse.fail(HttpResponseCode.NOT_FOUND.getStatusCode(), HttpResponseCode.NOT_FOUND.getStatusDesc());
     }
 

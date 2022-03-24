@@ -10,7 +10,6 @@ public class HttpResponse<T> implements Serializable {
     private final String message;
     private final T data;
 
-
     private HttpResponse(HttpResponseBuilder httpResponseBuilder) {
         this.statusCode = httpResponseBuilder.statusCode;
         this.data = (T) httpResponseBuilder.data;

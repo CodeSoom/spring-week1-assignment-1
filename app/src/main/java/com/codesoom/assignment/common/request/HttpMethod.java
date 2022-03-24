@@ -6,6 +6,7 @@ public enum HttpMethod {
     DELETE("DELETE"),
     PATCH("PATCH"),
     PUT("PUT");
+
     private final String method;
     HttpMethod(String method){
         this.method=method;

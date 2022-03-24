@@ -40,6 +40,7 @@ public class TodoServerHandler implements HttpHandler {
                 new InputStreamReader(exchange.getRequestBody())
         ).lines().collect(Collectors.joining("\n"));
 
+
         Map<String, Function<TodoService, HttpMapping>> httpMethodToConstructorMap = getHttpMethodToConstructorMap();
         HttpRequest httpRequest = toHttpRequest(path, method, requestBody);
         HttpMapping httpMapping = httpMethodToConstructorMap.get(method).apply(appConfig.todoService());

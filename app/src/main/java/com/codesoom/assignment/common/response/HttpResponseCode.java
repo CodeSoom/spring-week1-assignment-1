@@ -1,7 +1,6 @@
 package com.codesoom.assignment.common.response;
 
 public enum HttpResponseCode {
-
     OK(200, "OK"),
     CREATED(201, "Created"),
     BAD_REQUEST(400, "Bad Request"),

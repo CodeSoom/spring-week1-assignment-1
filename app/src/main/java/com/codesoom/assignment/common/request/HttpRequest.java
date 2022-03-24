@@ -30,6 +30,7 @@ public class HttpRequest {
     }
 
     public String getPathVariable(String pathRegex,int index) throws ArrayIndexOutOfBoundsException{
+
         return path.split(pathRegex)[index];
     }
 

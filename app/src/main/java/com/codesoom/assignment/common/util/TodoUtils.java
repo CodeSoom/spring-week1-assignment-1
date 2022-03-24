@@ -32,6 +32,7 @@ public class TodoUtils {
         } catch (IOException e) {
             logger.severe(e.getMessage());
         }
+
         return transferJsonToString;
     }
 

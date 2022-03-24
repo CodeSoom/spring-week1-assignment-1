@@ -9,7 +9,6 @@ public class AppConfig {
     private final int port;
     private final int backLog;
     private final String host;
-
     public AppConfig(int port, int backLog, String host) {
         this.port = port;
         this.backLog = backLog;
