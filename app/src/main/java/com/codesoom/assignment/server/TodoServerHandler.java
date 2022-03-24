@@ -69,12 +69,15 @@ public class TodoServerHandler implements HttpHandler {
         return httpMethodToConstructorMap;
     }
 
-    private void writeHttpResponse(HttpExchange httpExchange, HttpResponse httpResponse) throws IOException {
-        httpExchange.sendResponseHeaders(httpResponse.getStatusCode(), httpResponse.getBody().getBytes().length);
-        OutputStream outputStream = httpExchange.getResponseBody();
-        outputStream.write(httpResponse.getBody().getBytes());
-        outputStream.flush();
-        outputStream.close();
+    private void writeHttpResponse(HttpExchange httpExchange, HttpResponse httpResponse) {
+        try (OutputStream outputStream = httpExchange.getResponseBody()) {
+            var body = httpResponse.getBody().getBytes();
+            httpExchange.sendResponseHeaders(httpResponse.getStatusCode(), body.length);
+            outputStream.write(body);
+            outputStream.flush();
+        } catch (IOException e){
+            System.out.printf("in handle -> {}", e.getMessage());
+        }
     }
 
 }
