@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class App {
-    private final static int LOCAL_HOST = 8000;
+    private final static int PORT = 8000;
 
     public String getGreeting() {
         return "Hello World!";
@@ -17,7 +17,7 @@ public class App {
         System.out.println(new App().getGreeting());
 
         try {
-            InetSocketAddress address = new InetSocketAddress(LOCAL_HOST);
+            InetSocketAddress address = new InetSocketAddress(PORT);
             HttpServer httpServer = HttpServer.create(address, 0);
 
             HttpHandler handler = new DemoHttpHandler();
