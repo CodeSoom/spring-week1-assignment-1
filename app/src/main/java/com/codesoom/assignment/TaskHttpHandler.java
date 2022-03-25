@@ -4,7 +4,13 @@ import com.codesoom.assignment.models.Task;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.*;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -61,7 +67,7 @@ public class TaskHttpHandler implements HttpHandler {
         } catch (NoSuchElementException e) {
             e.printStackTrace();
             statusCode = 404;
-            content = "요청에 해당하는 원소가 존재하지 않습니다.";
+            content = "ID에 해당하는 Task가 존재하지 않습니다.";
         }
 
 
@@ -88,7 +94,7 @@ public class TaskHttpHandler implements HttpHandler {
         if (splitedPath.length > 2) {
             return splitedPath[splitedPath.length - 1];
         }
-        return "0";
+        return "-1";
     }
 
     private Optional<Task> getOneTaskById(Long id) {
@@ -98,7 +104,30 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private String getTitleByBody(String content) {
-        return content.split(": ")[1].split("}")[0];
+        /*  StringTokenizer 를 사용한 문자열 나누기
+        StringTokenizer stringTokenizer = new StringTokenizer(content, "{:}");
+        while (stringTokenizer.hasMoreTokens()) {
+            String stringToken = stringTokenizer.nextToken().trim();
+            if (stringToken.equals("title")) {
+                return stringTokenizer.nextToken().trim();
+            }
+        }
+         */
+        String replacedContent = content
+                .replace(" ", "")
+                .replace("{", "")
+                .replace("}", "");
+        String[] splitedContents = replacedContent.split(":");
+        String title = splitedContents[1];
+        return title;
+
+        /* for문을 사용하여 출력하기
+        for (int i = 0; i <= splitedContents.length; i++) {
+            if (splitedContents[i].equals("\"title\"")) {
+                return splitedContents[i + 1];
+            }
+        }
+         */
     }
 
     private Task toTask(String content) {
@@ -115,15 +144,18 @@ public class TaskHttpHandler implements HttpHandler {
 
     // Find One Task By Id
     private String taskToJson(Long id) {
-        return tasks.stream()
-                .filter(task -> task.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> { throw new NoSuchElementException("요청에 해당하는 원소가 존재하지 않습니다."); }).toString();
+        for (Task task : tasks) {
+            if (task.getId().equals(id)) {
+                return task.toString();
+            }
+        }
+
+        throw new NoSuchElementException("ID에 해당하는 Task를 찾을 수 없어, Task를 반환할 수 없습니다.");
     }
 
     // Modify One Task By Id
     private String modifyTaskById(String content, Long id) throws IllegalArgumentException, NoSuchElementException {
-        Task findTask = getOneTaskById(id).orElseThrow(() -> { throw new NoSuchElementException("요청에 해당하는 원소가 존재하지 않습니다."); });
+        Task findTask = getOneTaskById(id).orElseThrow(() -> { throw new NoSuchElementException("ID에 해당하는 Task를 찾을 수 없어, Task를 수정할 수 없습니다."); });
         int findTaskIdx = tasks.indexOf(findTask);
         findTask.setTitle(getTitleByBody(content));
         tasks.set(findTaskIdx, findTask);
@@ -132,7 +164,7 @@ public class TaskHttpHandler implements HttpHandler {
 
     // Delete Task By Id
     private String deleteTaskById(Long id) {
-        Task findTask = getOneTaskById(id).orElseThrow(() -> { throw new NoSuchElementException("해당 아이디에 맞는 원소를 찾을수 없습니다."); });
+        Task findTask = getOneTaskById(id).orElseThrow(() -> { throw new NoSuchElementException("ID에 해당하는 Task를 찾을 수 없어, Task를 삭제할 수 없습니다."); });
         tasks.remove(findTask);
         return findTask.toString();
     }
