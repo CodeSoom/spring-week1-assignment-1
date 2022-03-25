@@ -6,4 +6,21 @@ package com.codesoom.assignment.models;
  */
 public enum HttpMethod {
     GET, POST, PUT, PATCH, DELETE;
+
+    public static HttpMethod setHttpMethod(String method) {
+        switch (method) {
+            case "GET":
+                return HttpMethod.GET;
+            case "POST":
+                return HttpMethod.POST;
+            case "PUT":
+                return HttpMethod.PUT;
+            case "PATCH":
+                return HttpMethod.PATCH;
+            case "DELETE":
+                return HttpMethod.DELETE;
+            default:
+                throw new AssertionError("정의되지 않은 HTTP 메서드입니다.");
+        }
+    }
 }

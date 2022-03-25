@@ -32,7 +32,7 @@ public class TodoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
+        HttpMethod method = HttpMethod.setHttpMethod(exchange.getRequestMethod());
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
@@ -49,17 +49,17 @@ public class TodoHttpHandler implements HttpHandler {
 
         String content = "Hello, World!";
 
-        if (HttpMethod.GET.toString().equals(method) && path.equals("/tasks")) {
+        if (HttpMethod.GET.equals(method) && path.equals("/tasks")) {
             content = tasksToJSON();
         }
 
-        if (HttpMethod.GET.toString().equals(method) && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
+        if (HttpMethod.GET.equals(method) && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
             Long id = Long.valueOf(path.split("/")[2]);
 
             content = taskToJSON(id);
         }
 
-        if (HttpMethod.POST.toString().equals(method) && path.equals("/tasks")) {
+        if (HttpMethod.POST.equals(method) && path.equals("/tasks")) {
             content = "Create a new task.";
 
             Task task = toTask(body);
@@ -70,7 +70,7 @@ public class TodoHttpHandler implements HttpHandler {
             System.out.println(task);
         }
 
-        if (HttpMethod.PUT.toString().equals(method) && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
+        if (HttpMethod.PUT.equals(method) && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
             Long id = Long.valueOf(path.split("/")[2]);
 
             Task task = toTask(body);
@@ -79,7 +79,7 @@ public class TodoHttpHandler implements HttpHandler {
             content = taskToChange(task);
         }
 
-        if (HttpMethod.PATCH.toString().equals(method) && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
+        if (HttpMethod.PATCH.equals(method) && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
             Long id = Long.valueOf(path.split("/")[2]);
 
             Task task = toTask(body);
@@ -88,7 +88,7 @@ public class TodoHttpHandler implements HttpHandler {
             content = taskToChange(task);
         }
 
-        if (HttpMethod.DELETE.toString().equals(method) && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
+        if (HttpMethod.DELETE.equals(method) && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
             Long id = Long.valueOf(path.split("/")[2]);
 
             content = taskToRemove(id);
