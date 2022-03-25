@@ -26,15 +26,9 @@ public class TaskList {
     }
 
     public Optional<Task> findTaskById(final Long taskId) {
-        Task findTask = tasks.stream()
+        return tasks.stream()
                 .filter(t -> t.getId().equals(taskId))
-                .findFirst()
-                .orElse(null);
-
-        if (findTask == null) {
-            return Optional.empty();
-        }
-        return Optional.of(findTask);
+                .findFirst();
     }
 
     public List<Task> getTasks() {

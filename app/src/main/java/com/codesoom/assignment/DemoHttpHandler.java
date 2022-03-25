@@ -97,14 +97,14 @@ public class DemoHttpHandler implements HttpHandler {
 
         Long taskId = getTaskId(paths);
 
-        Optional<Task> taskOptional = taskList.findTaskById(taskId);
-        if (taskOptional.isEmpty()) {
+        Optional<Task> findTask = taskList.findTaskById(taskId);
+        if (findTask.isEmpty()) {
             response(exchange, NOT_FOUND);
             return;
         }
-        Task findTask = taskOptional.get();
+        Task task = findTask.get();
 
-        String content = objectMapper.writeValueAsString(findTask);
+        String content = objectMapper.writeValueAsString(task);
         response(exchange, OK, content);
     }
 
@@ -117,17 +117,17 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         Long taskId = getTaskId(paths);
-        Optional<Task> taskOptional = taskList.findTaskById(taskId);
-        if (taskOptional.isEmpty()) {
+        Optional<Task> findTask = taskList.findTaskById(taskId);
+        if (findTask.isEmpty()) {
             response(exchange, NOT_FOUND);
             return;
         }
-        Task findTask = taskOptional.get();
+        Task task = findTask.get();
 
         TaskDto taskDto = objectMapper.readValue(requestBody, TaskDto.class);
-        findTask.setTitle(taskDto.getTitle());
+        task.setTitle(taskDto.getTitle());
 
-        String content = objectMapper.writeValueAsString(findTask);
+        String content = objectMapper.writeValueAsString(task);
         response(exchange, OK, content);
     }
 
@@ -135,12 +135,12 @@ public class DemoHttpHandler implements HttpHandler {
 
         Long taskId = getTaskId(paths);
 
-        Optional<Task> taskOptional = taskList.findTaskById(taskId);
-        if (taskOptional.isEmpty()) {
+        Optional<Task> findTask = taskList.findTaskById(taskId);
+        if (findTask.isEmpty()) {
             response(exchange, NOT_FOUND);
             return;
         }
-        Task findTask = taskOptional.get();
+        Task task = findTask.get();
 
         String requestBody = getRequestBody(exchange);
         if (requestBody.isBlank()) {
@@ -150,10 +150,10 @@ public class DemoHttpHandler implements HttpHandler {
 
         TaskDto taskDto = objectMapper.readValue(requestBody, TaskDto.class);
         if (taskDto.getTitle() != null) {
-            findTask.setTitle(taskDto.getTitle());
+            task.setTitle(taskDto.getTitle());
         }
 
-        String content = objectMapper.writeValueAsString(findTask);
+        String content = objectMapper.writeValueAsString(task);
         response(exchange, OK, content);
     }
 
@@ -161,14 +161,14 @@ public class DemoHttpHandler implements HttpHandler {
 
         Long taskId = getTaskId(paths);
 
-        Optional<Task> taskOptional = taskList.findTaskById(taskId);
-        if (taskOptional.isEmpty()) {
+        Optional<Task> findTask = taskList.findTaskById(taskId);
+        if (findTask.isEmpty()) {
             response(exchange, NOT_FOUND);
             return;
         }
-        Task findTask = taskOptional.get();
+        Task task = findTask.get();
 
-        taskList.remove(findTask);
+        taskList.remove(task);
         response(exchange, NO_CONTENT);
     }
 
