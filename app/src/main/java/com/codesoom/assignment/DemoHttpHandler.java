@@ -5,6 +5,8 @@ import com.codesoom.assignment.domain.TaskList;
 import com.codesoom.assignment.dto.TaskDto;
 import com.codesoom.assignment.http.HttpMethod;
 import com.codesoom.assignment.http.HttpStatusCode;
+import com.codesoom.assignment.matcher.TaskUriMatcher;
+import com.codesoom.assignment.matcher.UriMatcher;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -26,9 +28,9 @@ public class DemoHttpHandler implements HttpHandler {
 
     private static final long NO_CONTENT_RESPONSE_LENGTH = -1;
 
-    private static final int RESOURCE_ID_POSITION = 2;
-
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final UriMatcher uriMatcher = new TaskUriMatcher();
 
     private final TaskList taskList;
 
@@ -41,26 +43,26 @@ public class DemoHttpHandler implements HttpHandler {
 
         String pathUri = exchange.getRequestURI().getPath();
 
-        if (!pathUri.startsWith("/tasks")) {
+        String[] paths = pathUri.split(SLASH);
+
+        if (!uriMatcher.isValidPath(paths)) {
             response(exchange, NOT_FOUND);
             return;
         }
 
-        String[] paths = pathUri.split(SLASH);
-
         HttpMethod httpMethod = HttpMethod.valueOf(exchange.getRequestMethod());
 
-        if (httpMethod.equals(POST) && paths.length == 2) {
+        if (httpMethod.equals(POST) && !uriMatcher.hasId(paths)) {
             saveTask(exchange);
-        } else if (httpMethod.equals(GET) && paths.length == 2) {
+        } else if (httpMethod.equals(GET) && !uriMatcher.hasId(paths)) {
             getTasks(exchange);
-        } else if (httpMethod.equals(GET) && paths.length == 3) {
+        } else if (httpMethod.equals(GET) && uriMatcher.hasId(paths)) {
             getTask(exchange, paths);
-        } else if (httpMethod.equals(PATCH) && paths.length == 3) {
+        } else if (httpMethod.equals(PATCH) && uriMatcher.hasId(paths)) {
             modifyTask(exchange, paths);
-        } else if (httpMethod.equals(PUT) && paths.length == 3) {
+        } else if (httpMethod.equals(PUT) && uriMatcher.hasId(paths)) {
             changeTask(exchange, paths);
-        } else if (httpMethod.equals(DELETE) && paths.length == 3) {
+        } else if (httpMethod.equals(DELETE) && uriMatcher.hasId(paths)) {
             deleteTask(exchange, paths);
         } else {
             response(exchange, BAD_REQUEST);
@@ -96,7 +98,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     private void getTask(final HttpExchange exchange, final String[] paths) throws IOException {
 
-        Long taskId = getTaskId(paths);
+        Long taskId = uriMatcher.getId(paths);
 
         Optional<Task> findTask = taskList.findTaskById(taskId);
         if (findTask.isEmpty()) {
@@ -117,7 +119,7 @@ public class DemoHttpHandler implements HttpHandler {
             return;
         }
 
-        Long taskId = getTaskId(paths);
+        Long taskId = uriMatcher.getId(paths);
         Optional<Task> findTask = taskList.findTaskById(taskId);
         if (findTask.isEmpty()) {
             response(exchange, NOT_FOUND);
@@ -134,7 +136,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     private void modifyTask(final HttpExchange exchange, final String[] paths) throws IOException {
 
-        Long taskId = getTaskId(paths);
+        Long taskId = uriMatcher.getId(paths);
 
         Optional<Task> findTask = taskList.findTaskById(taskId);
         if (findTask.isEmpty()) {
@@ -160,7 +162,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     private void deleteTask(final HttpExchange exchange, final String[] paths) throws IOException {
 
-        Long taskId = getTaskId(paths);
+        Long taskId = uriMatcher.getId(paths);
 
         Optional<Task> findTask = taskList.findTaskById(taskId);
         if (findTask.isEmpty()) {
@@ -201,9 +203,5 @@ public class DemoHttpHandler implements HttpHandler {
         return new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining(LINE_BREAK));
-    }
-
-    private Long getTaskId(final String[] paths) throws NumberFormatException {
-        return Long.valueOf(paths[RESOURCE_ID_POSITION]);
     }
 }
