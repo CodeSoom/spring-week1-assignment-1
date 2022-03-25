@@ -2,43 +2,12 @@ package com.codesoom.assignment.models;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 
 public class Tasks {
     private List<Task> tasks;
 
     public Tasks() {
         tasks = new ArrayList<>();
-    }
-
-    public String getAlltasksToJSON() {
-        String content = "[";
-        for(Task task : tasks) {
-            content += task.toString() + ",";
-        }
-        if(content.contains(",")) {
-            content = content.substring(0, content.length() - 1);
-        }
-
-        return content + "]";
-    }
-
-    public String getLatestTaskToJSON()  {
-        return tasks.get(tasks.size() - 1).toString();
-    }
-
-    public String getTaskToJSON(int index)  {
-        return Optional.ofNullable(tasks.get(index))
-                .map(Task::toString)
-                .orElseThrow(() -> new NoSuchElementException("해당 id는 tasks에 없습니다."));
-
-        /*
-        if(index >= tasks.size()) {
-            throw new NoSuchElementException("해당 id는 tasks에 없습니다.")
-        }
-        return tasks.get(index).toString();
-         */
     }
 
     public int getSize() {
@@ -50,11 +19,30 @@ public class Tasks {
     }
 
     public void set(int index, Task task) {
+        if(index >= tasks.size()) {
+            throw new IndexOutOfBoundsException("입력한 id에는 Task가 없습니다." +
+                    " 입력한 id의 숫자가 Tasks의 개수보다 큽니다." +
+                    " 그래서 해당 id의 Task를 수정하지 못했습니다.");
+        }
         tasks.set(index, task);
     }
 
     public void remove(int index) {
+        if(index >= tasks.size()) {
+            throw new IndexOutOfBoundsException("입력한 id에는 Task가 없습니다." +
+                    " 입력한 id의 숫자가 Tasks의 개수보다 큽니다." +
+                    " 그래서 해당 id의 Task를 지우지 못했습니다.");
+        }
         tasks.remove(index);
+    }
+
+    public Task getTask(int index) {
+        if(index >= tasks.size()) {
+            throw new IndexOutOfBoundsException("입력한 id에는 Task가 없습니다." +
+                    " 입력한 id의 숫자가 Tasks의 개수보다 큽니다." +
+                    " 그래서 해당 id의 Task를 찾지 못했습니다.");
+        }
+        return tasks.get(index);
     }
 
 }

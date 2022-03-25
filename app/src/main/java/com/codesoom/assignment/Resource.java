@@ -17,13 +17,24 @@ public class Resource {
         return content;
     }
 
-    public static String makeBodyContent(String content) {
+    public static String makeBodyContent(String content) throws IllegalArgumentException {
         if(content.equals("")) {
             return content;
         }
 
+        if(!content.startsWith("{\"title\": ")) {
+            throw new IllegalArgumentException("입력한 body가 정해진 형식과 달라서 body를 " +
+                    "변환할 수 없습니다. title=을 적은 뒤에 body를 입력하세요.");
+        }
+
         content = content.substring(11);
         content = content.substring(0, content.length() - 2);
+
+        if(content.contains(":")) {
+            throw new IllegalArgumentException("body를 변환할 수 없습니다. " +
+                    "title 이외에 다른 body도 입력하셨습니다. title 하나만 입력해주세요.");
+        }
+
         // 유니코드를 한글로 변환할 버퍼 선언
         StringBuffer sb = new StringBuffer();
         // 글자를 하나하나 탐색하면서 유니코드만 버퍼에 담는다.
@@ -37,6 +48,7 @@ public class Resource {
                 // for의 증가 값 1과 5를 합해 6글자를 점프
                 i += 5;
             }
+
         }
 
         String temp = sb.toString();
@@ -48,4 +60,5 @@ public class Resource {
         //유니코드를 한글로 변환한 결과를 반환
         return temp;
     }
+
 }

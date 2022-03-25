@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.models.JsonPrinter;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.models.Tasks;
 
@@ -15,7 +16,7 @@ public enum HttpMethod {
             Task task = new Task(tasks.getSize() + 1L, bodyContent);
             tasks.add(task);
 
-            content = tasks.getLatestTaskToJSON();
+            content = JsonPrinter.printTask(tasks.getTask(tasks.getSize() - 1));
         }
 
         return content;
@@ -24,16 +25,17 @@ public enum HttpMethod {
         String content = "";
         String path = resource.getPath();
         if(path.equals("/tasks") || path.equals("/tasks/")) {
-            content = tasks.getAlltasksToJSON();
+            content = JsonPrinter.printAllTasks(tasks);
         }
 
         if(path.contains("/tasks/") && path.lastIndexOf("/") != path.length() - 1) {
             String numberString = path.substring(path.lastIndexOf("/") + 1);
             try {
                 int number = Integer.valueOf(numberString) - 1;
-                content = tasks.getTaskToJSON(number);
+                content = JsonPrinter.printTask(tasks.getTask(number));
             } catch (NumberFormatException e) {
-                content = "id의 숫자를 입력해주세요.";
+                content = "id에 숫자를 입력하지 않으셨습니다. 그래서 Task의 정보를 찾을 수 없습니다. " +
+                        "id에는 숫자만 입력해주세요.";
             }
         }
 
@@ -53,14 +55,12 @@ public enum HttpMethod {
             try {
                 int number = Integer.valueOf(numberString) - 1;
                 Task task = new Task(number + 1L, bodyContent);
-                if(number >= tasks.getSize()) {
-                    return "해당 id는 tasks에 없습니다.";
-                }
                 tasks.set(number, task);
 
-                content = tasks.getTaskToJSON(number);
+                content = JsonPrinter.printTask(tasks.getTask(number));
             } catch (NumberFormatException e) {
-                content = "id의 숫자를 입력해주세요.";
+                content = "id에 숫자를 입력하지 않으셨습니다. 그래서 Task의 정보를 수정할 수 없습니다. " +
+                        "id에는 숫자만 입력해주세요.";
             }
         }
 
@@ -73,16 +73,18 @@ public enum HttpMethod {
             String numberString = path.substring(path.lastIndexOf("/") + 1);
             try {
                 int number = Integer.valueOf(numberString) - 1;
-                if(number >= tasks.getSize()) {
-                    return "해당 id는 tasks에 없습니다.";
-                }
                 tasks.remove(number);
             } catch (NumberFormatException e) {
-                content = "id의 숫자를 입력해주세요.";
+                content = "id에 숫자를 입력하지 않으셨습니다. 그래서 Task를 지울 수 없습니다. " +
+                        "id에는 숫자만 입력해주세요.";
             }
         }
 
         return content;
+    }),
+    WRONG_METHOD("WRONG_METHOD", (resource, tasks) -> {
+        return "해당 메소드는 실행할 수 없습니다. 메소드를 잘못 입력하셨습니다. " +
+                "POST, GET, PUT, DELETE 중에서 입력하세요.";
     });
 
     private String method;
@@ -97,17 +99,20 @@ public enum HttpMethod {
         return Stream.of(values())
                 .filter(httpMethod -> httpMethod.getMethod().equals(method))
                 .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("Allow: POST, GET, PUT, DELETE"));
+                .orElse(WRONG_METHOD);
     }
 
     public StatusCode findByStatusCode() {
-        if(this.isPOST()) {
-            return StatusCode.Created;
+        if(this.isPost()) {
+            return StatusCode.CREATED;
+        }
+        if(this.isWrongMethod()) {
+            return StatusCode.METHOD_NOT_ALLOWED;
         }
         return StatusCode.OK;
     }
 
-    public String operate(Resource resource, Tasks tasks){
+    public String operate(Resource resource, Tasks tasks) throws IndexOutOfBoundsException {
         return operation.apply(resource, tasks);
     }
 
@@ -115,7 +120,12 @@ public enum HttpMethod {
         return method;
     }
 
-    public boolean isPOST() {
+    public boolean isPost() {
         return this == HttpMethod.POST;
     }
+
+    private boolean isWrongMethod() {
+        return this == HttpMethod.WRONG_METHOD;
+    }
+
 }

@@ -2,8 +2,10 @@ package com.codesoom.assignment;
 
 public enum StatusCode {
     OK(200),
-    Created(201);
-
+    CREATED(201),
+    BAD_REQUEST(400),
+    NOT_FOUND(404),
+    METHOD_NOT_ALLOWED(405);
 
     private int statusNumber;
 
@@ -14,4 +16,5 @@ public enum StatusCode {
     public int getStatusNumber() {
         return statusNumber;
     }
+
 }

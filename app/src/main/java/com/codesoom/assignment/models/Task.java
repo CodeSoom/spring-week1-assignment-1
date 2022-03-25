@@ -1,6 +1,8 @@
 package com.codesoom.assignment.models;
 
 public class Task {
+    private final String delimiter = " ";
+
     private Long id;
 
     private String title;
@@ -12,6 +14,11 @@ public class Task {
 
     @Override
     public String toString() {
-        return "{\"id\":" + id + ",\"title\":" + "\"" + title + "\"" + "}";
+        return id + delimiter + title;
     }
+
+    public String getDelimiter() {
+        return delimiter;
+    }
+
 }

@@ -30,13 +30,27 @@ public class DemoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        Resource resource = new Resource(uri.getPath(), Resource.makeBodyContent(body));
+        System.out.println(method + " " + uri.getPath());
 
-        System.out.println(method + " " + resource.getPath());
-
-        String content = method.operate(resource, tasks);
-
-        StatusCode statusCode = method.findByStatusCode();
+        String content;
+        StatusCode statusCode;
+        try {
+            Resource resource = new Resource(uri.getPath(), Resource.makeBodyContent(body));
+            content = method.operate(resource, tasks);
+            if(method.isPost() && content.equals("")) {
+                throw new IllegalArgumentException("body가 비어있습니다. " +
+                        "==을 두번 사용하였습니다. 그래서 POST를 할 수 없습니다. " +
+                        "=을 한 번만 사용하세요.");
+            }
+            statusCode = method.findByStatusCode();
+        } catch (IllegalArgumentException e) {
+            content = e.getMessage();
+            statusCode = StatusCode.BAD_REQUEST;
+        }
+        catch (IndexOutOfBoundsException e) {
+            content = e.getMessage();
+            statusCode = StatusCode.NOT_FOUND;
+        }
 
         httpExchange.sendResponseHeaders(statusCode.getStatusNumber(), content.getBytes().length);
 
@@ -44,5 +58,7 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+
     }
+
 }
