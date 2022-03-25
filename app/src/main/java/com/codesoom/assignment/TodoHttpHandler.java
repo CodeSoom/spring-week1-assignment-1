@@ -48,22 +48,22 @@ public class TodoHttpHandler implements HttpHandler {
 
         switch (method) {
             case "GET":
-                if(path.startsWith("/task") && splitedPath.length == 2) {
+                if(path.equals("/tasks") || path.equals("/tasks/")) {
                     return todoController.findAllTasks();
-                } else if(path.startsWith("/task") && taskId != null && splitedPath.length == 3) {
+                } else if(path.startsWith("/tasks/") && taskId != null) {
                     return todoController.findTaskById(convertStringToLong(splitedPath[2]));
                 }
             case "POST":
-                if(path.startsWith("/task") && splitedPath.length == 2) {
+                if(path.equals("/tasks") || path.equals("/tasks/")) {
                     return todoController.createTask(body);
                 }
             case "PUT":
             case "PATCH":
-                if(path.startsWith("/task") && taskId != null  && splitedPath.length == 3) {
+                if(path.startsWith("/tasks/") && taskId != null) {
                     return todoController.updateTask(convertStringToLong(splitedPath[2]), body);
                 }
             case "DELETE":
-                if(path.startsWith("/task") && taskId != null && splitedPath.length == 3) {
+                if(path.startsWith("/tasks/") && taskId != null) {
                     return todoController.deleteTaskById(convertStringToLong(splitedPath[2]));
                 }
             default:
