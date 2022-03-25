@@ -3,8 +3,9 @@ package com.codesoom.assignment.handler;
 import com.codesoom.assignment.domain.HttpRequest;
 import com.codesoom.assignment.domain.HttpResponse;
 import com.codesoom.assignment.domain.Task;
+import com.codesoom.assignment.domain.HttpResponseMappingFunction;
 import com.codesoom.assignment.exception.NoSuchTaskException;
-import com.codesoom.assignment.exception.TooManyPathVariablesException;
+import com.codesoom.assignment.exception.TooManyPathSegmentsException;
 import com.codesoom.assignment.exception.WrongTaskJsonException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,10 +16,9 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
+import java.util.Optional;
 
 import static com.codesoom.assignment.domain.HttpMethod.*;
-import static java.nio.charset.StandardCharsets.*;
 
 
 public class TaskHttpHandler implements HttpHandler {
@@ -31,7 +31,7 @@ public class TaskHttpHandler implements HttpHandler {
     public void handle(HttpExchange exchange) {
         try {
             response(exchange, handleTask(new HttpRequest(exchange)));
-        } catch (TooManyPathVariablesException | WrongTaskJsonException | NoSuchTaskException | IllegalArgumentException e) {
+        } catch (TooManyPathSegmentsException | WrongTaskJsonException | NoSuchTaskException | IllegalArgumentException e) {
             response(exchange, new HttpResponse(e.getMessage(), 400));
         } catch (Exception e) {
             response(exchange, new HttpResponse(e.getMessage(), 500));
@@ -40,17 +40,38 @@ public class TaskHttpHandler implements HttpHandler {
 
     private void response(HttpExchange exchange, HttpResponse httpResponse) {
         try(OutputStream responseBody = exchange.getResponseBody()) {
-            exchange.sendResponseHeaders(httpResponse.getStatusCode(), httpResponse.getContent().getBytes(UTF_8).length);
-            responseBody.write(httpResponse.getContent().getBytes(UTF_8));
+            exchange.sendResponseHeaders(httpResponse.getStatusCode(), httpResponse.getContentLength());
+            responseBody.write(httpResponse.getContentAsByte());
             responseBody.flush();
         }catch(IOException e) {
             e.printStackTrace();
         }
     }
 
-    private HttpResponse handleTask(HttpRequest httpRequest) {
-        // TODO: Task 수정
+    private void hasOnlyOnePathSegmentOrThrow(String[] pathVariables) {
+        if(pathVariables.length > 1) {
+            throw new TooManyPathSegmentsException("경로가 잘못되었습니다. 올바른 예) .../tasks/1");
+        }
+    }
 
+    private Optional<Task> getTaskIfPresentValidPathVariable(HttpRequest httpRequest) {
+        if(httpRequest.hasPathVariable()) {
+            // 올바르지 않은 PathVariable 이 들어온 경우에는 예외를 던진다.
+            hasOnlyOnePathSegmentOrThrow(httpRequest.getPathVariables());
+            int taskId = getTaskId(httpRequest.getPathVariables());
+
+            // TODO: ArrayList 를 Map 으로 고치는게 훨씬 좋아보임. 조회하거나 수정할 일이 있을 때 어차피 아이디로 매칭되면 되니까...
+
+            return tasks.stream()
+                    .filter((task) -> task.getId().intValue() == taskId)
+                    .get
+                    .orElseThrow(() -> new NoSuchTaskException("task id: " + taskId + "는 존재하지 않습니다."));
+        }
+
+        return false;
+    }
+
+    private HttpResponse handleTask(HttpRequest httpRequest) {
         switch (httpRequest.getMethod()) {
             // Task 생성
             case POST -> {
@@ -62,56 +83,55 @@ public class TaskHttpHandler implements HttpHandler {
             // Task 목록 조회
             case GET -> {
                 // pathVariable 이 올바르게 입력되었고 존재하는 경우
-                if(httpRequest.hasPathVariable()) {
-                    return processPathVariableTaskIdWithStrategy(httpRequest
-                            , task -> new HttpResponse(parseTaskToJson(task), 200));
+                if(getTaskIfPresentValidPathVariable(httpRequest)) {
+                    HttpResponseMappingFunction readTaskMappingFunction =
+                            task -> new HttpResponse(parseTaskToJson(task), 200);
+
+                    return getHttpResponseIfValidTaskId(getTaskId(httpRequest.getPathVariables()), readTaskMappingFunction);
                 }
 
                 return new HttpResponse(parseTasksToJson(tasks), 200);
             }
             // Task 삭제
             case DELETE -> {
-                if(httpRequest.hasPathVariable()) {
-                    return processPathVariableTaskIdWithStrategy(httpRequest ,
+                if(getTaskIfPresentValidPathVariable(httpRequest)) {
+                    HttpResponseMappingFunction deleteTaskMappingFunction =
                             task -> {
                                 tasks.remove(task);
                                 return new HttpResponse("task id: " + task.getId() + "가 삭제되었습니다.", 200);
-                            }
-                    );
+                            };
+
+                    return getHttpResponseIfValidTaskId(getTaskId(httpRequest.getPathVariables()), deleteTaskMappingFunction);
                 }
 
                 throw new IllegalArgumentException("삭제할 task ID를 입력해야 합니다. ex) .../tasks/1");
             }
-        }
 
-        return new HttpResponse("지원하지 않는 메서드입니다.", 405);
+            // TODO: Task 수정, PUT, PATCH
+
+            default -> {
+                return new HttpResponse("지원하지 않는 메서드입니다.", 405);
+            }
+        }
     }
 
-    private HttpResponse processPathVariableTaskIdWithStrategy(HttpRequest httpRequest, Function<Task, HttpResponse> taskProcessStrategy) {
-        if(httpRequest.getPathVariables().length > 1) {
-            throw new TooManyPathVariablesException("경로가 잘못되었습니다. 올바른 예) .../tasks/1");
-        }
-
-        int taskId = getTaskIdFromPathVariables(httpRequest.getPathVariables());
-
-        return findTaskAndResponse(taskId, taskProcessStrategy);
-    }
-
-    private HttpResponse findTaskAndResponse(int taskId, Function<Task, HttpResponse> responseFunction) {
+    private HttpResponse getHttpResponseIfValidTaskId(int taskId, HttpResponseMappingFunction httpResponseMappingFunction) {
         return tasks.stream()
                 .filter((task) -> task.getId().intValue() == taskId)
                 .findFirst()
-                .map(responseFunction)
+                .map(httpResponseMappingFunction)
                 .orElseThrow(() -> new NoSuchTaskException("task id: " + taskId + "는 존재하지 않습니다."));
     }
 
-    private int getTaskIdFromPathVariables(String[] pathVariables) {
+    private int getTaskId(String[] pathVariables) {
         int taskId;
+
         try {
             taskId = Integer.parseInt(pathVariables[0]);
         } catch (NumberFormatException e) {
             throw new NumberFormatException("id는 숫자로 입력하셔야 합니다. 올바른 예) .../tasks/1");
         }
+
         return taskId;
     }
 
