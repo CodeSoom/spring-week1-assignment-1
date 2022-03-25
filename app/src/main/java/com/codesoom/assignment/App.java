@@ -7,6 +7,10 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class App {
+
+    private static final Integer PORT = 8000;
+    private static final Integer BACKLOG = 0;
+
     public String getGreeting() {
         return "App Start!!";
     }
@@ -15,8 +19,8 @@ public class App {
         System.out.println(new App().getGreeting());
 
         try {
-            InetSocketAddress address = new InetSocketAddress(8000);
-            HttpServer httpServer = HttpServer.create(address, 0);
+            InetSocketAddress address = new InetSocketAddress(PORT);
+            HttpServer httpServer = HttpServer.create(address, BACKLOG);
 
             HttpHandler todoHttpHandler = new TodoHttpHandler();
             httpServer.createContext("/", todoHttpHandler);
