@@ -41,35 +41,34 @@ public class TodoHttpHandler implements HttpHandler {
 
         String[] splitedPath = path.split("/");
         String body = getRequestBody(exchange.getRequestBody());
+        Long taskId = null;
+        
+        // "/tasks/{id}" 에서 id 추출하기
+        if(splitedPath.length >= 3) {taskId = convertStringToLong(splitedPath[2]);}
 
         switch (method) {
             case "GET":
-                if(splitedPath.length == 2 && splitedPath[0].equals("") && splitedPath[1].equals("tasks")) {
+                if(path.startsWith("/task") && splitedPath.length == 2) {
                     return todoController.findAllTasks();
-                } else if(splitedPath.length == 3 && splitedPath[0].equals("") && splitedPath[1].equals("tasks") && convertStringToLong(splitedPath[2]) != null) {
+                } else if(path.startsWith("/task") && taskId != null && splitedPath.length == 3) {
                     return todoController.findTaskById(convertStringToLong(splitedPath[2]));
                 }
-                break;
             case "POST":
-                if(splitedPath.length == 2 && splitedPath[0].equals("") && splitedPath[1].equals("tasks")) {
+                if(path.startsWith("/task") && splitedPath.length == 2) {
                     return todoController.createTask(body);
                 }
-                break;
             case "PUT":
             case "PATCH":
-                if(splitedPath.length == 3 && splitedPath[0].equals("") && splitedPath[1].equals("tasks") && convertStringToLong(splitedPath[2]) != null) {
+                if(path.startsWith("/task") && taskId != null  && splitedPath.length == 3) {
                     return todoController.updateTask(convertStringToLong(splitedPath[2]), body);
                 }
-                break;
             case "DELETE":
-                if(splitedPath.length == 3 && splitedPath[0].equals("") && splitedPath[1].equals("tasks") && convertStringToLong(splitedPath[2]) != null) {
+                if(path.startsWith("/task") && taskId != null && splitedPath.length == 3) {
                     return todoController.deleteTaskById(convertStringToLong(splitedPath[2]));
                 }
-                break;
             default:
                 return new HttpResponse(404, "잘못된 요청입니다!");
         }
-        return new HttpResponse(200, "");
 
     }
 
