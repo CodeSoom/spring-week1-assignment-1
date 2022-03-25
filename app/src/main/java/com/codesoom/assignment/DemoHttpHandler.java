@@ -77,7 +77,8 @@ public class DemoHttpHandler implements HttpHandler {
 
         TaskDto taskDto = objectMapper.readValue(requestBody, TaskDto.class);
 
-        Task savedTask = taskList.save(taskDto);
+        Task task = taskDto.toTask();
+        Task savedTask = taskList.save(task);
 
         String content = objectMapper.writeValueAsString(savedTask);
         response(exchange, CREATED, content);

@@ -1,7 +1,5 @@
 package com.codesoom.assignment.domain;
 
-import com.codesoom.assignment.dto.TaskDto;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -15,8 +13,8 @@ public class TaskList {
     public TaskList() {
     }
 
-    public Task save(final TaskDto taskDto) {
-        Task task = new Task(++sequenceId, taskDto.getTitle());
+    public Task save(final Task task) {
+        task.setId(++sequenceId);
         tasks.add(task);
         return task;
     }

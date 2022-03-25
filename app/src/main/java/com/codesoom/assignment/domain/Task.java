@@ -9,8 +9,7 @@ public class Task {
     public Task() {
     }
 
-    public Task(Long id, String title) {
-        this.id = id;
+    public Task(String title) {
         this.title = title;
     }
 
