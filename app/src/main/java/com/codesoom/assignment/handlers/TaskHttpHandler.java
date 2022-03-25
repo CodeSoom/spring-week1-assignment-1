@@ -76,23 +76,28 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private ResponseDto handleRequest(String httpMethod, String requestURI, String requestBody) throws IOException {
-        if (PATH.equals(requestURI) && HttpMethod.GET.name().equals(httpMethod)) {
-            return getTasks();
-        }
-        if (PATH.equals(requestURI) && HttpMethod.POST.name().equals(httpMethod)) {
-            return createTask(toTask(requestBody));
-        }
-        if (isMatch(requestURI) && HttpMethod.GET.name().equals(httpMethod)) {
-            return getTask(getPathVariable(requestURI));
-        }
-        if (isMatch(requestURI) && HttpMethod.PATCH.name().equals(httpMethod)) {
-            return updateTask(getPathVariable(requestURI), toTask(requestBody));
-        }
-        if (isMatch(requestURI) && HttpMethod.DELETE.name().equals(httpMethod)) {
-            return deleteTask(getPathVariable(requestURI));
+
+        try{
+            if (PATH.equals(requestURI) && HttpMethod.GET.name().equals(httpMethod)) {
+                return getTasks();
+            }
+            if (PATH.equals(requestURI) && HttpMethod.POST.name().equals(httpMethod)) {
+                return createTask(toTask(requestBody));
+            }
+            if (isMatch(requestURI) && HttpMethod.GET.name().equals(httpMethod)) {
+                return getTask(getPathVariable(requestURI));
+            }
+            if (isMatch(requestURI) && HttpMethod.PATCH.name().equals(httpMethod)) {
+                return updateTask(getPathVariable(requestURI), toTask(requestBody));
+            }
+            if (isMatch(requestURI) && HttpMethod.DELETE.name().equals(httpMethod)) {
+                return deleteTask(getPathVariable(requestURI));
+            }
+        } catch (IllegalArgumentException e) {
+            return new ResponseDto(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         }
 
-        return handleError(HttpStatus.NOT_FOUND.value(), "Not Found");
+        return handleError(HttpStatus.NOT_FOUND.value(), "지원하지 않는 URI 입니다.");
     }
 
     private ResponseDto getTasks() throws IOException {
@@ -152,7 +157,7 @@ public class TaskHttpHandler implements HttpHandler {
         if (matcher.find()) {
             return new TaskDto(matcher.group(1));
         } else {
-            throw new IllegalArgumentException("JSON 형식이 아닙니다.");
+            return null;
         }
     }
 
