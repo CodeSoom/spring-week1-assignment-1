@@ -29,7 +29,7 @@ public class TodoController {
         String response = "";
 
         Optional<Task> task = todoService.findTaskById(taskId);
-        if(task.isEmpty()) {return new HttpResponse(400, "존재하지 않는 Task입니다!");}
+        if(task.isEmpty()) {return new HttpResponse(404, "존재하지 않는 Task입니다!");}
 
         try {
             response = JsonUtils.taskToJson(task.get());
@@ -60,7 +60,7 @@ public class TodoController {
         if(requestBody.isBlank()) {return new HttpResponse(400, "입력값이 존재하지 않습니다");}
 
         Optional<Task> task = todoService.findTaskById(taskId);
-        if(task.isEmpty()) return new HttpResponse(400, "존재하지 않는 Task입니다!");
+        if(task.isEmpty()) return new HttpResponse(404, "존재하지 않는 Task입니다!");
 
         try {
             Task requestTaskInfo = JsonUtils.stringToTask(requestBody);
@@ -76,10 +76,10 @@ public class TodoController {
         String response = "Task가 성공적으로 삭제되었습니다";
 
         Optional<Task> task = todoService.findTaskById(taskId);
-        if(task.isEmpty()) {return new HttpResponse(400, "존재하지 않는 Task입니다!");}
+        if(task.isEmpty()) {return new HttpResponse(404, "존재하지 않는 Task입니다!");}
 
         todoService.deleteTask(task.get());
 
-        return new HttpResponse(200, response);
+        return new HttpResponse(204, response);
     }
 }
