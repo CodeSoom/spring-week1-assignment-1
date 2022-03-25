@@ -16,11 +16,11 @@ public class App {
     public static void main(String[] args) {
         try {
 
-            InetSocketAddress address = new InetSocketAddress(PORT);
-            HttpServer httpServer = HttpServer.create(address, BACK_LOG);
+            final InetSocketAddress address = new InetSocketAddress(PORT);
+            final HttpServer httpServer = HttpServer.create(address, BACK_LOG);
 
-            HttpHandler handler = new DemoHttpHandler();
-            TaskHttpHandler taskHttpHandler = new TaskHttpHandler();
+            final HttpHandler handler = new DemoHttpHandler();
+            final TaskHttpHandler taskHttpHandler = new TaskHttpHandler();
 
             httpServer.createContext("/", handler);
             httpServer.createContext("/tasks", taskHttpHandler);
