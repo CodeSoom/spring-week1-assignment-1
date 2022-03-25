@@ -32,11 +32,11 @@ public class HttpRequest {
     }
 
     private void getPathVariable() {
-        String[] pathSplitBySlash = this.path.split("/");
+        String[] pathSegments = this.path.split("/");
 
         pathVariables.addAll(
-                Arrays.asList(pathSplitBySlash)
-                        .subList(2, pathSplitBySlash.length));
+                Arrays.asList(pathSegments)
+                        .subList(2, pathSegments.length));
     }
 
     public boolean hasPathVariable() {
