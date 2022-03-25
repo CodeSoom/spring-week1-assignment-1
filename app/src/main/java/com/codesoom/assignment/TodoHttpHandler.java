@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.models.HttpMethod;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,17 +49,17 @@ public class TodoHttpHandler implements HttpHandler {
 
         String content = "Hello, World!";
 
-        if (method.equals("GET") && path.equals("/tasks")) {
+        if (HttpMethod.GET.toString().equals(method) && path.equals("/tasks")) {
             content = tasksToJSON();
         }
 
-        if (method.equals("GET") && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
+        if (HttpMethod.GET.toString().equals(method) && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
             Long id = Long.valueOf(path.split("/")[2]);
 
             content = taskToJSON(id);
         }
 
-        if (method.equals("POST") && path.equals("/tasks")) {
+        if (HttpMethod.POST.toString().equals(method) && path.equals("/tasks")) {
             content = "Create a new task.";
 
             Task task = toTask(body);
@@ -69,7 +70,7 @@ public class TodoHttpHandler implements HttpHandler {
             System.out.println(task);
         }
 
-        if (method.equals("PUT") && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
+        if (HttpMethod.PUT.toString().equals(method) && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
             Long id = Long.valueOf(path.split("/")[2]);
 
             Task task = toTask(body);
@@ -78,7 +79,7 @@ public class TodoHttpHandler implements HttpHandler {
             content = taskToChange(task);
         }
 
-        if (method.equals("PATCH") && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
+        if (HttpMethod.PATCH.toString().equals(method) && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
             Long id = Long.valueOf(path.split("/")[2]);
 
             Task task = toTask(body);
@@ -87,7 +88,7 @@ public class TodoHttpHandler implements HttpHandler {
             content = taskToChange(task);
         }
 
-        if (method.equals("DELETE") && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
+        if (HttpMethod.DELETE.toString().equals(method) && path.split("/")[1].equals("tasks") && path.split("/").length > 2) {
             Long id = Long.valueOf(path.split("/")[2]);
 
             content = taskToRemove(id);
