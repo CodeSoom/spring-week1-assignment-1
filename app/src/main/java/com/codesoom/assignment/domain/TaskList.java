@@ -21,8 +21,8 @@ public class TaskList {
         return task;
     }
 
-    public boolean remove(final Task task) {
-        return tasks.remove(task);
+    public void remove(final Task task) {
+        tasks.remove(task);
     }
 
     public Optional<Task> findTaskById(final Long taskId) {
