@@ -10,12 +10,15 @@ public class TaskSerializer {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     public String tasksToJson(ArrayList<Task> tasks) {
-        String jsonString = null;
+        String jsonString = "[]";
         try {
             jsonString = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(tasks);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             System.out.println("e: " + e);
+        }
+        if(jsonString.equals("[ ]")){
+            jsonString = "[]";
         }
         return jsonString;
     }
