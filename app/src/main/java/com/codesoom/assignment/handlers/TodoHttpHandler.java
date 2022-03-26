@@ -7,22 +7,17 @@ import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.networks.BaseResponse;
 import com.codesoom.assignment.utils.JsonParser;
 import com.codesoom.assignment.utils.Logger;
+import com.codesoom.assignment.utils.PathChecker;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.InputStreamReader;
-
+import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
 
-    private static final String PATH_REGEX = "/";
     private final Logger logger;
     private final TodoController todoController;
 
@@ -71,49 +66,32 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private BaseResponse proceed(String reqMethod, String reqPath, Task reqBody) {
-        if (reqMethod.equals(HttpMethod.GET.getMethod()) && matchPathDepthOne(reqPath, "/tasks")) {
+        if (reqMethod.equals(HttpMethod.GET.getMethod())
+                && PathChecker.isMatchedPath(reqPath, "/tasks")) {
             return todoController.getTodos();
         }
 
-        if (reqMethod.equals(HttpMethod.GET.getMethod()) && matchPathDepthTwo(reqPath, "/tasks/{id}")) {
-            return todoController.getTodo(getPathVariable(reqPath, 2));
+        if (reqMethod.equals(HttpMethod.GET.getMethod())
+                && PathChecker.isMatchedPath(reqPath, "/tasks/{id}")) {
+            return todoController.getTodo(PathChecker.getPathVariable(reqPath, 2));
         }
 
-        if (reqMethod.equals(HttpMethod.POST.getMethod()) && matchPathDepthOne(reqPath, "/tasks")) {
+        if (reqMethod.equals(HttpMethod.POST.getMethod())
+                && PathChecker.isMatchedPath(reqPath, "/tasks")) {
             return todoController.postTodo(reqBody);
         }
 
-
         if ((reqMethod.equals(HttpMethod.PUT.getMethod()) || reqMethod.equals(HttpMethod.PATCH.getMethod()))
-                && matchPathDepthTwo(reqPath, "/tasks/{id}")) {
-            return todoController.editTask(getPathVariable(reqPath, 2), reqBody);
+                && PathChecker.isMatchedPath(reqPath, "/tasks/{id}")) {
+            return todoController.editTask(PathChecker.getPathVariable(reqPath, 2), reqBody);
         }
 
-        if (reqMethod.equals(HttpMethod.DELETE.getMethod()) && matchPathDepthTwo(reqPath, "/tasks/{id}")) {
-            return todoController.deleteTodo(getPathVariable(reqPath, 2));
+        if (reqMethod.equals(HttpMethod.DELETE.getMethod())
+                && PathChecker.isMatchedPath(reqPath, "/tasks/{id}")) {
+            return todoController.deleteTodo(PathChecker.getPathVariable(reqPath, 2));
         }
 
         return new BaseResponse<>(HttpStatusCode.BAD_REQUEST);
-    }
-
-    private Long getPathVariable(String reqPath, int index) {
-        String[] pathElements = reqPath.split(PATH_REGEX);
-        return Long.valueOf(pathElements[index]);
-    }
-
-    private boolean matchPathDepthOne(String reqPath, String mappedPath) {
-        String[] pathElements = reqPath.split(PATH_REGEX);
-        String[] mappedPathElements = mappedPath.split(PATH_REGEX);
-
-        return pathElements.length == mappedPathElements.length
-                && pathElements[1].equals(mappedPathElements[1]);
-    }
-
-    private boolean matchPathDepthTwo(String reqPath, String mappedPath) {
-        String[] pathElements = reqPath.split(PATH_REGEX);
-
-        return matchPathDepthOne(reqPath, mappedPath)
-                && pathElements[2].chars().allMatch(Character::isDigit);
     }
 
 }

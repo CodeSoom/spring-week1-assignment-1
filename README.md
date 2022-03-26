@@ -108,16 +108,15 @@ $ npm run test
 - [x] HttpMethod - [응답 메시지 RFC 7231에 명시된](https://datatracker.ietf.org/doc/html/rfc7231#section-6.1) Reason-Phrase를 적어주는 방식으로 수정하기
 - [x]  HttpMethod - response code : http method 에 정의해준 enum 활용하기
 - [ ] TodoHttpHandler > matchPathDepthOne, matchPathDepthTwo
-   - [ ] `PATH_REGEX` : 매소드 인자로 받게 고치기
-   - [ ] 매소드 이름 좀 더 일반적인 의미로 수정하기
-   - [ ] 해당 매소드 다른 클래스로 옮기고 public 으로 접근제한 풀기
-   - [ ] Junit test code 작성하기
+   - [x] `PATH_REGEX` : 매소드 인자로 받게 고치기
+   - [x] 매소드 이름 좀 더 일반적인 의미로 수정하기
+   - [x] 해당 매소드 다른 클래스로 옮기고 public 으로 접근제한 풀기
+   - [x] Junit test code 작성하기
    - [ ] Junit > @Nested 사용해서 계층형 테스트 코드 작성하기
 
 ### 2022.03.25
 
 - [ ] REST API - POST/PUT 매소드에 대해서 response 관례/규약 질문 후 내용 정리하기
-
 
 ### 2022.03.26
 
@@ -126,7 +125,7 @@ $ npm run test
 - [ ] [reqBody에 재할당을 하지 않고 문제를 해결할 수 있는 방법을 고민하기](https://github.com/CodeSoom/spring-week1-assignment-1/pull/82#discussion_r835235129)
 - [ ] TodoHttpHandler.java > [Path 처리 > 2 : 코드만 보고 논리적으로 근거를 떠올릴 수 있도록 개선하기](https://github.com/CodeSoom/spring-week1-assignment-1/pull/82#discussion_r835236008)
 - [ ] Task.java > [Null or Empty 검사하는 매소드에 JavaDoc 태그 사용해보기](https://github.com/CodeSoom/spring-week1-assignment-1/pull/82#discussion_r835237287)
-- [ ] TaskList.java > ? : 를 사용하지 말고 평범한 if문을 사용하는 방식으로 바꿔보기
+- [x] TaskList.java > ? : 를 사용하지 말고 평범한 if문을 사용하는 방식으로 바꿔보기 
 - [ ] [Logger 관련 RFC 5242 문서 읽기](https://github.com/CodeSoom/spring-week1-assignment-1/pull/82#discussion_r835239690)
    - [x] JavaDoc 태그로 주석달기
 - [x] [TodoHttpHandlerTest.java > 파일 마지막 라인에 공백 추가하기 & 종립님의 관련 글 보고 공부하기](https://github.com/CodeSoom/spring-week1-assignment-1/pull/82#discussion_r835240867)

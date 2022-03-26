@@ -10,7 +10,8 @@ class TodoHttpHandlerTest {
     void string_split_test() {
 //        String reqPath = "/tasks/";
 //        String reqPath = "/tasks/123/";
-        String reqPath = "/";
+//        String reqPath = "/";
+        String reqPath = "/tasks/0/";
 
         String[] strings = reqPath.split("/");
         System.out.println("strings.length = " + strings.length);
