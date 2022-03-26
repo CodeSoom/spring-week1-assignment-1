@@ -1,9 +1,9 @@
-package com.codesoom.assignment.matcher;
+package com.codesoom.assignment.utils;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class TaskUriMatcher implements UriMatcher {
+public class TaskUriParser {
 
     private static final String RESOURCE_NAME = "tasks";
 
@@ -15,13 +15,13 @@ public class TaskUriMatcher implements UriMatcher {
 
     private static final List<Integer> ALLOW_PATH_LENGTH = Arrays.asList(2, 3);
 
-    @Override
-    public boolean hasId(final String[] pathSegments) {
-        return pathSegments.length == HAS_ID_PATHS_LENGTH;
+    private final String[] pathSegments;
+
+    public TaskUriParser(final String pathUri) {
+        this.pathSegments = pathUri.split("/");
     }
 
-    @Override
-    public boolean isInvalidPath(final String[] pathSegments) {
+    public boolean isInvalidPath() {
 
         if (!ALLOW_PATH_LENGTH.contains(pathSegments.length)) {
             return true;
@@ -33,8 +33,15 @@ public class TaskUriMatcher implements UriMatcher {
         return true;
     }
 
-    @Override
-    public Long getId(final String[] pathSegments) {
+    public boolean hasId() {
+        return pathSegments.length == HAS_ID_PATHS_LENGTH;
+    }
+
+    public boolean hasNotId() {
+        return !hasId();
+    }
+
+    public Long getId() {
         return Long.valueOf(pathSegments[RESOURCE_ID_POSITION]);
     }
 }

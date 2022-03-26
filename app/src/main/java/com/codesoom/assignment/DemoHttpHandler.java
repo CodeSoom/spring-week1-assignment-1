@@ -5,8 +5,7 @@ import com.codesoom.assignment.domain.TaskList;
 import com.codesoom.assignment.dto.TaskDto;
 import com.codesoom.assignment.http.HttpMethod;
 import com.codesoom.assignment.http.HttpStatusCode;
-import com.codesoom.assignment.matcher.TaskUriMatcher;
-import com.codesoom.assignment.matcher.UriMatcher;
+import com.codesoom.assignment.utils.TaskUriParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -24,8 +23,6 @@ public class DemoHttpHandler implements HttpHandler {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final UriMatcher uriMatcher = new TaskUriMatcher();
-
     private final TaskList taskList;
 
     public DemoHttpHandler() {
@@ -35,29 +32,29 @@ public class DemoHttpHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
-        String pathUri = exchange.getRequestURI().getPath();
+        String requestPathUri = exchange.getRequestURI().getPath();
 
-        String[] pathSegments = pathUri.split("/");
+        TaskUriParser uriParser = new TaskUriParser(requestPathUri);
 
-        if (uriMatcher.isInvalidPath(pathSegments)) {
+        if (uriParser.isInvalidPath()) {
             response(exchange, NOT_FOUND);
             return;
         }
 
         HttpMethod httpMethod = HttpMethod.valueOf(exchange.getRequestMethod());
 
-        if (httpMethod.equals(POST) && !uriMatcher.hasId(pathSegments)) {
+        if (uriParser.hasId() && httpMethod.equals(GET)) {
+            getTask(exchange, uriParser.getId());
+        } else if (uriParser.hasId() && httpMethod.equals(PUT)) {
+            changeTask(exchange, uriParser.getId());
+        } else if (uriParser.hasId() && httpMethod.equals(PATCH)) {
+            modifyTask(exchange, uriParser.getId());
+        } else if (uriParser.hasId() && httpMethod.equals(DELETE)) {
+            deleteTask(exchange, uriParser.getId());
+        } else if (uriParser.hasNotId() && httpMethod.equals(POST)) {
             saveTask(exchange);
-        } else if (httpMethod.equals(GET) && !uriMatcher.hasId(pathSegments)) {
+        } else if (uriParser.hasNotId() && httpMethod.equals(GET)) {
             getTasks(exchange);
-        } else if (httpMethod.equals(GET) && uriMatcher.hasId(pathSegments)) {
-            getTask(exchange, pathSegments);
-        } else if (httpMethod.equals(PATCH) && uriMatcher.hasId(pathSegments)) {
-            modifyTask(exchange, pathSegments);
-        } else if (httpMethod.equals(PUT) && uriMatcher.hasId(pathSegments)) {
-            changeTask(exchange, pathSegments);
-        } else if (httpMethod.equals(DELETE) && uriMatcher.hasId(pathSegments)) {
-            deleteTask(exchange, pathSegments);
         } else {
             response(exchange, BAD_REQUEST);
         }
@@ -90,9 +87,7 @@ public class DemoHttpHandler implements HttpHandler {
         response(exchange, OK, content);
     }
 
-    private void getTask(final HttpExchange exchange, final String[] pathSegments) throws IOException {
-
-        Long taskId = uriMatcher.getId(pathSegments);
+    private void getTask(final HttpExchange exchange, final Long taskId) throws IOException {
 
         Optional<Task> findTask = taskList.findTaskById(taskId);
         if (findTask.isEmpty()) {
@@ -105,7 +100,7 @@ public class DemoHttpHandler implements HttpHandler {
         response(exchange, OK, content);
     }
 
-    private void changeTask(final HttpExchange exchange, final String[] pathSegments) throws IOException {
+    private void changeTask(final HttpExchange exchange, final Long taskId) throws IOException {
 
         String requestBody = getRequestBody(exchange);
         if (requestBody.isBlank()) {
@@ -113,7 +108,6 @@ public class DemoHttpHandler implements HttpHandler {
             return;
         }
 
-        Long taskId = uriMatcher.getId(pathSegments);
         Optional<Task> findTask = taskList.findTaskById(taskId);
         if (findTask.isEmpty()) {
             response(exchange, NOT_FOUND);
@@ -128,9 +122,7 @@ public class DemoHttpHandler implements HttpHandler {
         response(exchange, OK, content);
     }
 
-    private void modifyTask(final HttpExchange exchange, final String[] pathSegments) throws IOException {
-
-        Long taskId = uriMatcher.getId(pathSegments);
+    private void modifyTask(final HttpExchange exchange, final Long taskId) throws IOException {
 
         Optional<Task> findTask = taskList.findTaskById(taskId);
         if (findTask.isEmpty()) {
@@ -154,9 +146,7 @@ public class DemoHttpHandler implements HttpHandler {
         response(exchange, OK, content);
     }
 
-    private void deleteTask(final HttpExchange exchange, final String[] pathSegments) throws IOException {
-
-        Long taskId = uriMatcher.getId(pathSegments);
+    private void deleteTask(final HttpExchange exchange, final Long taskId) throws IOException {
 
         Optional<Task> findTask = taskList.findTaskById(taskId);
         if (findTask.isEmpty()) {
