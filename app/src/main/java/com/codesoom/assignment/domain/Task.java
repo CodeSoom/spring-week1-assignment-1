@@ -11,12 +11,16 @@ public class Task {
     private final Long id;
     private String title;
 
+    private long getNextId() {
+        return taskSequence + 1;
+    }
+
     private Task() {
-        this.id = ++taskSequence;
+        this.id = getNextId();
     }
 
     public Task(String title) {
-        this.id = ++taskSequence;
+        this.id = getNextId();
         this.title = title;
     }
 
