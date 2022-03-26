@@ -34,40 +34,40 @@ public class TaskHttpHandler implements HttpHandler {
 
         String content = "Hello, world!";
 
-        Long pathId = Long.parseLong(getPathId(path));
+        String pathId = getPathId(path).orElse("");
         try {
             statusCode = 200;
-            if (method.equals("GET") && path.equals("/tasks/" + pathId)) {
-                content = taskToJson(pathId);
+            if (method.equals(HttpMethod.GET.name()) && path.equals("/tasks/" + pathId)) {
+                content = taskToJson(Long.valueOf(pathId));
             }
 
-            if (method.equals("GET") && path.equals("/tasks")) {
+            if (method.equals(HttpMethod.GET.name()) && path.equals("/tasks")) {
                 content = tasksToJson();
             }
 
-            if (method.equals("POST") && path.equals("/tasks")) {
+            if (method.equals(HttpMethod.POST.name()) && path.equals("/tasks")) {
                 Task task = toTask(getBody(inputStream));
                 tasks.add(task);
                 content = task.toString();
                 statusCode = 201;
             }
 
-            if (method.equals("PUT") && path.equals("/tasks/" + pathId)) {
-                content = modifyTaskById(getBody(inputStream), pathId);
+            if (method.equals(HttpMethod.PUT.name()) && path.equals("/tasks/" + pathId)) {
+                content = modifyTaskById(getBody(inputStream), Long.valueOf(pathId));
             }
 
-            if (method.equals("DELETE") && path.equals("/tasks/" + pathId)) {
-                content = deleteTaskById(pathId);
+            if (method.equals(HttpMethod.DELETE.name()) && path.equals("/tasks/" + pathId)) {
+                content = deleteTaskById(Long.valueOf(pathId));
             }
 
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
             statusCode = 400;
-            content = "옳바른 요청이 아닙니다.";
+            content = "올바른 요청이 아닙니다.";
         } catch (NoSuchElementException e) {
             e.printStackTrace();
             statusCode = 404;
-            content = "ID에 해당하는 Task가 존재하지 않습니다.";
+            content = "ID [" + pathId + "] 에 해당하는 Task가 존재하지 않습니다.";
         }
 
 
@@ -89,12 +89,11 @@ public class TaskHttpHandler implements HttpHandler {
         return body;
     }
 
-    private String getPathId(String path) {
-        String[] splitedPath = path.split("/");
-        if (splitedPath.length > 2) {
-            return splitedPath[splitedPath.length - 1];
-        }
-        return "-1";
+    private Optional<String> getPathId(String path) {
+        String[] splitedPaths = path.split("/");
+        return Arrays.stream(splitedPaths)
+                .filter(splitedPath -> splitedPath.matches("^-?\\d{1,19}$"))
+                .findFirst();
     }
 
     private Optional<Task> getOneTaskById(Long id) {
@@ -104,30 +103,18 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private String getTitleByBody(String content) {
-        /*  StringTokenizer 를 사용한 문자열 나누기
-        StringTokenizer stringTokenizer = new StringTokenizer(content, "{:}");
-        while (stringTokenizer.hasMoreTokens()) {
-            String stringToken = stringTokenizer.nextToken().trim();
-            if (stringToken.equals("title")) {
-                return stringTokenizer.nextToken().trim();
-            }
-        }
-         */
         String replacedContent = content
                 .replace(" ", "")
                 .replace("{", "")
                 .replace("}", "");
         String[] splitedContents = replacedContent.split(":");
-        String title = splitedContents[1];
-        return title;
-
-        /* for문을 사용하여 출력하기
+        // for문을 사용하여 출력하기
         for (int i = 0; i <= splitedContents.length; i++) {
             if (splitedContents[i].equals("\"title\"")) {
                 return splitedContents[i + 1];
             }
         }
-         */
+        return "";
     }
 
     private Task toTask(String content) {
@@ -150,12 +137,13 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
-        throw new NoSuchElementException("ID에 해당하는 Task를 찾을 수 없어, Task를 반환할 수 없습니다.");
+        throw new NoSuchElementException("ID [" + id + "]에 해당하는 Task를 찾을 수 없어, Task를 반환할 수 없습니다.");
     }
 
     // Modify One Task By Id
     private String modifyTaskById(String content, Long id) throws IllegalArgumentException, NoSuchElementException {
-        Task findTask = getOneTaskById(id).orElseThrow(() -> { throw new NoSuchElementException("ID에 해당하는 Task를 찾을 수 없어, Task를 수정할 수 없습니다."); });
+        Task findTask = getOneTaskById(id)
+                .orElseThrow(() -> { throw new NoSuchElementException("ID [" + id + "]에 해당하는 Task를 찾을 수 없어, Task를 수정할 수 없습니다."); });
         int findTaskIdx = tasks.indexOf(findTask);
         findTask.setTitle(getTitleByBody(content));
         tasks.set(findTaskIdx, findTask);
@@ -164,7 +152,8 @@ public class TaskHttpHandler implements HttpHandler {
 
     // Delete Task By Id
     private String deleteTaskById(Long id) {
-        Task findTask = getOneTaskById(id).orElseThrow(() -> { throw new NoSuchElementException("ID에 해당하는 Task를 찾을 수 없어, Task를 삭제할 수 없습니다."); });
+        Task findTask = getOneTaskById(id)
+                .orElseThrow(() -> { throw new NoSuchElementException("ID [" + id + "]에 해당하는 Task를 찾을 수 없어, Task를 삭제할 수 없습니다."); });
         tasks.remove(findTask);
         return findTask.toString();
     }
