@@ -26,7 +26,7 @@ public class MyObjectMapper {
         return keyString + ":" + wrapInDoubleQuotes(value.toString());
     }
 
-    public<T> String getJson(T object) throws IllegalAccessException {
+    public<T> String writeAsString(T object) throws IllegalAccessException {
         List<String> jsonProperties = new ArrayList<>();
         Field[] fields = object.getClass().getDeclaredFields();
 
@@ -50,7 +50,7 @@ public class MyObjectMapper {
         List<String> jsonElement = new ArrayList<>();
 
         for (T t : collection) {
-            jsonElement.add(getJson(t));
+            jsonElement.add(writeAsString(t));
         }
 
         return wrapInBrackets(String.join(",", jsonElement));

@@ -1,16 +1,9 @@
 package com.codesoom.assignment.utils;
 
 import com.codesoom.assignment.domain.Task;
-import com.codesoom.assignment.exception.IllegalAccessRuntimeException;
-import com.codesoom.assignment.exception.NoDefaultConstructorException;
-import com.codesoom.assignment.exception.NoSuchFieldRuntimeException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Parameter;
 import java.util.*;
 
 class MyObjectMapperTest {
@@ -20,7 +13,7 @@ class MyObjectMapperTest {
     @DisplayName("Task 객체를 주었을 때 JSON 으로 변하는지")
     public void parseTaskToJSON() throws IllegalAccessException {
         Task task1 = new Task("아무것도 안 하기");
-        String s = myObjectMapper.getJson(task1);
+        String s = myObjectMapper.writeAsString(task1);
         System.out.println("s = " + s);
     }
 
@@ -55,9 +48,12 @@ class MyObjectMapperTest {
 
     @Test
     @DisplayName("프로퍼티가 들어있는 Map 을 받아서 Object 로 만들어줌")
-    public void testGetObject() {
+    public void testGetObject() throws IllegalAccessException {
         String example = "{ \"title\": \"아무것도 안 하기\" }";
         Task object = myObjectMapper.readValue(example, Task.class);
         System.out.println("object = " + object);
+
+        String json = myObjectMapper.writeAsString(object);
+        System.out.println("json = " + json);
     }
 }
