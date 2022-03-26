@@ -12,7 +12,8 @@ public class Task {
     private String title;
 
     private long getNextId() {
-        return taskSequence + 1;
+        taskSequence = taskSequence + 1;
+        return taskSequence;
     }
 
     private Task() {
