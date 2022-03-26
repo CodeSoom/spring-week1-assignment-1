@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class TaskHandler extends CommonHandler {
-    private static ArrayList<Task> tasks = new ArrayList<Task>();
+    public static ArrayList<Task> tasks = new ArrayList<Task>();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
