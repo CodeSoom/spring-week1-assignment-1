@@ -14,50 +14,53 @@ public class TodoController {
     private TodoService todoService = new TodoService();
 
     public HttpResponse findAllTasks() {
-        String response = "";
         List<Task> taskList = todoService.findAllTasks();
 
         try {
-            response = JsonUtils.tasksToJson(taskList);
+            String response = JsonUtils.tasksToJson(taskList);
+            return new HttpResponse(200, response);
         } catch (IOException e) {
             return new HttpResponse(500, "서버에러가 발생했습니다.");
         }
-        return new HttpResponse(200, response);
+
     }
 
     public HttpResponse findTaskById(Long taskId) {
-        String response = "";
-
         Optional<Task> task = todoService.findTaskById(taskId);
-        if(task.isEmpty()) {return new HttpResponse(404, "존재하지 않는 Task입니다!");}
+        if(task.isEmpty()) {
+            return new HttpResponse(404, "존재하지 않는 Task입니다!");
+        }
 
         try {
-            response = JsonUtils.taskToJson(task.get());
+            String response = JsonUtils.taskToJson(task.get());
+            return new HttpResponse(200, response);
         } catch (IOException e) {
             return new HttpResponse(500, "서버에러가 발생했습니다.");
         }
-        return new HttpResponse(200, response);
+
     }
 
     public HttpResponse createTask(String requestBody) {
-        String response = "";
-
-        if(requestBody.isBlank()) {return new HttpResponse(400, "입력값이 존재하지 않습니다");}
+        if(requestBody.isBlank()) {
+            return new HttpResponse(400, "입력값이 존재하지 않습니다");
+        }
 
         try {
             Task requestTaskInfo = JsonUtils.stringToTask(requestBody);
             Task task = todoService.saveTask(requestTaskInfo);
-            response = JsonUtils.taskToJson(task);
+            String response = JsonUtils.taskToJson(task);
+            return new HttpResponse(201, response);
+
         } catch (IOException e) {
             return new HttpResponse(500, "서버에러가 발생했습니다.");
         }
-        return new HttpResponse(201, response);
+
     }
 
     public HttpResponse updateTask(Long taskId, String requestBody) {
-        String response = "";
-
-        if(requestBody.isBlank()) {return new HttpResponse(400, "입력값이 존재하지 않습니다");}
+        if(requestBody.isBlank()) {
+            return new HttpResponse(400, "입력값이 존재하지 않습니다");
+        }
 
         Optional<Task> task = todoService.findTaskById(taskId);
         if(task.isEmpty()) return new HttpResponse(404, "존재하지 않는 Task입니다!");
@@ -65,18 +68,20 @@ public class TodoController {
         try {
             Task requestTaskInfo = JsonUtils.stringToTask(requestBody);
             Task updatedTask = todoService.updateTask(task.get(), requestTaskInfo);
-            response = JsonUtils.taskToJson(updatedTask);
+            String response = JsonUtils.taskToJson(updatedTask);
+            return new HttpResponse(200, response);
         } catch (IOException e) {
             return new HttpResponse(500, "서버에러가 발생했습니다.");
         }
-        return new HttpResponse(200, response);
     }
 
     public HttpResponse deleteTaskById(Long taskId) {
         String response = "Task가 성공적으로 삭제되었습니다";
 
         Optional<Task> task = todoService.findTaskById(taskId);
-        if(task.isEmpty()) {return new HttpResponse(404, "존재하지 않는 Task입니다!");}
+        if(task.isEmpty()) {
+            return new HttpResponse(404, "존재하지 않는 Task입니다!");
+        }
 
         todoService.deleteTask(task.get());
 

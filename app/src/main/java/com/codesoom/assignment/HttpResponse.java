@@ -3,6 +3,7 @@ package com.codesoom.assignment;
 public class HttpResponse {
 
     private Integer statusCode;
+    private String response;
 
     public HttpResponse(Integer statusCode, String response) {
         this.statusCode = statusCode;
@@ -24,8 +25,5 @@ public class HttpResponse {
     public void setResponse(String response) {
         this.response = response;
     }
-
-    private String response;
-
 
 }
