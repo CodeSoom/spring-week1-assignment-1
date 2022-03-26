@@ -5,6 +5,9 @@ import com.codesoom.assignment.networks.BaseResponse;
 
 import java.net.URI;
 
+/**
+ * @see <a href="https://datatracker.ietf.org/doc/html/rfc5424">RFC 5242</a>
+ * */
 public class Logger {
 
     public void logRequest(String requestMethod,

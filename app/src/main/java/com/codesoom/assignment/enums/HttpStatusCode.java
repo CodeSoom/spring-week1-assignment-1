@@ -1,9 +1,8 @@
 package com.codesoom.assignment.enums;
 
 /**
- * https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
- * https://datatracker.ietf.org/doc/html/rfc7231#section-6.1
- * */
+ * @see <a href="https://datatracker.ietf.org/doc/html/rfc7231#section-6.1">RFC 7231 section 6.1</a>
+ */
 public enum HttpStatusCode {
 
     OK(200, "OK"),

@@ -1,8 +1,8 @@
 package com.codesoom.assignment.enums;
 
 /**
- * https://datatracker.ietf.org/doc/html/rfc7231#section-4.3
- * */
+ * @see <a href="https://datatracker.ietf.org/doc/html/rfc7231#section-4.3">RFC 7231 section 4.3</a>
+ */
 public enum HttpMethod {
 
     GET("GET"),
