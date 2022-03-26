@@ -21,12 +21,16 @@ public class TaskUriMatcher implements UriMatcher {
     }
 
     @Override
-    public boolean isValidPath(final String[] pathSegments) {
+    public boolean isInvalidPath(final String[] pathSegments) {
 
         if (!ALLOW_PATH_LENGTH.contains(pathSegments.length)) {
+            return true;
+        }
+
+        if (pathSegments[RESOURCE_POSITION].equals(RESOURCE_NAME)) {
             return false;
         }
-        return pathSegments[RESOURCE_POSITION].equals(RESOURCE_NAME);
+        return true;
     }
 
     @Override

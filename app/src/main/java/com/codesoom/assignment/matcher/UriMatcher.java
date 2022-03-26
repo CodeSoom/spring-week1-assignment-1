@@ -4,7 +4,7 @@ public interface UriMatcher {
 
     boolean hasId(String[] paths);
 
-    boolean isValidPath(String[] paths);
+    boolean isInvalidPath(String[] paths);
 
     Long getId(String[] paths);
 }

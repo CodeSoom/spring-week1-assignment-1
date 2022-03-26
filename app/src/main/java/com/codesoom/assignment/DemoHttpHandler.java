@@ -22,10 +22,6 @@ public class DemoHttpHandler implements HttpHandler {
 
     private static final String LINE_BREAK = "\n";
 
-    private static final long EMPTY_RESPONSE_LENGTH = 0;
-
-    private static final long NO_CONTENT_RESPONSE_LENGTH = -1;
-
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final UriMatcher uriMatcher = new TaskUriMatcher();
@@ -43,7 +39,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         String[] pathSegments = pathUri.split("/");
 
-        if (!uriMatcher.isValidPath(pathSegments)) {
+        if (uriMatcher.isInvalidPath(pathSegments)) {
             response(exchange, NOT_FOUND);
             return;
         }
@@ -175,7 +171,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     private void response(final HttpExchange exchange, final HttpStatusCode statusCode) throws IOException {
 
-        long responseLength = statusCode.equals(NO_CONTENT) ? NO_CONTENT_RESPONSE_LENGTH : EMPTY_RESPONSE_LENGTH;
+        long responseLength = statusCode.equals(NO_CONTENT) ? -1 : 0;
 
         exchange.sendResponseHeaders(statusCode.getCode(), responseLength);
 

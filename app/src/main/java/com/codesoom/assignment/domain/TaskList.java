@@ -14,7 +14,9 @@ public class TaskList {
     }
 
     public Task save(final Task task) {
-        task.setId(++sequenceId);
+        sequenceId = sequenceId + 1;
+        task.setId(sequenceId);
+
         tasks.add(task);
         return task;
     }
