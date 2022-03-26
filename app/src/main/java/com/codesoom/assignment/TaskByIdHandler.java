@@ -52,9 +52,27 @@ public class TaskByIdHandler extends TaskHandler {
     }
 
     private void handlePutOrPatchMethod(HttpExchange exchange, int taskId) throws IOException {
-        String content = "Task: PUT or PATCH";
-        exchange.sendResponseHeaders(200, content.getBytes().length);
-        outputResponse(exchange, content);
+        Task task = null;
+        for(int i = 0; i < tasks.size(); i++){
+            if(tasks.get(i).getId() == taskId){
+                task = tasks.get(i);
+            }
+        }
+        if(task == null){
+            String content = "Task is not found.";
+            exchange.sendResponseHeaders(404, content.getBytes().length);
+            outputResponse(exchange, content);
+        }else{
+            // Update the task
+            InputStream inputStream = exchange.getRequestBody();
+            String requestBody = new BufferedReader(new InputStreamReader(inputStream, "UTF-8")).lines().collect(Collectors.joining());
+            TaskSerializer taskSerializer = new TaskSerializer();
+            Task taskToUpdate = taskSerializer.jsonToTask(requestBody);
+            task.setTitle(taskToUpdate.getTitle());
+            String content = taskSerializer.taskToJson(task);
+            exchange.sendResponseHeaders(200, content.getBytes().length);
+            outputResponse(exchange, content);
+        }
     }
 
     private void handleDeleteMethod(HttpExchange exchange, int taskId) throws IOException {
