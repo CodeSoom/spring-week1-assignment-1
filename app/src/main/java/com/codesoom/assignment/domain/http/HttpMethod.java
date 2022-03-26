@@ -6,6 +6,7 @@ public interface HttpMethod {
     String GET = "GET";
     String HEAD = "HEAD";
     String PUT = "PUT";
+    String PATCH = "PATCH";
     String OPTIONS = "OPTIONS";
     String POST = "POST";
     String TRACE = "TRACE";
