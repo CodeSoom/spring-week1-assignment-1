@@ -66,7 +66,7 @@ public class TaskHttpHandler implements HttpHandler {
             case POST -> {
                 Task task = getTask(httpRequest.getBody());
                 taskRepository.save(task);
-                return new HttpResponse(getJsonString(task), HttpStatus.CREATED);
+                return new HttpResponse(getJson(task), HttpStatus.CREATED);
             }
 //            // Task 목록 조회
 //            case GET -> {
@@ -113,19 +113,7 @@ public class TaskHttpHandler implements HttpHandler {
         return taskId;
     }
 
-    private String getTitle(String json) {
-        String[] keyValue = json.replaceAll("[{}]", "").split(":");
-        String key = keyValue[0];
-        String value = keyValue[1];
-
-        if("title".equalsIgnoreCase(key)) {
-            return value;
-        }
-
-        throw new WrongJsonException("잘못된 JSON 형식입니다. 올바른 예) { \"title\": \"과제 제출하기\" }");
-    }
-
-    private String getJsonString(Task task) {
+    private String getJson(Task task) {
         return myObjectMapper.writeAsString(task);
     }
 
