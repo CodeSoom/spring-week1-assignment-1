@@ -72,7 +72,7 @@ public class MyObjectMapper {
         throw new WrongJsonException("잘못된 JSON 데이터입니다.");
     }
 
-    protected Map<String, String> getJsonPropertyMap(String json) {
+    public Map<String, String> getJsonPropertyMap(String json) {
         Map<String, String> resultMap = new HashMap<>();
 
         String pattern = "\"(.*?)\"";
