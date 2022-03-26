@@ -1,4 +1,6 @@
-package com.codesoom.assignment.domain;
+package com.codesoom.assignment.domain.http;
+
+import com.codesoom.assignment.domain.Task;
 
 import java.util.function.Function;
 

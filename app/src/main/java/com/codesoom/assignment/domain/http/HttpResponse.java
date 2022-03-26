@@ -1,4 +1,4 @@
-package com.codesoom.assignment.domain;
+package com.codesoom.assignment.domain.http;
 
 import java.nio.charset.Charset;
 
@@ -12,6 +12,10 @@ public class HttpResponse {
     public HttpResponse(String content, int statusCode) {
         this.content = content;
         this.statusCode = statusCode;
+    }
+
+    public String getContent() {
+        return content;
     }
 
     public int getContentLength() {
