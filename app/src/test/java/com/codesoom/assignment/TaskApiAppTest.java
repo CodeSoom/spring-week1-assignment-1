@@ -26,7 +26,7 @@ class TaskApiAppTest {
 
     @BeforeAll
     public static void startServer() throws IOException {
-        TaskApiApp.main(new String[]{});
+        TaskApiApp.startLocalHttpServer();
     }
 
     @Test
@@ -44,7 +44,7 @@ class TaskApiAppTest {
         StringEntity requestEntity = new StringEntity("{\"title\": \"아무것도 안하기\"}", ContentType.APPLICATION_JSON);
         httpRequest.setEntity(requestEntity);
         HttpResponse httpResponse = getHttpResponse(httpRequest);
-        Assertions.assertEquals(httpResponse.getContent(), "[]");
+        Assertions.assertEquals(httpResponse.getContent(), "{\"id\":1,\"title\":\"아무것도 안하기\"}");
     }
 
     private HttpResponse getHttpResponse(HttpUriRequest httpRequest) throws IOException {

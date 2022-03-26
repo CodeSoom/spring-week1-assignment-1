@@ -1,17 +1,20 @@
 package com.codesoom.assignment.handler;
 
-ㅗimport com.codesoom.assignment.domain.http.HttpRequest;
+import com.codesoom.assignment.domain.http.HttpRequest;
 import com.codesoom.assignment.domain.http.HttpResponse;
 import com.codesoom.assignment.domain.Task;
+import com.codesoom.assignment.domain.http.HttpStatus;
 import com.codesoom.assignment.exception.NoSuchTaskException;
 import com.codesoom.assignment.exception.TooManyPathSegmentsException;
-import com.codesoom.assignment.exception.WrongTaskJsonException;
+import com.codesoom.assignment.exception.WrongJsonException;
 import com.codesoom.assignment.repository.TaskRepository;
 import com.codesoom.assignment.utils.MyObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
+
+import static com.codesoom.assignment.domain.http.HttpMethod.POST;
 
 public class TaskHttpHandler implements HttpHandler {
     private final MyObjectMapper myObjectMapper = new MyObjectMapper();
@@ -21,7 +24,7 @@ public class TaskHttpHandler implements HttpHandler {
     public void handle(HttpExchange exchange) {
         try {
             response(exchange, handleTask(new HttpRequest(exchange)));
-        } catch (TooManyPathSegmentsException | WrongTaskJsonException | NoSuchTaskException | IllegalArgumentException e) {
+        } catch (TooManyPathSegmentsException | WrongJsonException | NoSuchTaskException | IllegalArgumentException e) {
             response(exchange, new HttpResponse(e.getMessage(), 400));
         } catch (Exception e) {
             response(exchange, new HttpResponse(e.getMessage(), 500));
@@ -60,12 +63,11 @@ public class TaskHttpHandler implements HttpHandler {
     private HttpResponse handleTask(HttpRequest httpRequest) {
         switch (httpRequest.getMethod()) {
             // Task 생성
-//            case POST -> {
-//                Task task = parseJsonToTask(httpRequest.getBody());
-//                long taskId = ++Task.taskSequence;
-//                tasks.put(taskId, task);
-//                return new HttpResponse(parseTaskToJson(task), 201);
-//            }
+            case POST -> {
+                Task task = getTask(httpRequest.getBody());
+                taskRepository.save(task);
+                return new HttpResponse(getJsonString(task), HttpStatus.CREATED);
+            }
 //            // Task 목록 조회
 //            case GET -> {
 //                // pathVariable 이 올바르게 입력되었고 존재하는 경우
@@ -120,30 +122,14 @@ public class TaskHttpHandler implements HttpHandler {
             return value;
         }
 
-        throw new WrongTaskJsonException("잘못된 JSON 형식입니다. 올바른 예) { \"title\": \"과제 제출하기\" }");
+        throw new WrongJsonException("잘못된 JSON 형식입니다. 올바른 예) { \"title\": \"과제 제출하기\" }");
     }
 
-    private String parseTaskToJson(long taskId) {
-//        return myObjectMapper.keyValueToJson(String.valueOf(taskId), tasks.get(taskId).getTitle());
-        return null;
+    private String getJsonString(Task task) {
+        return myObjectMapper.writeAsString(task);
     }
 
-    // TODO: Json 문자열을 Task 객체로 바꾸는 메서드 만들기
-
-//    private String parseTasksToJson(Collection<Task> tasks) {
-//        try {
-//            return objectMapper.writeValueAsString(tasks);
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace();
-//            throw new RuntimeException("Tasks 컬렉션 객체를 JSON 문자열로 변환하는데 실패하였습니다.");
-//        }
-//    }
-//
-//    private Task parseJsonToTask(String body) {
-//        try {
-//            return objectMapper.readValue(body, Task.class);
-//        } catch (JsonProcessingException e) {
-//            throw new WrongTaskJsonException("잘못된 JSON 형식입니다. 올바른 예) { \"title\": \"과제 제출하기\" }");
-//        }
-//    }
+    private Task getTask(String body) {
+        return myObjectMapper.readValue(body, Task.class);
+    }
 }

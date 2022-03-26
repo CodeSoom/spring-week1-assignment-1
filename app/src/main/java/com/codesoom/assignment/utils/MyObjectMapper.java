@@ -26,7 +26,7 @@ public class MyObjectMapper {
         return keyString + ":" + wrapInDoubleQuotes(value.toString());
     }
 
-    public<T> String writeAsString(T object) throws IllegalAccessException {
+    public<T> String writeAsString(T object) {
         List<String> jsonProperties = new ArrayList<>();
         Field[] fields = object.getClass().getDeclaredFields();
 
@@ -38,9 +38,13 @@ public class MyObjectMapper {
                 continue;
             }
 
-            jsonProperties.add(
-                    getJsonPropertyString(field.getName(), field.get(object))
-            );
+            try {
+                jsonProperties.add(
+                        getJsonPropertyString(field.getName(), field.get(object))
+                );
+            } catch (IllegalAccessException e) {
+                throw new IllegalAccessRuntimeException("허용되지 않은 필드에 접근하였습니다.");
+            }
         }
 
         return wrapInCurlyBrackets(String.join(",", jsonProperties));

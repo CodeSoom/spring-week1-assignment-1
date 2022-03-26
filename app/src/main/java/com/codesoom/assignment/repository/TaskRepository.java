@@ -4,13 +4,12 @@ import com.codesoom.assignment.domain.Task;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TaskRepository {
-    private static long taskSequence = 0;
-    private final Map<Long, Task> tasks = new HashMap<>();
+    private static final Map<Long, Task> tasks = new ConcurrentHashMap<>();
 
-    public void save(String title) {
-        Task task = new Task(++taskSequence, title);
+    public void save(Task task) {
         tasks.put(task.getId(), task);
     }
 
