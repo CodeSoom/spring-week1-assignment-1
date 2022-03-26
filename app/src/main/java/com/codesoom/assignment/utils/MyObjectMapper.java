@@ -138,6 +138,10 @@ public class MyObjectMapper {
         return object;
     }
 
+    public <T> T readValue(String json, Class<T> clazz) {
+        return getObject(getJsonPropertyMap(json), clazz);
+    }
+
     private String wrapInDoubleQuotes(String string) {
         return "\"" + string + "\"";
     }

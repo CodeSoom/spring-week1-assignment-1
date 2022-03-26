@@ -57,9 +57,7 @@ class MyObjectMapperTest {
     @DisplayName("프로퍼티가 들어있는 Map 을 받아서 Object 로 만들어줌")
     public void testGetObject() {
         String example = "{ \"title\": \"아무것도 안 하기\" }";
-        Map<String, String> jsonProperties = myObjectMapper.getJsonPropertyMap(example);
-
-        Task object = myObjectMapper.getObject(jsonProperties, Task.class);
+        Task object = myObjectMapper.readValue(example, Task.class);
         System.out.println("object = " + object);
     }
 }
