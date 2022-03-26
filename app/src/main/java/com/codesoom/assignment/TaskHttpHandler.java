@@ -13,8 +13,18 @@ import java.io.OutputStream;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+// Method Enum Static import
+import static com.codesoom.assignment.HttpMethod.GET;
+import static com.codesoom.assignment.HttpMethod.POST;
+import static com.codesoom.assignment.HttpMethod.PUT;
+import static com.codesoom.assignment.HttpMethod.DELETE;
+
 
 public class TaskHttpHandler implements HttpHandler {
     private final List<Task> tasks = new ArrayList<>();
@@ -37,26 +47,26 @@ public class TaskHttpHandler implements HttpHandler {
         String pathId = getPathId(path).orElse("");
         try {
             statusCode = 200;
-            if (method.equals(HttpMethod.GET.name()) && path.equals("/tasks/" + pathId)) {
+            if (GET.equals(method) && path.equals("/tasks/" + pathId)) {
                 content = taskToJson(Long.valueOf(pathId));
             }
 
-            if (method.equals(HttpMethod.GET.name()) && path.equals("/tasks")) {
+            if (GET.equals(method) && path.equals("/tasks")) {
                 content = tasksToJson();
             }
 
-            if (method.equals(HttpMethod.POST.name()) && path.equals("/tasks")) {
+            if (POST.equals(method) && path.equals("/tasks")) {
                 Task task = toTask(getBody(inputStream));
                 tasks.add(task);
                 content = task.toString();
                 statusCode = 201;
             }
 
-            if (method.equals(HttpMethod.PUT.name()) && path.equals("/tasks/" + pathId)) {
+            if (PUT.equals(method) && path.equals("/tasks/" + pathId)) {
                 content = modifyTaskById(getBody(inputStream), Long.valueOf(pathId));
             }
 
-            if (method.equals(HttpMethod.DELETE.name()) && path.equals("/tasks/" + pathId)) {
+            if (DELETE.equals(method) && path.equals("/tasks/" + pathId)) {
                 content = deleteTaskById(Long.valueOf(pathId));
             }
 
@@ -91,9 +101,10 @@ public class TaskHttpHandler implements HttpHandler {
 
     private Optional<String> getPathId(String path) {
         String[] splitedPaths = path.split("/");
-        return Arrays.stream(splitedPaths)
-                .filter(splitedPath -> splitedPath.matches("^-?\\d{1,19}$"))
-                .findFirst();
+        if (splitedPaths.length > 2) {
+            return Optional.of(splitedPaths[splitedPaths.length - 1]);
+        }
+        return Optional.empty();
     }
 
     private Optional<Task> getOneTaskById(Long id) {
