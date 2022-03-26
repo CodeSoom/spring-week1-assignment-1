@@ -9,7 +9,6 @@ import java.net.InetSocketAddress;
 public class App {
 
     private static final String HOSTNAME = "localhost";
-
     private static final int PORT_NUMBER = 8000;
 
     private static final int SOCKET_BACKLOG = 0;
