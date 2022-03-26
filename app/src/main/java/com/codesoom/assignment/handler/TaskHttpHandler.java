@@ -14,9 +14,9 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.util.Collection;
+import java.util.Map;
 
-import static com.codesoom.assignment.domain.http.HttpMethod.GET;
-import static com.codesoom.assignment.domain.http.HttpMethod.POST;
+import static com.codesoom.assignment.domain.http.HttpMethod.*;
 
 public class TaskHttpHandler implements HttpHandler {
     private final MyObjectMapper myObjectMapper = new MyObjectMapper();
@@ -75,27 +75,32 @@ public class TaskHttpHandler implements HttpHandler {
                 // pathVariable 이 올바르게 입력되었고 존재하는 경우
                 if(httpRequest.hasPathVariable()) {
                     Task task = getTaskIfValidPathVariable(httpRequest);
-                    return new HttpResponse(getJson(task), 200);
+                    return new HttpResponse(getJson(task), HttpStatus.SUCCESS);
                 }
 
-                return new HttpResponse(myObjectMapper.getJsonArray(taskRepository.findAll()), 200);
+                return new HttpResponse(myObjectMapper.getJsonArray(taskRepository.findAll()), HttpStatus.SUCCESS);
             }
             // Task 삭제
-//            case DELETE -> {
-//                if(getTaskIfPresentValidPathVariable(httpRequest)) {
-//                    HttpResponseMappingFunction deleteTaskMappingFunction =
-//                            task -> {
-//                                tasks.remove(task);
-//                                return new HttpResponse("task id: " + task.getId() + "가 삭제되었습니다.", 200);
-//                            };
-//
-//                    return getHttpResponseIfValidTaskId(getTaskId(httpRequest.getPathVariables()), deleteTaskMappingFunction);
-//                }
-//
-//                throw new IllegalArgumentException("삭제할 task ID를 입력해야 합니다. ex) .../tasks/1");
-//            }
+            case DELETE -> {
+                if(httpRequest.hasPathVariable()) {
+                    Task task = getTaskIfValidPathVariable(httpRequest);
+                    taskRepository.remove(task.getId());
+                    return new HttpResponse("task id: " + task.getId() + "가 삭제되었습니다.", 200);
+                }
 
-            // TODO: Task 수정, PUT, PATCH
+                throw new IllegalArgumentException("삭제할 task ID를 입력해야 합니다. ex) .../tasks/1");
+            }
+            // Task 수정
+            case PUT, PATCH -> {
+                if(httpRequest.hasPathVariable()) {
+                    Task task = getTaskIfValidPathVariable(httpRequest);
+                    String updatedTitle = getJsonProperties(httpRequest.getBody()).get("title");
+                    Task updatedTask = taskRepository.update(task.getId(), updatedTitle);
+                    return new HttpResponse(getJson(updatedTask), HttpStatus.SUCCESS);
+                }
+
+                throw new IllegalArgumentException("수정할 task ID를 입력해야 합니다. ex) .../tasks/1");
+            }
 
             default -> {
                 return new HttpResponse("지원하지 않는 메서드입니다.", 405);
@@ -125,5 +130,9 @@ public class TaskHttpHandler implements HttpHandler {
 
     private Task getTask(String body) {
         return myObjectMapper.readValue(body, Task.class);
+    }
+
+    private Map<String, String> getJsonProperties(String json) {
+        return myObjectMapper.getJsonPropertyMap(json);
     }
 }
