@@ -16,21 +16,21 @@ public class TaskUriMatcher implements UriMatcher {
     private static final List<Integer> ALLOW_PATH_LENGTH = Arrays.asList(2, 3);
 
     @Override
-    public boolean hasId(final String[] paths) {
-        return paths.length == HAS_ID_PATHS_LENGTH;
+    public boolean hasId(final String[] pathSegments) {
+        return pathSegments.length == HAS_ID_PATHS_LENGTH;
     }
 
     @Override
-    public boolean isValidPath(final String[] paths) {
+    public boolean isValidPath(final String[] pathSegments) {
 
-        if (!ALLOW_PATH_LENGTH.contains(paths.length)) {
+        if (!ALLOW_PATH_LENGTH.contains(pathSegments.length)) {
             return false;
         }
-        return paths[RESOURCE_POSITION].equals(RESOURCE_NAME);
+        return pathSegments[RESOURCE_POSITION].equals(RESOURCE_NAME);
     }
 
     @Override
-    public Long getId(final String[] paths) {
-        return Long.valueOf(paths[RESOURCE_ID_POSITION]);
+    public Long getId(final String[] pathSegments) {
+        return Long.valueOf(pathSegments[RESOURCE_ID_POSITION]);
     }
 }
