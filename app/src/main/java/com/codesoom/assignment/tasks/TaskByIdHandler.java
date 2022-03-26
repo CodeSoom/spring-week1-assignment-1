@@ -1,15 +1,12 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.tasks;
 
 import com.codesoom.assignment.models.Task;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Objects;
 import java.util.stream.Collectors;
 

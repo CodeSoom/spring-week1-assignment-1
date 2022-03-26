@@ -1,4 +1,4 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.tasks;
 
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
