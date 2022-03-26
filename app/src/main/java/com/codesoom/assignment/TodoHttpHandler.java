@@ -39,7 +39,7 @@ public class TodoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        HttpMethod method = HttpMethod.setHttpMethod(exchange.getRequestMethod());
+        HttpMethod method = HttpMethod.valueOf(exchange.getRequestMethod());
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
