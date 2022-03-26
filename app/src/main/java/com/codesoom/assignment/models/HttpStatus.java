@@ -2,7 +2,7 @@ package com.codesoom.assignment.models;
 
 /**
  * HTTP 상태를 정의합니다.
- * https://datatracker.ietf.org/doc/html/rfc7231#section-6
+ * @see <a href="https://datatracker.ietf.org/doc/html/rfc7231#section-6">RFC 7231 section 6</a>
  */
 public enum HttpStatus {
     OK(200),
