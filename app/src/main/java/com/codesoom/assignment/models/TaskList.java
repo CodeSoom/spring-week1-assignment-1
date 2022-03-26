@@ -27,7 +27,11 @@ public class TaskList {
     }
 
     public Task addTask(Task newTask) {
-        long lastIdx = tasks.size() == 0 ? 0L : tasks.get(tasks.size()-1).getId();
+        long lastIdx = 0L;
+        if (tasks.size() > 0) {
+            lastIdx = tasks.get(tasks.size()-1).getId();
+        }
+
         newTask.nextId(lastIdx);
 
         tasks.add(newTask);
