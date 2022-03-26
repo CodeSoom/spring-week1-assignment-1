@@ -76,8 +76,21 @@ public class TaskByIdHandler extends TaskHandler {
     }
 
     private void handleDeleteMethod(HttpExchange exchange, int taskId) throws IOException {
-        String content = "Task: DELETE";
-        exchange.sendResponseHeaders(200, content.getBytes().length);
-        outputResponse(exchange, content);
+        int index = -1;
+        for(int i = 0; i < tasks.size(); i++){
+            if(tasks.get(i).getId() == taskId){
+                index = i;
+            }
+        }
+        if(index == -1){
+            String content = "Task is not found.";
+            exchange.sendResponseHeaders(404, content.getBytes().length);
+            outputResponse(exchange, content);
+        }else{
+            tasks.remove(index);
+            String content = "Task is deleted.";
+            exchange.sendResponseHeaders(204, content.getBytes().length);
+            outputResponse(exchange, content);
+        }
     }
 }
