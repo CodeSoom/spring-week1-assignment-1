@@ -13,7 +13,9 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
+import java.util.Collection;
 
+import static com.codesoom.assignment.domain.http.HttpMethod.GET;
 import static com.codesoom.assignment.domain.http.HttpMethod.POST;
 
 public class TaskHttpHandler implements HttpHandler {
@@ -68,16 +70,16 @@ public class TaskHttpHandler implements HttpHandler {
                 taskRepository.save(task);
                 return new HttpResponse(getJson(task), HttpStatus.CREATED);
             }
-//            // Task 목록 조회
-//            case GET -> {
-//                // pathVariable 이 올바르게 입력되었고 존재하는 경우
-//                if(httpRequest.hasPathVariable()) {
-//                    Task task = getTaskIfValidPathVariable(httpRequest);
-//                    return new HttpResponse(parseTaskToJson(task), 200);
-//                }
-//
-//                return new HttpResponse(parseTasksToJson(tasks.values()), 200);
-//            }
+            // Task 목록 조회
+            case GET -> {
+                // pathVariable 이 올바르게 입력되었고 존재하는 경우
+                if(httpRequest.hasPathVariable()) {
+                    Task task = getTaskIfValidPathVariable(httpRequest);
+                    return new HttpResponse(getJson(task), 200);
+                }
+
+                return new HttpResponse(myObjectMapper.getJsonArray(taskRepository.findAll()), 200);
+            }
             // Task 삭제
 //            case DELETE -> {
 //                if(getTaskIfPresentValidPathVariable(httpRequest)) {
@@ -115,6 +117,10 @@ public class TaskHttpHandler implements HttpHandler {
 
     private String getJson(Task task) {
         return myObjectMapper.writeAsString(task);
+    }
+
+    private String getJsonArray(Collection<Task> tasks) {
+        return myObjectMapper.getJsonArray(tasks);
     }
 
     private Task getTask(String body) {

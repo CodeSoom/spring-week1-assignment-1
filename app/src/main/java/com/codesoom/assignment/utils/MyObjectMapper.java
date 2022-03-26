@@ -50,7 +50,7 @@ public class MyObjectMapper {
         return wrapInCurlyBrackets(String.join(",", jsonProperties));
     }
 
-    public<T> String getJsonArray(Collection<T> collection) throws IllegalAccessException {
+    public<T> String getJsonArray(Collection<T> collection) {
         List<String> jsonElement = new ArrayList<>();
 
         for (T t : collection) {

@@ -2,6 +2,7 @@ package com.codesoom.assignment.repository;
 
 import com.codesoom.assignment.domain.Task;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,5 +16,9 @@ public class TaskRepository {
 
     public Task find(Long taskId) {
         return tasks.get(taskId);
+    }
+
+    public Collection<Task> findAll() {
+        return tasks.values();
     }
 }
