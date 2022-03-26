@@ -14,7 +14,12 @@ public class TaskRepository {
         tasks.put(task.getId(), task);
     }
 
-    public Task find(Long taskId) {
+    public void remove(long taskId) { tasks.remove(taskId); }
+
+    public Task find(long taskId) { return tasks.get(taskId); }
+
+    public Task update(long taskId, String title) {
+        tasks.get(taskId).setTitle(title);
         return tasks.get(taskId);
     }
 
