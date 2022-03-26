@@ -24,11 +24,25 @@ public class HttpRequest {
     }
 
     public HttpRequest(HttpExchange httpExchange) {
-        this.method = httpExchange.getRequestMethod();
-        InputStream httpBodyInputStream = httpExchange.getRequestBody();
-        this.body = parseInputStream(httpBodyInputStream);
-        this.path = httpExchange.getRequestURI().getPath();
+        this.method = getMethod(httpExchange);
+        this.body = getBody(httpExchange);
+        this.path = getPath(httpExchange);
         getPathVariable();
+    }
+
+    private String getPath(HttpExchange httpExchange) {
+        return httpExchange.getRequestURI().getPath();
+    }
+
+    private String getMethod(HttpExchange httpExchange) {
+        return httpExchange.getRequestMethod();
+    }
+
+    private String getBody(HttpExchange httpExchange) {
+        InputStream httpBodyInputStream = httpExchange.getRequestBody();
+        return new BufferedReader(new InputStreamReader(httpBodyInputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
     }
 
     private void getPathVariable() {
@@ -46,17 +60,6 @@ public class HttpRequest {
     public String[] getPathVariables() {
         // 함부로 List 를 참조해서 변환할 수 없게 한다.
         return pathVariables.toArray(new String[]{});
-    }
-
-    /**
-     * InputStream 을 파싱하여 문자열로 반환한다.
-     * @param inputStream 파싱될 InputStream
-     * @return parsedString 파싱된 InputStream
-     */
-    private String parseInputStream(InputStream inputStream) {
-        return new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
     }
 
     public String getMethod() {
