@@ -11,7 +11,7 @@ class MyObjectMapperTest {
 
     @Test
     @DisplayName("Task 객체를 주었을 때 JSON 으로 변하는지")
-    public void parseTaskToJSON() throws IllegalAccessException {
+    public void parseTaskToJSON() {
         Task task1 = new Task("아무것도 안 하기");
         String s = myObjectMapper.writeAsString(task1);
         System.out.println("s = " + s);
@@ -19,7 +19,7 @@ class MyObjectMapperTest {
 
     @Test
     @DisplayName("Task Collection 을 주었을 때 JSON 으로 변하는지")
-    public void parseTasksToJSON() throws IllegalAccessException {
+    public void parseTasksToJSON() {
         Map<Long, Task> tasks = new HashMap<>();
         Task task1 = new Task("아무것도 안 하기1");
         Task task2 = new Task("아무것도 안 하기2");
@@ -48,7 +48,7 @@ class MyObjectMapperTest {
 
     @Test
     @DisplayName("프로퍼티가 들어있는 Map 을 받아서 Object 로 만들어줌")
-    public void testGetObject() throws IllegalAccessException {
+    public void testGetObject() {
         String example = "{ \"title\": \"아무것도 안 하기\" }";
         Task object = myObjectMapper.readValue(example, Task.class);
         System.out.println("object = " + object);
