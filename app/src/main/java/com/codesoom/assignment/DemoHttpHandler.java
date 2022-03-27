@@ -1,162 +1,75 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.domain.Task;
-import com.codesoom.assignment.domain.TaskList;
-import com.codesoom.assignment.dto.TaskDto;
-import com.codesoom.assignment.http.HttpMethod;
+import com.codesoom.assignment.task.TaskList;
+import com.codesoom.assignment.task.TaskRequest;
+import com.codesoom.assignment.task.TaskService;
 import com.codesoom.assignment.http.HttpStatusCode;
-import com.codesoom.assignment.utils.TaskUriParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.*;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.io.IOException;
+import java.io.OutputStream;
 
-import static com.codesoom.assignment.http.HttpMethod.*;
+import static com.codesoom.assignment.task.TaskRequestType.*;
 import static com.codesoom.assignment.http.HttpStatusCode.*;
 
 public class DemoHttpHandler implements HttpHandler {
 
-    private static final String LINE_BREAK = "\n";
-
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
-    private final TaskList taskList;
+    private final TaskService taskService;
 
     public DemoHttpHandler() {
-        taskList = new TaskList();
+        TaskList taskList = new TaskList();
+        taskService = new TaskService(taskList);
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-
-        String requestPathUri = exchange.getRequestURI().getPath();
-
-        TaskUriParser uriParser = new TaskUriParser(requestPathUri);
-
-        if (uriParser.isInvalidPath()) {
-            response(exchange, NOT_FOUND);
-            return;
-        }
-
-        HttpMethod httpMethod = HttpMethod.valueOf(exchange.getRequestMethod());
-
-        if (uriParser.hasId() && httpMethod.equals(GET)) {
-            getTask(exchange, uriParser.getId());
-        } else if (uriParser.hasId() && httpMethod.equals(PUT)) {
-            changeTask(exchange, uriParser.getId());
-        } else if (uriParser.hasId() && httpMethod.equals(PATCH)) {
-            modifyTask(exchange, uriParser.getId());
-        } else if (uriParser.hasId() && httpMethod.equals(DELETE)) {
-            deleteTask(exchange, uriParser.getId());
-        } else if (uriParser.hasNotId() && httpMethod.equals(POST)) {
-            saveTask(exchange);
-        } else if (uriParser.hasNotId() && httpMethod.equals(GET)) {
-            getTasks(exchange);
-        } else {
+        try {
+            TaskRequest taskRequest = new TaskRequest(exchange);
+            processTask(taskRequest, exchange);
+        } catch (IllegalArgumentException e) {
             response(exchange, BAD_REQUEST);
-        }
-    }
-
-    private void saveTask(final HttpExchange exchange) throws IOException {
-
-        String requestBody = getRequestBody(exchange);
-        if (requestBody.isBlank()) {
-            response(exchange, BAD_REQUEST);
-            return;
-        }
-
-        TaskDto taskDto = objectMapper.readValue(requestBody, TaskDto.class);
-
-        Task task = taskDto.toTask();
-        Task savedTask = taskList.save(task);
-
-        String content = objectMapper.writeValueAsString(savedTask);
-        response(exchange, CREATED, content);
-    }
-
-    private void getTasks(final HttpExchange exchange) throws IOException {
-
-        OutputStream outputStream = new ByteArrayOutputStream();
-
-        objectMapper.writeValue(outputStream, taskList.getTasks());
-
-        String content = outputStream.toString();
-        response(exchange, OK, content);
-    }
-
-    private void getTask(final HttpExchange exchange, final Long taskId) throws IOException {
-
-        Optional<Task> findTask = taskList.findTaskById(taskId);
-        if (findTask.isEmpty()) {
+        } catch (IllegalStateException e) {
             response(exchange, NOT_FOUND);
-            return;
         }
-        Task task = findTask.get();
-
-        String content = objectMapper.writeValueAsString(task);
-        response(exchange, OK, content);
     }
 
-    private void changeTask(final HttpExchange exchange, final Long taskId) throws IOException {
+    private void processTask(final TaskRequest taskRequest, final HttpExchange exchange) throws IOException {
 
-        String requestBody = getRequestBody(exchange);
-        if (requestBody.isBlank()) {
-            response(exchange, BAD_REQUEST);
+        if (taskRequest.is(VIEW)) {
+            String content = taskService.getTask(taskRequest.getId());
+            response(exchange, OK, content);
             return;
         }
 
-        Optional<Task> findTask = taskList.findTaskById(taskId);
-        if (findTask.isEmpty()) {
-            response(exchange, NOT_FOUND);
+        if (taskRequest.is(SAVE)) {
+            String requestBody = taskRequest.getRequestBody(exchange);
+            String content = taskService.saveTask(requestBody);
+            response(exchange, CREATED, content);
             return;
         }
-        Task task = findTask.get();
 
-        TaskDto taskDto = objectMapper.readValue(requestBody, TaskDto.class);
-        task.setTitle(taskDto.getTitle());
+        if (taskRequest.is(REPLACE)) {
+            String requestBody = taskRequest.getRequestBody(exchange);
+            String content = taskService.replaceTask(taskRequest.getId(), requestBody);
+            response(exchange, OK, content);
+            return;
+        }
 
-        String content = objectMapper.writeValueAsString(task);
+        if (taskRequest.is(MODIFY)) {
+            String requestBody = taskRequest.getRequestBody(exchange);
+            String content = taskService.modifyTask(taskRequest.getId(), requestBody);
+            response(exchange, OK, content);
+        }
+
+        if (taskRequest.is(DELETE)) {
+            taskService.deleteTask(taskRequest.getId());
+            response(exchange, NO_CONTENT);
+            return;
+        }
+
+        String content = taskService.getTasks();
         response(exchange, OK, content);
-    }
-
-    private void modifyTask(final HttpExchange exchange, final Long taskId) throws IOException {
-
-        Optional<Task> findTask = taskList.findTaskById(taskId);
-        if (findTask.isEmpty()) {
-            response(exchange, NOT_FOUND);
-            return;
-        }
-        Task task = findTask.get();
-
-        String requestBody = getRequestBody(exchange);
-        if (requestBody.isBlank()) {
-            response(exchange, BAD_REQUEST);
-            return;
-        }
-
-        TaskDto taskDto = objectMapper.readValue(requestBody, TaskDto.class);
-        if (taskDto.getTitle() != null) {
-            task.setTitle(taskDto.getTitle());
-        }
-
-        String content = objectMapper.writeValueAsString(task);
-        response(exchange, OK, content);
-    }
-
-    private void deleteTask(final HttpExchange exchange, final Long taskId) throws IOException {
-
-        Optional<Task> findTask = taskList.findTaskById(taskId);
-        if (findTask.isEmpty()) {
-            response(exchange, NOT_FOUND);
-            return;
-        }
-        Task task = findTask.get();
-
-        taskList.remove(task);
-        response(exchange, NO_CONTENT);
     }
 
     private void response(final HttpExchange exchange, final HttpStatusCode statusCode) throws IOException {
@@ -179,13 +92,5 @@ public class DemoHttpHandler implements HttpHandler {
         responseOutputStream.write(content.getBytes());
         responseOutputStream.flush();
         responseOutputStream.close();
-    }
-
-    private String getRequestBody(final HttpExchange exchange) {
-
-        InputStream inputStream = exchange.getRequestBody();
-        return new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining(LINE_BREAK));
     }
 }

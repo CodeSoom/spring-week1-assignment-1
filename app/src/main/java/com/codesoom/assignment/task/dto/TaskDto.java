@@ -1,6 +1,6 @@
-package com.codesoom.assignment.dto;
+package com.codesoom.assignment.task.dto;
 
-import com.codesoom.assignment.domain.Task;
+import com.codesoom.assignment.task.Task;
 
 public class TaskDto {
 

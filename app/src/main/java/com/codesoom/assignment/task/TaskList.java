@@ -1,8 +1,9 @@
-package com.codesoom.assignment.domain;
+package com.codesoom.assignment.task;
+
+import com.codesoom.assignment.task.exception.TaskNotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class TaskList {
 
@@ -25,10 +26,11 @@ public class TaskList {
         tasks.remove(task);
     }
 
-    public Optional<Task> findTaskById(final Long taskId) {
+    public Task findTaskById(final Long taskId) {
         return tasks.stream()
                 .filter(t -> t.getId().equals(taskId))
-                .findFirst();
+                .findFirst()
+                .orElseThrow(TaskNotFoundException::new);
     }
 
     public List<Task> getTasks() {
