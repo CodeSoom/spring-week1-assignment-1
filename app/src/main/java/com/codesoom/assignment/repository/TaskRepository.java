@@ -26,4 +26,8 @@ public class TaskRepository {
     public Collection<Task> findAll() {
         return tasks.values();
     }
+
+    public void removeAll() {
+        tasks.clear();
+    }
 }
