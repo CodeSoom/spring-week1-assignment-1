@@ -18,6 +18,9 @@ import java.util.Map;
 import static com.codesoom.assignment.domain.http.HttpMethod.*;
 import static com.codesoom.assignment.domain.http.HttpStatus.*;
 
+/**
+ * /tasks 로 시작되는 URL 에 요청을 보냈을 때, 처리하는 핸들러이다.
+ */
 public class TaskHttpHandler implements HttpHandler {
     private final MyObjectMapper myObjectMapper = new MyObjectMapper();
     private final TaskRepository taskRepository = new TaskRepository();
@@ -35,6 +38,9 @@ public class TaskHttpHandler implements HttpHandler {
         }
     }
 
+    /**
+     * Http 응답 내용을 전송한다.
+     */
     private void response(HttpExchange exchange, HttpResponse httpResponse) {
         try(OutputStream responseBody = exchange.getResponseBody()) {
             exchange.sendResponseHeaders(httpResponse.getStatusCode(), httpResponse.getContentLength());
@@ -54,6 +60,9 @@ public class TaskHttpHandler implements HttpHandler {
         }
     }
 
+    /**
+     * 유효한 PathVariable URL 이 들어왔다면, Task 를 반환한다.
+     */
     private Task getTaskIfValidPathVariable(HttpRequest httpRequest) {
         Long taskId = getTaskId(httpRequest.getPathVariables());
         Task task = taskRepository.find(taskId);
@@ -65,6 +74,9 @@ public class TaskHttpHandler implements HttpHandler {
         return task;
     }
 
+    /**
+     * Http 요청 메서드에 따라 태스크 관련 작업을 처리한다.
+     */
     private HttpResponse handleTask(HttpRequest httpRequest) {
         switch (httpRequest.getMethod()) {
             case POST -> {
