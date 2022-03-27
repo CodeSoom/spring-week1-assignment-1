@@ -3,7 +3,6 @@ package com.codesoom.assignment.handler;
 import com.codesoom.assignment.domain.http.HttpRequest;
 import com.codesoom.assignment.domain.http.HttpResponse;
 import com.codesoom.assignment.domain.Task;
-import com.codesoom.assignment.domain.http.HttpStatus;
 import com.codesoom.assignment.exception.NoSuchTaskException;
 import com.codesoom.assignment.exception.TooManyPathSegmentsException;
 import com.codesoom.assignment.exception.WrongJsonException;
@@ -17,6 +16,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import static com.codesoom.assignment.domain.http.HttpMethod.*;
+import static com.codesoom.assignment.domain.http.HttpStatus.*;
 
 public class TaskHttpHandler implements HttpHandler {
     private final MyObjectMapper myObjectMapper = new MyObjectMapper();
@@ -26,10 +26,12 @@ public class TaskHttpHandler implements HttpHandler {
     public void handle(HttpExchange exchange) {
         try {
             response(exchange, handleTask(new HttpRequest(exchange)));
-        } catch (TooManyPathSegmentsException | WrongJsonException | NoSuchTaskException | IllegalArgumentException e) {
-            response(exchange, new HttpResponse(e.getMessage(), 400));
+        } catch (TooManyPathSegmentsException | WrongJsonException | IllegalArgumentException e) {
+            response(exchange, new HttpResponse(e.getMessage(), BAD_REQUEST));
+        } catch (NoSuchTaskException e) {
+            response(exchange, new HttpResponse(e.getMessage(), NOT_FOUND));
         } catch (Exception e) {
-            response(exchange, new HttpResponse(e.getMessage(), 500));
+            response(exchange, new HttpResponse(e.getMessage(), INTERNAL_SERVER_ERROR));
         }
     }
 
@@ -43,15 +45,16 @@ public class TaskHttpHandler implements HttpHandler {
         }
     }
 
-    private void hasOnlyOnePathSegmentOrThrow(String[] pathVariables) {
+    /**
+     * Path Segment 가 1개 이상 들어오면 예외를 던진다.
+     */
+    private void isValidPathSegment(String[] pathVariables) {
         if(pathVariables.length > 1) {
             throw new TooManyPathSegmentsException("경로가 잘못되었습니다. 올바른 예) .../tasks/1");
         }
     }
 
     private Task getTaskIfValidPathVariable(HttpRequest httpRequest) {
-        // 올바르지 않은 PathVariable 이 들어온 경우에는 예외를 던진다.
-        hasOnlyOnePathSegmentOrThrow(httpRequest.getPathVariables());
         Long taskId = getTaskId(httpRequest.getPathVariables());
         Task task = taskRepository.find(taskId);
 
@@ -64,51 +67,84 @@ public class TaskHttpHandler implements HttpHandler {
 
     private HttpResponse handleTask(HttpRequest httpRequest) {
         switch (httpRequest.getMethod()) {
-            // Task 생성
             case POST -> {
-                Task task = getTask(httpRequest.getBody());
-                taskRepository.save(task);
-                return new HttpResponse(getJson(task), HttpStatus.CREATED);
+                return handleCreate(httpRequest);
             }
-            // Task 목록 조회
             case GET -> {
-                // pathVariable 이 올바르게 입력되었고 존재하는 경우
                 if(httpRequest.hasPathVariable()) {
-                    Task task = getTaskIfValidPathVariable(httpRequest);
-                    return new HttpResponse(getJson(task), HttpStatus.SUCCESS);
+                    return handleReadDetail(httpRequest);
                 }
-
-                return new HttpResponse(myObjectMapper.getJsonArray(taskRepository.findAll()), HttpStatus.SUCCESS);
+                return handleRead();
             }
-            // Task 삭제
             case DELETE -> {
                 if(httpRequest.hasPathVariable()) {
-                    Task task = getTaskIfValidPathVariable(httpRequest);
-                    taskRepository.remove(task.getId());
-                    return new HttpResponse("task id: " + task.getId() + "가 삭제되었습니다.", 200);
+                    return handleDelete(httpRequest);
                 }
 
                 throw new IllegalArgumentException("삭제할 task ID를 입력해야 합니다. ex) .../tasks/1");
             }
-            // Task 수정
             case PUT, PATCH -> {
                 if(httpRequest.hasPathVariable()) {
-                    Task task = getTaskIfValidPathVariable(httpRequest);
-                    String updatedTitle = getJsonProperties(httpRequest.getBody()).get("title");
-                    Task updatedTask = taskRepository.update(task.getId(), updatedTitle);
-                    return new HttpResponse(getJson(updatedTask), HttpStatus.SUCCESS);
+                    return handleUpdate(httpRequest);
                 }
 
                 throw new IllegalArgumentException("수정할 task ID를 입력해야 합니다. ex) .../tasks/1");
             }
-
             default -> {
-                return new HttpResponse("지원하지 않는 메서드입니다.", 405);
+                return new HttpResponse("지원하지 않는 메서드입니다.", METHOD_NOT_ALLOWED);
             }
         }
     }
 
+    /**
+     * 태스크 수정을 처리한다.
+     */
+    private HttpResponse handleUpdate(HttpRequest httpRequest) {
+        Task task = getTaskIfValidPathVariable(httpRequest);
+        String updatedTitle = getJsonProperties(httpRequest.getBody()).get("title");
+        Task updatedTask = taskRepository.update(task.getId(), updatedTitle);
+        return new HttpResponse(getJson(updatedTask), SUCCESS);
+    }
+
+    /**
+     * 태스크 삭제를 처리한다.
+     */
+    private HttpResponse handleDelete(HttpRequest httpRequest) {
+        Task task = getTaskIfValidPathVariable(httpRequest);
+        taskRepository.remove(task.getId());
+        return new HttpResponse("task id: " + task.getId() + "가 삭제되었습니다.", SUCCESS);
+    }
+
+    /**
+     * 태스크 목록 읽기를 처리한다.
+     */
+    private HttpResponse handleRead() {
+        return new HttpResponse(getJsonArray(taskRepository.findAll()), SUCCESS);
+    }
+
+    /**
+     * 태스트 단건 읽기를 처리한다.
+     */
+    private HttpResponse handleReadDetail(HttpRequest httpRequest) {
+        Task task = getTaskIfValidPathVariable(httpRequest);
+        return new HttpResponse(getJson(task), SUCCESS);
+    }
+
+    /**
+     * 태스크 생성을 처리한다.
+     */
+    private HttpResponse handleCreate(HttpRequest httpRequest) {
+        Task task = getTask(httpRequest.getBody());
+        taskRepository.save(task);
+        return new HttpResponse(getJson(task), CREATED);
+    }
+
+    /**
+     * 올바른 PathSegment 가 들어왔다면, TaskId 를 반환한다.
+     */
     private Long getTaskId(String[] pathVariables) {
+        isValidPathSegment(pathVariables);
+
         long taskId;
 
         try {
@@ -120,18 +156,30 @@ public class TaskHttpHandler implements HttpHandler {
         return taskId;
     }
 
+    /**
+     * Task 객체를 받아서 JSON 문자열을 반환한다.
+     */
     private String getJson(Task task) {
         return myObjectMapper.writeAsString(task);
     }
 
+    /**
+     * Task 객체의 컬렉션을 받아서 JSON 문자열을 반환한다.
+     */
     private String getJsonArray(Collection<Task> tasks) {
         return myObjectMapper.getJsonArray(tasks);
     }
 
-    private Task getTask(String body) {
-        return myObjectMapper.readValue(body, Task.class);
+    /**
+     * JSON 문자열을 받아서 Task 객체를 반환한다.
+     */
+    private Task getTask(String json) {
+        return myObjectMapper.readValue(json, Task.class);
     }
 
+    /**
+     * JSON 문자열을 받아서 각 프로퍼티들을 Map 형태에 매핑한다.
+     */
     private Map<String, String> getJsonProperties(String json) {
         return myObjectMapper.getJsonPropertyMap(json);
     }
