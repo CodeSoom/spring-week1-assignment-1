@@ -1,8 +1,6 @@
 package com.codesoom.assignment.task;
 
 import com.codesoom.assignment.http.HttpMethod;
-import com.codesoom.assignment.http.exception.HttpBadRequestException;
-import com.codesoom.assignment.http.exception.HttpNotFoundException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.BufferedReader;
@@ -42,11 +40,11 @@ public class TaskRequest {
     private void validatePath() {
 
         if (!pathSegments[RESOURCE_POSITION].equals(RESOURCE_NAME)) {
-            throw new HttpNotFoundException();
+            throw new IllegalStateException("존재하지 않는 경로 입니다.");
         }
 
         if (!ALLOW_PATH_LENGTH.contains(pathSegments.length)) {
-            throw new HttpBadRequestException();
+            throw new IllegalArgumentException("잘못된 요청 입니다.");
         }
     }
 
@@ -61,7 +59,7 @@ public class TaskRequest {
                 .collect(Collectors.joining("\n"));
 
         if (requestBody.isEmpty()) {
-            throw new HttpBadRequestException();
+            throw new IllegalArgumentException("잘못된 요청 입니다.");
         }
         return requestBody;
     }
@@ -93,7 +91,7 @@ public class TaskRequest {
         if (httpMethod.equals(POST) && hasNotResourceId()) {
             return TaskRequestType.SAVE;
         }
-        throw new HttpBadRequestException();
+        throw new IllegalArgumentException("잘못된 요청 입니다.");
     }
 
     private boolean hasResourceId() {
