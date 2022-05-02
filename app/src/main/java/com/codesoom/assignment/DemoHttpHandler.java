@@ -30,4 +30,18 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.flush();
         outputStream.close();
     }
+
+    private HttpMethod getHttpMethod(HttpExchange exchange) {
+        HttpMethod result = null;
+        String methodInString = exchange.getRequestMethod();
+
+        for (HttpMethod method : HttpMethod.values()) {
+            if (method.toString().equalsIgnoreCase(methodInString)) {
+                result = method;
+                break;
+            }
+        }
+
+        return result;
+    }
 }
