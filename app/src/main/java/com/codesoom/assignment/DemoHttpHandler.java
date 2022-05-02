@@ -9,17 +9,19 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 
+import static com.codesoom.assignment.HttpMethod.GET;
+
 public class DemoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
+        HttpMethod method = getHttpMethod(exchange);
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
         String content = "basic content";
 
-        if (method.equals("GET") && path.equals("/tasks")) {
+        if (method == GET && path.equals("/tasks")) {
             content = "content with GET";
         }
 
