@@ -1,6 +1,7 @@
 package com.codesoom.assignment.handler;
 
 import com.codesoom.assignment.models.MethodType;
+import com.codesoom.assignment.models.StatusCode;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -39,12 +40,12 @@ public class RequestHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         if (uri.getPath().equals("/tasks")) {
             String content = objectMapper.writeValueAsString(tasks);
-            printOutputStream(exchange, content);
+            printOutputStream(exchange, content, StatusCode.OK);
         }
     }
 
-    private void printOutputStream(HttpExchange exchange, String content) throws IOException {
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+    private void printOutputStream(HttpExchange exchange, String content, StatusCode statusCode) throws IOException {
+        exchange.sendResponseHeaders(statusCode.getStatusCode(), content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
