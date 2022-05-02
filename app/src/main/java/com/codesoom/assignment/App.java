@@ -8,9 +8,12 @@ import java.net.InetSocketAddress;
 
 public class App {
     public static void main(String[] args) {
+        final int PORT = 8000;
+        final int BACK_LOG = 0;
+
         try {
-            InetSocketAddress address = new InetSocketAddress(8000);
-            HttpServer httpServer = HttpServer.create(address, 0);
+            InetSocketAddress address = new InetSocketAddress(PORT);
+            HttpServer httpServer = HttpServer.create(address, BACK_LOG);
             HttpHandler handler = new DemoHttpHandler();
 
             WebServer server = new WebServer(httpServer, handler);
