@@ -6,10 +6,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class App {
-    public String getGreeting() {
-        return "Hello World!";
-    }
-
     public static void main(String[] args) throws IOException {
         HttpServer httpServer = HttpServer.create();
         InetSocketAddress inetSocketAddress = new InetSocketAddress("localhost", 8000);
