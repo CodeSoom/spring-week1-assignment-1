@@ -32,7 +32,6 @@ public class DemoHttpHandler implements HttpHandler {
 		URI uri = exchange.getRequestURI();
 		String path = uri.getPath();
 		String idStr = path.substring(path.lastIndexOf('/') + 1);
-
 		InputStream inputStream = exchange.getRequestBody();
 		String body = new BufferedReader(new InputStreamReader((inputStream)))
 			.lines()
@@ -41,14 +40,17 @@ public class DemoHttpHandler implements HttpHandler {
 
 		if (method.equals("GET") && path.equals("/tasks") && !canConvertId(idStr)) {
 			content = tasksToJSON();
+			exchange.sendResponseHeaders(200, content.getBytes().length);
 		} else if (method.equals("GET") && canConvertId(idStr)) {
 			content = taskToJSON(new Long(idStr));
+			exchange.sendResponseHeaders(200, content.getBytes().length);
 		} else if (method.equals("POST") && path.equals("/tasks")) {
 			if (!body.isEmpty()) {
 				Task task = toTask(body);
 				tasks.add(task);
 			}
 			content = tasksToJSON();
+			exchange.sendResponseHeaders(201, content.getBytes().length);
 		} else if (method.equals("PUT") && canConvertId(idStr)) {
 			if (!body.isEmpty()) {
 				Long id = new Long(Integer.parseInt(idStr));
@@ -57,6 +59,7 @@ public class DemoHttpHandler implements HttpHandler {
 				Task changeTask = toTask(body);
 				task.setTitle(changeTask.getTitle());
 			}
+			exchange.sendResponseHeaders(200, content.getBytes().length);
 			content = tasksToJSON();
 		} else if (method.equals("DELETE") && canConvertId(idStr)) {
 			Long id = new Long(Integer.parseInt(idStr));
@@ -64,9 +67,9 @@ public class DemoHttpHandler implements HttpHandler {
 				IllegalArgumentException::new);
 			tasks.remove(task);
 			content = tasksToJSON();
+			exchange.sendResponseHeaders(204, -1);
 		}
 
-		exchange.sendResponseHeaders(200, content.getBytes().length);
 		OutputStream outputStream = exchange.getResponseBody();
 		outputStream.write(content.getBytes());
 		outputStream.flush();
