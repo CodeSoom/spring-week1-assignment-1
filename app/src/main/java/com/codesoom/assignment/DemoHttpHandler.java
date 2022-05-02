@@ -17,11 +17,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpHandler;
 
 public class DemoHttpHandler implements HttpHandler {
-	private ObjectMapper objectMapper = new ObjectMapper();
-
 	private static int ID = 1;
-
-	private List<Task> tasks = new ArrayList<>();
+	private final ObjectMapper objectMapper = new ObjectMapper();
+	private final List<Task> tasks = new ArrayList<>();
 
 	public DemoHttpHandler() {
 	}
