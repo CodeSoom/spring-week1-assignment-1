@@ -30,7 +30,7 @@ public class DemoHttpHandler implements HttpHandler {
         // GET /task
         if (method.equals("GET") && path.equals(TASK_DEFAULT_PATH)) {
             List<Task> tasks = taskRepository.findAll();
-            sendResponse(exchange, toJson(tasks), 200);
+            sendResponse(exchange, toString(tasks), 200);
             return;
         }
 
@@ -40,7 +40,7 @@ public class DemoHttpHandler implements HttpHandler {
             Long savedId = taskRepository.save(task);
 
             Task savedTask = taskRepository.findById(savedId);
-            sendResponse(exchange, toJson(savedTask), 201);
+            sendResponse(exchange, toString(savedTask), 201);
             return;
         }
 
@@ -50,7 +50,7 @@ public class DemoHttpHandler implements HttpHandler {
 
             Task task = taskRepository.findById(id);
 
-            sendResponse(exchange, toJson(task), 200);
+            sendResponse(exchange, toString(task), 200);
             return;
         }
 
@@ -63,7 +63,7 @@ public class DemoHttpHandler implements HttpHandler {
 
             Task updatedTask = taskRepository.findById(id);
 
-            sendResponse(exchange, toJson(updatedTask), 200);
+            sendResponse(exchange, toString(updatedTask), 200);
             return;
         }
 
@@ -79,7 +79,7 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private void sendResponse(HttpExchange exchange, String content, int status) throws IOException {
-        exchange.sendResponseHeaders(status , content.getBytes().length);
+        exchange.sendResponseHeaders(status, content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
@@ -101,7 +101,7 @@ public class DemoHttpHandler implements HttpHandler {
         if (substring.charAt(0) != '/') {
             return false;
         }
-        
+
         String pathVariable = substring.substring(1);
         try {
             Long.parseLong(pathVariable);
@@ -134,7 +134,7 @@ public class DemoHttpHandler implements HttpHandler {
         return objectMapper.readValue(content, Task.class);
     }
 
-    private String toJson(Object from) throws IOException {
+    private String toString(Object from) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, from);
         return outputStream.toString();
