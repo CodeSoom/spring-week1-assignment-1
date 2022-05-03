@@ -33,6 +33,14 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
+    private String getHttpRequestPath(HttpExchange exchange) {
+        // null 처리 분기 추가
+        URI uri = exchange.getRequestURI();
+        String path = uri.getPath();
+
+        return path;
+    }
+
     private HttpMethod getHttpMethod(HttpExchange exchange) {
         HttpMethod result = null;
         String methodInString = exchange.getRequestMethod();
