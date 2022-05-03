@@ -20,7 +20,7 @@ import com.sun.net.httpserver.HttpHandler;
 public class DemoHttpHandler implements HttpHandler {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final List<Task> tasks = new ArrayList<>();
-	private final int id = 1;
+	private int id = 1;
 
 	public DemoHttpHandler() {
 	}
