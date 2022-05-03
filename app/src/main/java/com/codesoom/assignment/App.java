@@ -12,12 +12,14 @@ public class App {
     }
 
     public static void main(String[] args) throws IOException {
-        System.out.println(new App().getGreeting());
+        int port = 8000;
+        int backLog = 0;
+        String path = "/";
 
-        InetSocketAddress address = new InetSocketAddress(8000);
-        HttpServer httpServer = HttpServer.create(address, 0);
+        InetSocketAddress address = new InetSocketAddress(port);
+        HttpServer httpServer = HttpServer.create(address, backLog);
         HttpHandler handler = new AssignmentHttpHandler();
-        httpServer.createContext("/", handler);
+        httpServer.createContext(path, handler);
         httpServer.start();
     }
 }
