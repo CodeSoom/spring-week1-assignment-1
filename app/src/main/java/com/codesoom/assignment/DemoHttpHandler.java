@@ -36,7 +36,10 @@ public class DemoHttpHandler implements HttpHandler {
     private String getHttpRequestPath(HttpExchange exchange) {
         // null 처리 분기 추가
         URI uri = exchange.getRequestURI();
+        if (uri == null) throw new IllegalArgumentException("failed to return URI");
+
         String path = uri.getPath();
+        if (path == null) throw new IllegalArgumentException("failed to return request path");
 
         return path;
     }
