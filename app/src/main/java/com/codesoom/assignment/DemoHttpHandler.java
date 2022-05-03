@@ -24,6 +24,11 @@ public class DemoHttpHandler implements HttpHandler {
             content = "content with GET";
         }
 
+        if (method == POST && path.equals("/tasks")) {
+            content = "content with POST " + body;
+        }
+
+
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
