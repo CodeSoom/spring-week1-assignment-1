@@ -6,6 +6,7 @@ caches
 daemon
 native
 notifications
+.metadata
 
 # Ignore Gradle build output directory
 build
