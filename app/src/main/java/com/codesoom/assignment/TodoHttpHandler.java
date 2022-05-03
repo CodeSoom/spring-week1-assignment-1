@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -31,9 +32,19 @@ public class TodoHttpHandler implements HttpHandler {
 
         String content = "";
 
-        // 할 일 목록 얻기
-        if(method.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJSON(); // 리스트에 저장되어 있던 task들을 json 형태로 가져오기
+        if(path.equals("/tasks")) {
+            // 할 일 목록 얻기
+            if(method.equals("GET")) {
+                content = tasksToJSON(); // 리스트에 저장되어 있던 task들을 json 형태로 가져오기
+            }
+
+            // 할 일 생성하기
+            if(method.equals("POST")) {
+                if(!body.isBlank()) { // request body가 비어있지 않으면
+                    Task task = toTask(body); // body의 내용을 Task 객체로 만듦
+                    tasks.add(task); // 리스트에 task 추가
+                }
+            }
         }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
@@ -43,6 +54,16 @@ public class TodoHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes(StandardCharsets.UTF_8));
         outputStream.flush();
         outputStream.close();
+    }
+
+    // request body의 내용을 Task 객체로 만들기
+    private Task toTask(String content) throws JsonProcessingException {
+        Task task = objectMapper.readValue(content, Task.class);
+        task.setId(id++); // 할 일을 새로 생성할 때마다 id가 증가하도록 함
+
+        System.out.println("id: " + task.getId() + ", title: " + task.getTitle());
+
+        return task;
     }
 
     // tasks 리스트를 json 형태로 반환
