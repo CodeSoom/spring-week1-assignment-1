@@ -45,6 +45,10 @@ public class DemoHttpHandler implements HttpHandler {
             exchange.sendResponseHeaders(HTTP_NO_CONTENT_CODE, content.getBytes().length);
         }
 
+        sendResponse(exchange, content);
+    }
+
+    private void sendResponse(HttpExchange exchange, String content) throws IOException {
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
