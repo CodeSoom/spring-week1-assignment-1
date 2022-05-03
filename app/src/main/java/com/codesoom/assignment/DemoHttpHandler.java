@@ -14,7 +14,7 @@ import static com.codesoom.assignment.HttpMethod.GET;
 public class DemoHttpHandler implements HttpHandler {
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
+    public void handle(HttpExchange exchange) throws IOException, IllegalArgumentException {
         String content = "basic content";
 
         HttpMethod method = getHttpMethod(exchange);
