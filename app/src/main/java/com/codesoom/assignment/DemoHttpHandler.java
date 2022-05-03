@@ -25,23 +25,25 @@ public class DemoHttpHandler implements HttpHandler {
 
         if (method == GET && path.equals("/tasks")) {
             content = "content with GET";
+            exchange.sendResponseHeaders(HTTP_OK_CODE, content.getBytes().length);
         }
 
         if (method == POST && path.equals("/tasks")) {
             content = "content with POST " + body;
+            exchange.sendResponseHeaders(HTTP_CREATE_CODE, content.getBytes().length);
         }
 
         if (method == PATCH && path.startsWith("/tasks")) {
             int taskId = extractTaskIdFromPath(path);
             content = "content with PATCH " + taskId;
+            exchange.sendResponseHeaders(HTTP_OK_CODE, content.getBytes().length);
         }
 
         if (method == DELETE && path.startsWith("/tasks")) {
             int taskId = extractTaskIdFromPath(path);
             content = "content with DELETE " + taskId;
+            exchange.sendResponseHeaders(HTTP_NO_CONTENT_CODE, content.getBytes().length);
         }
-
-        exchange.sendResponseHeaders(200, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
