@@ -14,12 +14,13 @@ import java.util.stream.Collectors;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+
 public class DemoHttpHandler implements HttpHandler {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final List<Task> tasks = new ArrayList<>();
-	private int id = 1;
+	private final int id = 1;
 
 	public DemoHttpHandler() {
 	}
@@ -29,7 +30,7 @@ public class DemoHttpHandler implements HttpHandler {
 		String method = exchange.getRequestMethod();
 		URI uri = exchange.getRequestURI();
 		String path = uri.getPath();
-		String idStr = path.substring(path.lastIndexOf('/') + 1,path.length());
+		String idStr = path.substring(path.lastIndexOf('/') + 1);
 		InputStream inputStream = exchange.getRequestBody();
 		String body = new BufferedReader(new InputStreamReader((inputStream))).lines()
 			.collect(Collectors.joining("\n"));
@@ -88,8 +89,8 @@ public class DemoHttpHandler implements HttpHandler {
 
 	private Task toTask(String content) throws JsonProcessingException {
 		Task task = objectMapper.readValue(content, Task.class);
-		task.setId(new Long(ID));
-		ID += 1;
+		task.setId(new Long(id));
+		id += 1;
 		return task;
 	}
 
