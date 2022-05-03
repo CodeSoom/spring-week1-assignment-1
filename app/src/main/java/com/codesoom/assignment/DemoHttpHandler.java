@@ -44,6 +44,8 @@ public class DemoHttpHandler implements HttpHandler {
             }
         }
 
+        if (result == null) throw new IllegalArgumentException("failed to return HttpMethod enum value");
+
         return result;
     }
 }
