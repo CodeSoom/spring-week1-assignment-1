@@ -15,7 +15,7 @@ import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpHandler;
-
+import com.sun.net.httpserver.HttpExchange;
 public class DemoHttpHandler implements HttpHandler {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final List<Task> tasks = new ArrayList<>();
@@ -25,11 +25,11 @@ public class DemoHttpHandler implements HttpHandler {
 	}
 
 	@Override
-	public void handle(com.sun.net.httpserver.HttpExchange exchange) throws IOException {
+	public void handle(HttpExchange exchange) throws IOException {
 		String method = exchange.getRequestMethod();
 		URI uri = exchange.getRequestURI();
 		String path = uri.getPath();
-		String idStr = path.substring(path.lastIndexOf('/') + 1);
+		String idStr = path.substring(path.lastIndexOf('/') + 1,path.length());
 		InputStream inputStream = exchange.getRequestBody();
 		String body = new BufferedReader(new InputStreamReader((inputStream))).lines()
 			.collect(Collectors.joining("\n"));
