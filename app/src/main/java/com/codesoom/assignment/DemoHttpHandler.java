@@ -15,11 +15,10 @@ public class DemoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        HttpMethod method = getHttpMethod(exchange);
-        URI uri = exchange.getRequestURI();
-        String path = uri.getPath();
-
         String content = "basic content";
+
+        HttpMethod method = getHttpMethod(exchange);
+        String path = getHttpRequestPath(exchange);
 
         if (method == GET && path.equals("/tasks")) {
             content = "content with GET";
