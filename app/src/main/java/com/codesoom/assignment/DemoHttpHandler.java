@@ -11,6 +11,9 @@ import java.util.stream.Collectors;
 import static com.codesoom.assignment.HttpMethod.*;
 
 public class DemoHttpHandler implements HttpHandler {
+    private static final int HTTP_OK_CODE = 200;
+    private static final int HTTP_CREATE_CODE = 201;
+    private static final int HTTP_NO_CONTENT_CODE = 204;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException, IllegalArgumentException {
