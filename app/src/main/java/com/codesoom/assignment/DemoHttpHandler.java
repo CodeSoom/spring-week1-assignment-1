@@ -18,6 +18,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         HttpMethod method = getHttpMethod(exchange);
         String path = getHttpRequestPath(exchange);
+        String body = getHttpRequestBody(exchange);
 
         if (method == GET && path.equals("/tasks")) {
             content = "content with GET";
@@ -29,6 +30,13 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private String getHttpRequestBody(HttpExchange exchange) {
+        InputStream inputStream = exchange.getRequestBody();
+        return new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("/n"));
     }
 
     private String getHttpRequestPath(HttpExchange exchange) {
