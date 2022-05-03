@@ -33,6 +33,10 @@ public class DemoHttpHandler implements HttpHandler {
             content = "content with PATCH " + taskId;
         }
 
+        if (method == DELETE && path.startsWith("/tasks")) {
+            int taskId = extractTaskIdFromPath(path);
+            content = "content with DELETE " + taskId;
+        }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
