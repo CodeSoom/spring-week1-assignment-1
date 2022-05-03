@@ -17,9 +17,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpHandler;
 
 public class DemoHttpHandler implements HttpHandler {
-	private static int ID = 1;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final List<Task> tasks = new ArrayList<>();
+	private int ID = 1;
 
 	public DemoHttpHandler() {
 	}
@@ -31,8 +31,7 @@ public class DemoHttpHandler implements HttpHandler {
 		String path = uri.getPath();
 		String idStr = path.substring(path.lastIndexOf('/') + 1);
 		InputStream inputStream = exchange.getRequestBody();
-		String body = new BufferedReader(new InputStreamReader((inputStream)))
-			.lines()
+		String body = new BufferedReader(new InputStreamReader((inputStream))).lines()
 			.collect(Collectors.joining("\n"));
 		String content = "Hello world" + " " + path;
 
@@ -51,18 +50,22 @@ public class DemoHttpHandler implements HttpHandler {
 			exchange.sendResponseHeaders(201, content.getBytes().length);
 		} else if (method.equals("PUT") && canConvertId(idStr)) {
 			if (!body.isEmpty()) {
-				Long id = new Long(Integer.parseInt(idStr));
-				Task task = tasks.stream().filter(t -> t.getId().equals(id)).findAny().orElseThrow(
-					IllegalArgumentException::new);
+				Long id = new Long(idStr);
+				Task task = tasks.stream()
+					.filter(t -> t.getId().equals(id))
+					.findAny()
+					.orElseThrow(IllegalArgumentException::new);
 				Task changeTask = toTask(body);
 				task.setTitle(changeTask.getTitle());
 			}
 			exchange.sendResponseHeaders(200, content.getBytes().length);
 			content = tasksToJSON();
 		} else if (method.equals("DELETE") && canConvertId(idStr)) {
-			Long id = new Long(Integer.parseInt(idStr));
-			Task task = tasks.stream().filter(t -> t.getId().equals(id)).findAny().orElseThrow(
-				IllegalArgumentException::new);
+			Long id = new Long(idStr);
+			Task task = tasks.stream()
+				.filter(t -> t.getId().equals(id))
+				.findAny()
+				.orElseThrow(IllegalArgumentException::new);
 			tasks.remove(task);
 			content = tasksToJSON();
 			exchange.sendResponseHeaders(204, -1);
