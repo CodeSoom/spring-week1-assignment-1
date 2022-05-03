@@ -4,11 +4,11 @@ import com.sun.net.httpserver.HttpHandler;
 
 import com.sun.net.httpserver.HttpExchange;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
+import java.util.stream.Collectors;
 
-import static com.codesoom.assignment.HttpMethod.GET;
+import static com.codesoom.assignment.HttpMethod.*;
 
 public class DemoHttpHandler implements HttpHandler {
 
@@ -35,6 +35,11 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private int extractTaskIdFromPath(String path) {
+        String taskId = path.split("/")[2];
+        return Integer.parseInt(taskId);
     }
 
     private String getHttpRequestBody(HttpExchange exchange) {
