@@ -28,6 +28,11 @@ public class DemoHttpHandler implements HttpHandler {
             content = "content with POST " + body;
         }
 
+        if (method == PATCH && path.startsWith("/tasks")) {
+            int taskId = extractTaskIdFromPath(path);
+            content = "content with PATCH " + taskId;
+        }
+
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
