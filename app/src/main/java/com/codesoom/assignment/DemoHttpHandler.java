@@ -14,8 +14,7 @@ import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
     private TaskRepository taskRepository = new TaskRepository();
-    ObjectMapper objectMapper = new ObjectMapper();
-
+    private ObjectMapper objectMapper = new ObjectMapper();
     private final String TASK_DEFAULT_PATH = "/tasks";
 
     @Override
