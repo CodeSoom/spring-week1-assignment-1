@@ -1,5 +1,6 @@
 package com.codesoom.assignment.handler;
 
+import com.codesoom.assignment.dto.TaskDto;
 import com.codesoom.assignment.models.MethodType;
 import com.codesoom.assignment.models.StatusCode;
 import com.codesoom.assignment.models.Task;
@@ -10,13 +11,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RequestHandler implements HttpHandler {
-    private final List<Task> tasks = new ArrayList<>();
+    private final static List<Task> tasks = new ArrayList<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Pattern urlPattern = Pattern.compile("/tasks/(\\d)");
 
@@ -29,6 +31,7 @@ public class RequestHandler implements HttpHandler {
                 getTasksProcessor(exchange);
                 break;
             case POST:
+                postTasksProcessor(exchange);
                 break;
             case PUT:
                 break;
@@ -40,11 +43,30 @@ public class RequestHandler implements HttpHandler {
 
     }
 
-    private void getTasksProcessor(HttpExchange exchange) throws IOException {
-        URI uri = exchange.getRequestURI();
-        Matcher matcher = urlPattern.matcher(uri.getPath());
+    private void postTasksProcessor(HttpExchange exchange) throws IOException {
+        String path = urlPath(exchange);
 
-        if (uri.getPath().equals("/tasks")) {
+        if (path.equals("/tasks")) {
+            TaskDto taskDto = objectMapper.readValue(new String(exchange.getRequestBody().readAllBytes()),
+                    TaskDto.class);
+            long currentId = tasks.stream().max(Comparator.comparingLong(Task::getId)).map(x -> x.getId()).orElse(0L);
+            Task task = new Task(currentId + 1, taskDto.getTitle());
+            tasks.add(task);
+
+            String content = objectMapper.writeValueAsString(task);
+            returnOutputStream(exchange, content, StatusCode.CREATED);
+        }
+    }
+
+    private String urlPath(HttpExchange exchange) {
+        return exchange.getRequestURI().getPath();
+    }
+
+    private void getTasksProcessor(HttpExchange exchange) throws IOException {
+        String path = urlPath(exchange);
+        Matcher matcher = urlPattern.matcher(path);
+
+        if (path.equals("/tasks")) {
             String content = objectMapper.writeValueAsString(tasks);
             returnOutputStream(exchange, content, StatusCode.OK);
         }
