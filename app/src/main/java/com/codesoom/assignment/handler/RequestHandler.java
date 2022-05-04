@@ -34,32 +34,13 @@ public class RequestHandler implements HttpHandler {
                 postTasksProcessor(exchange);
                 break;
             case PUT:
+                putTasksProcessor(exchange);
                 break;
             case DELETE:
                 break;
             default:
                 throw new IllegalArgumentException("지원되지 않는 METHOD 타입입니다.");
         }
-
-    }
-
-    private void postTasksProcessor(HttpExchange exchange) throws IOException {
-        String path = urlPath(exchange);
-
-        if (path.equals("/tasks")) {
-            TaskDto taskDto = objectMapper.readValue(new String(exchange.getRequestBody().readAllBytes()),
-                    TaskDto.class);
-            long currentId = tasks.stream().max(Comparator.comparingLong(Task::getId)).map(x -> x.getId()).orElse(0L);
-            Task task = new Task(currentId + 1, taskDto.getTitle());
-            tasks.add(task);
-
-            String content = objectMapper.writeValueAsString(task);
-            returnOutputStream(exchange, content, StatusCode.CREATED);
-        }
-    }
-
-    private String urlPath(HttpExchange exchange) {
-        return exchange.getRequestURI().getPath();
     }
 
     private void getTasksProcessor(HttpExchange exchange) throws IOException {
@@ -83,11 +64,48 @@ public class RequestHandler implements HttpHandler {
         }
     }
 
+    private void putTasksProcessor(HttpExchange exchange) throws IOException {
+        String path = urlPath(exchange);
+        Matcher matcher = urlPattern.matcher(path);
+
+        if (matcher.find()) {
+            Optional<Task> task = tasks.stream().filter(x -> x.getId().equals(Long.parseLong(matcher.group(1))))
+                    .findFirst();
+            if (task.isEmpty()) {
+                returnOutputStream(exchange, "", StatusCode.NoContent);
+            } else {
+                TaskDto taskDto = objectMapper.readValue(exchange.getRequestBody().readAllBytes(), TaskDto.class);
+                task.get().setTitle(taskDto.getTitle());
+                String content = objectMapper.writeValueAsString(task.get());
+                returnOutputStream(exchange, content, StatusCode.OK);
+            }
+        }
+    }
+
+    private void postTasksProcessor(HttpExchange exchange) throws IOException {
+        String path = urlPath(exchange);
+
+        if (path.equals("/tasks")) {
+            TaskDto taskDto = objectMapper.readValue(exchange.getRequestBody().readAllBytes(),
+                    TaskDto.class);
+            long currentId = tasks.stream().max(Comparator.comparingLong(Task::getId)).map(x -> x.getId()).orElse(0L);
+            Task task = new Task(currentId + 1, taskDto.getTitle());
+            tasks.add(task);
+
+            String content = objectMapper.writeValueAsString(task);
+            returnOutputStream(exchange, content, StatusCode.CREATED);
+        }
+    }
+
     private void returnOutputStream(HttpExchange exchange, String content, StatusCode statusCode) throws IOException {
         exchange.sendResponseHeaders(statusCode.getStatusCode(), content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private String urlPath(HttpExchange exchange) {
+        return exchange.getRequestURI().getPath();
     }
 }
