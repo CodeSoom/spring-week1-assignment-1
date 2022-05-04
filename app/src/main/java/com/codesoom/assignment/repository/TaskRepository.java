@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 public class TaskRepository {
-    private Long sequence = 0L;
+    private Long sequence = 1L;
     private Map<Long, Task> taskMap = new HashMap<>();
 
     public Task findById(Long id) {
@@ -20,11 +20,10 @@ public class TaskRepository {
     }
 
     public Long save(Task task) {
-        if (task.getId() == null) {
-            task.setId(++sequence);
-        }
-
+        task.setId(sequence);
         taskMap.put(task.getId(), task);
+
+        incrementSequence();
         return task.getId();
     }
 
@@ -36,6 +35,10 @@ public class TaskRepository {
         Task findTask = taskMap.get(id);
         findTask.setTitle(task.getTitle());
         return id;
+    }
+
+    private void incrementSequence() {
+        this.sequence += 1;
     }
 
 }
