@@ -10,7 +10,6 @@ import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class AssignmentHttpHandler implements HttpHandler {
@@ -43,6 +42,7 @@ public class AssignmentHttpHandler implements HttpHandler {
             // test object 확인
             Task task = toTask(body);
             System.out.println(task);
+            System.out.println(body);
         }
 
         String content = "Hello, world!";
