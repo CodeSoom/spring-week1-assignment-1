@@ -29,7 +29,7 @@ public class DemoHttpHandler implements HttpHandler {
         // GET /tasks
         if (method.equals("GET") && path.equals(TASK_DEFAULT_PATH)) {
             List<Task> tasks = taskRepository.findAll();
-            sendResponse(exchange, toString(tasks), HttpStatus.OK);
+            sendResponse(exchange, toJson(tasks), HttpStatus.OK);
             return;
         }
 
@@ -39,7 +39,7 @@ public class DemoHttpHandler implements HttpHandler {
             Long savedId = taskRepository.save(task);
 
             Task savedTask = taskRepository.findById(savedId);
-            sendResponse(exchange, toString(savedTask), HttpStatus.CREATED);
+            sendResponse(exchange, toJson(savedTask), HttpStatus.CREATED);
             return;
         }
 
@@ -54,7 +54,7 @@ public class DemoHttpHandler implements HttpHandler {
                 return;
             }
 
-            sendResponse(exchange, toString(task), HttpStatus.OK);
+            sendResponse(exchange, toJson(task), HttpStatus.OK);
             return;
         }
 
@@ -73,7 +73,7 @@ public class DemoHttpHandler implements HttpHandler {
             taskRepository.update(id, taskToUpdate);
 
             Task updatedTask = taskRepository.findById(id);
-            sendResponse(exchange, toString(updatedTask), HttpStatus.OK);
+            sendResponse(exchange, toJson(updatedTask), HttpStatus.OK);
             return;
         }
 
@@ -149,7 +149,7 @@ public class DemoHttpHandler implements HttpHandler {
         return objectMapper.readValue(content, Task.class);
     }
 
-    private String toString(Object from) throws IOException {
+    private String toJson(Object from) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, from);
         return outputStream.toString();
