@@ -35,7 +35,10 @@ public class AssignmentHttpHandler implements HttpHandler {
                         .collect(Collectors.joining("\n"));
 
         System.out.println(method + " " + path);
-        System.out.println(body);
+        // body 없는 경우 넘어가기
+        if (!body.isBlank()) {
+            System.out.println(body);
+        }
 
         String content = "Hello, world!";
 
