@@ -34,6 +34,7 @@ public class RequestHandler implements HttpHandler {
                 postTasksProcessor(exchange);
                 break;
             case PUT:
+            case PATCH:
                 putTasksProcessor(exchange);
                 break;
             case DELETE:
