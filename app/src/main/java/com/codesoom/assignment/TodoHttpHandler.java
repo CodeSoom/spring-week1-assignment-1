@@ -43,6 +43,7 @@ public class TodoHttpHandler implements HttpHandler {
                 if(!body.isBlank()) { // request body가 비어있지 않으면
                     Task task = toTask(body); // body의 내용을 Task 객체로 만듦
                     tasks.add(task); // 리스트에 task 추가
+                    content = task.toString(); // 내가 생성한 task 정보를 출력
                 }
             }
         }
