@@ -2,6 +2,7 @@ package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.models.TaskManager;
+import com.codesoom.assignment.util.JsonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -38,16 +39,16 @@ public class CustomHttpHandler implements HttpHandler {
                 case HttpMethodCode.GET:
                     if (hasTaskId(path)) {
                         result.add(taskManager.findTask(task));
-                        content = taskToJson(result);
+                        content = JsonUtils.taskToJson(result);
                         resCode = HttpStatus.OK;
                     } else {
-                        content = taskToJson(taskManager.findTaskAll());
+                        content = JsonUtils.taskToJson(taskManager.findTaskAll());
                         resCode = HttpStatus.OK;
                     }
                     break;
                 case HttpMethodCode.POST:
                     taskManager.insertTask(task);
-                    content = taskToJson(result);
+                    content = JsonUtils.taskToJson(result);
                     resCode = HttpStatus.CREATED;
                     break;
                 case HttpMethodCode.PUT:
@@ -82,7 +83,7 @@ public class CustomHttpHandler implements HttpHandler {
     private Task setTask(String path, String requestBody) throws JsonProcessingException {
         Task task = new Task();
         if (!requestBody.isBlank()) {
-            task = jsonToTask(requestBody);
+            task = JsonUtils.jsonToTask(requestBody);
         }
 
         if (hasTaskId(path)) {
@@ -100,14 +101,5 @@ public class CustomHttpHandler implements HttpHandler {
         return path.split("/").length > 2;
     }
 
-    private String taskToJson(List<Task> taskList) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, taskList);
 
-        return outputStream.toString();
-    }
-
-    private Task jsonToTask(String requestBody) throws JsonProcessingException {
-        return objectMapper.readValue(requestBody, Task.class);
-    }
 }
