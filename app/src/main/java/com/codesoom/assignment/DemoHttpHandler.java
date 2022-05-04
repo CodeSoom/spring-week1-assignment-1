@@ -7,7 +7,6 @@ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
 import java.net.URI;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,7 +16,11 @@ public class DemoHttpHandler implements HttpHandler {
     private static final int HTTP_OK_CODE = 200;
     private static final int HTTP_CREATE_CODE = 201;
     private static final int HTTP_NO_CONTENT_CODE = 204;
-    private final List<Task> tasks = new LinkedList<>();
+    private final List<Task> tasks;
+
+    public DemoHttpHandler(List<Task> tasks) {
+        this.tasks = tasks;
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException, IllegalArgumentException {
