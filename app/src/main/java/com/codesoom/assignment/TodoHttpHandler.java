@@ -64,6 +64,12 @@ public class TodoHttpHandler implements HttpHandler {
                 task.setTitle(updateTask.getTitle());
                 content = task.toString();
             }
+
+            // 할 일 삭제하기
+            if(method.equals("DELETE")) {
+                int taskId = Integer.parseInt(path.substring(path.lastIndexOf('/') + 1)); // path에 포함되어있는 task id 추출
+                tasks.remove(taskId - 1);
+            }
         }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
