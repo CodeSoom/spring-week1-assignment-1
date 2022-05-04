@@ -7,6 +7,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -95,18 +96,16 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private HttpMethod getHttpMethod(HttpExchange exchange) {
-        HttpMethod result = null;
         String methodInString = exchange.getRequestMethod();
-
-        for (HttpMethod method : HttpMethod.values()) {
-            if (method.toString().equalsIgnoreCase(methodInString)) {
-                result = method;
-                break;
-            }
-        }
-
-        if (result == null) throw new IllegalArgumentException("failed to return HttpMethod enum value");
-
-        return result;
+        return Arrays.stream(HttpMethod.values())
+                .filter((method) ->
+                        method.toString().equalsIgnoreCase(methodInString)
+                )
+                .findFirst()
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "failed to return HttpMethod enum value"
+                        )
+                );
     }
 }
