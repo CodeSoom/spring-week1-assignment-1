@@ -9,7 +9,7 @@ public class App {
     public static void main(String[] args) throws IOException {
         HttpServer httpServer = HttpServer.create();
         InetSocketAddress inetSocketAddress = new InetSocketAddress("localhost", 8000);
-        httpServer.bind(inetSocketAddress,0);
+        httpServer.bind(inetSocketAddress, 0);
         httpServer.createContext("/", exchange -> new RequestHandler().handle(exchange));
         httpServer.start();
     }

@@ -11,10 +11,14 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class RequestHandler implements HttpHandler {
     private final List<Task> tasks = new ArrayList<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final Pattern urlPattern = Pattern.compile("/tasks/(\\d)");
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -38,13 +42,26 @@ public class RequestHandler implements HttpHandler {
 
     private void getTasksProcessor(HttpExchange exchange) throws IOException {
         URI uri = exchange.getRequestURI();
+        Matcher matcher = urlPattern.matcher(uri.getPath());
+
         if (uri.getPath().equals("/tasks")) {
             String content = objectMapper.writeValueAsString(tasks);
-            printOutputStream(exchange, content, StatusCode.OK);
+            returnOutputStream(exchange, content, StatusCode.OK);
+        }
+
+        if (matcher.find()) {
+            Optional<Task> task = tasks.stream().filter(x -> x.getId().equals(Long.parseLong(matcher.group(1))))
+                    .findFirst();
+            if (task.isEmpty()) {
+                returnOutputStream(exchange, "", StatusCode.NoContent);
+            } else {
+                String content = objectMapper.writeValueAsString(task.get());
+                returnOutputStream(exchange, content, StatusCode.OK);
+            }
         }
     }
 
-    private void printOutputStream(HttpExchange exchange, String content, StatusCode statusCode) throws IOException {
+    private void returnOutputStream(HttpExchange exchange, String content, StatusCode statusCode) throws IOException {
         exchange.sendResponseHeaders(statusCode.getStatusCode(), content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
