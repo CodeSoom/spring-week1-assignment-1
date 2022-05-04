@@ -9,7 +9,6 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -55,8 +54,8 @@ public class RequestHandler implements HttpHandler {
         }
 
         if (matcher.find()) {
-            Optional<Task> task = tasks.stream().filter(x -> x.getId().equals(Long.parseLong(matcher.group(1))))
-                    .findFirst();
+            Optional<Task> task = getTaskById(matcher);
+
             if (task.isEmpty()) {
                 returnOutputStream(exchange, "", StatusCode.NotFound);
             } else {
@@ -71,8 +70,7 @@ public class RequestHandler implements HttpHandler {
         Matcher matcher = urlPattern.matcher(path);
 
         if (matcher.find()) {
-            Optional<Task> task = tasks.stream().filter(x -> x.getId().equals(Long.parseLong(matcher.group(1))))
-                    .findFirst();
+            Optional<Task> task = getTaskById(matcher);
             if (task.isEmpty()) {
                 returnOutputStream(exchange, "", StatusCode.NotFound);
             } else {
@@ -104,8 +102,7 @@ public class RequestHandler implements HttpHandler {
         Matcher matcher = urlPattern.matcher(path);
 
         if (matcher.find()) {
-            Optional<Task> task = tasks.stream().filter(x -> x.getId().equals(Long.parseLong(matcher.group(1))))
-                    .findFirst();
+            Optional<Task> task = getTaskById(matcher);
             if (task.isEmpty()) {
                 returnOutputStream(exchange, "", StatusCode.NotFound);
             } else {
@@ -125,5 +122,11 @@ public class RequestHandler implements HttpHandler {
 
     private String urlPath(HttpExchange exchange) {
         return exchange.getRequestURI().getPath();
+    }
+
+    private Optional<Task> getTaskById(Matcher matcher) {
+        Optional<Task> task = tasks.stream().filter(x -> x.getId().equals(Long.parseLong(matcher.group(1))))
+                .findFirst();
+        return task;
     }
 }
