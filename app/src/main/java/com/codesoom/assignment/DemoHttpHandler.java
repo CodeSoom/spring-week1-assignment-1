@@ -109,22 +109,19 @@ public class DemoHttpHandler implements HttpHandler {
      * 좀 더 좋은 좋은 이름을 지을 수 있을거 같은데 생각이 안남 ㅜㅜ
      */
     private boolean containPathVariable(String path) {
-
         String substring = path.substring(TASK_DEFAULT_PATH.length());// ex) /tasks/3 -> /3
 
         if (substring.length() == 0) {
             return false;
         }
 
-        if (substring.charAt(0) != '/') {
+        if (!substring.startsWith("/")) {
             return false;
         }
 
-        String pathVariable = substring.substring(1);
         try {
-            Long.parseLong(pathVariable);
+            getPathVariable(path);
         } catch (NumberFormatException e) {
-            System.out.println(pathVariable + "은 숫자 형식이 아닙니다.");
             return false;
         }
 
