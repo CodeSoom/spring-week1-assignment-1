@@ -42,8 +42,13 @@ public class TodoHttpHandler implements HttpHandler {
             if(method.equals("GET")) {
                 if(path.length() > 6) {
                     int taskId = Integer.parseInt(path.substring(path.lastIndexOf('/') + 1)); // path에 포함되어있는 task id 추출
-                    Task task = tasks.get(taskId - 1);
-                    content = task.toString();
+
+                    for(Task task : tasks) {
+                        if(task.getId() == taskId) {
+                            content = task.toString();
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -59,16 +64,26 @@ public class TodoHttpHandler implements HttpHandler {
             // 할 일 제목 수정하기
             if(method.equals("PUT")) {
                 int taskId = Integer.parseInt(path.substring(path.lastIndexOf('/') + 1)); // path에 포함되어있는 task id 추출
-                Task task = tasks.get(taskId - 1);
                 Task updateTask = toTask(body);
-                task.setTitle(updateTask.getTitle());
-                content = task.toString();
+
+                for(Task task : tasks) {
+                    if(task.getId() == taskId) {
+                        task.setTitle(updateTask.getTitle());
+                        content = task.toString();
+                        break;
+                    }
+                }
             }
 
             // 할 일 삭제하기
             if(method.equals("DELETE")) {
                 int taskId = Integer.parseInt(path.substring(path.lastIndexOf('/') + 1)); // path에 포함되어있는 task id 추출
-                tasks.remove(taskId - 1);
+                for(Task task : tasks) {
+                    if(task.getId() == taskId) {
+                        tasks.remove(task);
+                        break;
+                    }
+                }
             }
         }
 
