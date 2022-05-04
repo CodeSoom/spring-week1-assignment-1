@@ -21,7 +21,7 @@ public class CustomHttpHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
 
         String method = exchange.getRequestMethod();
-        String path = exchange.getRequestURI().getPath();
+        String[] pathInfo = exchange.getRequestURI().getPath().split("/");
         InputStream inputStream = exchange.getRequestBody();
 
         String requestBody = new BufferedReader(new InputStreamReader(inputStream))
@@ -34,30 +34,61 @@ public class CustomHttpHandler implements HttpHandler {
         }
 
         String content = "";
+        int resCode = 200;
         List<Task> result = new ArrayList<>();
-        if(hasTaskId(path)) {
-            if ("PUT".equals(method) || "PACTH".equals(method)) {
-                int index = findById(task.getId());
-                tasks.get(index).setTitle(task.getTitle());
-                result.add(tasks.get(index));
-                content = taskToJson(result);
-            } else if ("DELETE".equals(method)) {
-                tasks.remove(task);
-                content = taskToJson(tasks);
-            } else if ("GET".equals(method)) {
-                content = taskToJson(result);
-            }
-        } else {
-            if ("GET".equals(method)) {
-                content = taskToJson(tasks);
-            } else if ("POST".equals(method)) {
-                task.setId((long) tasks.size());
-                tasks.add(task);
+
+        if ("GET".equals(method)) {
+            if (pathInfo.length > 2) {
+                Long taskId = Long.valueOf(pathInfo[2]);
+                int index = findById(taskId);
+                if (index > 0) {
+                    result.add(tasks.get(index));
+                    content = taskToJson(result);
+                } else {
+                    resCode = 404;
+                }
+            } else {
                 content = taskToJson(tasks);
             }
         }
+        if ("POST".equals(method)) {
+            task.setId((long) tasks.size() + 1);
+            tasks.add(task);
+            result.add(task);
+            content = taskToJson(result);
+            resCode = 201;
+        }
+        if ("PUT".equals(method) || "PATCH".equals(method)) {
+            if (pathInfo.length > 2) {
+                Long taskId = Long.valueOf(pathInfo[2]);
+                int index = findById(taskId);
+                if (index > 0) {
+                    tasks.get(index).setTitle(task.getTitle());
+                    content = taskToJson(tasks);
+                } else {
+                    resCode = 404;
+                }
+            } else {
+                resCode = 404;
+            }
+        }
+        if ("DELETE".equals(method)) {
+            if (pathInfo.length > 2) {
+                Long taskId = Long.valueOf(pathInfo[2]);
+                int index = findById(taskId);
+                if (index > 0) {
+                    tasks.remove(index);
+                    resCode = 204;
+                } else {
+                    resCode = 404;
+                }
+            } else {
+                resCode = 404;
+            }
 
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+        }
+
+        exchange.sendResponseHeaders(resCode, content.getBytes().length);
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.write(content.getBytes());
         responseBody.flush();
@@ -81,9 +112,5 @@ public class CustomHttpHandler implements HttpHandler {
 
     private Task jsonToTask(String requestBody) throws JsonProcessingException {
         return objectMapper.readValue(requestBody, Task.class);
-    }
-
-    private boolean hasTaskId(String path) {
-        return path.startsWith("/tasks/") && path.split("/").length > 2;
     }
 }
