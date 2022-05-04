@@ -60,6 +60,7 @@ public class DemoHttpHandler implements HttpHandler {
     private String tasksToJson() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
 
+    private String tasksToJson(ObjectMapper mapper) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         mapper.writeValue(outputStream, tasks);
 
