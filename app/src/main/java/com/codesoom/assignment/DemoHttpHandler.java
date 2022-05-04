@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -38,8 +39,14 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         if (method == POST && path.equals("/tasks")) {
-            content = "content with POST " + body;
-            exchange.sendResponseHeaders(HTTP_CREATE_CODE, content.getBytes().length);
+            try {
+                Task newTask = toTask(mapper, body);
+                tasks.add(newTask);
+                content = taskToJson(mapper, newTask);
+                exchange.sendResponseHeaders(HTTP_CREATE_CODE, content.getBytes().length);
+            } catch (JsonProcessingException e){
+                e.printStackTrace();
+            }
         }
 
         if (method == PATCH && path.startsWith("/tasks")) {
@@ -57,8 +64,9 @@ public class DemoHttpHandler implements HttpHandler {
         sendResponse(exchange, content);
     }
 
-    private String tasksToJson() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
+    private Task toTask(ObjectMapper mapper, String content) throws JsonProcessingException {
+        return mapper.readValue(content, Task.class);
+    }
 
     private String tasksToJson(ObjectMapper mapper) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
