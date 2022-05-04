@@ -56,6 +56,6 @@ public class CustomHttpHandler implements HttpHandler {
     }
 
     private boolean hasTaskId(String path) {
-        return path.split("/")[2].isBlank();
+        return path.startsWith("/tasks/") && path.split("/").length > 2;
     }
 }
