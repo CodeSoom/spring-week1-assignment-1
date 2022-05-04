@@ -31,45 +31,19 @@ public class DemoHttpHandler implements HttpHandler {
 		URI uri = exchange.getRequestURI();
 		String path = uri.getPath();
 		String idStr = path.substring(path.lastIndexOf('/') + 1);
-		InputStream inputStream = exchange.getRequestBody();
-		String body = new BufferedReader(new InputStreamReader((inputStream))).lines()
-			.collect(Collectors.joining("\n"));
-		String content = "Hello world" + " " + path;
 
-		if (method.equals("GET") && path.equals("/tasks") && !canConvertId(idStr)) {
-			content = tasksToJSON();
-			exchange.sendResponseHeaders(200, content.getBytes().length);
-		} else if (method.equals("GET") && canConvertId(idStr)) {
-			content = taskToJSON(new Long(idStr));
-			exchange.sendResponseHeaders(200, content.getBytes().length);
+		String content = null;
+
+		if (method.equals("GET") && (path.equals("/tasks") || path.equals("/tasks/"))) {
+			content = getAllTasks(exchange);
+		} else if (method.equals("GET")) {
+			content = getTask(exchange, idStr);
 		} else if (method.equals("POST") && path.equals("/tasks")) {
-			if (!body.isEmpty()) {
-				Task task = toTask(body);
-				tasks.add(task);
-			}
-			content = tasksToJSON();
-			exchange.sendResponseHeaders(201, content.getBytes().length);
-		} else if (method.equals("PUT") && canConvertId(idStr)) {
-			if (!body.isEmpty()) {
-				Long id = new Long(idStr);
-				Task task = tasks.stream()
-					.filter(t -> t.getId().equals(id))
-					.findAny()
-					.orElseThrow(IllegalArgumentException::new);
-				Task changeTask = toTask(body);
-				task.setTitle(changeTask.getTitle());
-			}
-			exchange.sendResponseHeaders(200, content.getBytes().length);
-			content = tasksToJSON();
-		} else if (method.equals("DELETE") && canConvertId(idStr)) {
-			Long id = new Long(idStr);
-			Task task = tasks.stream()
-				.filter(t -> t.getId().equals(id))
-				.findAny()
-				.orElseThrow(IllegalArgumentException::new);
-			tasks.remove(task);
-			content = tasksToJSON();
-			exchange.sendResponseHeaders(204, -1);
+			content = createTask(exchange, idStr);
+		} else if (method.equals("PUT")) {
+			content = updateTask(exchange, idStr);
+		} else if (method.equals("DELETE")) {
+			content = deleteTask(exchange, idStr);
 		}
 
 		OutputStream outputStream = exchange.getResponseBody();
@@ -78,16 +52,72 @@ public class DemoHttpHandler implements HttpHandler {
 		outputStream.close();
 	}
 
-	private boolean canConvertId(String idStr) {
+	private String deleteTask(HttpExchange exchange, String idStr) throws IOException {
+		Long id = new Long(idStr);
+		Task task = tasks.stream()
+			.filter(t -> t.getId().equals(id))
+			.findAny()
+			.orElseThrow(IllegalArgumentException::new);
+		tasks.remove(task);
+		String content = tasksToJSON();
+		exchange.sendResponseHeaders(204, -1);
+		return content;
+	}
+
+	private String updateTask(HttpExchange exchange, String idStr) throws IOException {
+		canConvertId(idStr);
+		InputStream inputStream = exchange.getRequestBody();
+		String body = new BufferedReader(new InputStreamReader((inputStream))).lines()
+			.collect(Collectors.joining("\n"));
+		if (!body.isEmpty()) {
+			Long id = new Long(idStr);
+			Task task = tasks.stream()
+				.filter(t -> t.getId().equals(id))
+				.findAny()
+				.orElseThrow(IllegalArgumentException::new);
+			Task changeTask = contentToTask(body);
+			task.setTitle(changeTask.getTitle());
+		}
+		String content = tasksToJSON();
+		exchange.sendResponseHeaders(200, content.getBytes().length);
+		return content;
+	}
+
+	private String createTask(HttpExchange exchange, String idStr) throws IOException {
+		InputStream inputStream = exchange.getRequestBody();
+		String body = new BufferedReader(new InputStreamReader((inputStream))).lines()
+			.collect(Collectors.joining("\n"));
+		if (!body.isEmpty()) {
+			Task task = contentToTask(body);
+			tasks.add(task);
+		}
+		String content = tasksToJSON();
+		exchange.sendResponseHeaders(201, content.getBytes().length);
+		return content;
+	}
+
+	private String getAllTasks(HttpExchange exchange) throws IOException {
+		String content = tasksToJSON();
+		exchange.sendResponseHeaders(200, content.getBytes().length);
+		return content;
+	}
+
+	private String getTask(HttpExchange exchange, String idStr) throws IOException {
+		canConvertId(idStr);
+		String content = taskToJSON(new Long(idStr));
+		exchange.sendResponseHeaders(200, content.getBytes().length);
+		return content;
+	}
+
+	private void canConvertId(String idStr) {
 		try {
 			Integer.parseInt(idStr);
-			return true;
 		} catch (Exception e) {
-			return false;
+			throw new IllegalArgumentException();
 		}
 	}
 
-	private Task toTask(String content) throws JsonProcessingException {
+	private Task contentToTask(String content) throws JsonProcessingException {
 		Task task = objectMapper.readValue(content, Task.class);
 		task.setId(new Long(id));
 		id += 1;
