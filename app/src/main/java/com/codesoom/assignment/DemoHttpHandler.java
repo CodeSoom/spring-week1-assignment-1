@@ -29,7 +29,7 @@ public class DemoHttpHandler implements HttpHandler {
         // GET /task
         if (method.equals("GET") && path.equals(TASK_DEFAULT_PATH)) {
             List<Task> tasks = taskRepository.findAll();
-            sendResponse(exchange, toString(tasks), 200);
+            sendResponse(exchange, toString(tasks), HttpStatus.OK);
             return;
         }
 
@@ -39,7 +39,7 @@ public class DemoHttpHandler implements HttpHandler {
             Long savedId = taskRepository.save(task);
 
             Task savedTask = taskRepository.findById(savedId);
-            sendResponse(exchange, toString(savedTask), 201);
+            sendResponse(exchange, toString(savedTask), HttpStatus.CREATED);
             return;
         }
 
@@ -49,7 +49,7 @@ public class DemoHttpHandler implements HttpHandler {
 
             Task task = taskRepository.findById(id);
 
-            sendResponse(exchange, toString(task), 200);
+            sendResponse(exchange, toString(task), HttpStatus.OK);
             return;
         }
 
@@ -62,7 +62,7 @@ public class DemoHttpHandler implements HttpHandler {
 
             Task updatedTask = taskRepository.findById(id);
 
-            sendResponse(exchange, toString(updatedTask), 200);
+            sendResponse(exchange, toString(updatedTask), HttpStatus.OK);
             return;
         }
 
@@ -70,15 +70,15 @@ public class DemoHttpHandler implements HttpHandler {
         if (method.equals("DELETE") && containPathVariable(path)) {
             Long id = getPathVariable(path);
             taskRepository.delete(id);
-            sendResponse(exchange, "success", 200);
+            sendResponse(exchange, "success", HttpStatus.OK);
             return;
         }
 
-        sendResponse(exchange, "지원하지 않는 경로입니다", 404);
+        sendResponse(exchange, "지원하지 않는 경로입니다", HttpStatus.NOT_FOUND);
     }
 
-    private void sendResponse(HttpExchange exchange, String content, int status) throws IOException {
-        exchange.sendResponseHeaders(status, content.getBytes().length);
+    private void sendResponse(HttpExchange exchange, String content, HttpStatus status) throws IOException {
+        exchange.sendResponseHeaders(status.getValue(), content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
