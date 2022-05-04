@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -13,6 +14,8 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class AssignmentHttpHandler implements HttpHandler {
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     private List<Task> tasks = new ArrayList<>();
 
 //    public AssignmentHttpHandler() {
@@ -37,7 +40,9 @@ public class AssignmentHttpHandler implements HttpHandler {
         System.out.println(method + " " + path);
         // body 없는 경우 넘어가기
         if (!body.isBlank()) {
-            System.out.println(body);
+            // test object 확인
+            Task task = toTask(body);
+            System.out.println(task);
         }
 
         String content = "Hello, world!";
@@ -47,7 +52,7 @@ public class AssignmentHttpHandler implements HttpHandler {
         }
 
         if (method.equals("POST") && path.equals("/tasks")) {
-            content = tasksToJson();
+            content = "Create a new task.";
         }
 
         if (method.equals("PUT") && path.equals("/tasks")) {
@@ -66,9 +71,11 @@ public class AssignmentHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
-    private String tasksToJson() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
+    private Task toTask(String content) throws JsonProcessingException {
+        return objectMapper.readValue(content, Task.class);
+    }
 
+    private String tasksToJson() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
 
