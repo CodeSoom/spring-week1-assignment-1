@@ -26,7 +26,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         System.out.println(method + " " + path);
 
-        // GET /task
+        // GET /tasks
         if (method.equals("GET") && path.equals(TASK_DEFAULT_PATH)) {
             List<Task> tasks = taskRepository.findAll();
             sendResponse(exchange, toString(tasks), HttpStatus.OK);
@@ -46,8 +46,13 @@ public class DemoHttpHandler implements HttpHandler {
         //GET /tasks/{id}
         if (method.equals("GET") && containPathVariable(path)) {
             Long id = getPathVariable(path);
-
             Task task = taskRepository.findById(id);
+
+            if (task == null) {
+                String message = id + "인 task는 존재하지 않습니다.";
+                sendResponse(exchange, message, HttpStatus.NOT_FOUND);
+                return;
+            }
 
             sendResponse(exchange, toString(task), HttpStatus.OK);
             return;
@@ -56,12 +61,18 @@ public class DemoHttpHandler implements HttpHandler {
         // PUT /tasks/{id}
         if (method.equals("PUT") && containPathVariable(path)) {
             Long id = getPathVariable(path);
-            Task task = toTask(body);
+            Task findTask = taskRepository.findById(id);
 
-            taskRepository.update(id, task);
+            if (findTask == null) {
+                String message = id + "인 task는 존재하지 않습니다.";
+                sendResponse(exchange, message, HttpStatus.NOT_FOUND);
+                return;
+            }
+
+            Task taskToUpdate = toTask(body);
+            taskRepository.update(id, taskToUpdate);
 
             Task updatedTask = taskRepository.findById(id);
-
             sendResponse(exchange, toString(updatedTask), HttpStatus.OK);
             return;
         }
@@ -69,8 +80,16 @@ public class DemoHttpHandler implements HttpHandler {
         // DELETE /tasks/{id}
         if (method.equals("DELETE") && containPathVariable(path)) {
             Long id = getPathVariable(path);
+            Task findTask = taskRepository.findById(id);
+
+            if (findTask == null) {
+                String message = id + "인 task는 존재하지 않습니다.";
+                sendResponse(exchange, message, HttpStatus.NOT_FOUND);
+                return;
+            }
+
             taskRepository.delete(id);
-            sendResponse(exchange, "success", HttpStatus.OK);
+            sendResponse(exchange, "", HttpStatus.NO_CONTENT);
             return;
         }
 
