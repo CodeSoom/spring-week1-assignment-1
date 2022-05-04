@@ -57,7 +57,7 @@ public class RequestHandler implements HttpHandler {
             Optional<Task> task = tasks.stream().filter(x -> x.getId().equals(Long.parseLong(matcher.group(1))))
                     .findFirst();
             if (task.isEmpty()) {
-                returnOutputStream(exchange, "", StatusCode.NoContent);
+                returnOutputStream(exchange, "", StatusCode.NotFound);
             } else {
                 String content = objectMapper.writeValueAsString(task.get());
                 returnOutputStream(exchange, content, StatusCode.OK);
@@ -73,7 +73,7 @@ public class RequestHandler implements HttpHandler {
             Optional<Task> task = tasks.stream().filter(x -> x.getId().equals(Long.parseLong(matcher.group(1))))
                     .findFirst();
             if (task.isEmpty()) {
-                returnOutputStream(exchange, "", StatusCode.NoContent);
+                returnOutputStream(exchange, "", StatusCode.NotFound);
             } else {
                 TaskDto taskDto = objectMapper.readValue(exchange.getRequestBody().readAllBytes(), TaskDto.class);
                 task.get().setTitle(taskDto.getTitle());
@@ -106,10 +106,10 @@ public class RequestHandler implements HttpHandler {
             Optional<Task> task = tasks.stream().filter(x -> x.getId().equals(Long.parseLong(matcher.group(1))))
                     .findFirst();
             if (task.isEmpty()) {
-                returnOutputStream(exchange, "", StatusCode.NoContent);
+                returnOutputStream(exchange, "", StatusCode.NotFound);
             } else {
                 tasks.remove(task.get());
-                returnOutputStream(exchange, "", StatusCode.OK);
+                returnOutputStream(exchange, "", StatusCode.NoContent);
             }
         }
     }
