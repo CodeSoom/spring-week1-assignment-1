@@ -26,13 +26,14 @@ public class DemoHttpHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException, IllegalArgumentException {
         String content = "basic content";
+        ObjectMapper mapper = new ObjectMapper();
 
         HttpMethod method = getHttpMethod(exchange);
         String path = getHttpRequestPath(exchange);
         String body = getHttpRequestBody(exchange);
 
         if (method == GET && path.equals("/tasks")) {
-            content = tasksToJson();
+            content = tasksToJson(mapper);
             exchange.sendResponseHeaders(HTTP_OK_CODE, content.getBytes().length);
         }
 
@@ -61,6 +62,13 @@ public class DemoHttpHandler implements HttpHandler {
 
         OutputStream outputStream = new ByteArrayOutputStream();
         mapper.writeValue(outputStream, tasks);
+
+        return outputStream.toString();
+    }
+
+    private String taskToJson(ObjectMapper mapper, Task task) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        mapper.writeValue(outputStream, task);
 
         return outputStream.toString();
     }
