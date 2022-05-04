@@ -3,7 +3,11 @@ package com.codesoom.assignment;
 public class Task {
     static private Long maxId = 1L;
     private final Long id;
-    private final String title;
+    private String title;
+
+    Task() {
+        this.id = generateId();
+    }
 
     Task(String title) {
         this.id = generateId();
