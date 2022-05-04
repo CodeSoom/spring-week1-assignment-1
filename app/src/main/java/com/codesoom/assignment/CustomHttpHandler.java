@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.models.TaskManager;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -13,78 +14,57 @@ import java.util.stream.Collectors;
 
 public class CustomHttpHandler implements HttpHandler {
 
-    private List<Task> tasks = new ArrayList<>();
+    private TaskManager taskManager = new TaskManager();
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
         String method = exchange.getRequestMethod();
-        String[] pathInfo = exchange.getRequestURI().getPath().split("/");
-        InputStream inputStream = exchange.getRequestBody();
+        String path = exchange.getRequestURI().getPath();
 
+        InputStream inputStream = exchange.getRequestBody();
         String requestBody = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        Task task = null;
-        if (!requestBody.isBlank()) {
-            task = jsonToTask(requestBody);
-        }
+        Task task = setTask(path, requestBody);
 
         String content = "";
         int resCode = HttpStatus.OK.getValue();
         List<Task> result = new ArrayList<>();
-
-        if ("GET".equals(method)) {
-            if (pathInfo.length > 2) {
-                Long taskId = Long.valueOf(pathInfo[2]);
-                int index = findById(taskId);
-                if (index > 0) {
-                    result.add(tasks.get(index));
+        if (isTask(path)) {
+            if ("GET".equals(method)) {
+                if (hasTaskId(path)) {
+                    result.add(taskManager.findTask(task));
                     content = taskToJson(result);
+                    resCode = HttpStatus.OK.getValue();
                 } else {
-                    resCode = HttpStatus.NOT_FOUND.getValue();
+                    content = taskToJson(taskManager.findTaskAll());
+                    resCode = HttpStatus.OK.getValue();
                 }
-            } else {
-                content = taskToJson(tasks);
             }
-        }
-        if ("POST".equals(method)) {
-            task.setId((long) tasks.size() + 1);
-            tasks.add(task);
-            result.add(task);
-            content = taskToJson(result);
-            resCode = HttpStatus.CREATED.getValue();
-        }
-        if ("PUT".equals(method) || "PATCH".equals(method)) {
-            if (pathInfo.length > 2) {
-                Long taskId = Long.valueOf(pathInfo[2]);
-                int index = findById(taskId);
-                if (index > 0) {
-                    tasks.get(index).setTitle(task.getTitle());
-                    content = taskToJson(tasks);
+            if ("POST".equals(method)) {
+                taskManager.insertTask(task);
+                content = taskToJson(result);
+                resCode = HttpStatus.CREATED.getValue();
+            }
+            if ("PUT".equals(method) || "PATCH".equals(method)) {
+                if (!hasTaskId(path) || taskManager.findTask(task).isEmpty()) {
+                    resCode = HttpStatus.NOT_FOUND.getValue();
                 } else {
-                    resCode = HttpStatus.NOT_FOUND.getValue();
+                    taskManager.updateTask(task);
+                    resCode = HttpStatus.OK.getValue();
                 }
-            } else {
-                resCode = HttpStatus.NOT_FOUND.getValue();
             }
-        }
-        if ("DELETE".equals(method)) {
-            if (pathInfo.length > 2) {
-                Long taskId = Long.valueOf(pathInfo[2]);
-                int index = findById(taskId);
-                if (index > 0) {
-                    tasks.remove(index);
+            if ("DELETE".equals(method)) {
+                if (!hasTaskId(path) || taskManager.findTask(task).isEmpty()) {
+                    resCode = HttpStatus.NOT_FOUND.getValue();
+                } else {
+                    taskManager.deleteTask(task);
                     resCode = HttpStatus.NO_CONTENT.getValue();
-                } else {
-                    resCode = HttpStatus.NOT_FOUND.getValue();
                 }
-            } else {
-                resCode = HttpStatus.NOT_FOUND.getValue();
             }
-
         }
 
         exchange.sendResponseHeaders(resCode, content.getBytes().length);
@@ -93,13 +73,25 @@ public class CustomHttpHandler implements HttpHandler {
         responseBody.flush();
     }
 
-    private int findById(Long id) {
-        for (int i = 0; i < tasks.size(); i++) {
-            if (tasks.get(i).getId().equals(id)) {
-                return i;
-            }
+    private Task setTask(String path, String requestBody) throws JsonProcessingException {
+        Task task = new Task();
+        if (!requestBody.isBlank()) {
+            task = jsonToTask(requestBody);
         }
-        return -1;
+
+        if (hasTaskId(path)) {
+            task.setId(Long.valueOf(path.split("/")[2]));
+        }
+
+        return task;
+    }
+
+    private boolean isTask(String path) {
+        return path.startsWith("/tasks");
+    }
+
+    private boolean hasTaskId(String path) {
+        return path.split("/").length > 2;
     }
 
     private String taskToJson(List<Task> taskList) throws IOException {

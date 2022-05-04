@@ -7,6 +7,17 @@ public class Task {
     private Long id;
     private String title;
 
+    public Task() {}
+
+    public Task(Long id, String title) {
+        this.id = id;
+        this.title = title;
+    }
+
+    public boolean isEmpty() {
+        return (id == 0L && title.isEmpty());
+    }
+
     public Long getId() {
         return id;
     }
