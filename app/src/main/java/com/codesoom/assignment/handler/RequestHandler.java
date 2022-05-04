@@ -4,6 +4,7 @@ import com.codesoom.assignment.dto.TaskDto;
 import com.codesoom.assignment.models.MethodType;
 import com.codesoom.assignment.models.StatusCode;
 import com.codesoom.assignment.models.Task;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -49,7 +50,7 @@ public class RequestHandler implements HttpHandler {
         Matcher matcher = urlPattern.matcher(path);
 
         if (path.equals("/tasks")) {
-            String content = objectMapper.writeValueAsString(tasks);
+            String content = taskToJSON(tasks);
             returnOutputStream(exchange, content, StatusCode.OK);
         }
 
@@ -59,7 +60,7 @@ public class RequestHandler implements HttpHandler {
             if (task.isEmpty()) {
                 returnOutputStream(exchange, "", StatusCode.NotFound);
             } else {
-                String content = objectMapper.writeValueAsString(task.get());
+                String content = taskToJSON(task.get());
                 returnOutputStream(exchange, content, StatusCode.OK);
             }
         }
@@ -74,9 +75,9 @@ public class RequestHandler implements HttpHandler {
             if (task.isEmpty()) {
                 returnOutputStream(exchange, "", StatusCode.NotFound);
             } else {
-                TaskDto taskDto = objectMapper.readValue(exchange.getRequestBody().readAllBytes(), TaskDto.class);
+                TaskDto taskDto = toTask(exchange);
                 task.get().setTitle(taskDto.getTitle());
-                String content = objectMapper.writeValueAsString(task.get());
+                String content = taskToJSON(task.get());
                 returnOutputStream(exchange, content, StatusCode.OK);
             }
         }
@@ -86,13 +87,12 @@ public class RequestHandler implements HttpHandler {
         String path = urlPath(exchange);
 
         if (path.equals("/tasks")) {
-            TaskDto taskDto = objectMapper.readValue(exchange.getRequestBody().readAllBytes(),
-                    TaskDto.class);
+            TaskDto taskDto = toTask(exchange);
             long currentId = tasks.stream().max(Comparator.comparingLong(Task::getId)).map(x -> x.getId()).orElse(0L);
             Task task = new Task(currentId + 1, taskDto.getTitle());
             tasks.add(task);
 
-            String content = objectMapper.writeValueAsString(task);
+            String content = taskToJSON(task);
             returnOutputStream(exchange, content, StatusCode.CREATED);
         }
     }
@@ -129,4 +129,13 @@ public class RequestHandler implements HttpHandler {
                 .findFirst();
         return task;
     }
+
+    private TaskDto toTask(HttpExchange exchange) throws IOException {
+        return objectMapper.readValue(exchange.getRequestBody().readAllBytes(), TaskDto.class);
+    }
+
+    private <T> String taskToJSON(T task) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(task);
+    }
+
 }
