@@ -31,39 +31,45 @@ public class CustomHttpHandler implements HttpHandler {
         Task task = setTask(path, requestBody);
 
         String content = "";
-        int resCode = HttpStatus.OK.getValue();
+        int resCode = HttpStatus.OK;
         List<Task> result = new ArrayList<>();
         if (isTask(path)) {
-            if ("GET".equals(method)) {
-                if (hasTaskId(path)) {
-                    result.add(taskManager.findTask(task));
+            switch (method) {
+                case HttpMethodCode.GET:
+                    if (hasTaskId(path)) {
+                        result.add(taskManager.findTask(task));
+                        content = taskToJson(result);
+                        resCode = HttpStatus.OK;
+                    } else {
+                        content = taskToJson(taskManager.findTaskAll());
+                        resCode = HttpStatus.OK;
+                    }
+                    break;
+                case HttpMethodCode.POST:
+                    taskManager.insertTask(task);
                     content = taskToJson(result);
-                    resCode = HttpStatus.OK.getValue();
-                } else {
-                    content = taskToJson(taskManager.findTaskAll());
-                    resCode = HttpStatus.OK.getValue();
-                }
-            }
-            if ("POST".equals(method)) {
-                taskManager.insertTask(task);
-                content = taskToJson(result);
-                resCode = HttpStatus.CREATED.getValue();
-            }
-            if ("PUT".equals(method) || "PATCH".equals(method)) {
-                if (!hasTaskId(path) || taskManager.findTask(task).isEmpty()) {
-                    resCode = HttpStatus.NOT_FOUND.getValue();
-                } else {
-                    taskManager.updateTask(task);
-                    resCode = HttpStatus.OK.getValue();
-                }
-            }
-            if ("DELETE".equals(method)) {
-                if (!hasTaskId(path) || taskManager.findTask(task).isEmpty()) {
-                    resCode = HttpStatus.NOT_FOUND.getValue();
-                } else {
-                    taskManager.deleteTask(task);
-                    resCode = HttpStatus.NO_CONTENT.getValue();
-                }
+                    resCode = HttpStatus.CREATED;
+                    break;
+                case HttpMethodCode.PUT:
+                case HttpMethodCode.PATCH:
+                    if (!hasTaskId(path) || taskManager.findTask(task).isEmpty()) {
+                        resCode = HttpStatus.NOT_FOUND;
+                    } else {
+                        taskManager.updateTask(task);
+                        resCode = HttpStatus.OK;
+                    }
+                    break;
+                case HttpMethodCode.DELETE:
+                    if (!hasTaskId(path) || taskManager.findTask(task).isEmpty()) {
+                        resCode = HttpStatus.NOT_FOUND;
+                    } else {
+                        taskManager.deleteTask(task);
+                        resCode = HttpStatus.NO_CONTENT;
+                    }
+                    break;
+                default:
+                    resCode = HttpStatus.NOT_FOUND;
+                    break;
             }
         }
 

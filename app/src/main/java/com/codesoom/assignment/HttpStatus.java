@@ -1,18 +1,8 @@
 package com.codesoom.assignment;
 
-public enum HttpStatus {
-    NOT_FOUND(404),
-    OK(200),
-    CREATED(201),
-    NO_CONTENT(204);
-
-    private int value;
-
-    HttpStatus(int value) {
-        this.value = value;
-    }
-
-    public int getValue() {
-        return value;
-    }
+public class HttpStatus {
+    public static final int NOT_FOUND = 404;
+    public static final int OK = 200;
+    public static final int CREATED = 201;
+    public static final int NO_CONTENT = 204;
 }
