@@ -7,7 +7,6 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,7 +33,7 @@ public class CustomHttpHandler implements HttpHandler {
         }
 
         String content = "";
-        int resCode = 200;
+        int resCode = HttpStatus.OK.getValue();
         List<Task> result = new ArrayList<>();
 
         if ("GET".equals(method)) {
@@ -45,7 +44,7 @@ public class CustomHttpHandler implements HttpHandler {
                     result.add(tasks.get(index));
                     content = taskToJson(result);
                 } else {
-                    resCode = 404;
+                    resCode = HttpStatus.NOT_FOUND.getValue();
                 }
             } else {
                 content = taskToJson(tasks);
@@ -56,7 +55,7 @@ public class CustomHttpHandler implements HttpHandler {
             tasks.add(task);
             result.add(task);
             content = taskToJson(result);
-            resCode = 201;
+            resCode = HttpStatus.CREATED.getValue();
         }
         if ("PUT".equals(method) || "PATCH".equals(method)) {
             if (pathInfo.length > 2) {
@@ -66,10 +65,10 @@ public class CustomHttpHandler implements HttpHandler {
                     tasks.get(index).setTitle(task.getTitle());
                     content = taskToJson(tasks);
                 } else {
-                    resCode = 404;
+                    resCode = HttpStatus.NOT_FOUND.getValue();
                 }
             } else {
-                resCode = 404;
+                resCode = HttpStatus.NOT_FOUND.getValue();
             }
         }
         if ("DELETE".equals(method)) {
@@ -78,12 +77,12 @@ public class CustomHttpHandler implements HttpHandler {
                 int index = findById(taskId);
                 if (index > 0) {
                     tasks.remove(index);
-                    resCode = 204;
+                    resCode = HttpStatus.NO_CONTENT.getValue();
                 } else {
-                    resCode = 404;
+                    resCode = HttpStatus.NOT_FOUND.getValue();
                 }
             } else {
-                resCode = 404;
+                resCode = HttpStatus.NOT_FOUND.getValue();
             }
 
         }
