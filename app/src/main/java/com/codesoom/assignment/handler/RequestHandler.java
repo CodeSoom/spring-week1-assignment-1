@@ -37,6 +37,7 @@ public class RequestHandler implements HttpHandler {
                 putTasksProcessor(exchange);
                 break;
             case DELETE:
+                deleteTasksProcessor(exchange);
                 break;
             default:
                 throw new IllegalArgumentException("지원되지 않는 METHOD 타입입니다.");
@@ -94,6 +95,22 @@ public class RequestHandler implements HttpHandler {
 
             String content = objectMapper.writeValueAsString(task);
             returnOutputStream(exchange, content, StatusCode.CREATED);
+        }
+    }
+
+    private void deleteTasksProcessor(HttpExchange exchange) throws IOException {
+        String path = urlPath(exchange);
+        Matcher matcher = urlPattern.matcher(path);
+
+        if (matcher.find()) {
+            Optional<Task> task = tasks.stream().filter(x -> x.getId().equals(Long.parseLong(matcher.group(1))))
+                    .findFirst();
+            if (task.isEmpty()) {
+                returnOutputStream(exchange, "", StatusCode.NoContent);
+            } else {
+                tasks.remove(task.get());
+                returnOutputStream(exchange, "", StatusCode.OK);
+            }
         }
     }
 
