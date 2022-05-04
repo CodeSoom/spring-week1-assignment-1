@@ -1,11 +1,14 @@
 package com.codesoom.assignment;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpHandler;
 
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
 import java.net.URI;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.codesoom.assignment.HttpMethod.*;
@@ -14,6 +17,7 @@ public class DemoHttpHandler implements HttpHandler {
     private static final int HTTP_OK_CODE = 200;
     private static final int HTTP_CREATE_CODE = 201;
     private static final int HTTP_NO_CONTENT_CODE = 204;
+    private final List<Task> tasks = new LinkedList<>();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException, IllegalArgumentException {
@@ -24,7 +28,7 @@ public class DemoHttpHandler implements HttpHandler {
         String body = getHttpRequestBody(exchange);
 
         if (method == GET && path.equals("/tasks")) {
-            content = "content with GET";
+            content = tasksToJson();
             exchange.sendResponseHeaders(HTTP_OK_CODE, content.getBytes().length);
         }
 
@@ -46,6 +50,15 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         sendResponse(exchange, content);
+    }
+
+    private String tasksToJson() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+
+        OutputStream outputStream = new ByteArrayOutputStream();
+        mapper.writeValue(outputStream, tasks);
+
+        return outputStream.toString();
     }
 
     private void sendResponse(HttpExchange exchange, String content) throws IOException {
