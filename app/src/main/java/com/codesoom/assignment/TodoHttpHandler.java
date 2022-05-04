@@ -32,10 +32,19 @@ public class TodoHttpHandler implements HttpHandler {
 
         String content = "";
 
-        if(path.equals("/tasks")) {
+        if(path.startsWith("/tasks")) { // path가 /tasks로 시작하는 요청들에 대한 처리
             // 할 일 목록 얻기
             if(method.equals("GET")) {
                 content = tasksToJSON(); // 리스트에 저장되어 있던 task들을 json 형태로 가져오기
+            }
+
+            // 상세 조회하기
+            if(method.equals("GET")) {
+                if(path.length() > 6) {
+                    int taskId = Integer.parseInt(path.substring(path.lastIndexOf('/') + 1)); // path에 포함되어있는 task id 추출
+                    Task task = tasks.get(taskId - 1);
+                    content = task.toString();
+                }
             }
 
             // 할 일 생성하기
