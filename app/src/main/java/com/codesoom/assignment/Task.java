@@ -28,7 +28,7 @@ public class Task {
 
     private Long generateId() {
         Long generatedId = maxId;
-        maxId += 1;
+        maxId++;
         return generatedId;
     }
 }
