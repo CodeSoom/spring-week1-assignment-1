@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,46 +39,52 @@ public class DemoHttpHandler implements HttpHandler {
 	}
 
 	private void deleteTask(HttpExchange exchange) throws IOException {
-		Long id = getId(exchange);
-		Task task = tasks.stream()
-			.filter(t -> t.getId().equals(id))
-			.findAny()
-			.orElseThrow(IllegalArgumentException::new);
-		tasks.remove(task);
-		String content = tasksToJSON();
-		exchange.sendResponseHeaders(204, -1);
-		createOutputStream(exchange, content);
-	}
-
-	private void updateTask(HttpExchange exchange) throws IOException {
-		InputStream inputStream = exchange.getRequestBody();
-		String body = new BufferedReader(new InputStreamReader((inputStream))).lines()
-			.collect(Collectors.joining("\n"));
-		if (!body.isEmpty()) {
-			Long id = getId(exchange);
+		if (exchange.getRequestURI().getPath().startsWith("/tasks/")) {
+			Long id = getIdFromPath(exchange);
 			Task task = tasks.stream()
 				.filter(t -> t.getId().equals(id))
 				.findAny()
 				.orElseThrow(IllegalArgumentException::new);
-			Task changeTask = contentToTask(body);
-			task.setTitle(changeTask.getTitle());
+			tasks.remove(task);
+			String content = tasksToJSON();
+			exchange.sendResponseHeaders(204, -1);
+			createOutputStream(exchange, content);
 		}
-		String content = tasksToJSON();
-		exchange.sendResponseHeaders(200, content.getBytes().length);
-		createOutputStream(exchange, content);
+	}
+
+	private void updateTask(HttpExchange exchange) throws IOException {
+		if (exchange.getRequestURI().getPath().startsWith("/tasks/")) {
+			InputStream inputStream = exchange.getRequestBody();
+			String body = new BufferedReader(new InputStreamReader((inputStream))).lines()
+				.collect(Collectors.joining("\n"));
+			if (!body.isEmpty()) {
+				Long id = getIdFromPath(exchange);
+				Task task = tasks.stream()
+					.filter(t -> t.getId().equals(id))
+					.findAny()
+					.orElseThrow(IllegalArgumentException::new);
+				Task changeTask = contentToTask(body);
+				task.setTitle(changeTask.getTitle());
+			}
+			String content = tasksToJSON();
+			exchange.sendResponseHeaders(200, content.getBytes().length);
+			createOutputStream(exchange, content);
+		}
 	}
 
 	private void createTask(HttpExchange exchange) throws IOException {
-		InputStream inputStream = exchange.getRequestBody();
-		String body = new BufferedReader(new InputStreamReader((inputStream))).lines()
-			.collect(Collectors.joining("\n"));
-		if (!body.isEmpty()) {
-			Task task = contentToTask(body);
-			tasks.add(task);
+		if (exchange.getRequestURI().getPath().equals("/tasks/")) {
+			InputStream inputStream = exchange.getRequestBody();
+			String body = new BufferedReader(new InputStreamReader((inputStream))).lines()
+				.collect(Collectors.joining("\n"));
+			if (!body.isEmpty()) {
+				Task task = contentToTask(body);
+				tasks.add(task);
+			}
+			String content = tasksToJSON();
+			exchange.sendResponseHeaders(201, content.getBytes().length);
+			createOutputStream(exchange, content);
 		}
-		String content = tasksToJSON();
-		exchange.sendResponseHeaders(201, content.getBytes().length);
-		createOutputStream(exchange, content);
 	}
 
 	private void getTask(HttpExchange exchange) throws IOException {
@@ -105,22 +110,20 @@ public class DemoHttpHandler implements HttpHandler {
 	}
 
 	private void getOneTask(HttpExchange exchange) throws IOException {
-		String content = taskToJSON(getId(exchange));
+		String content = taskToJSON(getIdFromPath(exchange));
 		exchange.sendResponseHeaders(200, content.getBytes().length);
 		createOutputStream(exchange, content);
 	}
 
-	private Long getId(HttpExchange exchange) {
-		URI uri = exchange.getRequestURI();
-		String path = uri.getPath();
-		String idString = path.substring(path.lastIndexOf('/') + 1);
+	private Long getIdFromPath(HttpExchange exchange) {
+		String idString = exchange.getRequestURI().getPath().substring("/tasks/".length());
 		canConvertId(idString);
 		return new Long(idString);
 	}
 
-	private void canConvertId(String idStr) {
+	private void canConvertId(String idString) {
 		try {
-			Integer.parseInt(idStr);
+			new Long(idString);
 		} catch (Exception e) {
 			throw new IllegalArgumentException();
 		}
