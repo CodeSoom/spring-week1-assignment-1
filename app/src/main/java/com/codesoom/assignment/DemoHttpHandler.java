@@ -18,6 +18,7 @@ public class DemoHttpHandler implements HttpHandler {
     private static final int HTTP_OK_CODE = 200;
     private static final int HTTP_CREATE_CODE = 201;
     private static final int HTTP_NO_CONTENT_CODE = 204;
+    private static final int HTTP_NOT_FOUND_CODE = 404;
     final Map<Long, Task> tasks;
     static private Long maxId = 1L;
 
@@ -61,6 +62,11 @@ public class DemoHttpHandler implements HttpHandler {
         if (method == PATCH && path.startsWith("/tasks")) {
             long taskId = extractTaskIdFromPath(path);
             Task foundTask = tasks.get(taskId);
+
+            if (foundTask == null){
+                exchange.sendResponseHeaders(HTTP_NOT_FOUND_CODE, 0);
+            }
+
             Task newTask = toTask(mapper, body);
             newTask.setId(foundTask.getId());
             tasks.replace(taskId, foundTask, newTask);
@@ -71,6 +77,12 @@ public class DemoHttpHandler implements HttpHandler {
 
         if (method == DELETE && path.startsWith("/tasks")) {
             long taskId = extractTaskIdFromPath(path);
+            Task foundTask = tasks.get(taskId);
+
+            if (foundTask == null){
+                exchange.sendResponseHeaders(HTTP_NOT_FOUND_CODE, 0);
+            }
+
             tasks.remove(taskId);
             exchange.sendResponseHeaders(HTTP_NO_CONTENT_CODE, 0);
         }
