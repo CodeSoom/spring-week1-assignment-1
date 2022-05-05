@@ -1,5 +1,5 @@
 package com.codesoom.assignment;
 
 public enum HttpMethod {
-    GET, POST, PATCH, DELETE, PUT
+    GET, POST, DELETE, PUT
 }

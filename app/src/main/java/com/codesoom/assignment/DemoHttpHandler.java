@@ -9,7 +9,6 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.*;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.codesoom.assignment.HttpMethod.*;
