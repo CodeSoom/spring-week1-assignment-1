@@ -28,12 +28,6 @@ public class TaskRepository {
         taskMap.remove(id);
     }
 
-    public Long update(Long id, Task task) {
-        Task findTask = taskMap.get(id);
-        findTask.setTitle(task.getTitle());
-        return id;
-    }
-
     private void incrementSequence() {
         this.sequence += 1;
     }
