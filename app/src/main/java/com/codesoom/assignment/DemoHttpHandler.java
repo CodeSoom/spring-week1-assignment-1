@@ -46,6 +46,17 @@ public class DemoHttpHandler implements HttpHandler {
             content = tasksToJson(mapper);
         }
 
+        if (method == GET && path.startsWith("/tasks/")) {
+            long taskId = extractTaskIdFromPath(path);
+            Task foundTask = tasks.get(taskId);
+
+            if (foundTask == null) {
+                statudCode = HTTP_NOT_FOUND_CODE;
+            } else {
+                content = taskToJson(mapper, foundTask);
+            }
+        }
+
         if (method == POST && path.equals("/tasks")) {
             try {
                 Task newTask = toTask(mapper, body);
