@@ -46,7 +46,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         if (method == GET && path.startsWith("/tasks/")) {
-            long taskId = extractTaskIdFromPath(path);
+            long taskId = extractTaskIdFrom(path);
             Task foundTask = tasks.get(taskId);
 
             if (foundTask == null) {
@@ -69,7 +69,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         if (method == PATCH && path.startsWith("/tasks")) {
-            long taskId = extractTaskIdFromPath(path);
+            long taskId = extractTaskIdFrom(path);
             Task foundTask = tasks.get(taskId);
 
             if (foundTask == null) {
@@ -84,7 +84,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         if (method == PUT && path.startsWith("/tasks")) {
-            long taskId = extractTaskIdFromPath(path);
+            long taskId = extractTaskIdFrom(path);
             Task foundTask = tasks.get(taskId);
 
             if (foundTask == null) {
@@ -99,7 +99,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         if (method == DELETE && path.startsWith("/tasks")) {
-            long taskId = extractTaskIdFromPath(path);
+            long taskId = extractTaskIdFrom(path);
             Task foundTask = tasks.get(taskId);
 
             if (foundTask == null) {
@@ -140,7 +140,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
     }
 
-    private long extractTaskIdFromPath(String path) {
+    private long extractTaskIdFrom(String path) {
         String taskId = path.split("/")[2];
         return Long.parseLong(taskId);
     }
