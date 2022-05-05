@@ -75,6 +75,22 @@ public class DemoHttpHandler implements HttpHandler {
             exchange.sendResponseHeaders(HTTP_OK_CODE, content.getBytes().length);
         }
 
+        if (method == PUT && path.startsWith("/tasks")) {
+            long taskId = extractTaskIdFromPath(path);
+            Task foundTask = tasks.get(taskId);
+
+            if (foundTask == null){
+                exchange.sendResponseHeaders(HTTP_NOT_FOUND_CODE, 0);
+            }
+
+            Task newTask = toTask(mapper, body);
+            newTask.setId(foundTask.getId());
+            tasks.replace(taskId, foundTask, newTask);
+
+            content = taskToJson(mapper, newTask);
+            exchange.sendResponseHeaders(HTTP_OK_CODE, content.getBytes().length);
+        }
+
         if (method == DELETE && path.startsWith("/tasks")) {
             long taskId = extractTaskIdFromPath(path);
             Task foundTask = tasks.get(taskId);
