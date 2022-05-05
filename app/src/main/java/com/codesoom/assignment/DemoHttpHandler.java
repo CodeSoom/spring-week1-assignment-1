@@ -20,6 +20,9 @@ public class DemoHttpHandler implements HttpHandler {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final List<Task> tasks = new ArrayList<>();
 	private int id = 1;
+	private static int OK = 200;
+	private static int NO_CONTENT = 204;
+	private static int CREATED = 201;
 
 	protected DemoHttpHandler() {
 	}
@@ -47,7 +50,7 @@ public class DemoHttpHandler implements HttpHandler {
 				.orElseThrow(IllegalArgumentException::new);
 			tasks.remove(task);
 			String content = tasksToJSON();
-			exchange.sendResponseHeaders(204, -1);
+			exchange.sendResponseHeaders(NO_CONTENT, -1);
 			createOutputStream(exchange, content);
 		}
 	}
@@ -67,7 +70,7 @@ public class DemoHttpHandler implements HttpHandler {
 				task.setTitle(changeTask.getTitle());
 			}
 			String content = tasksToJSON();
-			exchange.sendResponseHeaders(200, content.getBytes().length);
+			exchange.sendResponseHeaders(OK, content.getBytes().length);
 			createOutputStream(exchange, content);
 		}
 	}
@@ -82,7 +85,7 @@ public class DemoHttpHandler implements HttpHandler {
 				tasks.add(task);
 			}
 			String content = tasksToJSON();
-			exchange.sendResponseHeaders(201, content.getBytes().length);
+			exchange.sendResponseHeaders(CREATED, content.getBytes().length);
 			createOutputStream(exchange, content);
 		}
 	}
@@ -100,7 +103,7 @@ public class DemoHttpHandler implements HttpHandler {
 
 	private void getAllTasks(HttpExchange exchange) throws IOException {
 		String content = tasksToJSON();
-		exchange.sendResponseHeaders(200, content.getBytes().length);
+		exchange.sendResponseHeaders(OK, content.getBytes().length);
 		createOutputStream(exchange, content);
 	}
 
@@ -113,7 +116,7 @@ public class DemoHttpHandler implements HttpHandler {
 
 	private void getOneTask(HttpExchange exchange) throws IOException {
 		String content = taskToJSON(getIdFromPath(exchange));
-		exchange.sendResponseHeaders(200, content.getBytes().length);
+		exchange.sendResponseHeaders(OK, content.getBytes().length);
 		createOutputStream(exchange, content);
 	}
 
