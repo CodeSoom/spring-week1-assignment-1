@@ -1,10 +1,10 @@
 package com.codesoom.assignment;
 
-public class ResponseHeader {
+public class HttpResponse {
     private final int statusCode;
     private final String content;
 
-    ResponseHeader(int statusCode, String content) {
+    HttpResponse(int statusCode, String content) {
         this.statusCode = statusCode;
         this.content = content;
     }
