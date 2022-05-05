@@ -125,10 +125,10 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private void sendResponse(HttpExchange exchange, String content) throws IOException {
-        OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
+        try (OutputStream outputStream = exchange.getResponseBody()) {
+            outputStream.write(content.getBytes());
+            outputStream.flush();
+        }
     }
 
     private long extractTaskIdFromPath(String path) {
