@@ -102,10 +102,6 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
-    /*
-     * path가 올바른 pathvarialbe을 포함하고 있는지 확인하는 메소드
-     * 좀 더 좋은 좋은 이름을 지을 수 있을거 같은데 생각이 안남 ㅜㅜ
-     */
     private boolean containPathVariable(String path) {
         String substring = path.substring(TASK_DEFAULT_PATH.length());// ex) /tasks/3 -> /3
 
@@ -126,9 +122,6 @@ public class DemoHttpHandler implements HttpHandler {
         return true;
     }
 
-    /*
-     * containPathVariable 과 중복되는 코드가 많아 리팩토링을 해야 될거같음
-     */
     private Long getPathVariable(String path) {
         String substring = path.substring(TASK_DEFAULT_PATH.length());// ex) /tasks/3 -> /3
         String pathVariable = substring.substring(1);
