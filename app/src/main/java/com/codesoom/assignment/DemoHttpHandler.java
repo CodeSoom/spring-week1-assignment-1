@@ -35,6 +35,7 @@ public class DemoHttpHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException, IllegalArgumentException {
         String content = "basic content";
+        int statudCode = HTTP_OK_CODE;
         ObjectMapper mapper = new ObjectMapper();
 
         HttpMethod method = getHttpMethod(exchange);
@@ -43,7 +44,6 @@ public class DemoHttpHandler implements HttpHandler {
 
         if (method == GET && path.equals("/tasks")) {
             content = tasksToJson(mapper);
-            exchange.sendResponseHeaders(HTTP_OK_CODE, content.getBytes().length);
         }
 
         if (method == POST && path.equals("/tasks")) {
@@ -53,8 +53,8 @@ public class DemoHttpHandler implements HttpHandler {
                 newTask.setId(newId);
                 tasks.put(newId, newTask);
                 content = taskToJson(mapper, newTask);
-                exchange.sendResponseHeaders(HTTP_CREATE_CODE, content.getBytes().length);
-            } catch (JsonProcessingException e){
+                statudCode = HTTP_CREATE_CODE;
+            } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
         }
@@ -63,47 +63,47 @@ public class DemoHttpHandler implements HttpHandler {
             long taskId = extractTaskIdFromPath(path);
             Task foundTask = tasks.get(taskId);
 
-            if (foundTask == null){
-                exchange.sendResponseHeaders(HTTP_NOT_FOUND_CODE, 0);
+            if (foundTask == null) {
+                statudCode = HTTP_NOT_FOUND_CODE;
+            } else {
+                Task newTask = toTask(mapper, body);
+                newTask.setId(foundTask.getId());
+                tasks.replace(taskId, foundTask, newTask);
+
+                content = taskToJson(mapper, newTask);
             }
 
-            Task newTask = toTask(mapper, body);
-            newTask.setId(foundTask.getId());
-            tasks.replace(taskId, foundTask, newTask);
-
-            content = taskToJson(mapper, newTask);
-            exchange.sendResponseHeaders(HTTP_OK_CODE, content.getBytes().length);
         }
 
         if (method == PUT && path.startsWith("/tasks")) {
             long taskId = extractTaskIdFromPath(path);
             Task foundTask = tasks.get(taskId);
 
-            if (foundTask == null){
-                exchange.sendResponseHeaders(HTTP_NOT_FOUND_CODE, 0);
+            if (foundTask == null) {
+                statudCode = HTTP_NOT_FOUND_CODE;
+            } else {
+                Task newTask = toTask(mapper, body);
+                newTask.setId(foundTask.getId());
+                tasks.replace(taskId, foundTask, newTask);
+                content = taskToJson(mapper, newTask);
             }
 
-            Task newTask = toTask(mapper, body);
-            newTask.setId(foundTask.getId());
-            tasks.replace(taskId, foundTask, newTask);
-
-            content = taskToJson(mapper, newTask);
-            exchange.sendResponseHeaders(HTTP_OK_CODE, content.getBytes().length);
         }
 
         if (method == DELETE && path.startsWith("/tasks")) {
             long taskId = extractTaskIdFromPath(path);
             Task foundTask = tasks.get(taskId);
 
-            if (foundTask == null){
-                exchange.sendResponseHeaders(HTTP_NOT_FOUND_CODE, 0);
+            if (foundTask == null) {
+                statudCode = HTTP_NOT_FOUND_CODE;
+            } else {
+                tasks.remove(taskId);
+                statudCode = HTTP_NO_CONTENT_CODE;
             }
 
-            tasks.remove(taskId);
-            exchange.sendResponseHeaders(HTTP_NO_CONTENT_CODE, 0);
         }
 
-        sendResponse(exchange, content);
+        sendResponse(exchange, content, statudCode);
     }
 
     private Task toTask(ObjectMapper mapper, String content) throws JsonProcessingException {
@@ -124,7 +124,9 @@ public class DemoHttpHandler implements HttpHandler {
         return outputStream.toString();
     }
 
-    private void sendResponse(HttpExchange exchange, String content) throws IOException {
+    private void sendResponse(HttpExchange exchange, String content, int httpStatusCode) throws IOException {
+        exchange.sendResponseHeaders(httpStatusCode, content.getBytes().length);
+
         try (OutputStream outputStream = exchange.getResponseBody()) {
             outputStream.write(content.getBytes());
             outputStream.flush();
