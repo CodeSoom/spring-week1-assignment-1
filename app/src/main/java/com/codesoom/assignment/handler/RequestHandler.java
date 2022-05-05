@@ -51,17 +51,17 @@ public class RequestHandler implements HttpHandler {
 
         if (path.equals("/tasks")) {
             String content = taskToJSON(tasks);
-            returnOutputStream(exchange, content, StatusCode.OK);
+            sendResponse(exchange, content, StatusCode.OK);
         }
 
         if (matcher.find()) {
             Optional<Task> task = getTaskById(matcher);
 
             if (task.isEmpty()) {
-                returnOutputStream(exchange, "", StatusCode.NotFound);
+                sendResponse(exchange, "", StatusCode.NotFound);
             } else {
                 String content = taskToJSON(task.get());
-                returnOutputStream(exchange, content, StatusCode.OK);
+                sendResponse(exchange, content, StatusCode.OK);
             }
         }
     }
@@ -73,12 +73,12 @@ public class RequestHandler implements HttpHandler {
         if (matcher.find()) {
             Optional<Task> task = getTaskById(matcher);
             if (task.isEmpty()) {
-                returnOutputStream(exchange, "", StatusCode.NotFound);
+                sendResponse(exchange, "", StatusCode.NotFound);
             } else {
                 TaskDto taskDto = toTask(exchange);
                 task.get().setTitle(taskDto.getTitle());
                 String content = taskToJSON(task.get());
-                returnOutputStream(exchange, content, StatusCode.OK);
+                sendResponse(exchange, content, StatusCode.OK);
             }
         }
     }
@@ -93,7 +93,7 @@ public class RequestHandler implements HttpHandler {
             tasks.add(task);
 
             String content = taskToJSON(task);
-            returnOutputStream(exchange, content, StatusCode.CREATED);
+            sendResponse(exchange, content, StatusCode.CREATED);
         }
     }
 
@@ -104,15 +104,15 @@ public class RequestHandler implements HttpHandler {
         if (matcher.find()) {
             Optional<Task> task = getTaskById(matcher);
             if (task.isEmpty()) {
-                returnOutputStream(exchange, "", StatusCode.NotFound);
+                sendResponse(exchange, "", StatusCode.NotFound);
             } else {
                 tasks.remove(task.get());
-                returnOutputStream(exchange, "", StatusCode.NoContent);
+                sendResponse(exchange, "", StatusCode.NoContent);
             }
         }
     }
 
-    private void returnOutputStream(HttpExchange exchange, String content, StatusCode statusCode) throws IOException {
+    private void sendResponse(HttpExchange exchange, String content, StatusCode statusCode) throws IOException {
         exchange.sendResponseHeaders(statusCode.getStatusCode(), content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
