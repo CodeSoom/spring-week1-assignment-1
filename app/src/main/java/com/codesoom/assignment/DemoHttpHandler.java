@@ -27,7 +27,6 @@ public class DemoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException, IllegalArgumentException {
-        HttpResponse httpResponse = new HttpResponse(HTTP_NOT_FOUND_CODE, "유효한 요청이 아닙니다");
         ObjectMapper mapper = new ObjectMapper();
 
         HttpMethod method = getHttpMethod(exchange);
@@ -35,7 +34,7 @@ public class DemoHttpHandler implements HttpHandler {
         String body = getHttpRequestBody(exchange);
 
         if (method == GET && path.equals("/tasks")) {
-            httpResponse = new HttpResponse(HTTP_OK_CODE, tasksToJson(mapper));
+            sendResponse(exchange, HTTP_OK_CODE, tasksToJson(mapper));
         }
 
         if (method == GET && path.startsWith("/tasks/")) {
@@ -43,20 +42,16 @@ public class DemoHttpHandler implements HttpHandler {
             Task foundTask = repository.taskBy(taskId);
 
             if (foundTask == null) {
-                httpResponse = new HttpResponse(HTTP_NOT_FOUND_CODE, "TaskId가 유효하지 않습니다");
+                sendResponse(exchange, HTTP_NOT_FOUND_CODE, "TaskId가 유효하지 않습니다");
             } else {
-                httpResponse = new HttpResponse(HTTP_OK_CODE, taskToJson(mapper, foundTask));
+                sendResponse(exchange, HTTP_OK_CODE, taskToJson(mapper, foundTask));
             }
         }
 
         if (method == POST && path.equals("/tasks")) {
-            try {
-                Task newTask = toTask(mapper, body);
-                repository.save(newTask);
-                httpResponse = new HttpResponse(HTTP_CREATE_CODE, taskToJson(mapper, newTask));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
+            Task newTask = toTask(mapper, body);
+            repository.save(newTask);
+            sendResponse(exchange, HTTP_CREATE_CODE, taskToJson(mapper, newTask));
         }
 
         if (method == PATCH && path.startsWith("/tasks")) {
@@ -64,11 +59,11 @@ public class DemoHttpHandler implements HttpHandler {
             Task foundTask = repository.taskBy(taskId);
 
             if (foundTask == null) {
-                httpResponse = new HttpResponse(HTTP_NOT_FOUND_CODE, "TaskId가 유효하지 않습니다");
+                sendResponse(exchange, HTTP_NOT_FOUND_CODE, "TaskId가 유효하지 않습니다");
             } else {
                 Task newTask = toTask(mapper, body);
                 newTask = repository.update(taskId, newTask);
-                httpResponse = new HttpResponse(HTTP_OK_CODE, taskToJson(mapper, newTask));
+                sendResponse(exchange, HTTP_OK_CODE, taskToJson(mapper, newTask));
             }
 
         }
@@ -78,11 +73,11 @@ public class DemoHttpHandler implements HttpHandler {
             Task foundTask = repository.taskBy(taskId);
 
             if (foundTask == null) {
-                httpResponse = new HttpResponse(HTTP_NOT_FOUND_CODE, "TaskId가 유효하지 않습니다");
+                sendResponse(exchange, HTTP_NOT_FOUND_CODE, "TaskId가 유효하지 않습니다");
             } else {
                 Task newTask = toTask(mapper, body);
                 newTask = repository.update(taskId, newTask);
-                httpResponse = new HttpResponse(HTTP_OK_CODE, taskToJson(mapper, newTask));
+                sendResponse(exchange, HTTP_OK_CODE, taskToJson(mapper, newTask));
             }
 
         }
@@ -92,14 +87,14 @@ public class DemoHttpHandler implements HttpHandler {
             Task foundTask = repository.taskBy(taskId);
 
             if (foundTask == null) {
-                httpResponse = new HttpResponse(HTTP_NOT_FOUND_CODE, "TaskId가 유효하지 않습니다");
+                sendResponse(exchange, HTTP_NOT_FOUND_CODE, "TaskId가 유효하지 않습니다");
             } else {
                 repository.delete(taskId);
-                httpResponse = new HttpResponse(HTTP_NO_CONTENT_CODE, "정상적으로 삭제되었습니다");
+                sendResponse(exchange, HTTP_NO_CONTENT_CODE, "정상적으로 삭제되었습니다");
             }
         }
-        sendResponse(exchange, httpResponse);
     }
+
 
     private Task toTask(ObjectMapper mapper, String content) throws JsonProcessingException {
         return mapper.readValue(content, Task.class);
@@ -119,11 +114,11 @@ public class DemoHttpHandler implements HttpHandler {
         return outputStream.toString();
     }
 
-    private void sendResponse(HttpExchange exchange, HttpResponse header) throws IOException {
-        exchange.sendResponseHeaders(header.getStatusCode(), header.getContent().getBytes().length);
+    private void sendResponse(HttpExchange exchange, int statudCode, String content) throws IOException {
+        exchange.sendResponseHeaders(statudCode, content.getBytes().length);
 
         try (OutputStream outputStream = exchange.getResponseBody()) {
-            outputStream.write(header.getContent().getBytes());
+            outputStream.write(content.getBytes());
             outputStream.flush();
         }
     }
