@@ -59,10 +59,10 @@ public class RequestHandler implements HttpHandler {
 
             if (task.isEmpty()) {
                 sendResponse(exchange, "", StatusCode.NotFound);
-            } else {
-                String content = taskToJSON(task.get());
-                sendResponse(exchange, content, StatusCode.OK);
             }
+
+            String content = taskToJSON(task.get());
+            sendResponse(exchange, content, StatusCode.OK);
         }
     }
 
@@ -72,14 +72,15 @@ public class RequestHandler implements HttpHandler {
 
         if (matcher.find()) {
             Optional<Task> task = getTaskById(matcher);
+
             if (task.isEmpty()) {
                 sendResponse(exchange, "", StatusCode.NotFound);
-            } else {
-                TaskDto taskDto = toTask(exchange);
-                task.get().setTitle(taskDto.getTitle());
-                String content = taskToJSON(task.get());
-                sendResponse(exchange, content, StatusCode.OK);
             }
+
+            TaskDto taskDto = toTask(exchange);
+            task.get().setTitle(taskDto.getTitle());
+            String content = taskToJSON(task.get());
+            sendResponse(exchange, content, StatusCode.OK);
         }
     }
 
@@ -103,12 +104,13 @@ public class RequestHandler implements HttpHandler {
 
         if (matcher.find()) {
             Optional<Task> task = getTaskById(matcher);
+
             if (task.isEmpty()) {
                 sendResponse(exchange, "", StatusCode.NotFound);
-            } else {
-                tasks.remove(task.get());
-                sendResponse(exchange, "", StatusCode.NoContent);
             }
+
+            tasks.remove(task.get());
+            sendResponse(exchange, "", StatusCode.NoContent);
         }
     }
 
