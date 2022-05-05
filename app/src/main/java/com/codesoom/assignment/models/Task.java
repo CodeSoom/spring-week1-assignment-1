@@ -1,18 +1,31 @@
 package com.codesoom.assignment.models;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.Objects;
+
 public class Task {
     private Long id;
     private String title;
 
-    public Task(Long id, String title) {
+    @JsonCreator
+    public Task(@JsonProperty("id") Long id,
+                @JsonProperty("title") String title)
+    {
+        Objects.requireNonNull(id);
+        Objects.requireNonNull(title);
         this.id = id;
         this.title = title;
     }
 
+    @JsonGetter
     public Long getId() {
         return id;
     }
 
+    @JsonGetter
     public String getTitle() {
         return title;
     }

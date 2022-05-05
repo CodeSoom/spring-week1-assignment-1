@@ -12,9 +12,13 @@ public class TaskManager {
         return new ArrayList<>(TASKS.values());
     }
 
-    public static Task insert(Task task) {
-        index++;
-        TASKS.put(index, task);
-        return task;
+    public static Task insert(Task task) throws ClassNotFoundException {
+        synchronized (Class.forName("com.codesoom.assignment.models.TaskManager")) {
+            index++;
+            Task newTask = new Task(index, task.getTitle());
+            TASKS.put(index, task);
+            return newTask;
+        }
     }
+
 }

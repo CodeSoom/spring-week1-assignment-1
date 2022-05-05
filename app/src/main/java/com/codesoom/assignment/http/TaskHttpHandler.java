@@ -23,12 +23,18 @@ public class TaskHttpHandler implements HttpHandler {
                 exchange.getRequestBody());
 
         if (httpRequest.getPath().equals(TASK_PATH)) {
-            HttpResponse httpResponse = handleMethod(exchange, httpRequest);
+            HttpResponse httpResponse = null;
+            try {
+                httpResponse = handleMethod(exchange, httpRequest);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
             send(exchange, httpResponse);
         }
     }
 
-    private HttpResponse handleMethod(HttpExchange exchange, HttpRequest httpRequest) throws IOException {
+    private HttpResponse handleMethod(HttpExchange exchange, HttpRequest httpRequest) throws IOException,
+            ClassNotFoundException {
         String method = exchange.getRequestMethod();
 
         if (method.equals(RequestMethod.GET.toString())) {
@@ -38,13 +44,12 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         if (method.equals(RequestMethod.POST.toString())) {
-            // todo: ConnectionError
             Task task = toTask(httpRequest.getBody());
             Task newTask = TaskManager.insert(task);
             return new HttpResponse(HttpResponse.STATUS_CREATED, newTask.toString());
         }
 
-        return new HttpResponse(HttpResponse.STATUS_NOT_FOUND, "Not found");
+        return new HttpResponse(HttpResponse.STATUS_NOT_FOUND, "Not Found");
     }
 
     private Task toTask(String content) throws JsonProcessingException {
@@ -53,6 +58,9 @@ public class TaskHttpHandler implements HttpHandler {
 
     private void send(HttpExchange exchange, HttpResponse httpResponse) throws IOException {
         exchange.sendResponseHeaders(httpResponse.getStatusCode(), httpResponse.getContent().getBytes().length);
+
+        // todo: try-catch-finally
+        // 이펙티브 자바 아이템 9
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(httpResponse.getContent().getBytes());
