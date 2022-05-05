@@ -19,17 +19,10 @@ public class DemoHttpHandler implements HttpHandler {
     private static final int HTTP_CREATE_CODE = 201;
     private static final int HTTP_NO_CONTENT_CODE = 204;
     private static final int HTTP_NOT_FOUND_CODE = 404;
-    final Map<Long, Task> tasks;
-    static private Long maxId = 1L;
+    private final TaskRepository repository;
 
-    private Long generateTaskId() {
-        Long generatedId = maxId;
-        maxId++;
-        return generatedId;
-    }
-
-    public DemoHttpHandler(Map<Long, Task> tasks) {
-        this.tasks = tasks;
+    public DemoHttpHandler(TaskRepository repository) {
+        this.repository = repository;
     }
 
     @Override
@@ -47,7 +40,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         if (method == GET && path.startsWith("/tasks/")) {
             long taskId = extractTaskIdFrom(path);
-            Task foundTask = tasks.get(taskId);
+            Task foundTask = repository.taskBy(taskId);
 
             if (foundTask == null) {
                 httpResponse = new HttpResponse(HTTP_NOT_FOUND_CODE, "TaskId가 유효하지 않습니다");
@@ -59,9 +52,7 @@ public class DemoHttpHandler implements HttpHandler {
         if (method == POST && path.equals("/tasks")) {
             try {
                 Task newTask = toTask(mapper, body);
-                Long newId = generateTaskId();
-                newTask.setId(newId);
-                tasks.put(newId, newTask);
+                repository.save(newTask);
                 httpResponse = new HttpResponse(HTTP_CREATE_CODE, taskToJson(mapper, newTask));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
@@ -70,14 +61,13 @@ public class DemoHttpHandler implements HttpHandler {
 
         if (method == PATCH && path.startsWith("/tasks")) {
             long taskId = extractTaskIdFrom(path);
-            Task foundTask = tasks.get(taskId);
+            Task foundTask = repository.taskBy(taskId);
 
             if (foundTask == null) {
                 httpResponse = new HttpResponse(HTTP_NOT_FOUND_CODE, "TaskId가 유효하지 않습니다");
             } else {
                 Task newTask = toTask(mapper, body);
-                newTask.setId(foundTask.getId());
-                tasks.replace(taskId, foundTask, newTask);
+                newTask = repository.update(taskId, newTask);
                 httpResponse = new HttpResponse(HTTP_OK_CODE, taskToJson(mapper, newTask));
             }
 
@@ -85,14 +75,13 @@ public class DemoHttpHandler implements HttpHandler {
 
         if (method == PUT && path.startsWith("/tasks")) {
             long taskId = extractTaskIdFrom(path);
-            Task foundTask = tasks.get(taskId);
+            Task foundTask = repository.taskBy(taskId);
 
             if (foundTask == null) {
                 httpResponse = new HttpResponse(HTTP_NOT_FOUND_CODE, "TaskId가 유효하지 않습니다");
             } else {
                 Task newTask = toTask(mapper, body);
-                newTask.setId(foundTask.getId());
-                tasks.replace(taskId, foundTask, newTask);
+                newTask = repository.update(taskId, newTask);
                 httpResponse = new HttpResponse(HTTP_OK_CODE, taskToJson(mapper, newTask));
             }
 
@@ -100,13 +89,12 @@ public class DemoHttpHandler implements HttpHandler {
 
         if (method == DELETE && path.startsWith("/tasks")) {
             long taskId = extractTaskIdFrom(path);
-            Task foundTask = tasks.get(taskId);
+            Task foundTask = repository.taskBy(taskId);
 
             if (foundTask == null) {
                 httpResponse = new HttpResponse(HTTP_NOT_FOUND_CODE, "TaskId가 유효하지 않습니다");
             } else {
-                tasks.remove(taskId);
-
+                repository.delete(taskId);
                 httpResponse = new HttpResponse(HTTP_NO_CONTENT_CODE, "정상적으로 삭제되었습니다");
             }
         }
@@ -119,7 +107,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     private String tasksToJson(ObjectMapper mapper) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        mapper.writeValue(outputStream, tasks.values());
+        mapper.writeValue(outputStream, repository.tasksAll());
 
         return outputStream.toString();
     }

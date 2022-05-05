@@ -19,7 +19,6 @@ public class HttpResponse {
 
     @Override
     public String toString() {
-
         return String.format("{ statusCode = %s, content = %s }", statusCode, content);
     }
 }
