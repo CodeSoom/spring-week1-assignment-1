@@ -71,8 +71,8 @@ public class DemoHttpHandler implements HttpHandler {
 
         if (method == DELETE && path.startsWith("/tasks")) {
             long taskId = extractTaskIdFromPath(path);
-            content = "content with DELETE " + taskId;
-            exchange.sendResponseHeaders(HTTP_NO_CONTENT_CODE, content.getBytes().length);
+            tasks.remove(taskId);
+            exchange.sendResponseHeaders(HTTP_NO_CONTENT_CODE, 0);
         }
 
         sendResponse(exchange, content);
