@@ -36,9 +36,7 @@ public class DemoHttpHandler implements HttpHandler {
         // POST /tasks
         if (method.equals("POST") && path.equals(TASK_DEFAULT_PATH)) {
             Task task = toTask(body);
-            Long savedId = taskRepository.save(task);
-
-            Task savedTask = taskRepository.findById(savedId);
+            Task savedTask = taskRepository.save(task);
             sendResponse(exchange, toJson(savedTask), HttpStatus.CREATED);
             return;
         }
