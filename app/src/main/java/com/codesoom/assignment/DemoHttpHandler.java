@@ -9,7 +9,7 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.*;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.codesoom.assignment.HttpMethod.*;
@@ -18,9 +18,16 @@ public class DemoHttpHandler implements HttpHandler {
     private static final int HTTP_OK_CODE = 200;
     private static final int HTTP_CREATE_CODE = 201;
     private static final int HTTP_NO_CONTENT_CODE = 204;
-    private final List<Task> tasks;
+    final Map<Long, Task> tasks;
+    static private Long maxId = 1L;
 
-    public DemoHttpHandler(List<Task> tasks) {
+    private Long generateTaskId() {
+        Long generatedId = maxId;
+        maxId++;
+        return generatedId;
+    }
+
+    public DemoHttpHandler(Map<Long, Task> tasks) {
         this.tasks = tasks;
     }
 
@@ -41,7 +48,9 @@ public class DemoHttpHandler implements HttpHandler {
         if (method == POST && path.equals("/tasks")) {
             try {
                 Task newTask = toTask(mapper, body);
-                tasks.add(newTask);
+                Long newId = generateTaskId();
+                newTask.setId(newId);
+                tasks.put(newId, newTask);
                 content = taskToJson(mapper, newTask);
                 exchange.sendResponseHeaders(HTTP_CREATE_CODE, content.getBytes().length);
             } catch (JsonProcessingException e){
@@ -70,7 +79,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     private String tasksToJson(ObjectMapper mapper) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        mapper.writeValue(outputStream, tasks);
+        mapper.writeValue(outputStream, tasks.values());
 
         return outputStream.toString();
     }

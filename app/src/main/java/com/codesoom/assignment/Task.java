@@ -1,16 +1,13 @@
 package com.codesoom.assignment;
 
 public class Task {
-    static private Long maxId = 1L;
-    private final Long id;
+    private Long id;
     private String title;
 
     Task() {
-        this.id = generateId();
     }
 
     Task(String title) {
-        this.id = generateId();
         this.title = title;
     }
 
@@ -22,6 +19,10 @@ public class Task {
         return title;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     @Override
     public String toString() {
         return "Task{" +
@@ -30,9 +31,4 @@ public class Task {
                 '}';
     }
 
-    private Long generateId() {
-        Long generatedId = maxId;
-        maxId++;
-        return generatedId;
-    }
 }
