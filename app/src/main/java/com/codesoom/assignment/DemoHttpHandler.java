@@ -63,7 +63,7 @@ public class DemoHttpHandler implements HttpHandler {
 					.filter(t -> t.getId().equals(id))
 					.findAny()
 					.orElseThrow(IllegalArgumentException::new);
-				Task changeTask = contentToTask(body);
+				Task changeTask = contentToTask(body, false);
 				task.setTitle(changeTask.getTitle());
 			}
 			String content = tasksToJSON();
@@ -73,12 +73,12 @@ public class DemoHttpHandler implements HttpHandler {
 	}
 
 	private void createTask(HttpExchange exchange) throws IOException {
-		if (exchange.getRequestURI().getPath().equals("/tasks/")) {
+		if (exchange.getRequestURI().getPath().startsWith("/tasks/")) {
 			InputStream inputStream = exchange.getRequestBody();
 			String body = new BufferedReader(new InputStreamReader((inputStream))).lines()
 				.collect(Collectors.joining("\n"));
 			if (!body.isEmpty()) {
-				Task task = contentToTask(body);
+				Task task = contentToTask(body, true);
 				tasks.add(task);
 			}
 			String content = tasksToJSON();
@@ -129,10 +129,12 @@ public class DemoHttpHandler implements HttpHandler {
 		}
 	}
 
-	private Task contentToTask(String content) throws JsonProcessingException {
+	private Task contentToTask(String content, boolean isPostMethod) throws JsonProcessingException {
 		Task task = objectMapper.readValue(content, Task.class);
 		task.setId(new Long(id));
-		id += 1;
+		if (isPostMethod) {
+			id += 1;
+		}
 		return task;
 	}
 
