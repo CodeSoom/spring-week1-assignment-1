@@ -59,13 +59,18 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         if (method == PATCH && path.startsWith("/tasks")) {
-            int taskId = extractTaskIdFromPath(path);
-            content = "content with PATCH " + taskId;
+            long taskId = extractTaskIdFromPath(path);
+            Task foundTask = tasks.get(taskId);
+            Task newTask = toTask(mapper, body);
+            newTask.setId(foundTask.getId());
+            tasks.replace(taskId, foundTask, newTask);
+
+            content = taskToJson(mapper, newTask);
             exchange.sendResponseHeaders(HTTP_OK_CODE, content.getBytes().length);
         }
 
         if (method == DELETE && path.startsWith("/tasks")) {
-            int taskId = extractTaskIdFromPath(path);
+            long taskId = extractTaskIdFromPath(path);
             content = "content with DELETE " + taskId;
             exchange.sendResponseHeaders(HTTP_NO_CONTENT_CODE, content.getBytes().length);
         }
@@ -98,9 +103,9 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
-    private int extractTaskIdFromPath(String path) {
+    private long extractTaskIdFromPath(String path) {
         String taskId = path.split("/")[2];
-        return Integer.parseInt(taskId);
+        return Long.parseLong(taskId);
     }
 
     private String getHttpRequestBody(HttpExchange exchange) {
