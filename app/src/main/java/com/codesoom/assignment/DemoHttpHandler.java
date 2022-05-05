@@ -28,9 +28,9 @@ public class DemoHttpHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException, IllegalArgumentException {
         ObjectMapper mapper = new ObjectMapper();
 
-        HttpMethod method = getHttpMethod(exchange);
-        String path = getHttpRequestPath(exchange);
-        String body = getHttpRequestBody(exchange);
+        HttpMethod method = httpMethod(exchange);
+        String path = httpRequestPath(exchange);
+        String body = httpRequestBody(exchange);
 
         if (method == GET && path.equals("/tasks")) {
             sendResponse(exchange, HTTP_OK_CODE, tasksToJson(mapper));
@@ -113,14 +113,14 @@ public class DemoHttpHandler implements HttpHandler {
         return Long.parseLong(taskId);
     }
 
-    private String getHttpRequestBody(HttpExchange exchange) {
+    private String httpRequestBody(HttpExchange exchange) {
         InputStream inputStream = exchange.getRequestBody();
         return new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("/n"));
     }
 
-    private String getHttpRequestPath(HttpExchange exchange) {
+    private String httpRequestPath(HttpExchange exchange) {
         URI uri = exchange.getRequestURI();
         if (uri == null) {
             throw new IllegalArgumentException("failed to return URI");
@@ -134,7 +134,7 @@ public class DemoHttpHandler implements HttpHandler {
         return path;
     }
 
-    private HttpMethod getHttpMethod(HttpExchange exchange) {
+    private HttpMethod httpMethod(HttpExchange exchange) {
         String methodInString = exchange.getRequestMethod();
         return Arrays.stream(HttpMethod.values())
                 .filter((method) ->
