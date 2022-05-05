@@ -54,20 +54,6 @@ public class DemoHttpHandler implements HttpHandler {
             sendResponse(exchange, HTTP_CREATE_CODE, taskToJson(mapper, newTask));
         }
 
-        if (method == PATCH && path.startsWith("/tasks")) {
-            long taskId = extractTaskIdFrom(path);
-            Task foundTask = repository.taskBy(taskId);
-
-            if (foundTask == null) {
-                sendResponse(exchange, HTTP_NOT_FOUND_CODE, "TaskId가 유효하지 않습니다");
-            } else {
-                Task newTask = toTask(mapper, body);
-                newTask = repository.update(taskId, newTask);
-                sendResponse(exchange, HTTP_OK_CODE, taskToJson(mapper, newTask));
-            }
-
-        }
-
         if (method == PUT && path.startsWith("/tasks")) {
             long taskId = extractTaskIdFrom(path);
             Task foundTask = repository.taskBy(taskId);
