@@ -1,11 +1,8 @@
 package com.codesoom.assignment;
 
 public class ResponseHeader {
-    private int statusCode;
-    private String content;
-
-    ResponseHeader() {
-    }
+    private final int statusCode;
+    private final String content;
 
     ResponseHeader(int statusCode, String content) {
         this.statusCode = statusCode;
@@ -18,14 +15,6 @@ public class ResponseHeader {
 
     public String getContent() {
         return content;
-    }
-
-    public void setStatusCode(int statusCode) {
-        this.statusCode = statusCode;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
     }
 
     @Override
