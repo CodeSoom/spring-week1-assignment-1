@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.exception.TaskNotFoundException;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.repository.TaskRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -26,72 +27,58 @@ public class DemoHttpHandler implements HttpHandler {
 
         System.out.println(method + " " + path);
 
-        // GET /tasks
-        if (method.equals("GET") && path.equals(TASK_DEFAULT_PATH)) {
-            List<Task> tasks = taskRepository.findAll();
-            sendResponse(exchange, toJson(tasks), HttpStatus.OK);
-            return;
-        }
-
-        // POST /tasks
-        if (method.equals("POST") && path.equals(TASK_DEFAULT_PATH)) {
-            Task task = toTask(body);
-            Task savedTask = taskRepository.save(task);
-            sendResponse(exchange, toJson(savedTask), HttpStatus.CREATED);
-            return;
-        }
-
-        //GET /tasks/{id}
-        if (method.equals("GET") && containPathVariable(path)) {
-            Long id = getPathVariable(path);
-            Task task = taskRepository.findById(id);
-
-            if (task == null) {
-                String message = id + "인 task는 존재하지 않습니다.";
-                sendResponse(exchange, message, HttpStatus.NOT_FOUND);
+        try {
+            // GET /tasks
+            if (method.equals("GET") && path.equals(TASK_DEFAULT_PATH)) {
+                List<Task> tasks = taskRepository.findAll();
+                sendResponse(exchange, toJson(tasks), HttpStatus.OK);
                 return;
             }
 
-            sendResponse(exchange, toJson(task), HttpStatus.OK);
-            return;
-        }
-
-        // PUT /tasks/{id}
-        if (method.equals("PUT") && containPathVariable(path)) {
-            Long id = getPathVariable(path);
-            Task findTask = taskRepository.findById(id);
-
-            if (findTask == null) {
-                String message = id + "인 task는 존재하지 않습니다.";
-                sendResponse(exchange, message, HttpStatus.NOT_FOUND);
+            // POST /tasks
+            if (method.equals("POST") && path.equals(TASK_DEFAULT_PATH)) {
+                Task task = toTask(body);
+                Task savedTask = taskRepository.save(task);
+                sendResponse(exchange, toJson(savedTask), HttpStatus.CREATED);
                 return;
             }
 
-            Task taskToUpdate = toTask(body);
-            taskRepository.update(id, taskToUpdate);
-
-            Task updatedTask = taskRepository.findById(id);
-            sendResponse(exchange, toJson(updatedTask), HttpStatus.OK);
-            return;
-        }
-
-        // DELETE /tasks/{id}
-        if (method.equals("DELETE") && containPathVariable(path)) {
-            Long id = getPathVariable(path);
-            Task findTask = taskRepository.findById(id);
-
-            if (findTask == null) {
-                String message = id + "인 task는 존재하지 않습니다.";
-                sendResponse(exchange, message, HttpStatus.NOT_FOUND);
+            //GET /tasks/{id}
+            if (method.equals("GET") && containPathVariable(path)) {
+                Long id = getPathVariable(path);
+                Task task = findTaskById(id);
+                sendResponse(exchange, toJson(task), HttpStatus.OK);
                 return;
             }
 
-            taskRepository.delete(id);
-            sendResponse(exchange, "", HttpStatus.NO_CONTENT);
-            return;
-        }
+            // PUT /tasks/{id}
+            if (method.equals("PUT") && containPathVariable(path)) {
+                Long id = getPathVariable(path);
+                Task task = findTaskById(id);
+                Task taskToUpdate = toTask(body);
+                task.setTitle(taskToUpdate.getTitle());
+                sendResponse(exchange, toJson(task), HttpStatus.OK);
+                return;
+            }
 
-        sendResponse(exchange, "지원하지 않는 경로입니다", HttpStatus.NOT_FOUND);
+            // DELETE /tasks/{id}
+            if (method.equals("DELETE") && containPathVariable(path)) {
+                Long id = getPathVariable(path);
+                Task task = findTaskById(id);
+                taskRepository.delete(task.getId());
+                sendResponse(exchange, "", HttpStatus.NO_CONTENT);
+                return;
+            }
+
+            sendResponse(exchange, "지원하지 않는 경로입니다", HttpStatus.NOT_FOUND);
+        } catch (TaskNotFoundException exception) {
+            sendResponse(exchange, exception.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    private Task findTaskById(Long id) {
+        return taskRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException(id + "인 task는 존재하지 않습니다."));
     }
 
     private void sendResponse(HttpExchange exchange, String content, HttpStatus status) throws IOException {
