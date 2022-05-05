@@ -30,9 +30,7 @@ public class ResponseHeader {
 
     @Override
     public String toString() {
-        return "ResponseHeader{" +
-                "statusCode=" + statusCode +
-                ", content='" + content + '\'' +
-                '}';
+
+        return String.format("{ statusCode = %s, content = %s }", statusCode, content);
     }
 }
