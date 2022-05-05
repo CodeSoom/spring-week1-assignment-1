@@ -39,7 +39,7 @@ public class DemoHttpHandler implements HttpHandler {
 	}
 
 	private void deleteTask(HttpExchange exchange) throws IOException {
-		if (exchange.getRequestURI().getPath().startsWith("/tasks/")) {
+		if (isStartWithTasks(exchange)) {
 			Long id = getIdFromPath(exchange);
 			Task task = tasks.stream()
 				.filter(t -> t.getId().equals(id))
@@ -53,7 +53,7 @@ public class DemoHttpHandler implements HttpHandler {
 	}
 
 	private void updateTask(HttpExchange exchange) throws IOException {
-		if (exchange.getRequestURI().getPath().startsWith("/tasks/")) {
+		if (isStartWithTasks(exchange)) {
 			InputStream inputStream = exchange.getRequestBody();
 			String body = new BufferedReader(new InputStreamReader((inputStream))).lines()
 				.collect(Collectors.joining("\n"));
@@ -73,7 +73,7 @@ public class DemoHttpHandler implements HttpHandler {
 	}
 
 	private void createTask(HttpExchange exchange) throws IOException {
-		if (exchange.getRequestURI().getPath().startsWith("/tasks/")) {
+		if (isStartWithTasks(exchange)) {
 			InputStream inputStream = exchange.getRequestBody();
 			String body = new BufferedReader(new InputStreamReader((inputStream))).lines()
 				.collect(Collectors.joining("\n"));
@@ -88,11 +88,13 @@ public class DemoHttpHandler implements HttpHandler {
 	}
 
 	private void getTask(HttpExchange exchange) throws IOException {
-		String path = exchange.getRequestURI().getPath();
-		if (path.equals("/tasks") || path.equals("/tasks/")) {
-			getAllTasks(exchange);
-		} else {
-			getOneTask(exchange);
+		if (isStartWithTasks(exchange)) {
+			String path = exchange.getRequestURI().getPath();
+			if (path.equals("/tasks") || path.equals("/tasks/")) {
+				getAllTasks(exchange);
+			} else {
+				getOneTask(exchange);
+			}
 		}
 	}
 
@@ -149,5 +151,12 @@ public class DemoHttpHandler implements HttpHandler {
 		OutputStream outputStream = new ByteArrayOutputStream();
 		objectMapper.writeValue(outputStream, tasks);
 		return outputStream.toString();
+	}
+
+	private boolean isStartWithTasks(HttpExchange exchange) {
+		if (exchange.getRequestURI().getPath().startsWith("/tasks/")) {
+			return true;
+		}
+		return false;
 	}
 }
