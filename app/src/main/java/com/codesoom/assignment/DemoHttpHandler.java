@@ -154,9 +154,6 @@ public class DemoHttpHandler implements HttpHandler {
 	}
 
 	private boolean isStartWithTasks(HttpExchange exchange) {
-		if (exchange.getRequestURI().getPath().startsWith("/tasks/")) {
-			return true;
-		}
-		return false;
+		return exchange.getRequestURI().getPath().startsWith("/tasks/");
 	}
 }
