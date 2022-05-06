@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,7 @@ public class TaskRepository {
 
     public List<Task> tasksAll() {
         return tasks.values().stream()
-                .sorted()
+                .sorted(Comparator.comparing(Task::getId)) //.sorted((Task t1, Task t2) -> t1.getId().compareTo(t2.getId()))
                 .collect(Collectors.toList());
     }
 
