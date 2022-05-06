@@ -6,8 +6,7 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.stream.Collectors;
 
-public class HttpRequest {
-
+public class HttpRequest{
     private RequestMethod method;
     private String path;
     private String body;
@@ -20,15 +19,15 @@ public class HttpRequest {
                 .collect(Collectors.joining("\n"));
     }
 
-    public RequestMethod getMethod() {
+    public RequestMethod method() {
         return method;
     }
 
-    public String getPath() {
+    public String path() {
         return path;
     }
 
-    public String getBody() {
-        return body;
+    public String body() { return body;
     }
+
 }

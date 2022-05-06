@@ -9,10 +9,11 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
 
 public class TaskHttpHandler implements HttpHandler {
     private static final String TASK_PATH = "/tasks";
+    private static final String PATH_SPLITTER = "/";
+    private static final int ID_POSITION = 2;
     ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -22,10 +23,10 @@ public class TaskHttpHandler implements HttpHandler {
                 exchange.getRequestURI(),
                 exchange.getRequestBody());
 
-        if (httpRequest.getPath().equals(TASK_PATH)) {
+        if (httpRequest.path().startsWith(TASK_PATH)) {
             HttpResponse httpResponse = null;
             try {
-                httpResponse = handleMethod(exchange, httpRequest);
+                httpResponse = handleMethod(httpRequest);
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
@@ -33,23 +34,33 @@ public class TaskHttpHandler implements HttpHandler {
         }
     }
 
-    private HttpResponse handleMethod(HttpExchange exchange, HttpRequest httpRequest) throws IOException,
-            ClassNotFoundException {
-        String method = exchange.getRequestMethod();
+    private HttpResponse handleMethod(HttpRequest httpRequest) throws IOException, ClassNotFoundException {
+        String method = httpRequest.method().toString();
+        Long id = getIdFromPath(httpRequest.path());
 
         if (method.equals(RequestMethod.GET.toString())) {
-            List<Task> tasks = TaskManager.findALl();
-            String content = objectMapper.writeValueAsString(tasks);
+            String content;
+            if (id != null) {
+                content = objectMapper.writeValueAsString(TaskManager.find(id));
+            } else {
+                content = objectMapper.writeValueAsString(TaskManager.findALl());
+            }
             return new HttpResponse(HttpResponse.STATUS_OK, content);
         }
 
         if (method.equals(RequestMethod.POST.toString())) {
-            Task task = toTask(httpRequest.getBody());
+            Task task = toTask(httpRequest.body());
             Task newTask = TaskManager.insert(task);
             return new HttpResponse(HttpResponse.STATUS_CREATED, newTask.toString());
         }
 
         return new HttpResponse(HttpResponse.STATUS_NOT_FOUND, "Not Found");
+    }
+
+    private Long getIdFromPath(String path) {
+        String[] pathArr = path.split(PATH_SPLITTER);
+        if(pathArr.length < ID_POSITION + 1){ return null;}
+        return Long.parseLong(pathArr[ID_POSITION]);
     }
 
     private Task toTask(String content) throws JsonProcessingException {
@@ -59,12 +70,11 @@ public class TaskHttpHandler implements HttpHandler {
     private void send(HttpExchange exchange, HttpResponse httpResponse) throws IOException {
         exchange.sendResponseHeaders(httpResponse.getStatusCode(), httpResponse.getContent().getBytes().length);
 
-        // todo: try-catch-finally
-        // 이펙티브 자바 아이템 9
-
-        OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(httpResponse.getContent().getBytes());
-        outputStream.flush();
-        outputStream.close();
+        try (OutputStream outputStream = exchange.getResponseBody()) {
+            outputStream.write(httpResponse.getContent().getBytes());
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

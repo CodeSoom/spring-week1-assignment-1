@@ -21,21 +21,13 @@ public class Task {
     }
 
     @JsonGetter
-    public Long getId() {
+    public Long id() {
         return id;
     }
 
     @JsonGetter
-    public String getTitle() {
+    public String title() {
         return title;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     @Override
