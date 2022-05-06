@@ -17,12 +17,12 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 public class DemoHttpHandler implements HttpHandler {
+	private static final int OK = 200;
+	private static final int NO_CONTENT = 204;
+	private static final int CREATED = 201;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final List<Task> tasks = new ArrayList<>();
 	private int id = 1;
-	private static int OK = 200;
-	private static int NO_CONTENT = 204;
-	private static int CREATED = 201;
 
 	protected DemoHttpHandler() {
 	}
@@ -85,8 +85,7 @@ public class DemoHttpHandler implements HttpHandler {
 				tasks.add(task);
 			}
 			String content = tasksToJSON();
-			exchange.sendResponseHeaders(CREATED, content.getBytes().length);
-			createOutputStream(exchange, content);
+			new ResponseOK(exchange).send(content);
 		}
 	}
 
@@ -103,8 +102,7 @@ public class DemoHttpHandler implements HttpHandler {
 
 	private void getAllTasks(HttpExchange exchange) throws IOException {
 		String content = tasksToJSON();
-		exchange.sendResponseHeaders(OK, content.getBytes().length);
-		createOutputStream(exchange, content);
+		new ResponseOK(exchange).send(content);
 	}
 
 	private void createOutputStream(HttpExchange exchange, String content) throws IOException {
@@ -116,8 +114,7 @@ public class DemoHttpHandler implements HttpHandler {
 
 	private void getOneTask(HttpExchange exchange) throws IOException {
 		String content = taskToJSON(getIdFromPath(exchange));
-		exchange.sendResponseHeaders(OK, content.getBytes().length);
-		createOutputStream(exchange, content);
+		new ResponseOK(exchange).send(content);
 	}
 
 	private Long getIdFromPath(HttpExchange exchange) {
