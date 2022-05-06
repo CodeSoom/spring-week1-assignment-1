@@ -20,11 +20,11 @@ public class AssignmentHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
-        String path = exchange.getRequestURI().getPath();
+        final String method = exchange.getRequestMethod();
+        final String path = exchange.getRequestURI().getPath();
 
-        InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream))
+        final InputStream inputStream = exchange.getRequestBody();
+        final String body = new BufferedReader(new InputStreamReader(inputStream))
                         .lines()
                         .collect(Collectors.joining("\n"));
 
