@@ -51,7 +51,7 @@ public class DemoHttpHandler implements HttpHandler {
 			tasks.remove(task);
 			String content = tasksToJSON();
 			exchange.sendResponseHeaders(NO_CONTENT, -1);
-			createOutputStream(exchange, content);
+			new ResponseNoContent(exchange).send(content);
 		}
 	}
 
@@ -70,8 +70,7 @@ public class DemoHttpHandler implements HttpHandler {
 				task.setTitle(changeTask.getTitle());
 			}
 			String content = tasksToJSON();
-			exchange.sendResponseHeaders(OK, content.getBytes().length);
-			createOutputStream(exchange, content);
+			new ResponseCreated(exchange).send(content);
 		}
 	}
 
@@ -85,7 +84,7 @@ public class DemoHttpHandler implements HttpHandler {
 				tasks.add(task);
 			}
 			String content = tasksToJSON();
-			new ResponseOK(exchange).send(content);
+			new ResponseCreated(exchange).send(content);
 		}
 	}
 
