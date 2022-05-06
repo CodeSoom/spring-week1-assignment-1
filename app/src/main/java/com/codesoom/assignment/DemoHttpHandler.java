@@ -9,6 +9,7 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.*;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import static com.codesoom.assignment.HttpMethod.*;
@@ -33,55 +34,46 @@ public class DemoHttpHandler implements HttpHandler {
         String path = httpRequestPath(exchange);
         String body = httpRequestBody(exchange);
 
-        if (method == GET && path.equals("/tasks")) {
-            sendResponse(exchange, HTTP_OK_CODE, tasksToJson(mapper));
-            return;
-        }
-
-        if (method == GET && path.startsWith("/tasks/")) {
-            long taskId = extractTaskIdFrom(path);
-            Task foundTask = repository.taskBy(taskId);
-
-            if (foundTask == null) {
-                sendResponse(exchange, HTTP_NOT_FOUND_CODE, "taskId(" + taskId + ")에 해당하는 Task를 찾을 수 없습니다");
-            } else {
-                sendResponse(exchange, HTTP_OK_CODE, taskToJson(mapper, foundTask));
+        try {
+            if (method == GET && path.equals("/tasks")) {
+                sendResponse(exchange, HTTP_OK_CODE, tasksToJson(mapper));
+                return;
             }
-            return;
-        }
 
-        if (method == POST && path.equals("/tasks")) {
-            Task newTask = toTask(mapper, body);
-            newTask = repository.save(newTask);
-            sendResponse(exchange, HTTP_CREATE_CODE, taskToJson(mapper, newTask));
-            return;
-        }
+            if (method == GET && path.startsWith("/tasks/")) {
+                long taskId = extractTaskIdFrom(path);
+                Task foundTask = repository.taskBy(taskId);
+                sendResponse(exchange, HTTP_OK_CODE, taskToJson(mapper, foundTask));
+                return;
+            }
 
-        if (method == PUT && path.startsWith("/tasks")) {
-            long taskId = extractTaskIdFrom(path);
-            Task foundTask = repository.taskBy(taskId);
+            if (method == POST && path.equals("/tasks")) {
+                Task newTask = toTask(mapper, body);
+                newTask = repository.save(newTask);
+                sendResponse(exchange, HTTP_CREATE_CODE, taskToJson(mapper, newTask));
+                return;
+            }
 
-            if (foundTask == null) {
-                sendResponse(exchange, HTTP_NOT_FOUND_CODE, "taskId(" + taskId + ")에 해당하는 Task를 찾을 수 없습니다");
-            } else {
+            if (method == PUT && path.startsWith("/tasks")) {
+                long taskId = extractTaskIdFrom(path);
+                repository.taskBy(taskId);
                 Task newTask = toTask(mapper, body);
                 newTask = repository.update(taskId, newTask);
                 sendResponse(exchange, HTTP_OK_CODE, taskToJson(mapper, newTask));
+                return;
             }
-            return;
-        }
 
-        if (method == DELETE && path.startsWith("/tasks")) {
-            long taskId = extractTaskIdFrom(path);
-            Task foundTask = repository.taskBy(taskId);
-
-            if (foundTask == null) {
-                sendResponse(exchange, HTTP_NOT_FOUND_CODE, "taskId(" + taskId + ")에 해당하는 Task를 찾을 수 없습니다");
-            } else {
+            if (method == DELETE && path.startsWith("/tasks")) {
+                long taskId = extractTaskIdFrom(path);
+                repository.taskBy(taskId);
                 repository.delete(taskId);
                 sendResponse(exchange, HTTP_NO_CONTENT_CODE, "정상적으로 삭제되었습니다");
             }
+        } catch (NoSuchElementException e) {
+            sendResponse(exchange, HTTP_NOT_FOUND_CODE, "taskId에 해당하는 리를 찾을 수 없습니다 from handler layer \n"
+                    + e.getCause() + " from repository layer");
         }
+
     }
 
 

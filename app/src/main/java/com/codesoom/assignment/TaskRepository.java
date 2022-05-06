@@ -1,9 +1,6 @@
 package com.codesoom.assignment;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TaskRepository {
@@ -15,7 +12,13 @@ public class TaskRepository {
     }
 
     public Task taskBy(Long id) {
-        return tasks.get(id);
+        Task foundTask = tasks.get(id);
+
+        if (foundTask == null) {
+            throw new NoSuchElementException("taskId(" + id + ")에 해당하는 Task를 저장소에서 찾을 수 없습니다");
+        }
+
+        return foundTask;
     }
 
     public List<Task> tasksAll() {
