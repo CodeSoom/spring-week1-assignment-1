@@ -11,25 +11,38 @@ public class TaskManager {
         return idSeq++;
     }
 
-    public void insertTask(Task task) {
-        tasks.add(new Task(generateId(), task.getTitle()));
+    public Long insertTask(Task task) {
+        Task newTask = new Task(generateId(), task.getTitle());
+        tasks.add(newTask);
+        return newTask.getId();
     }
 
     public void deleteTask(Task task) {
-        tasks.remove(task);
+        for (int i = 0; i < tasks.size(); i++) {
+            if (task.getId().equals(tasks.get(i).getId())) {
+                tasks.remove(i);
+                break;
+            }
+        }
+
     }
 
-    public void updateTask(Task task) {
-        tasks.get(tasks.indexOf(task)).setTitle(task.getTitle());
+    public Long updateTask(Task task) {
+        tasks.stream().forEach(target -> {
+            if (target.getId().equals(task.getId())) {
+                target.setTitle(task.getTitle());
+            }
+        });
+        return task.getId();
     }
 
     public List<Task> findTaskAll() {
         return tasks;
     }
 
-    public Task findTask(Task findTask) {
+    public Task findTaskById(Long id) {
         for (Task task : tasks) {
-            if (task.getId().equals(findTask.getId())) {
+            if (task.getId().equals(id)) {
                 return task;
             }
         }

@@ -15,7 +15,7 @@ public class Task {
     }
 
     public boolean isEmpty() {
-        return (id == 0L && title.isEmpty());
+        return (id == null && title == null);
     }
 
     public Long getId() {
