@@ -1,35 +1,26 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.repository.TaskRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class AssignmentHttpHandler implements HttpHandler {
+    private TaskRepository taskRepository = TaskRepository.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper();
-
     private final List<Task> tasks = new ArrayList<>();
-
-//    public AssignmentHttpHandler() {
-//        Task task = new Task();
-//        task.setId(1L);
-//        task.setTitle("Do nothing...");
-//
-//        tasks.add(task);
-//    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
-        URI uri = exchange.getRequestURI();
-        String path = uri.getPath();
+        String path = exchange.getRequestURI().getPath();
 
         InputStream inputStream = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(inputStream))
