@@ -43,7 +43,6 @@ public class AssignmentHttpHandler implements HttpHandler {
 
         if ("GET".equals(method) && path.startsWith("/tasks/")) {
             Long id = Long.parseLong(path.split("/")[2]);
-            System.out.println(id);
             Task findTask = taskRepository.findById(id);
             sendResponse(exchange, tasksToJson(findTask), HttpStatus.OK);
             return;
@@ -76,10 +75,17 @@ public class AssignmentHttpHandler implements HttpHandler {
     private void sendResponse(HttpExchange exchange, String content, HttpStatus code) throws IOException {
         exchange.sendResponseHeaders(code.getHttpStatus(), content.getBytes().length);
 
-        OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
+        try (OutputStream outputStream = exchange.getResponseBody()){
+            outputStream.write(content.getBytes());
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            /*
+                try-catch-finally 를 사용하라고 하셨는데
+                finally 실행에서 log 같은 걸 남기라는 말인가요
+             */
+        }
     }
 
     private Task toTask(String content) throws JsonProcessingException {
