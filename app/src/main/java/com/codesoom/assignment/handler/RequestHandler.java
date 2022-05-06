@@ -52,6 +52,7 @@ public class RequestHandler implements HttpHandler {
         if (path.equals("/tasks")) {
             String content = taskToJSON(tasks);
             sendResponse(exchange, content, StatusCode.OK);
+            return;
         }
 
         if (matcher.find()) {
@@ -59,6 +60,7 @@ public class RequestHandler implements HttpHandler {
 
             if (task.isEmpty()) {
                 sendResponse(exchange, "", StatusCode.NotFound);
+                return;
             }
 
             String content = taskToJSON(task.get());
@@ -75,6 +77,7 @@ public class RequestHandler implements HttpHandler {
 
             if (task.isEmpty()) {
                 sendResponse(exchange, "", StatusCode.NotFound);
+                return;
             }
 
             TaskDto taskDto = toTask(exchange);
@@ -107,6 +110,7 @@ public class RequestHandler implements HttpHandler {
 
             if (task.isEmpty()) {
                 sendResponse(exchange, "", StatusCode.NotFound);
+                return;
             }
 
             tasks.remove(task.get());

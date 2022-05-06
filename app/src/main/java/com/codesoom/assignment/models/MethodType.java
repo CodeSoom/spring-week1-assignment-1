@@ -8,6 +8,7 @@ public enum MethodType {
     DELETE("DELETE");
 
     private final String methodName;
+
     MethodType(String methodName) {
         this.methodName = methodName;
     }
