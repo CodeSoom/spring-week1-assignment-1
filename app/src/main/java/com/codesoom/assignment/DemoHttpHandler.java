@@ -35,6 +35,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         if (method == GET && path.equals("/tasks")) {
             sendResponse(exchange, HTTP_OK_CODE, tasksToJson(mapper));
+            return;
         }
 
         if (method == GET && path.startsWith("/tasks/")) {
@@ -46,12 +47,14 @@ public class DemoHttpHandler implements HttpHandler {
             } else {
                 sendResponse(exchange, HTTP_OK_CODE, taskToJson(mapper, foundTask));
             }
+            return;
         }
 
         if (method == POST && path.equals("/tasks")) {
             Task newTask = toTask(mapper, body);
             repository.save(newTask);
             sendResponse(exchange, HTTP_CREATE_CODE, taskToJson(mapper, newTask));
+            return;
         }
 
         if (method == PUT && path.startsWith("/tasks")) {
@@ -65,7 +68,7 @@ public class DemoHttpHandler implements HttpHandler {
                 newTask = repository.update(taskId, newTask);
                 sendResponse(exchange, HTTP_OK_CODE, taskToJson(mapper, newTask));
             }
-
+            return;
         }
 
         if (method == DELETE && path.startsWith("/tasks")) {
