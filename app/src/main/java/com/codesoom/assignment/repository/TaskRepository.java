@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class TaskRepository {
     private static Map<Long, Task> store = new HashMap<>();
-    private static long sequence = 1L;
+    private static Long sequence = 1L;
 
     private static final TaskRepository instance = new TaskRepository();
 
