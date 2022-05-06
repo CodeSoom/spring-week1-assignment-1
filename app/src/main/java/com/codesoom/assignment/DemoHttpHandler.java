@@ -18,6 +18,7 @@ public class DemoHttpHandler implements HttpHandler {
     private static final int HTTP_CREATE_CODE = 201;
     private static final int HTTP_NO_CONTENT_CODE = 204;
     private static final int HTTP_NOT_FOUND_CODE = 404;
+
     private final TaskRepository repository;
 
     public DemoHttpHandler(TaskRepository repository) {
