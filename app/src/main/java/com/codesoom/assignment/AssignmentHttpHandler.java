@@ -71,8 +71,11 @@ public class AssignmentHttpHandler implements HttpHandler {
             return;
         }
 
-        if (method.equals("DELETE") && path.equals("/tasks")) {
-//            content = tasksToJson();
+        if (method.equals("DELETE") && path.startsWith("/tasks/")) {
+            Long id = Long.parseLong(path.split("/")[2]);
+            taskRepository.delete(id);
+            sendResponse(exchange, "", HttpStatus.OK);
+            return;
         }
 
     }
