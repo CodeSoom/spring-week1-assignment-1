@@ -43,7 +43,9 @@ public class AssignmentHttpHandler implements HttpHandler {
         String content = "Hello, world!";
 
         if (method.equals("GET") && path.equals("/tasks")) {
-//            content = tasksToJson();
+            List<Task> findTasks = taskRepository.findAll();
+            sendResponse(exchange, tasksToJson(findTasks), HttpStatus.OK);
+            return;
         }
 
         if (method.equals("POST") && path.equals("/tasks")) {
