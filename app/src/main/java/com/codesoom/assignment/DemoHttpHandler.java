@@ -52,7 +52,7 @@ public class DemoHttpHandler implements HttpHandler {
 
         if (method == POST && path.equals("/tasks")) {
             Task newTask = toTask(mapper, body);
-            repository.save(newTask);
+            newTask = repository.save(newTask);
             sendResponse(exchange, HTTP_CREATE_CODE, taskToJson(mapper, newTask));
             return;
         }

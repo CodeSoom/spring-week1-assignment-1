@@ -1,6 +1,6 @@
 package com.codesoom.assignment;
 
-public class Task {
+public class Task implements Comparable<Task> {
     private Long id;
     private String title;
 
@@ -28,4 +28,11 @@ public class Task {
         return String.format("{ id = %s, title = %s }", id, title);
     }
 
+    @Override
+    public int compareTo(Task task) {
+        if (getId() == null || task.getId() == null) {
+            return 0;
+        }
+        return getId().compareTo(task.getId());
+    }
 }

@@ -1,9 +1,9 @@
 package com.codesoom.assignment;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class TaskRepository {
     static private Long maxId = 1L;
@@ -18,7 +18,9 @@ public class TaskRepository {
     }
 
     public List<Task> tasksAll() {
-        return new ArrayList<>(tasks.values());
+        return tasks.values().stream()
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     public Task save(Task task) {
