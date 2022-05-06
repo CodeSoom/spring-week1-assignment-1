@@ -71,7 +71,7 @@ public class DemoHttpHandler implements HttpHandler {
             }
         } catch (NoSuchElementException e) {
             sendResponse(exchange, HTTP_NOT_FOUND_CODE, "taskId에 해당하는 리를 찾을 수 없습니다 from handler layer \n"
-                    + e.getCause() + " from repository layer");
+                    + e.getMessage() + " from repository layer");
         }
 
     }
