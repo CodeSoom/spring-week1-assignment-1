@@ -22,6 +22,11 @@ public class AssignmentHttpHandler implements HttpHandler {
 
     private List<Task> tasks = new ArrayList<>();
 
+    private static final int HTTP_OK = 200;
+    private static final int HTTP_CREATED = 201;
+    private static final int HTTP_NO_CONTENT = 204;
+    private static final int HTTP_NOT_FOUND = 404;
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
@@ -35,69 +40,59 @@ public class AssignmentHttpHandler implements HttpHandler {
 
         System.out.println(method + " " + path);
 
-        int statusCode = 200;
+        int statusCode = HTTP_OK;
         String content = "[]";
 
         if (method.equals("GET") && path.startsWith("/tasks")) {
             try {
-                if (!path.substring(6).isEmpty()) {
-                    int taskId = Integer.parseInt(path.substring(7));
-                    Task task = tasks.get(taskId - 1);
-                    content = taskToJSON(tasks.get(taskId - 1));
-                }
-                else {
-                    content = tasksToJSON();
-                }
-            } catch (Exception e) {
-                statusCode = 404;
+                int taskId = (!path.substring(6).isEmpty()) ? extractTaskIdFromPath(path) : -1;
+                content = getTaskOrTasks(taskId);
+            } catch (IndexOutOfBoundsException e) {
+                statusCode = HTTP_NOT_FOUND;
             }
         }
 
         if (method.equals("POST") && path.equals("/tasks")) {
-            if (!body.isBlank()) {
-                Task task = toTask(body);
-                task.setId(tasks.size()+1L);
-                tasks.add(task);
-                content = taskToJSON(task);
-                statusCode = 201;
-            } else {
-                content = "No value inserted";
-                statusCode = 400;
-            }
+            Task task = toTask(body);
+            task.setId(tasks.size() + 1L);
+            tasks.add(task);
+            content = taskToJSON(task);
+            statusCode = HTTP_CREATED;
         }
 
         if (method.equals("PUT") && path.startsWith("/tasks")) {
             try {
-                if (path.substring(6).isEmpty()) {
-                    content = "No task ID inserted";
-                    statusCode = 400;
-                } else {
-                    Task insertedTask = toTask(body);
-                    int taskId = Integer.parseInt(path.substring(7));
-                    Task task = tasks.get(taskId - 1);
-                    task.setTitle(insertedTask.getTitle());
-                    content = taskToJSON(task);
-                }
-            } catch (Exception e) {
-                statusCode = 404;
+                Task insertedTask = toTask(body);
+                int taskId = extractTaskIdFromPath(path);
+                Task task = tasks.get(taskId - 1);
+                task.setTitle(insertedTask.getTitle());
+                content = taskToJSON(task);
+            } catch (IndexOutOfBoundsException e) {
+                statusCode = HTTP_NOT_FOUND;
             }
         }
 
         if (method.equals("DELETE") && path.startsWith("/tasks")) {
             try {
-                if (path.substring(6).isEmpty()) {
-                    content = "No task ID inserted";
-                    statusCode = 400;
-                } else {
-                    int taskId = Integer.parseInt(path.substring(7));
-                    tasks.remove(taskId - 1);
-                    statusCode = 204;
-                }
-            } catch (Exception e) {
-                statusCode = 404;
+                int taskId = extractTaskIdFromPath(path);
+                tasks.remove(taskId - 1);
+                statusCode = HTTP_NO_CONTENT;
+            } catch (IndexOutOfBoundsException e) {
+                statusCode = HTTP_NOT_FOUND;
             }
         }
 
+        sendResponse(exchange, content, statusCode);
+    }
+
+    private String getTaskOrTasks(int taskId) throws IOException {
+        if (taskId < 0) {
+            return tasksToJSON();
+        }
+        return taskToJSON(tasks.get(taskId - 1));
+    }
+
+    private void sendResponse(HttpExchange exchange, String content, int statusCode) throws IOException {
         exchange.sendResponseHeaders(statusCode, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
@@ -122,5 +117,9 @@ public class AssignmentHttpHandler implements HttpHandler {
         objectMapper.writeValue(outputStream, tasks);
 
         return outputStream.toString();
+    }
+
+    private int extractTaskIdFromPath(String path) {
+        return Integer.parseInt(path.substring(7));
     }
 }
