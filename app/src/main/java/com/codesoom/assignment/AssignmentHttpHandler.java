@@ -50,6 +50,7 @@ public class AssignmentHttpHandler implements HttpHandler {
 
         if (method.equals("GET") && path.startsWith("/tasks/")) {
             Long id = Long.parseLong(path.split("/")[2]);
+            System.out.println(id);
             Task findTask = taskRepository.findById(id);
             sendResponse(exchange, tasksToJson(findTask), HttpStatus.OK);
             return;
@@ -62,8 +63,12 @@ public class AssignmentHttpHandler implements HttpHandler {
             return;
         }
 
-        if (method.equals("PUT") && path.equals("/tasks")) {
-//            content = tasksToJson();
+        if (method.equals("PUT") && path.startsWith("/tasks/")) {
+            Long id = Long.parseLong(path.split("/")[2]);
+            Task newTask = toTask(body);
+            Task changeTask = taskRepository.update(id, newTask);
+            sendResponse(exchange, tasksToJson(changeTask), HttpStatus.OK);
+            return;
         }
 
         if (method.equals("DELETE") && path.equals("/tasks")) {
