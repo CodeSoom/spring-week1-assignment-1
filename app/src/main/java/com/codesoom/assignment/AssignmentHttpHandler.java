@@ -32,23 +32,16 @@ public class AssignmentHttpHandler implements HttpHandler {
         String taskId = path.split("/")[1];
 
         System.out.println(method + " " + path);
-        // body 없는 경우 넘어가기
-        if (!body.isBlank()) {
-            // test object 확인
-            Task task = toTask(body);
-            System.out.println(task);
-            System.out.println(body);
-        }
 
         String content = "Hello, world!";
 
-        if (method.equals("GET") && path.equals("/tasks")) {
+        if ("GET".equals(method) && path.equals("/tasks")) {
             List<Task> findTasks = taskRepository.findAll();
             sendResponse(exchange, tasksToJson(findTasks), HttpStatus.OK);
             return;
         }
 
-        if (method.equals("GET") && path.startsWith("/tasks/")) {
+        if ("GET".equals(method) && path.startsWith("/tasks/")) {
             Long id = Long.parseLong(path.split("/")[2]);
             System.out.println(id);
             Task findTask = taskRepository.findById(id);
@@ -56,14 +49,14 @@ public class AssignmentHttpHandler implements HttpHandler {
             return;
         }
 
-        if (method.equals("POST") && path.equals("/tasks")) {
+        if ("POST".equals(method) && path.equals("/tasks")) {
             Task task = toTask(body);
             Task savedTask = taskRepository.save(task);
             sendResponse(exchange, tasksToJson(savedTask), HttpStatus.Created);
             return;
         }
 
-        if (method.equals("PUT") && path.startsWith("/tasks/")) {
+        if ("PUT".equals(method) && path.startsWith("/tasks/")) {
             Long id = Long.parseLong(path.split("/")[2]);
             Task newTask = toTask(body);
             Task changeTask = taskRepository.update(id, newTask);
@@ -71,7 +64,7 @@ public class AssignmentHttpHandler implements HttpHandler {
             return;
         }
 
-        if (method.equals("DELETE") && path.startsWith("/tasks/")) {
+        if ("DELETE".equals(method) && path.startsWith("/tasks/")) {
             Long id = Long.parseLong(path.split("/")[2]);
             taskRepository.delete(id);
             sendResponse(exchange, "", HttpStatus.OK);
