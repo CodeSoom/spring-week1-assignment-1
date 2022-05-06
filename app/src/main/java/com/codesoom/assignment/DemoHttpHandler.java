@@ -43,7 +43,7 @@ public class DemoHttpHandler implements HttpHandler {
             Task foundTask = repository.taskBy(taskId);
 
             if (foundTask == null) {
-                sendResponse(exchange, HTTP_NOT_FOUND_CODE, "TaskId가 유효하지 않습니다");
+                sendResponse(exchange, HTTP_NOT_FOUND_CODE, "taskId(" + taskId + ")에 해당하는 Task를 찾을 수 없습니다");
             } else {
                 sendResponse(exchange, HTTP_OK_CODE, taskToJson(mapper, foundTask));
             }
@@ -62,7 +62,7 @@ public class DemoHttpHandler implements HttpHandler {
             Task foundTask = repository.taskBy(taskId);
 
             if (foundTask == null) {
-                sendResponse(exchange, HTTP_NOT_FOUND_CODE, "TaskId가 유효하지 않습니다");
+                sendResponse(exchange, HTTP_NOT_FOUND_CODE, "taskId(" + taskId + ")에 해당하는 Task를 찾을 수 없습니다");
             } else {
                 Task newTask = toTask(mapper, body);
                 newTask = repository.update(taskId, newTask);
@@ -76,7 +76,7 @@ public class DemoHttpHandler implements HttpHandler {
             Task foundTask = repository.taskBy(taskId);
 
             if (foundTask == null) {
-                sendResponse(exchange, HTTP_NOT_FOUND_CODE, "TaskId가 유효하지 않습니다");
+                sendResponse(exchange, HTTP_NOT_FOUND_CODE, "taskId(" + taskId + ")에 해당하는 Task를 찾을 수 없습니다");
             } else {
                 repository.delete(taskId);
                 sendResponse(exchange, HTTP_NO_CONTENT_CODE, "정상적으로 삭제되었습니다");
