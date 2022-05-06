@@ -28,9 +28,6 @@ public class AssignmentHttpHandler implements HttpHandler {
                         .lines()
                         .collect(Collectors.joining("\n"));
 
-        // id값 추출 예) tasks/1 -> 1
-        String taskId = path.split("/")[1];
-
         System.out.println(method + " " + path);
 
         String content = "Hello, world!";
