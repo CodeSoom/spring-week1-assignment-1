@@ -10,13 +10,12 @@ import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class AssignmentHttpHandler implements HttpHandler {
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private List<Task> tasks = new ArrayList<>();
+    private final List<Task> tasks = new ArrayList<>();
 
 //    public AssignmentHttpHandler() {
 //        Task task = new Task();
@@ -37,12 +36,16 @@ public class AssignmentHttpHandler implements HttpHandler {
                         .lines()
                         .collect(Collectors.joining("\n"));
 
+        // id값 추출 예) tasks/1 -> 1
+        String taskId = path.split("/")[1];
+
         System.out.println(method + " " + path);
         // body 없는 경우 넘어가기
         if (!body.isBlank()) {
             // test object 확인
             Task task = toTask(body);
             System.out.println(task);
+            System.out.println(body);
         }
 
         String content = "Hello, world!";
