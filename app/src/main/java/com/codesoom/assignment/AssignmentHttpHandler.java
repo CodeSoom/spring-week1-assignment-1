@@ -48,6 +48,13 @@ public class AssignmentHttpHandler implements HttpHandler {
             return;
         }
 
+        if (method.equals("GET") && path.startsWith("/tasks/")) {
+            Long id = Long.parseLong(path.split("/")[2]);
+            Task findTask = taskRepository.findById(id);
+            sendResponse(exchange, tasksToJson(findTask), HttpStatus.OK);
+            return;
+        }
+
         if (method.equals("POST") && path.equals("/tasks")) {
             Task task = toTask(body);
             Task savedTask = taskRepository.save(task);
