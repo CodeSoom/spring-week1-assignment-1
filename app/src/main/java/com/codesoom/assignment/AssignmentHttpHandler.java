@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -42,22 +43,28 @@ public class AssignmentHttpHandler implements HttpHandler {
         String content = "Hello, world!";
 
         if (method.equals("GET") && path.equals("/tasks")) {
-            content = tasksToJson();
+//            content = tasksToJson();
         }
 
         if (method.equals("POST") && path.equals("/tasks")) {
-            content = "Create a new task.";
+            Task task = toTask(body);
+            Task savedTask = taskRepository.save(task);
+            sendResponse(exchange, tasksToJson(savedTask), HttpStatus.Created);
+            return;
         }
 
         if (method.equals("PUT") && path.equals("/tasks")) {
-            content = tasksToJson();
+//            content = tasksToJson();
         }
 
         if (method.equals("DELETE") && path.equals("/tasks")) {
-            content = tasksToJson();
+//            content = tasksToJson();
         }
 
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+    }
+
+    private void sendResponse(HttpExchange exchange, String content, HttpStatus code) throws IOException {
+        exchange.sendResponseHeaders(code.getHttpStatus(), content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
@@ -69,9 +76,9 @@ public class AssignmentHttpHandler implements HttpHandler {
         return objectMapper.readValue(content, Task.class);
     }
 
-    private String tasksToJson() throws IOException {
+    private String tasksToJson(Object obj) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
+        objectMapper.writeValue(outputStream, obj);
 
         return outputStream.toString();
     }
