@@ -15,7 +15,8 @@ public class App {
             InetSocketAddress address = new InetSocketAddress(PORT);
             HttpServer httpServer = HttpServer.create(address, BACK_LOG);
             TaskRepository repository = new TaskRepository();
-            HttpHandler handler = new DemoHttpHandler(repository);
+            TaskMapper mapper = new TaskMapper();
+            HttpHandler handler = new DemoHttpHandler(repository, mapper);
 
             WebServer server = new WebServer(httpServer, handler);
             server.run();

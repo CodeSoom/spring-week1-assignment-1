@@ -21,45 +21,45 @@ public class DemoHttpHandler implements HttpHandler {
     private static final int HTTP_NOT_FOUND_CODE = 404;
 
     private final TaskRepository repository;
+    private final TaskMapper mapper;
 
-    public DemoHttpHandler(TaskRepository repository) {
+    public DemoHttpHandler(TaskRepository repository, TaskMapper mapper) {
         this.repository = repository;
+        this.mapper = mapper;
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException, IllegalArgumentException {
-        ObjectMapper mapper = new ObjectMapper();
-
         HttpMethod method = httpMethod(exchange);
         String path = httpRequestPath(exchange);
         String body = httpRequestBody(exchange);
 
         try {
             if (method == GET && path.equals("/tasks")) {
-                sendResponse(exchange, HTTP_OK_CODE, tasksToJson(mapper));
+                sendResponse(exchange, HTTP_OK_CODE, mapper.tasksToJson(repository.tasksAll()));
                 return;
             }
 
             if (method == GET && path.startsWith("/tasks/")) {
                 long taskId = extractTaskIdFrom(path);
                 Task foundTask = repository.taskBy(taskId);
-                sendResponse(exchange, HTTP_OK_CODE, taskToJson(mapper, foundTask));
+                sendResponse(exchange, HTTP_OK_CODE, mapper.taskToJson(foundTask));
                 return;
             }
 
             if (method == POST && path.equals("/tasks")) {
-                Task newTask = toTask(mapper, body);
+                Task newTask = mapper.toTask(body);
                 newTask = repository.save(newTask);
-                sendResponse(exchange, HTTP_CREATE_CODE, taskToJson(mapper, newTask));
+                sendResponse(exchange, HTTP_CREATE_CODE, mapper.taskToJson(newTask));
                 return;
             }
 
             if (method == PUT && path.startsWith("/tasks")) {
                 long taskId = extractTaskIdFrom(path);
                 repository.taskBy(taskId);
-                Task newTask = toTask(mapper, body);
+                Task newTask = mapper.toTask(body);
                 newTask = repository.update(taskId, newTask);
-                sendResponse(exchange, HTTP_OK_CODE, taskToJson(mapper, newTask));
+                sendResponse(exchange, HTTP_OK_CODE, mapper.taskToJson(newTask));
                 return;
             }
 
@@ -76,24 +76,6 @@ public class DemoHttpHandler implements HttpHandler {
 
     }
 
-
-    private Task toTask(ObjectMapper mapper, String content) throws JsonProcessingException {
-        return mapper.readValue(content, Task.class);
-    }
-
-    private String tasksToJson(ObjectMapper mapper) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        mapper.writeValue(outputStream, repository.tasksAll());
-
-        return outputStream.toString();
-    }
-
-    private String taskToJson(ObjectMapper mapper, Task task) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        mapper.writeValue(outputStream, task);
-
-        return outputStream.toString();
-    }
 
     private void sendResponse(HttpExchange exchange, int statudCode, String content) throws IOException {
         exchange.sendResponseHeaders(statudCode, content.getBytes().length);
