@@ -31,59 +31,39 @@ public class TodoHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n")); // 여러 줄을 개행해서 받아옴
 
         String content = "";
+        int taskId;
 
         if(path.startsWith("/tasks")) { // path가 /tasks로 시작하는 요청들에 대한 처리
-            // 할 일 목록 얻기
-            if(method.equals("GET")) {
-                content = tasksToJSON(); // 리스트에 저장되어 있던 task들을 json 형태로 가져오기
-            }
-
-            // 상세 조회하기
-            if(method.equals("GET")) {
-                if(path.length() > 6) {
-                    int taskId = Integer.parseInt(path.substring(path.lastIndexOf('/') + 1)); // path에 포함되어있는 task id 추출
-
-                    for(Task task : tasks) {
-                        if(task.getId() == taskId) {
-                            content = task.toString();
-                            break;
-                        }
+            switch (method) {
+                case "GET":
+                    if(path.length() > 6) {
+                        taskId = getTaskId(path);
+                        content = getOneTask(taskId);
                     }
-                }
-            }
-
-            // 할 일 생성하기
-            if(method.equals("POST")) {
-                if(!body.isBlank()) { // request body가 비어있지 않으면
-                    Task task = toTask(body); // body의 내용을 Task 객체로 만듦
-                    tasks.add(task); // 리스트에 task 추가
-                    content = task.toString(); // 내가 생성한 task 정보를 출력
-                }
-            }
-
-            // 할 일 제목 수정하기
-            if(method.equals("PUT")) {
-                int taskId = Integer.parseInt(path.substring(path.lastIndexOf('/') + 1)); // path에 포함되어있는 task id 추출
-                Task updateTask = toTask(body);
-
-                for(Task task : tasks) {
-                    if(task.getId() == taskId) {
-                        task.setTitle(updateTask.getTitle());
-                        content = task.toString();
-                        break;
+                    else {
+                        content = getAllTask();
                     }
-                }
-            }
+                    break;
 
-            // 할 일 삭제하기
-            if(method.equals("DELETE")) {
-                int taskId = Integer.parseInt(path.substring(path.lastIndexOf('/') + 1)); // path에 포함되어있는 task id 추출
-                for(Task task : tasks) {
-                    if(task.getId() == taskId) {
-                        tasks.remove(task);
-                        break;
+                case "POST":
+                    if(!body.isBlank()) { // request body가 비어있지 않을 때만 처리
+                        content = postTask(body);
                     }
-                }
+                    break;
+
+                case "PUT":
+                case "PATCH":
+                    taskId = getTaskId(path);
+                    Task updateTask = toTask(body);
+                    String updateTitle = updateTask.getTitle();
+                    
+                    content = updateTask(taskId, updateTitle);
+                    break;
+
+                case "DELETE":
+                    taskId = getTaskId(path);
+                    deleteTask(taskId);
+                    break;
             }
         }
 
@@ -112,5 +92,62 @@ public class TodoHttpHandler implements HttpHandler {
         objectMapper.writeValue(outputStream, tasks);
 
         return outputStream.toString();
+    }
+
+    // path에 포함되어있는 task id 추출
+    private int getTaskId(String path) {
+        return Integer.parseInt(path.substring(path.lastIndexOf('/') + 1));
+    }
+
+    // 할 일 목록 조회
+    private String getAllTask() throws IOException {
+        return tasksToJSON();
+    }
+
+    // 상세 조회
+    private String getOneTask(int taskId) {
+        String returnTask = null;
+
+        for(Task task : tasks) {
+            if(task.getId() == taskId) {
+                returnTask = task.toString();
+                break;
+            }
+        }
+
+        return returnTask;
+    }
+    
+    // 할 일 생성하기
+    private String postTask(String body) throws JsonProcessingException {
+        Task task = toTask(body); // body의 내용을 Task 객체로 만듦
+        tasks.add(task); // 리스트에 task 추가
+
+        return task.toString(); // 내가 생성한 task 정보를 출력
+    }
+
+    // 할 일 제목 수정하기
+    private String updateTask(int taskId, String updateTitle) {
+        String returnTask = null;
+
+        for(Task task : tasks) {
+            if(task.getId() == taskId) {
+                task.setTitle(updateTitle);
+                returnTask = task.toString();
+                break;
+            }
+        }
+
+        return returnTask;
+    }
+
+    // 할 일 삭제하기
+    private void deleteTask(int taskId) {
+        for(Task task : tasks) {
+            if(task.getId() == taskId) {
+                tasks.remove(task);
+                break;
+            }
+        }
     }
 }
