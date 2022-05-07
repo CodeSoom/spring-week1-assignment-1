@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.response.ResponseCreated;
+import com.codesoom.assignment.response.ResponseNoContent;
+import com.codesoom.assignment.response.ResponseOK;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -29,11 +32,27 @@ public class DemoHttpHandler implements HttpHandler {
 
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {
+		String path = exchange.getRequestURI().getPath();
+		if (path.equals("/tasks")) {
+			handleCollection(exchange);
+		} else if (path.startsWith("/tasks/")){
+			handleItem(exchange);
+		}
+	}
+
+	private void handleCollection(HttpExchange exchange) throws IOException {
 		String method = exchange.getRequestMethod();
 		if (method.equals("GET")) {
-			getTask(exchange);
+			getAllTasks(exchange);
 		} else if (method.equals("POST")) {
 			createTask(exchange);
+		}
+	}
+
+	private void handleItem(HttpExchange exchange) throws IOException {
+		String method = exchange.getRequestMethod();
+		if (method.equals("GET")) {
+			getOneTask(exchange);
 		} else if (method.equals("PUT")) {
 			updateTask(exchange);
 		} else if (method.equals("DELETE")) {
@@ -88,27 +107,9 @@ public class DemoHttpHandler implements HttpHandler {
 		}
 	}
 
-	private void getTask(HttpExchange exchange) throws IOException {
-		if (isStartWithTasks(exchange)) {
-			String path = exchange.getRequestURI().getPath();
-			if (path.equals("/tasks") || path.equals("/tasks/")) {
-				getAllTasks(exchange);
-			} else {
-				getOneTask(exchange);
-			}
-		}
-	}
-
 	private void getAllTasks(HttpExchange exchange) throws IOException {
 		String content = tasksToJSON();
 		new ResponseOK(exchange).send(content);
-	}
-
-	private void createOutputStream(HttpExchange exchange, String content) throws IOException {
-		OutputStream outputStream = exchange.getResponseBody();
-		outputStream.write(content.getBytes());
-		outputStream.flush();
-		outputStream.close();
 	}
 
 	private void getOneTask(HttpExchange exchange) throws IOException {
@@ -119,12 +120,12 @@ public class DemoHttpHandler implements HttpHandler {
 	private Long getIdFromPath(HttpExchange exchange) {
 		String idString = exchange.getRequestURI().getPath().substring("/tasks/".length());
 		canConvertId(idString);
-		return new Long(idString);
+		return Long.valueOf(idString);
 	}
 
 	private void canConvertId(String idString) {
 		try {
-			new Long(idString);
+			Long.valueOf(idString);
 		} catch (Exception e) {
 			throw new IllegalArgumentException();
 		}
