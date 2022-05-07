@@ -31,40 +31,8 @@ public class TodoHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n")); // 여러 줄을 개행해서 받아옴
 
         String content = "";
-        int taskId;
-
         if(path.startsWith("/tasks")) { // path가 /tasks로 시작하는 요청들에 대한 처리
-            switch (method) {
-                case "GET":
-                    if(path.length() > 6) {
-                        taskId = getTaskId(path);
-                        content = getOneTask(taskId);
-                    }
-                    else {
-                        content = getAllTask();
-                    }
-                    break;
-
-                case "POST":
-                    if(!body.isBlank()) { // request body가 비어있지 않을 때만 처리
-                        content = postTask(body);
-                    }
-                    break;
-
-                case "PUT":
-                case "PATCH":
-                    taskId = getTaskId(path);
-                    Task updateTask = toTask(body);
-                    String updateTitle = updateTask.getTitle();
-                    
-                    content = updateTask(taskId, updateTitle);
-                    break;
-
-                case "DELETE":
-                    taskId = getTaskId(path);
-                    deleteTask(taskId);
-                    break;
-            }
+            content = handlePathTasks(method, path, body);
         }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
@@ -74,6 +42,39 @@ public class TodoHttpHandler implements HttpHandler {
         outputStream.write(content.getBytes(StandardCharsets.UTF_8));
         outputStream.flush();
         outputStream.close();
+    }
+
+    // path가 /tasks인 요청들을 처리
+    private String handlePathTasks(String method, String path, String body) throws IOException {
+        int taskId;
+
+        switch (method) {
+            case "GET":
+                if(path.length() > 6) {
+                    taskId = getTaskId(path);
+                    return getOneTask(taskId);
+                }
+                else {
+                    return getAllTask();
+                }
+
+            case "POST":
+                if(!body.isBlank()) { // request body가 비어있지 않을 때만 처리
+                    return postTask(body);
+                }
+                break;
+
+            case "PUT":
+            case "PATCH":
+                taskId = getTaskId(path);
+                return updateTask(taskId, body);
+
+            case "DELETE":
+                taskId = getTaskId(path);
+                deleteTask(taskId);
+                break;
+        }
+        return null;
     }
 
     // request body의 내용을 Task 객체로 만들기
@@ -118,7 +119,7 @@ public class TodoHttpHandler implements HttpHandler {
 
         return returnTask;
     }
-    
+
     // 할 일 생성하기
     private String postTask(String body) throws JsonProcessingException {
         Task task = toTask(body); // body의 내용을 Task 객체로 만듦
