@@ -11,6 +11,7 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.*;
 import java.net.URI;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
@@ -89,24 +90,16 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
-    private boolean containPathVariable(String path) {
-        String substring = path.substring(TASK_DEFAULT_PATH.length());// ex) /tasks/3 -> /3
-
-        if (substring.length() == 0) {
-            return false;
-        }
-
-        if (!substring.startsWith("/")) {
-            return false;
-        }
-
-        try {
-            getPathVariable(path);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-
-        return true;
+    /***
+     * 기본 경로를 받아서 ex) /tasks
+     * PathVariable이 포함되어있는지 확인하는 메소드입니다. ex) /tasks/34
+     * PathVariable은 정수여야 합니다.
+     * @param defaultPath
+     * @return boolean
+     */
+    private boolean containPathVariable(String defaultPath) {
+        String pattern = TASK_DEFAULT_PATH + "/\\d+";
+        return Pattern.matches(pattern, defaultPath);
     }
 
     private Long getPathVariable(String path) {
