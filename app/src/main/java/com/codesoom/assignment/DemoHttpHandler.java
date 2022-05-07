@@ -15,9 +15,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
-    private static final int OK = 200;
-    private static final int NO_CONTENT = 204;
-    private static final int CREATED = 201;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final List<Task> tasks = new ArrayList<>();
     private int id = 1;
@@ -63,7 +60,6 @@ public class DemoHttpHandler implements HttpHandler {
                 .orElseThrow(IllegalArgumentException::new);
         tasks.remove(task);
         String content = tasksToJSON();
-        exchange.sendResponseHeaders(NO_CONTENT, -1);
         new ResponseNoContent(exchange).send(content);
     }
 
