@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Objects;
-
 public class Task {
     private Long id;
     private String title;
@@ -14,8 +12,6 @@ public class Task {
     public Task(@JsonProperty("id") Long id,
                 @JsonProperty("title") String title)
     {
-        Objects.requireNonNull(id);
-        Objects.requireNonNull(title);
         this.id = id;
         this.title = title;
     }

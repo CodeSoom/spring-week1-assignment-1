@@ -10,7 +10,7 @@ public class TaskManager {
     private static long index = 0;
     private static final HashMap<Long, Task> TASKS = new HashMap<>();
 
-    public static List<Task> findALl() {
+    public static List<Task> findAll() {
         return new ArrayList<>(TASKS.values());
     }
 
@@ -21,7 +21,7 @@ public class TaskManager {
             }
             index++;
             Task newTask = new Task(index, task.title());
-            TASKS.put(index, task);
+            TASKS.put(index, newTask);
             return newTask;
         }
     }
@@ -30,4 +30,14 @@ public class TaskManager {
         return TASKS.get(id);
     }
 
+    public static Task modify(Long id, Task task) {
+        TASKS.replace(id, task);
+        Task newTask = new Task(id, task.title());
+        return newTask;
+    }
+
+    public static void delete(Long id) {
+        TASKS.remove(id);
+        return;
+    }
 }
