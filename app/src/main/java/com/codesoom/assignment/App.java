@@ -9,10 +9,10 @@ import java.net.InetSocketAddress;
 public class App {
 
     public static void main(String[] args) {
-        final int PORT_NUM = 8000;
+        final int portNumber = 8000;
 
         try {
-            InetSocketAddress address = new InetSocketAddress(PORT_NUM);
+            InetSocketAddress address = new InetSocketAddress(portNumber);
             HttpServer httpServer = HttpServer.create(address, 0);
 
             HttpHandler handler = new TodoHttpHandler();
