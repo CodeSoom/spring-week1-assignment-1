@@ -22,7 +22,7 @@ public class DemoHttpHandler implements HttpHandler {
     private final List<Task> tasks = new ArrayList<>();
     private int id = 1;
 
-    protected DemoHttpHandler() {
+    public DemoHttpHandler() {
     }
 
     @Override
