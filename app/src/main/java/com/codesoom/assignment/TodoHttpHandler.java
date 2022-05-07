@@ -79,7 +79,8 @@ public class TodoHttpHandler implements HttpHandler {
     // request body의 내용을 Task 객체로 만들기
     private Task toTask(String content) throws JsonProcessingException {
         Task task = objectMapper.readValue(content, Task.class);
-        task.setId(id++); // 할 일을 새로 생성할 때마다 id가 증가하도록 함
+        task.setId(id);
+        id = id + 1; // 할 일을 새로 생성할 때마다 id가 증가하도록 함
 
         System.out.println("id: " + task.getId() + ", title: " + task.getTitle());
 
