@@ -1,4 +1,4 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.response;
 
 import com.sun.net.httpserver.HttpExchange;
 
