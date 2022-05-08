@@ -26,41 +26,52 @@ public class DemoHttpHandler implements HttpHandler {
         String path = httpRequestPath(exchange);
         String body = httpRequestBody(exchange);
 
-        try {
-            if (method == GET && path.equals("/tasks")) {
-                sendResponse(exchange, HttpStatus.OK.code(), mapper.tasksToJson(repository.tasksAll()));
-                return;
-            }
-
-            if (method == GET && path.startsWith("/tasks/")) {
-                long taskId = extractTaskIdFrom(path);
-                final Task foundTask = repository.taskBy(taskId);
-                sendResponse(exchange, HttpStatus.OK.code(), mapper.toJson(foundTask));
-                return;
-            }
-
-            if (method == POST && path.equals("/tasks")) {
-                final Task newTask = repository.save(mapper.toTask(body));
-                sendResponse(exchange, HttpStatus.CREATED.code(), mapper.toJson(newTask));
-                return;
-            }
-
-            if (method == PUT && path.startsWith("/tasks")) {
-                long taskId = extractTaskIdFrom(path);
-                final Task newTask = repository.update(taskId, mapper.toTask(body));
-                sendResponse(exchange, HttpStatus.OK.code(), mapper.toJson(newTask));
-                return;
-            }
-
-            if (method == DELETE && path.startsWith("/tasks")) {
-                long taskId = extractTaskIdFrom(path);
-                repository.delete(taskId);
-                sendResponse(exchange, HttpStatus.NO_CONTENT.code(), "정상적으로 삭제되었습니다");
-            }
-        } catch (NoSuchElementException e) {
-            sendResponse(exchange, HttpStatus.NOT_FOUND.code(), "taskId에 해당하는 task를 찾을 수 없습니다");
+        if (method == GET && path.equals("/tasks")) {
+            handleList(exchange);
         }
 
+        if (method == GET && path.startsWith("/tasks/")) {
+            handleDetail(exchange, path);
+        }
+
+        if (method == POST && path.equals("/tasks")) {
+            handleCreate(exchange, body);
+        }
+
+        if (method == PUT && path.startsWith("/tasks")) {
+            handleUpdate(exchange, path, body);
+        }
+
+        if (method == DELETE && path.startsWith("/tasks")) {
+            handleDelete(exchange, path);
+        }
+    }
+
+    private void handleDelete(HttpExchange exchange, String path) throws IOException {
+        long taskId = extractTaskIdFrom(path);
+        repository.delete(taskId);
+        sendResponse(exchange, HttpStatus.NO_CONTENT.code(), "정상적으로 삭제되었습니다");
+    }
+
+    private void handleUpdate(HttpExchange exchange, String path, String body) throws IOException {
+        long taskId = extractTaskIdFrom(path);
+        final Task newTask = repository.update(taskId, mapper.toTask(body));
+        sendResponse(exchange, HttpStatus.OK.code(), mapper.toJson(newTask));
+    }
+
+    private void handleCreate(HttpExchange exchange, String body) throws IOException {
+        final Task newTask = repository.save(mapper.toTask(body));
+        sendResponse(exchange, HttpStatus.CREATED.code(), mapper.toJson(newTask));
+    }
+
+    private void handleDetail(HttpExchange exchange, String path) throws IOException {
+        long taskId = extractTaskIdFrom(path);
+        final Task foundTask = repository.taskBy(taskId);
+        sendResponse(exchange, HttpStatus.OK.code(), mapper.toJson(foundTask));
+    }
+
+    private void handleList(HttpExchange exchange) throws IOException {
+        sendResponse(exchange, HttpStatus.OK.code(), mapper.tasksToJson(repository.tasksAll()));
     }
 
 
