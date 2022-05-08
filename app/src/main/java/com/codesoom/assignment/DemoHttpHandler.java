@@ -42,14 +42,13 @@ public class DemoHttpHandler implements HttpHandler {
 
             if (method == GET && path.startsWith("/tasks/")) {
                 long taskId = extractTaskIdFrom(path);
-                Task foundTask = repository.taskBy(taskId);
+                final Task foundTask = repository.taskBy(taskId);
                 sendResponse(exchange, HTTP_OK_CODE, mapper.taskToJson(foundTask));
                 return;
             }
 
             if (method == POST && path.equals("/tasks")) {
-                Task newTask = mapper.toTask(body);
-                newTask = repository.save(newTask);
+                final Task newTask = repository.save(mapper.toTask(body));
                 sendResponse(exchange, HTTP_CREATE_CODE, mapper.taskToJson(newTask));
                 return;
             }
@@ -57,8 +56,7 @@ public class DemoHttpHandler implements HttpHandler {
             if (method == PUT && path.startsWith("/tasks")) {
                 long taskId = extractTaskIdFrom(path);
                 repository.taskBy(taskId);
-                Task newTask = mapper.toTask(body);
-                newTask = repository.update(taskId, newTask);
+                final Task newTask = repository.update(taskId, mapper.toTask(body));
                 sendResponse(exchange, HTTP_OK_CODE, mapper.taskToJson(newTask));
                 return;
             }
