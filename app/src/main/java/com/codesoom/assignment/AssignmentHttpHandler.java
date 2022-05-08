@@ -32,30 +32,36 @@ public class AssignmentHttpHandler implements HttpHandler {
 
         String content = "Hello, world!";
 
-        if ("GET".equals(method) && path.equals("/tasks")) {
-            getTasks(exchange);
+        if (path.equals("/tasks")) {
+            handleCollection(exchange, method, body);
             return;
         }
 
-        if ("GET".equals(method) && path.startsWith("/tasks/")) {
+        if (path.startsWith("/tasks/")) {
+            handleItem(exchange, method, path, body);
+            return;
+        }
+    }
+
+    private void handleItem(HttpExchange exchange, String method, String path, String body) throws IOException {
+        if ("GET".equals(method)) {
             getTask(exchange, path);
-            return;
         }
-
-        if ("POST".equals(method) && path.equals("/tasks")) {
-            setTasks(exchange, body);
-            return;
-        }
-
         if ("PUT".equals(method) && path.startsWith("/tasks/")) {
             setTask(exchange, path, body);
-            return;
         }
-
         if ("DELETE".equals(method) && path.startsWith("/tasks/")) {
             removeTask(exchange, path);
         }
+    }
 
+    private void handleCollection(HttpExchange exchange, String method, String body) throws IOException {
+        if ("GET".equals(method)) {
+            getTasks(exchange);
+        }
+        if ("POST".equals(method)) {
+            setTasks(exchange, body);
+        }
     }
 
     private void removeTask(HttpExchange exchange, String path) throws IOException {
