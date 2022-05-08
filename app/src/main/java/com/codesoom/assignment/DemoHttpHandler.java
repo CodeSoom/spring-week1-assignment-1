@@ -1,9 +1,6 @@
 package com.codesoom.assignment;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpHandler;
-
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
@@ -15,11 +12,6 @@ import java.util.stream.Collectors;
 import static com.codesoom.assignment.HttpMethod.*;
 
 public class DemoHttpHandler implements HttpHandler {
-    private static final int HTTP_OK_CODE = 200;
-    private static final int HTTP_CREATE_CODE = 201;
-    private static final int HTTP_NO_CONTENT_CODE = 204;
-    private static final int HTTP_NOT_FOUND_CODE = 404;
-
     private final TaskRepository repository;
     private final TaskMapper mapper;
 
@@ -36,37 +28,37 @@ public class DemoHttpHandler implements HttpHandler {
 
         try {
             if (method == GET && path.equals("/tasks")) {
-                sendResponse(exchange, HTTP_OK_CODE, mapper.tasksToJson(repository.tasksAll()));
+                sendResponse(exchange, HttpStatus.OK.code(), mapper.tasksToJson(repository.tasksAll()));
                 return;
             }
 
             if (method == GET && path.startsWith("/tasks/")) {
                 long taskId = extractTaskIdFrom(path);
                 final Task foundTask = repository.taskBy(taskId);
-                sendResponse(exchange, HTTP_OK_CODE, mapper.taskToJson(foundTask));
+                sendResponse(exchange, HttpStatus.OK.code(), mapper.taskToJson(foundTask));
                 return;
             }
 
             if (method == POST && path.equals("/tasks")) {
                 final Task newTask = repository.save(mapper.toTask(body));
-                sendResponse(exchange, HTTP_CREATE_CODE, mapper.taskToJson(newTask));
+                sendResponse(exchange, HttpStatus.CREATED.code(), mapper.taskToJson(newTask));
                 return;
             }
 
             if (method == PUT && path.startsWith("/tasks")) {
                 long taskId = extractTaskIdFrom(path);
                 final Task newTask = repository.update(taskId, mapper.toTask(body));
-                sendResponse(exchange, HTTP_OK_CODE, mapper.taskToJson(newTask));
+                sendResponse(exchange, HttpStatus.OK.code(), mapper.taskToJson(newTask));
                 return;
             }
 
             if (method == DELETE && path.startsWith("/tasks")) {
                 long taskId = extractTaskIdFrom(path);
                 repository.delete(taskId);
-                sendResponse(exchange, HTTP_NO_CONTENT_CODE, "정상적으로 삭제되었습니다");
+                sendResponse(exchange, HttpStatus.NO_CONTENT.code(), "정상적으로 삭제되었습니다");
             }
         } catch (NoSuchElementException e) {
-            sendResponse(exchange, HTTP_NOT_FOUND_CODE, "taskId에 해당하는 리를 찾을 수 없습니다 from handler layer \n"
+            sendResponse(exchange, HttpStatus.NOT_FOUND.code(), "taskId에 해당하는 리를 찾을 수 없습니다 from handler layer \n"
                     + e.getMessage() + " from repository layer");
         }
 
