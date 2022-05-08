@@ -20,10 +20,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final List<Task> tasks = new ArrayList<>();
-    private int id = 1;
-
     public DemoHttpHandler() {
     }
 
@@ -56,13 +52,4 @@ public class DemoHttpHandler implements HttpHandler {
             new DeleteTask(exchange).handleItem();
         }
     }
-
-    private void canConvertId(String idString) {
-        try {
-            Long.valueOf(idString);
-        } catch (Exception e) {
-            throw new IllegalArgumentException();
-        }
-    }
-
 }

@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.response.ResponseOK;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -30,9 +31,9 @@ public class PutTask extends DoTask {
 			task.setTitle(changeTask.getTitle());
 		}
 		String content = tasksToJSON();
+		new ResponseOK(exchange).send(content);
 	}
 
-	@Override
 	protected Task contentToTask(String content) throws JsonProcessingException {
 		Task task = objectMapper.readValue(content, Task.class);
 		task.setId(id);

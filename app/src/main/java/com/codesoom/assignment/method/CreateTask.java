@@ -28,7 +28,6 @@ public class CreateTask extends DoTask {
 		new ResponseCreated(exchange).send(content);
 	}
 
-	@Override
 	protected Task contentToTask(String content) throws JsonProcessingException {
 		Task task = objectMapper.readValue(content, Task.class);
 		task.setId(id);

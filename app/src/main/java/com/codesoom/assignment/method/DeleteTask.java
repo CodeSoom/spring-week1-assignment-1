@@ -4,11 +4,9 @@ import java.io.IOException;
 
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.response.ResponseNoContent;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sun.net.httpserver.HttpExchange;
 
 public class DeleteTask extends DoTask {
-
 	public DeleteTask(HttpExchange exchange) {
 		super(exchange);
 	}
@@ -23,10 +21,5 @@ public class DeleteTask extends DoTask {
 		tasks.remove(task);
 		String content = tasksToJSON();
 		new ResponseNoContent(exchange).send(content);
-	}
-
-	@Override
-	protected Task contentToTask(String content) throws JsonProcessingException {
-		return null;
 	}
 }
