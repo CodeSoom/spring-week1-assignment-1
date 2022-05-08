@@ -101,11 +101,6 @@ public class AssignmentHttpHandler implements HttpHandler {
             outputStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            /*
-                try-catch-finally 를 사용하라고 하셨는데
-                finally 실행에서 log 같은 걸 남기라는 말인가요
-             */
         }
     }
 
