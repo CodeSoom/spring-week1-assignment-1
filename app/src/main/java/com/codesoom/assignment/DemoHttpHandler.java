@@ -58,15 +58,14 @@ public class DemoHttpHandler implements HttpHandler {
                 sendResponse(exchange, HttpStatus.NO_CONTENT.code(), "정상적으로 삭제되었습니다");
             }
         } catch (NoSuchElementException e) {
-            sendResponse(exchange, HttpStatus.NOT_FOUND.code(), "taskId에 해당하는 리를 찾을 수 없습니다 from handler layer \n"
-                    + e.getMessage() + " from repository layer");
+            sendResponse(exchange, HttpStatus.NOT_FOUND.code(), "taskId에 해당하는 task를 찾을 수 없습니다");
         }
 
     }
 
 
-    private void sendResponse(HttpExchange exchange, int statudCode, String content) throws IOException {
-        exchange.sendResponseHeaders(statudCode, content.getBytes().length);
+    private void sendResponse(HttpExchange exchange, int statusCode, String content) throws IOException {
+        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
 
         try (OutputStream outputStream = exchange.getResponseBody()) {
             outputStream.write(content.getBytes());
