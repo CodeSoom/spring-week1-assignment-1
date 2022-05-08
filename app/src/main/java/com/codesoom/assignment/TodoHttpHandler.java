@@ -67,7 +67,8 @@ public class TodoHttpHandler implements HttpHandler {
             case "PUT":
             case "PATCH":
                 taskId = getTaskId(path);
-                return updateTask(taskId, body);
+                String newTitle = toTask(body).getTitle();
+                return updateTask(taskId, newTitle);
 
             case "DELETE":
                 taskId = getTaskId(path);
@@ -108,16 +109,16 @@ public class TodoHttpHandler implements HttpHandler {
 
     // 상세 조회
     private String getOneTask(int taskId) {
-        String returnTask = null;
+        String idAndTitle = null;
 
         for(Task task : tasks) {
             if(task.getId() == taskId) {
-                returnTask = task.toString();
+                idAndTitle = task.toString();
                 break;
             }
         }
 
-        return returnTask;
+        return idAndTitle;
     }
 
     // 할 일 생성하기
@@ -129,18 +130,18 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     // 할 일 제목 수정하기
-    private String updateTask(int taskId, String updateTitle) {
-        String returnTask = null;
+    private String updateTask(int taskId, String newTitle) {
+        String idAndTitle = null;
 
         for(Task task : tasks) {
             if(task.getId() == taskId) {
-                task.setTitle(updateTitle);
-                returnTask = task.toString();
+                task.setTitle(newTitle);
+                idAndTitle = task.toString();
                 break;
             }
         }
 
-        return returnTask;
+        return idAndTitle;
     }
 
     // 할 일 삭제하기
