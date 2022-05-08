@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.method.CreateTask;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.response.ResponseCreated;
 import com.codesoom.assignment.response.ResponseNoContent;
@@ -37,7 +38,7 @@ public class DemoHttpHandler implements HttpHandler {
         if (method.equals("GET")) {
             getAllTasks(exchange);
         } else if (method.equals("POST")) {
-            createTask(exchange);
+            new CreateTask(exchange).handleItem();
         }
     }
 
@@ -80,17 +81,18 @@ public class DemoHttpHandler implements HttpHandler {
         new ResponseCreated(exchange).send(content);
     }
 
-    private void createTask(HttpExchange exchange) throws IOException {
-        InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader((inputStream))).lines()
-                .collect(Collectors.joining("\n"));
-        if (!body.isEmpty()) {
-            Task task = contentToTask(body, true);
-            tasks.add(task);
-        }
-        String content = tasksToJSON();
-        new ResponseCreated(exchange).send(content);
-    }
+    //
+    // private void createTask(HttpExchange exchange) throws IOException {
+    //     InputStream inputStream = exchange.getRequestBody();
+    //     String body = new BufferedReader(new InputStreamReader((inputStream))).lines()
+    //             .collect(Collectors.joining("\n"));
+    //     if (!body.isEmpty()) {
+    //         Task task = contentToTask(body, true);
+    //         tasks.add(task);
+    //     }
+    //     String content = tasksToJSON();
+    //     new ResponseCreated(exchange).send(content);
+    // }
 
     private void getAllTasks(HttpExchange exchange) throws IOException {
         String content = tasksToJSON();

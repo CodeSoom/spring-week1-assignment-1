@@ -2,7 +2,10 @@ package com.codesoom.assignment.response;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
+import com.codesoom.assignment.models.Task;
 import com.sun.net.httpserver.HttpExchange;
 
 public abstract class Response {

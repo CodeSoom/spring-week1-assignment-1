@@ -11,15 +11,18 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class TaskHandler {
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
+public abstract class DoTask {
+    protected final ObjectMapper objectMapper = new ObjectMapper();
     protected final List<Task> tasks = new ArrayList<>();
     protected HttpExchange exchange;
 
-    TaskHandler(HttpExchange exchange) {
+    DoTask(HttpExchange exchange) {
         this.exchange = exchange;
     }
+
+    public abstract void handleItem() throws IOException;
+
+    protected abstract Task contentToTask(String content) throws JsonProcessingException;
 
     protected String taskToJSON(Long id) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
