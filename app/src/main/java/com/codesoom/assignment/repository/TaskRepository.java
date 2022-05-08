@@ -2,10 +2,8 @@ package com.codesoom.assignment.repository;
 
 import com.codesoom.assignment.models.Task;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class TaskRepository {
     private static Map<Long, Task> store = new HashMap<>();
@@ -32,7 +30,10 @@ public class TaskRepository {
     }
 
     public List<Task> findAll() {
-        return new ArrayList<>(store.values());
+//        return new ArrayList<>(store.values());
+        return new ArrayList<>(store.values().stream()
+                .sorted(Comparator.comparing(Task::getId))
+                .collect(Collectors.toList()));
     }
 
     public void delete(Long id) {
