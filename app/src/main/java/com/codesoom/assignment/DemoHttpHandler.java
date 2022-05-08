@@ -38,19 +38,23 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private void handleItem(HttpExchange exchange, HttpMethod method, String path, String body) throws IOException {
-        long taskId = extractTaskIdFrom(path);
-        final Task task = repository.taskBy(taskId);
+        try {
+            long taskId = extractTaskIdFrom(path);
+            final Task task = repository.taskBy(taskId);
 
-        if (method == GET) {
-            handleDetail(exchange, task);
-        }
+            if (method == GET) {
+                handleDetail(exchange, task);
+            }
 
-        if (method == PUT) {
-            handleUpdate(exchange, body, task);
-        }
+            if (method == PUT) {
+                handleUpdate(exchange, body, task);
+            }
 
-        if (method == DELETE) {
-            handleDelete(exchange, task);
+            if (method == DELETE) {
+                handleDelete(exchange, task);
+            }
+        } catch (NoSuchElementException e) {
+            sendResponse(exchange, HttpStatus.NOT_FOUND.code(), "taskId에 해당하는 task를 찾을 수 없습니다");
         }
     }
 
