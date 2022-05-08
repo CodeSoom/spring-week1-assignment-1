@@ -7,32 +7,35 @@ import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
 import com.codesoom.assignment.models.Task;
-import com.codesoom.assignment.response.ResponseCreated;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sun.net.httpserver.HttpExchange;
 
-public class CreateTask extends DoTask {
-	public CreateTask(HttpExchange exchange) {
+public class PutTask extends DoTask {
+	public PutTask(HttpExchange exchange) {
 		super(exchange);
 	}
 
+	@Override
 	public void handleItem() throws IOException {
 		InputStream inputStream = exchange.getRequestBody();
 		String body = new BufferedReader(new InputStreamReader((inputStream))).lines()
 			.collect(Collectors.joining("\n"));
 		if (!body.isEmpty()) {
-			Task task = contentToTask(body);
-			tasks.add(task);
+			Long id = getIdFromPath(exchange);
+			Task task = tasks.stream()
+				.filter(t -> t.getId().equals(id))
+				.findAny()
+				.orElseThrow(IllegalArgumentException::new);
+			Task changeTask = contentToTask(body);
+			task.setTitle(changeTask.getTitle());
 		}
 		String content = tasksToJSON();
-		new ResponseCreated(exchange).send(content);
 	}
 
 	@Override
 	protected Task contentToTask(String content) throws JsonProcessingException {
 		Task task = objectMapper.readValue(content, Task.class);
 		task.setId(id);
-		id += 1;
 		return task;
 	}
 }
