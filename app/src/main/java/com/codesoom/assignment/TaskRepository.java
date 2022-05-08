@@ -36,12 +36,14 @@ public class TaskRepository {
     }
 
     public void delete(Long id) {
-        tasks.remove(id);
+        final Task task = taskBy(id);
+        tasks.remove(task.getId());
     }
 
     public Task update(Long oldTaskId, Task newTask) {
-        newTask.setId(oldTaskId);
-        tasks.replace(oldTaskId, newTask);
+        final Task oldTask = taskBy(oldTaskId);
+        newTask.setId(oldTask.getId());
+        tasks.replace(oldTask.getId(), newTask);
         return newTask;
     }
 

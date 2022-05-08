@@ -55,7 +55,6 @@ public class DemoHttpHandler implements HttpHandler {
 
             if (method == PUT && path.startsWith("/tasks")) {
                 long taskId = extractTaskIdFrom(path);
-                repository.taskBy(taskId);
                 final Task newTask = repository.update(taskId, mapper.toTask(body));
                 sendResponse(exchange, HTTP_OK_CODE, mapper.taskToJson(newTask));
                 return;
@@ -63,7 +62,6 @@ public class DemoHttpHandler implements HttpHandler {
 
             if (method == DELETE && path.startsWith("/tasks")) {
                 long taskId = extractTaskIdFrom(path);
-                repository.taskBy(taskId);
                 repository.delete(taskId);
                 sendResponse(exchange, HTTP_NO_CONTENT_CODE, "정상적으로 삭제되었습니다");
             }
