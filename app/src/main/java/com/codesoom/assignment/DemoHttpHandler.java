@@ -38,16 +38,19 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private void handleItem(HttpExchange exchange, HttpMethod method, String path, String body) throws IOException {
+        long taskId = extractTaskIdFrom(path);
+        final Task task = repository.taskBy(taskId);
+
         if (method == GET) {
-            handleDetail(exchange, path);
+            handleDetail(exchange, task);
         }
 
         if (method == PUT) {
-            handleUpdate(exchange, path, body);
+            handleUpdate(exchange, body, task);
         }
 
         if (method == DELETE) {
-            handleDelete(exchange, path);
+            handleDelete(exchange, task);
         }
     }
 
@@ -61,15 +64,13 @@ public class DemoHttpHandler implements HttpHandler {
         }
     }
 
-    private void handleDelete(HttpExchange exchange, String path) throws IOException {
-        long taskId = extractTaskIdFrom(path);
-        repository.delete(taskId);
+    private void handleDelete(HttpExchange exchange, Task task) throws IOException {
+        repository.delete(task.getId());
         sendResponse(exchange, HttpStatus.NO_CONTENT.code(), "정상적으로 삭제되었습니다");
     }
 
-    private void handleUpdate(HttpExchange exchange, String path, String body) throws IOException {
-        long taskId = extractTaskIdFrom(path);
-        final Task newTask = repository.update(taskId, mapper.toTask(body));
+    private void handleUpdate(HttpExchange exchange, String body, Task task) throws IOException {
+        final Task newTask = repository.update(task.getId(), mapper.toTask(body));
         sendResponse(exchange, HttpStatus.OK.code(), mapper.toJson(newTask));
     }
 
@@ -78,9 +79,8 @@ public class DemoHttpHandler implements HttpHandler {
         sendResponse(exchange, HttpStatus.CREATED.code(), mapper.toJson(newTask));
     }
 
-    private void handleDetail(HttpExchange exchange, String path) throws IOException {
-        long taskId = extractTaskIdFrom(path);
-        final Task foundTask = repository.taskBy(taskId);
+    private void handleDetail(HttpExchange exchange, Task task) throws IOException {
+        final Task foundTask = repository.taskBy(task.getId());
         sendResponse(exchange, HttpStatus.OK.code(), mapper.toJson(foundTask));
     }
 
