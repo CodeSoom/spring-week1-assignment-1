@@ -22,11 +22,7 @@ public class AssignmentHttpHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         final String method = exchange.getRequestMethod();
         final String path = exchange.getRequestURI().getPath();
-
-        final InputStream inputStream = exchange.getRequestBody();
-        final String body = new BufferedReader(new InputStreamReader(inputStream))
-                        .lines()
-                        .collect(Collectors.joining("\n"));
+        final String body = HttpRequestBody(exchange);
 
         System.out.println(method + " " + path);
 
@@ -41,6 +37,14 @@ public class AssignmentHttpHandler implements HttpHandler {
             handleItem(exchange, method, path, body);
             return;
         }
+    }
+
+    private String HttpRequestBody(HttpExchange exchange) {
+        final InputStream inputStream = exchange.getRequestBody();
+        final String body = new BufferedReader(new InputStreamReader(inputStream))
+                        .lines()
+                        .collect(Collectors.joining("\n"));
+        return body;
     }
 
     private void handleItem(HttpExchange exchange, String method, String path, String body) throws IOException {
