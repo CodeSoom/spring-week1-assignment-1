@@ -26,24 +26,38 @@ public class DemoHttpHandler implements HttpHandler {
         String path = httpRequestPath(exchange);
         String body = httpRequestBody(exchange);
 
-        if (method == GET && path.equals("/tasks")) {
-            handleList(exchange);
+        if (path.equals("/tasks")) {
+            handleCollection(exchange, method, body);
         }
 
-        if (method == GET && path.startsWith("/tasks/")) {
+        if (path.startsWith("/tasks/")) {
+            handleItem(exchange, method, path, body);
+        }
+
+
+    }
+
+    private void handleItem(HttpExchange exchange, HttpMethod method, String path, String body) throws IOException {
+        if (method == GET) {
             handleDetail(exchange, path);
         }
 
-        if (method == POST && path.equals("/tasks")) {
-            handleCreate(exchange, body);
-        }
-
-        if (method == PUT && path.startsWith("/tasks")) {
+        if (method == PUT) {
             handleUpdate(exchange, path, body);
         }
 
-        if (method == DELETE && path.startsWith("/tasks")) {
+        if (method == DELETE) {
             handleDelete(exchange, path);
+        }
+    }
+
+    private void handleCollection(HttpExchange exchange, HttpMethod method, String body) throws IOException {
+        if (method == GET) {
+            handleList(exchange);
+        }
+
+        if (method == POST) {
+            handleCreate(exchange, body);
         }
     }
 
