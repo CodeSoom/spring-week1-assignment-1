@@ -20,15 +20,12 @@ public class TaskMapper {
     }
 
     public String tasksToJson(List<Task> tasks) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        mapper.writeValue(outputStream, tasks);
-
-        return outputStream.toString();
+        return toJson(tasks);
     }
 
-    public String taskToJson(Task task) throws IOException {
+    public String toJson(Object object) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        mapper.writeValue(outputStream, task);
+        mapper.writeValue(outputStream, object);
 
         return outputStream.toString();
     }
