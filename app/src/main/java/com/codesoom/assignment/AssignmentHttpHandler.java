@@ -33,40 +33,64 @@ public class AssignmentHttpHandler implements HttpHandler {
         String content = "Hello, world!";
 
         if ("GET".equals(method) && path.equals("/tasks")) {
-            List<Task> findTasks = taskRepository.findAll();
-            sendResponse(exchange, tasksToJson(findTasks), HttpStatus.OK);
+            getTasks(exchange);
             return;
         }
 
         if ("GET".equals(method) && path.startsWith("/tasks/")) {
-            Long id = Long.parseLong(path.split("/")[2]);
-            Task findTask = taskRepository.findById(id);
-            sendResponse(exchange, tasksToJson(findTask), HttpStatus.OK);
+            getTask(exchange, path);
             return;
         }
 
         if ("POST".equals(method) && path.equals("/tasks")) {
-            Task task = toTask(body);
-            Task savedTask = taskRepository.save(task);
-            sendResponse(exchange, tasksToJson(savedTask), HttpStatus.Created);
+            setTasks(exchange, body);
             return;
         }
 
         if ("PUT".equals(method) && path.startsWith("/tasks/")) {
-            Long id = Long.parseLong(path.split("/")[2]);
-            Task newTask = toTask(body);
-            Task changeTask = taskRepository.update(id, newTask);
-            sendResponse(exchange, tasksToJson(changeTask), HttpStatus.OK);
+            setTask(exchange, path, body);
             return;
         }
 
         if ("DELETE".equals(method) && path.startsWith("/tasks/")) {
-            Long id = Long.parseLong(path.split("/")[2]);
-            taskRepository.delete(id);
-            sendResponse(exchange, "", HttpStatus.OK);
-            return;
+            removeTask(exchange, path);
         }
 
+    }
+
+    private void removeTask(HttpExchange exchange, String path) throws IOException {
+        Long id = Long.parseLong(path.split("/")[2]);
+        taskRepository.delete(id);
+        sendResponse(exchange, "", HttpStatus.OK);
+        return;
+    }
+
+    private void setTask(HttpExchange exchange, String path, String body) throws IOException {
+        Long id = Long.parseLong(path.split("/")[2]);
+        Task newTask = toTask(body);
+        Task changeTask = taskRepository.update(id, newTask);
+        sendResponse(exchange, tasksToJson(changeTask), HttpStatus.OK);
+        return;
+    }
+
+    private void setTasks(HttpExchange exchange, String body) throws IOException {
+        Task task = toTask(body);
+        Task savedTask = taskRepository.save(task);
+        sendResponse(exchange, tasksToJson(savedTask), HttpStatus.Created);
+        return;
+    }
+
+    private void getTask(HttpExchange exchange, String path) throws IOException {
+        Long id = Long.parseLong(path.split("/")[2]);
+        Task findTask = taskRepository.findById(id);
+        sendResponse(exchange, tasksToJson(findTask), HttpStatus.OK);
+        return;
+    }
+
+    private void getTasks(HttpExchange exchange) throws IOException {
+        List<Task> findTasks = taskRepository.findAll();
+        sendResponse(exchange, tasksToJson(findTasks), HttpStatus.OK);
+        return;
     }
 
     private void sendResponse(HttpExchange exchange, String content, HttpStatus code) throws IOException {
