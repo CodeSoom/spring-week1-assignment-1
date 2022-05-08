@@ -55,9 +55,9 @@ public class DemoHttpHandler implements HttpHandler {
             // PUT /tasks/{id}
             if (method.equals("PUT") && containPathVariable(path)) {
                 Long id = getPathVariable(path);
-                Task task = findTaskById(id);
-                Task taskToUpdate = toTask(body);
-                task.setTitle(taskToUpdate.getTitle());
+                Task target = findTaskById(id);
+                Task source = toTask(body);
+                target.setTitle(source.getTitle());
                 sendResponse(exchange, toJson(task), HttpStatus.OK);
                 return;
             }
