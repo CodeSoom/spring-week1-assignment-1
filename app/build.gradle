@@ -9,6 +9,10 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
+
+    // Spring
+    id 'org.springframework.boot' version '2.6.7'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
 repositories {
@@ -29,6 +33,9 @@ dependencies {
     // Jackson for JSON.
     implementation 'com.fasterxml.jackson.core:jackson-core:2.11.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.3'
+
+    // Spring Web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
 }
 
 application {
