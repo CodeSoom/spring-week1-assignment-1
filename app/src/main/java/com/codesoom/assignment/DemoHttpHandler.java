@@ -16,8 +16,7 @@ import java.util.stream.Collectors;
 public class DemoHttpHandler implements HttpHandler {
 
     private ObjectMapper objectMapper = new ObjectMapper();
-
-    private List<Task> tasks = new ArrayList<>();
+    ArrayList<Task> tasks = new ArrayList<>();
 
     public DemoHttpHandler(){
         Task task = new Task();
@@ -38,31 +37,32 @@ public class DemoHttpHandler implements HttpHandler {
         System.out.println(method + " " + path);
 
         if(!body.isBlank()){
-            if(method.equals("POST")){
+            if("POST".equals(method)){
                 Task task = toTask(body);
                 tasks.add(task);
                 System.out.println(task);
-            }else if(method.equals("PUT") || method.equals("PATCH")){
+            }else if("PUT".equals(method) || "PATCH".equals(method)){
                 String newTitle = body.substring(11, body.length()-2);
-                updateById(splits[2], newTitle);
+                long id = Long.parseLong(splits[2]);
+                updateById(id, newTitle);
             }
         }
 
         String content = "Hello, world!";
 
-        if(method.equals("GET")){
+        if("GET".equals(method)){
             content = tasksToJson();
         }
 
-        if(method.equals("POST")){
+        if("POST".equals(method)){
             content = tasksToJson();
         }
 
-        if(method.equals("PUT") || method.equals("PATCH")){
+        if("PUT".equals(method) || "PATCH".equals(method)){
             content = tasksToJson();
         }
 
-        if(method.equals("DELETE")){
+        if("DELETE".equals(method)){
             deleteById(splits[2]);
             content = tasksToJson();
         }
@@ -70,9 +70,15 @@ public class DemoHttpHandler implements HttpHandler {
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
+
+        try {
+            outputStream.write(content.getBytes());
+            outputStream.flush();
+        }catch(Exception e){
+            System.err.println("Exception occured.");
+        }finally{
+            outputStream.close();
+        }
     }
 
     private Task toTask(String content) throws JsonProcessingException {
@@ -87,11 +93,11 @@ public class DemoHttpHandler implements HttpHandler {
         return outputStream.toString();
     }
 
-    private void updateById(String id, String newTitle){
+    private void updateById(Long id, String newTitle){
 
         for(Task task: tasks){
-            if(task.getId() == Long.parseLong(id)){
-                task.setTitle(newTitle);
+            if(task.getId() == id){
+                task.updateTitle(newTitle);
             }
         }
     }

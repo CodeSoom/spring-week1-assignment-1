@@ -22,7 +22,7 @@ public class Task {
         return title;
     }
 
-    public void setTitle(String title) {
+    public void updateTitle(String title) {
         this.title = title;
     }
 
