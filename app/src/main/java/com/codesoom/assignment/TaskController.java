@@ -43,7 +43,7 @@ public class TaskController implements HttpHandler {
             case "DELETE":
                 deleteMapper(exchange);
             default:
-                throw new IOException();
+                throw new IOException(String.format("Method " + reqMethod +  " is not handled"));
         }
     }
 
