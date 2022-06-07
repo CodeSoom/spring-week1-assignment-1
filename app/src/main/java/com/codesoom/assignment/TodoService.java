@@ -31,18 +31,32 @@ public class TodoService {
     }
 
     public String putTasks(Long taskId, String content) throws JsonProcessingException {
-        Optional<Task> deleteTask = tasks.stream().filter(task-> task.getId().equals(taskId)).findAny();
-        if(!deleteTask.isPresent()){
-            return "존재하지 않는 사용자";
+        Optional<Task> changeTask = tasks.stream().filter(task-> task.getId().equals(taskId)).findAny();
+        if(!changeTask.isPresent()){
+            return "존재하지 않는 Task";
         }
         Task newTask = objectMapper.readValue(content,Task.class);
-        deleteTask.get().setTitle(newTask.getTitle());
+        changeTask.get().setTitle(newTask.getTitle());
         return "success";
     }
 
-//    public String getTask(Long taskId) {
-//    }
+    public String getTask(Long taskId) throws IOException {
+        Optional<Task> foundTask = tasks.stream().filter(task-> task.getId().equals(taskId)).findAny();
+        if(!foundTask.isPresent()){
+            return "존재하지 않는 Task";
+        }
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, foundTask.get());
+
+        return outputStream.toString();
+    }
 //
-//    public String deleteTask(Long taskId) {
-//    }
+    public String deleteTask(Long taskId) {
+        Optional<Task> deleteTask = tasks.stream().filter(task-> task.getId().equals(taskId)).findAny();
+        if(!deleteTask.isPresent()){
+            return "존재하지 않는 Task";
+        }
+        tasks.remove(deleteTask.get());
+        return "success";
+    }
 }
