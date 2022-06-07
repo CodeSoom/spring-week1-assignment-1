@@ -12,7 +12,6 @@ public class TodoHttpHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
-        TodoService todoService = new TodoService();
         String content = "Hello World";
         Long taskId = 0L;
         URI uri = exchange.getRequestURI();
@@ -28,14 +27,14 @@ public class TodoHttpHandler implements HttpHandler {
         }else if(method.equals("POST")&& path.equals("/tasks")){
             content = todoService.postTask(body);
         }else if(method.equals("PUT")&& path.matches("/tasks/[0-9\\w]+")){
-            taskId = Long.parseLong(path.split("/")[1]);
+            taskId = Long.parseLong(path.split("/")[2]);
             content = todoService.putTasks(taskId,body);
-        }else if(method.equals("GET")&& path.matches("/tasks/[0-9\\w]+")){
-            taskId = Long.parseLong(path.split("/")[1]);
-            content = todoService.getTask(taskId);
-        }else if(method.equals("DELETE")&& path.matches("/tasks/[0-9\\w]+")){
-            taskId = Long.parseLong(path.split("/")[1]);
-            content = todoService.deleteTask(taskId);
+//        }else if(method.equals("GET")&& path.matches("/tasks/[0-9\\w]+")){
+//            taskId = Long.parseLong(path.split("/")[2]);
+//            content = todoService.getTask(taskId);
+//        }else if(method.equals("DELETE")&& path.matches("/tasks/[0-9\\w]+")){
+//            taskId = Long.parseLong(path.split("/")[1]);
+//            content = todoService.deleteTask(taskId);
         }else{
 
         }
