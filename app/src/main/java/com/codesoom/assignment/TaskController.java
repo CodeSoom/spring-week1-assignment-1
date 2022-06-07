@@ -154,10 +154,10 @@ public class TaskController implements HttpHandler {
     }
 
     private Boolean isReqModifyOneTask(String path) {
-        return path.matches("/tasks/\\d+?");
+        return path.matches("/tasks/\\d+/?");
     }
 
     private Boolean isReqDeleteOneTask(String path) {
-        return path.matches("/tasks/\\d+?");
+        return path.matches("/tasks/\\d+/?");
     }
 }
