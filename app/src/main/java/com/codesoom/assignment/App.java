@@ -15,7 +15,7 @@ public class App {
         try {
             InetSocketAddress inetSocketAddress = new InetSocketAddress(8000);
             HttpServer httpServer = HttpServer.create(inetSocketAddress, 0);
-            HttpHandler handler = new TaskAPIHandler();
+            HttpHandler handler = new ToDoHandlerMapping();
             httpServer.createContext("/", handler);
             httpServer.start();
         }
