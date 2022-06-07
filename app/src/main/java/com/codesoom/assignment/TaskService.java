@@ -5,7 +5,7 @@ import com.codesoom.assignment.models.Task;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TaskManager {
+public class TaskService {
 
     private final List<Task> registeredTasks = new ArrayList<>();
 
@@ -23,5 +23,13 @@ public class TaskManager {
     public Task register(Task task) {
         this.registeredTasks.add(task);
         return task;
+    }
+
+    public Task modify(Long id, Task task) {
+        return null;
+    }
+
+    public Task delete(Long id) {
+        return null;
     }
 }
