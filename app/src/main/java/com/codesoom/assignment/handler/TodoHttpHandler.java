@@ -1,7 +1,7 @@
 package com.codesoom.assignment.handler;
 
 import com.codesoom.assignment.Exception.NotFoundException;
-import com.codesoom.assignment.TodoService;
+import com.codesoom.assignment.service.TodoService;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 

@@ -1,4 +1,4 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.service;
 
 import com.codesoom.assignment.Exception.NotFoundException;
 import com.codesoom.assignment.models.Task;
