@@ -8,6 +8,8 @@ import com.codesoom.assignment.utils.PathParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sun.net.httpserver.HttpExchange;
 
+import java.io.IOException;
+
 public class PutContoller {
     private final TaskService taskService;
 
@@ -15,7 +17,7 @@ public class PutContoller {
         this.taskService = taskService;
     }
 
-    public void route(HttpExchange exchange, String path, String body) throws JsonProcessingException {
+    public void route(HttpExchange exchange, String path, String body) throws IOException {
         if (PathParser.isReqModifyOneTask(path)) {
             handleModifyOneTask(exchange, body);
         } else {
@@ -23,9 +25,16 @@ public class PutContoller {
         }
     }
 
-    private void handleModifyOneTask(HttpExchange exchange, String body) throws JsonProcessingException {
+    private void handleModifyOneTask(HttpExchange exchange, String body) throws IOException {
         Task task = Mapper.stringToTask(body);
-        this.taskService.modify(task);
+        Task modifiedTask = this.taskService.modify(task);
+
+        if (modifiedTask == null) {
+            TaskController.sendResponse(exchange, HttpStatus.NOT_FOUND, "Task not found");
+        }
+
+        TaskController.sendResponse(exchange, HttpStatus.OK, Mapper.taskToString(modifiedTask));
+
     }
 
 }

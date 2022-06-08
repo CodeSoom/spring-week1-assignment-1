@@ -1,9 +1,13 @@
 package com.codesoom.assignment.controllers;
 
+import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.services.TaskService;
 import com.codesoom.assignment.utils.HttpStatus;
+import com.codesoom.assignment.utils.Mapper;
 import com.codesoom.assignment.utils.PathParser;
 import com.sun.net.httpserver.HttpExchange;
+
+import java.io.IOException;
 
 public class DeleteController {
     private final TaskService taskService;
@@ -12,7 +16,7 @@ public class DeleteController {
         this.taskService = taskService;
     }
 
-    public void route(HttpExchange exchange, String path) {
+    public void route(HttpExchange exchange, String path) throws IOException {
         if (PathParser.isReqDeleteOneTask(path)) {
             handleDeleteOneTask(exchange, path);
         } else {
@@ -20,9 +24,15 @@ public class DeleteController {
         }
     }
 
-    private void handleDeleteOneTask(HttpExchange exchange, String path) {
+    private void handleDeleteOneTask(HttpExchange exchange, String path) throws IOException {
         Long id = PathParser.parseId(path);
-        this.taskService.delete(id);
+        Task task = this.taskService.delete(id);
+
+        if (task == null) {
+            TaskController.sendResponse(exchange, HttpStatus.NOT_FOUND, "Task not found");
+        }
+
+        TaskController.sendResponse(exchange, HttpStatus.OK, Mapper.taskToString(task));
     }
 
 }
