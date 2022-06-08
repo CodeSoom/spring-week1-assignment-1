@@ -12,10 +12,10 @@ public class App {
     public static void main(String[] args) {
         InetSocketAddress address = new InetSocketAddress(8000);
         try {
-            HttpServer httpServer = HttpServer.create(address,0);
+            HttpServer httpServer = HttpServer.create(address, 0);
             httpServer.start();
             HttpHandler handler = new TodoHttpHandler();
-            httpServer.createContext("/",handler);
+            httpServer.createContext("/", handler);
         } catch (IOException e) {
             e.printStackTrace();
         }
