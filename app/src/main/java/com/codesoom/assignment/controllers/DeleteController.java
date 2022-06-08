@@ -27,12 +27,11 @@ public class DeleteController {
     private void handleDeleteOneTask(HttpExchange exchange, String path) throws IOException {
         Long id = PathParser.parseId(path);
         Task task = this.taskService.delete(id);
-
         if (task == null) {
             TaskController.sendResponse(exchange, HttpStatus.NOT_FOUND, "Task not found");
         }
 
-        TaskController.sendResponse(exchange, HttpStatus.OK, Mapper.taskToString(task));
+        TaskController.sendResponse(exchange, HttpStatus.NO_CONTENT, Mapper.taskToString(task));
     }
 
 }

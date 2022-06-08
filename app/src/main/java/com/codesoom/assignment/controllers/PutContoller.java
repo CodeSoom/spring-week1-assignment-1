@@ -5,7 +5,6 @@ import com.codesoom.assignment.services.TaskService;
 import com.codesoom.assignment.utils.HttpStatus;
 import com.codesoom.assignment.utils.Mapper;
 import com.codesoom.assignment.utils.PathParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -19,14 +18,16 @@ public class PutContoller {
 
     public void route(HttpExchange exchange, String path, String body) throws IOException {
         if (PathParser.isReqModifyOneTask(path)) {
-            handleModifyOneTask(exchange, body);
+            handleModifyOneTask(exchange, path, body);
         } else {
             TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST, "This request can not be properly handled");
         }
     }
 
-    private void handleModifyOneTask(HttpExchange exchange, String body) throws IOException {
+    private void handleModifyOneTask(HttpExchange exchange, String path, String body) throws IOException {
+        Long id = PathParser.parseId(path);
         Task task = Mapper.stringToTask(body);
+        task.setId(id);
         Task modifiedTask = this.taskService.modify(task);
 
         if (modifiedTask == null) {
