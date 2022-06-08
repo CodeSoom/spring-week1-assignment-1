@@ -1,4 +1,4 @@
-package com.codesoom.assignment;
+package com.codesoom.todo;
 
 import org.junit.jupiter.api.Test;
 
