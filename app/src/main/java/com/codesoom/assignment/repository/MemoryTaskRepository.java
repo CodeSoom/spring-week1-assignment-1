@@ -17,7 +17,9 @@ public class MemoryTaskRepository {
     }
 
     public Optional<Task> findById(Long taskId) {
-        return tasks.stream().filter(task -> task.getId().equals(taskId)).findAny();
+        return tasks.stream()
+                .filter(task -> task.getId().equals(taskId))
+                .findAny();
 
     }
 
@@ -26,7 +28,9 @@ public class MemoryTaskRepository {
     }
 
     public Optional<Task> update(Long taskId, String newTitle) {
-        Optional<Task> changeTask = tasks.stream().filter(task -> task.getId().equals(taskId)).findAny();
+        Optional<Task> changeTask = tasks.stream()
+                .filter(task -> task.getId().equals(taskId))
+                .findAny();
         if (!changeTask.isPresent()) {
             return changeTask;
         }
