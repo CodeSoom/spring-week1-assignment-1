@@ -32,7 +32,7 @@ public class TodoService {
         Task newTask = JSONtoTask(content);
         Optional<Task> updatedTask = taskRepository.update(taskId, newTask.getTitle());
         if (!updatedTask.isPresent()) {
-            throw new NotFoundException("존재하지 않는 task");
+            throw new NotFoundException("Task를 찾지 못했기 때문에, 수정하지 못했습니다");
         }
         return taskToJSON(updatedTask.get());
     }
@@ -40,7 +40,7 @@ public class TodoService {
     public String getTask(Long taskId) throws IOException, NotFoundException {
         Optional<Task> foundTask = taskRepository.findById(taskId);
         if (!foundTask.isPresent()) {
-            throw new NotFoundException("존재하지 않는 Task");
+            throw new NotFoundException("Task를 찾지 못했습니다.");
         }
         return taskToJSON(foundTask.get());
     }
@@ -49,7 +49,7 @@ public class TodoService {
     public String deleteTask(Long taskId) throws NotFoundException {
         Optional<Task> deleteTask = taskRepository.findById(taskId);
         if (!deleteTask.isPresent()) {
-            throw new NotFoundException("존재하지 않는 Task");
+            throw new NotFoundException("Task를 찾지 못했기 때문에, 삭제하지 못했습니다");
         }
         taskRepository.delete(deleteTask.get());
         return "";
