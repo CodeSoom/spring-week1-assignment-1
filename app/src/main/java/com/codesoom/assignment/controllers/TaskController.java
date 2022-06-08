@@ -1,6 +1,7 @@
 package com.codesoom.assignment.controllers;
 
 import com.codesoom.assignment.services.TaskService;
+import com.codesoom.assignment.utils.HttpStatus;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.jetbrains.annotations.NotNull;
@@ -37,7 +38,7 @@ public class TaskController implements HttpHandler {
                 this.deleteController.route(exchange, path);
                 break;
             default:
-                throw new IOException();
+                TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST, "This request can not be properly handled");
         }
     }
 
