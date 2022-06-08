@@ -22,24 +22,34 @@ public class TodoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
         System.out.println(method + " " + path);
-        if(method.equals("GET")&& path.equals("/tasks")){
-            content = todoService.getTasks();
-        }else if(method.equals("POST")&& path.equals("/tasks")){
-            content = todoService.postTask(body);
-        }else if(method.equals("PUT")&& path.matches("/tasks/[0-9\\w]+")){
-            taskId = Long.parseLong(path.split("/")[2]);
-            content = todoService.putTasks(taskId,body);
-        }else if(method.equals("GET")&& path.matches("/tasks/[0-9\\w]+")){
-            taskId = Long.parseLong(path.split("/")[2]);
-            content = todoService.getTask(taskId);
-        }else if(method.equals("DELETE")&& path.matches("/tasks/[0-9\\w]+")){
-            taskId = Long.parseLong(path.split("/")[2]);
-            content = todoService.deleteTask(taskId);
-        }else{
-
+        try{
+            if (method.equals("GET") && path.equals("/tasks")) {
+                content = todoService.getTasks();
+                exchange.sendResponseHeaders(200, content.getBytes().length);
+            } else if (method.equals("POST") && path.equals("/tasks")) {
+                content = todoService.postTask(body);
+                exchange.sendResponseHeaders(201, content.getBytes().length);
+            } else if (method.equals("PUT") && path.matches("/tasks/[0-9\\w]+")) {
+                taskId = Long.parseLong(path.split("/")[2]);
+                content = todoService.putTask(taskId, body);
+                exchange.sendResponseHeaders(200, content.getBytes().length);
+            } else if (method.equals("GET") && path.matches("/tasks/[0-9\\w]+")) {
+                taskId = Long.parseLong(path.split("/")[2]);
+                content = todoService.getTask(taskId);
+                exchange.sendResponseHeaders(200, content.getBytes().length);
+            } else if (method.equals("DELETE") && path.matches("/tasks/[0-9\\w]+")) {
+                taskId = Long.parseLong(path.split("/")[2]);
+                content = todoService.deleteTask(taskId);
+                exchange.sendResponseHeaders(204, content.getBytes().length);
+            } else {
+               throw new NotFoundException("존재하지 않는 API");
+            }
+        }catch(NotFoundException e){
+            content = e.getMessage();
+            exchange.sendResponseHeaders(404, content.getBytes().length);
         }
 
-        exchange.sendResponseHeaders(200,content.getBytes().length);
+
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
