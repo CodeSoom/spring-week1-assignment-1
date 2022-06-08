@@ -44,10 +44,7 @@ public class GetController {
 
     private void handleGetAllTasks(HttpExchange exchange, String path) throws IOException {
         List<Task> tasks = this.taskService.showAll();
-//        if (tasks.isEmpty()) {
-//            TaskController.sendResponse(exchange, 404, "There's no registered tasks");
-//        }
-//
+
         TaskController.sendResponse(exchange, HttpStatus.OK, Mapper.taskToString(tasks));
     }
 }
