@@ -1,6 +1,7 @@
 package com.codesoom.assignment.controllers;
 
 import com.codesoom.assignment.services.TaskService;
+import com.codesoom.assignment.utils.HttpStatus;
 import com.codesoom.assignment.utils.PathParser;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -15,7 +16,7 @@ public class DeleteController {
         if (PathParser.isReqDeleteOneTask(path)) {
             handleDeleteOneTask(exchange, path);
         } else {
-            TaskController.sendResponse(exchange, 400, "This request can not be properly handled");
+            TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST, "This request can not be properly handled");
         }
     }
 

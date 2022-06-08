@@ -2,6 +2,7 @@ package com.codesoom.assignment.controllers;
 
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.services.TaskService;
+import com.codesoom.assignment.utils.HttpStatus;
 import com.codesoom.assignment.utils.Mapper;
 import com.codesoom.assignment.utils.PathParser;
 import com.sun.net.httpserver.HttpExchange;
@@ -20,7 +21,7 @@ public class PostController {
             handleRegisterOneTask(exchange, body);
         } else {
             // FIXME - Controller마다 생기는 중복을 어떻게 하면 줄일 수 있을까?
-            TaskController.sendResponse(exchange, 400, "This request can not be properly handled");
+            TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST, "This request can not be properly handled");
         }
     }
 
@@ -28,9 +29,9 @@ public class PostController {
         Task task = Mapper.stringToTask(body);
         Task registeredTask = this.taskService.register(task);
         if (registeredTask == null) {
-            TaskController.sendResponse(exchange, 400, "Duplicated id");
+            TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST, "Duplicated id");
         }
 
-        TaskController.sendResponse(exchange, 200, Mapper.taskToString(task));
+        TaskController.sendResponse(exchange, HttpStatus.OK, Mapper.taskToString(task));
     }
 }

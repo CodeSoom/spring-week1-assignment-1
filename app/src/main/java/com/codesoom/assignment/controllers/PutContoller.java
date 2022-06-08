@@ -2,6 +2,7 @@ package com.codesoom.assignment.controllers;
 
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.services.TaskService;
+import com.codesoom.assignment.utils.HttpStatus;
 import com.codesoom.assignment.utils.Mapper;
 import com.codesoom.assignment.utils.PathParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,7 +19,7 @@ public class PutContoller {
         if (PathParser.isReqModifyOneTask(path)) {
             handleModifyOneTask(exchange, body);
         } else {
-            TaskController.sendResponse(exchange, 400, "This request can not be properly handled");
+            TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST, "This request can not be properly handled");
         }
     }
 

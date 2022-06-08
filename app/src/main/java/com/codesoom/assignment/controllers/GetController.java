@@ -2,6 +2,7 @@ package com.codesoom.assignment.controllers;
 
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.services.TaskService;
+import com.codesoom.assignment.utils.HttpStatus;
 import com.codesoom.assignment.utils.Mapper;
 import com.codesoom.assignment.utils.PathParser;
 import com.sun.net.httpserver.HttpExchange;
@@ -27,7 +28,7 @@ public class GetController {
     }
 
     private void rejectUnregisteredPath(HttpExchange exchange) {
-        TaskController.sendResponse(exchange, 400, "This request can not be properly handled");
+        TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST, "This request can not be properly handled");
     }
 
     private void handleGetOneTask(HttpExchange exchange, String path) throws IOException {
@@ -35,10 +36,10 @@ public class GetController {
         Task task = this.taskService.show(id);
 
         if (task == null) {
-            TaskController.sendResponse(exchange, 404, "Task not found");
+            TaskController.sendResponse(exchange, HttpStatus.NOT_FOUND, "Task not found");
         }
 
-        TaskController.sendResponse(exchange, 200, Mapper.taskToString(task));
+        TaskController.sendResponse(exchange, HttpStatus.OK, Mapper.taskToString(task));
     }
 
     private void handleGetAllTasks(HttpExchange exchange, String path) throws IOException {
@@ -47,6 +48,6 @@ public class GetController {
 //            TaskController.sendResponse(exchange, 404, "There's no registered tasks");
 //        }
 //
-        TaskController.sendResponse(exchange, 200, Mapper.taskToString(tasks));
+        TaskController.sendResponse(exchange, HttpStatus.OK, Mapper.taskToString(tasks));
     }
 }
