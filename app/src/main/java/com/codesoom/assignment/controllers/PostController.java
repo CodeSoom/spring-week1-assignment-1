@@ -32,6 +32,6 @@ public class PostController {
             TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST, "Duplicated id");
         }
 
-        TaskController.sendResponse(exchange, HttpStatus.OK, Mapper.taskToString(task));
+        TaskController.sendResponse(exchange, HttpStatus.CREATED, Mapper.taskToString(task));
     }
 }
