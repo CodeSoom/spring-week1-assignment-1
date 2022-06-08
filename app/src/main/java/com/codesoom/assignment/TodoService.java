@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.Exception.NotFoundException;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.repository.MemoryTaskRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -7,9 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.NotActiveException;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
