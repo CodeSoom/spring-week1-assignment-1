@@ -8,8 +8,11 @@ import java.net.InetSocketAddress;
 
 public class App {
     public static void main(String[] args) {
+        String HOST = "localhost";
+        Integer PORT = 8000;
+
         try {
-            InetSocketAddress address = new InetSocketAddress("localhost", 8080);
+            InetSocketAddress address = new InetSocketAddress(HOST, PORT);
             HttpServer httpServer = HttpServer.create(address, 0);
 
             HttpHandler handler = new TaskController();
