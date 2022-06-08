@@ -1,4 +1,4 @@
-package com.codesoom.assignment;
+package com.codesoom.todo;
 
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
