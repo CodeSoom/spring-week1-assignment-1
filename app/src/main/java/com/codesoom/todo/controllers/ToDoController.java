@@ -97,15 +97,6 @@ public class ToDoController {
         return objectMapper.readValue(content, Task.class);
     }
 
-    private String taskToString(Task task) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.writeValue(outputStream, task);
-
-        return outputStream.toString();
-    }
-
     private String getRequestMethod(HttpExchange exchange){
         return exchange.getRequestMethod();
     }
