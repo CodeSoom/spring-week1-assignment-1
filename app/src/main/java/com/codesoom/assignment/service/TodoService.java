@@ -1,6 +1,6 @@
 package com.codesoom.assignment.service;
 
-import com.codesoom.assignment.Exception.NotFoundException;
+import com.codesoom.assignment.models.Response;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.repository.MemoryTaskRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -17,42 +17,50 @@ public class TodoService {
     private MemoryTaskRepository taskRepository = new MemoryTaskRepository();
 
 
-    public String getTasks() throws IOException {
+    public String getTasks(Response response) throws IOException {
         List<Task> tasks = taskRepository.findAll();
+        response.setResponse(200, "success");
         return tasksToJSON(tasks);
     }
 
-    public String postTask(String content) throws IOException {
+    public void postTask(Response response, String content) throws IOException {
         Task task = JSONtoTask(content);
         taskRepository.save(task);
-        return taskToJSON(task);
+        response.setResponse(201, taskToJSON(task));
+        return;
     }
 
-    public String putTask(Long taskId, String content) throws IOException, NotFoundException {
+    public void putTask(Response response, Long taskId, String content) throws IOException{
         Task newTask = JSONtoTask(content);
         Optional<Task> updatedTask = taskRepository.update(taskId, newTask.getTitle());
         if (!updatedTask.isPresent()) {
-            throw new NotFoundException("Task를 찾지 못했기 때문에, 수정하지 못했습니다");
+             postTask(response,content);
+             return;
         }
-        return taskToJSON(updatedTask.get());
+        response.setResponse(200,taskToJSON(updatedTask.get()));
+        return;
     }
 
-    public String getTask(Long taskId) throws IOException, NotFoundException {
+    public void getTask(Response response, Long taskId) throws IOException{
         Optional<Task> foundTask = taskRepository.findById(taskId);
         if (!foundTask.isPresent()) {
-            throw new NotFoundException("Task를 찾지 못했습니다.");
+            response.setResponse(400,"Task를 찾지 못했습니다." );
+            return;
         }
-        return taskToJSON(foundTask.get());
+        response.setResponse(200, taskToJSON(foundTask.get()));
+        return;
     }
 
     //
-    public String deleteTask(Long taskId) throws NotFoundException {
+    public void deleteTask(Response response, Long taskId){
         Optional<Task> deleteTask = taskRepository.findById(taskId);
         if (!deleteTask.isPresent()) {
-            throw new NotFoundException("Task를 찾지 못했기 때문에, 삭제하지 못했습니다");
+            response.setResponse(400,"Task를 찾지 못해 삭제하지 못했습니다.");
+            return;
         }
         taskRepository.delete(deleteTask.get());
-        return "";
+        response.setResponse(200,"success");
+        return ;
     }
 
     private String taskToJSON(Task task) throws IOException {

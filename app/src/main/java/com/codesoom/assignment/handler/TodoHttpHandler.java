@@ -1,6 +1,6 @@
 package com.codesoom.assignment.handler;
 
-import com.codesoom.assignment.Exception.NotFoundException;
+import com.codesoom.assignment.models.Response;
 import com.codesoom.assignment.service.TodoService;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -29,39 +29,35 @@ public class TodoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
         System.out.println(method + " " + path);
-        try {
-            if ("GET".equals(method) && path.equals("/tasks")) {
-                content = todoService.getTasks();
-                exchange.sendResponseHeaders(200, content.getBytes().length);
-            } else if ("POST".equals(method) && path.equals("/tasks")) {
-                content = todoService.postTask(body);
-                exchange.sendResponseHeaders(201, content.getBytes().length);
-            } else if ("PUT".equals(method) && path.matches("/tasks/[0-9\\w]+")) {
-                taskId = Long.parseLong(path.split("/")[2]);
-                content = todoService.putTask(taskId, body);
-                exchange.sendResponseHeaders(200, content.getBytes().length);
-            } else if ("GET".equals(method) && path.matches("/tasks/[0-9\\w]+")) {
-                taskId = Long.parseLong(path.split("/")[2]);
-                content = todoService.getTask(taskId);
-                exchange.sendResponseHeaders(200, content.getBytes().length);
-            } else if ("DELETE".equals(method) && path.matches("/tasks/[0-9\\w]+")) {
-                taskId = Long.parseLong(path.split("/")[2]);
-                content = todoService.deleteTask(taskId);
-                exchange.sendResponseHeaders(204, content.getBytes().length);
-            } else {
-                content = "bad request";
-                exchange.sendResponseHeaders(400, content.getBytes().length);
-            }
-        } catch (NotFoundException e) {
-            content = e.getMessage();
+        Response response = new Response();
+
+        if ("GET".equals(method) && path.equals("/tasks")) {
+            todoService.getTasks(response);
+            exchange.sendResponseHeaders(200, content.getBytes().length);
+        } else if ("POST".equals(method) && path.equals("/tasks")) {
+            todoService.postTask(response, body);
+            exchange.sendResponseHeaders(201, content.getBytes().length);
+        } else if ("PUT".equals(method) && path.matches("/tasks/[0-9\\w]+")) {
+            taskId = Long.parseLong(path.split("/")[2]);
+            todoService.putTask(response, taskId, body);
+            exchange.sendResponseHeaders(200, content.getBytes().length);
+        } else if ("GET".equals(method) && path.matches("/tasks/[0-9\\w]+")) {
+            taskId = Long.parseLong(path.split("/")[2]);
+            todoService.getTask(response, taskId);
+            exchange.sendResponseHeaders(200, content.getBytes().length);
+        } else if ("DELETE".equals(method) && path.matches("/tasks/[0-9\\w]+")) {
+            taskId = Long.parseLong(path.split("/")[2]);
+            todoService.deleteTask(response, taskId);
+            exchange.sendResponseHeaders(204, content.getBytes().length);
+        } else {
+            content = "not found";
             exchange.sendResponseHeaders(404, content.getBytes().length);
         }
 
-
+        response.sendResponseHeader(exchange);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
-
     }
 }
