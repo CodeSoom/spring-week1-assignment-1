@@ -28,7 +28,7 @@ public class GetController {
     }
 
     private void rejectUnregisteredPath(HttpExchange exchange) {
-        TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST, "This request can not be properly handled");
+        TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST.statusCode(), "This request can not be properly handled");
     }
 
     private void handleGetOneTask(HttpExchange exchange, String path) throws IOException {
@@ -36,15 +36,15 @@ public class GetController {
         Task task = this.taskService.show(id);
 
         if (task == null) {
-            TaskController.sendResponse(exchange, HttpStatus.NOT_FOUND, "Task not found");
+            TaskController.sendResponse(exchange, HttpStatus.NOT_FOUND.statusCode(), "Task not found");
         }
 
-        TaskController.sendResponse(exchange, HttpStatus.OK, Mapper.taskToString(task));
+        TaskController.sendResponse(exchange, HttpStatus.OK.statusCode(), Mapper.taskToString(task));
     }
 
     private void handleGetAllTasks(HttpExchange exchange, String path) throws IOException {
         List<Task> tasks = this.taskService.showAll();
 
-        TaskController.sendResponse(exchange, HttpStatus.OK, Mapper.taskToString(tasks));
+        TaskController.sendResponse(exchange, HttpStatus.OK.statusCode(), Mapper.taskToString(tasks));
     }
 }

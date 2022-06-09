@@ -21,7 +21,7 @@ public class PostController {
             handleRegisterOneTask(exchange, body);
         } else {
             // FIXME - Controller마다 생기는 중복을 어떻게 하면 줄일 수 있을까?
-            TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST, "This request can not be properly handled");
+            TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST.statusCode(), "This request can not be properly handled");
         }
     }
 
@@ -29,9 +29,9 @@ public class PostController {
         Task task = Mapper.stringToTask(body);
         Task registeredTask = this.taskService.register(task);
         if (registeredTask == null) {
-            TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST, "Duplicated id");
+            TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST.statusCode(), "Duplicated id");
         }
 
-        TaskController.sendResponse(exchange, HttpStatus.CREATED, Mapper.taskToString(task));
+        TaskController.sendResponse(exchange, HttpStatus.CREATED.statusCode(), Mapper.taskToString(task));
     }
 }

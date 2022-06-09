@@ -20,7 +20,7 @@ public class DeleteController {
         if (PathParser.isReqDeleteOneTask(path)) {
             handleDeleteOneTask(exchange, path);
         } else {
-            TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST, "This request can not be properly handled");
+            TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST.statusCode(), "This request can not be properly handled");
         }
     }
 
@@ -28,10 +28,10 @@ public class DeleteController {
         Long id = PathParser.parseId(path);
         Task task = this.taskService.delete(id);
         if (task == null) {
-            TaskController.sendResponse(exchange, HttpStatus.NOT_FOUND, "Task not found");
+            TaskController.sendResponse(exchange, HttpStatus.NOT_FOUND.statusCode(), "Task not found");
         }
 
-        TaskController.sendResponse(exchange, HttpStatus.NO_CONTENT, Mapper.taskToString(task));
+        TaskController.sendResponse(exchange, HttpStatus.NO_CONTENT.statusCode(), Mapper.taskToString(task));
     }
 
 }

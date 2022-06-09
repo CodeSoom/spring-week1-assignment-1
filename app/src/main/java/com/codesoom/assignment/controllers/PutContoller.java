@@ -20,7 +20,7 @@ public class PutContoller {
         if (PathParser.isReqModifyOneTask(path)) {
             handleModifyOneTask(exchange, path, body);
         } else {
-            TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST, "This request can not be properly handled");
+            TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST.statusCode(), "This request can not be properly handled");
         }
     }
 
@@ -31,10 +31,10 @@ public class PutContoller {
         Task modifiedTask = this.taskService.modify(task);
 
         if (modifiedTask == null) {
-            TaskController.sendResponse(exchange, HttpStatus.NOT_FOUND, "Task not found");
+            TaskController.sendResponse(exchange, HttpStatus.NOT_FOUND.statusCode(), "Task not found");
         }
 
-        TaskController.sendResponse(exchange, HttpStatus.OK, Mapper.taskToString(modifiedTask));
+        TaskController.sendResponse(exchange, HttpStatus.OK.statusCode(), Mapper.taskToString(modifiedTask));
 
     }
 

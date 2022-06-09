@@ -38,7 +38,7 @@ public class TaskController implements HttpHandler {
                 this.deleteController.route(exchange, path);
                 break;
             default:
-                TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST, "This request can not be properly handled");
+                TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST.statusCode(), "This request can not be properly handled");
         }
     }
 
