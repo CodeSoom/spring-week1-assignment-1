@@ -29,11 +29,11 @@ public class ToDoHandlerMapping implements HttpHandler {
 
     }
 
-    private void getMapper(HttpExchange exchange, String path, ToDoController toDoController) {
+    private void getMapper(HttpExchange exchange, String path, ToDoController toDoController) throws IOException {
         if (isPathMatches("^/tasks/?$", path)) {
-            toDoController.getTasks(exchange);
+            toDoController.showTasks(exchange);
         } else if (isPathMatches("^/tasks/\\d+/?$", path)) {
-            toDoController.getTask(exchange, getTaskID(path));
+            toDoController.showTask(exchange, getTaskID(path));
         } else {
             toDoController.errorResponse(); // 405
         }
@@ -47,25 +47,25 @@ public class ToDoHandlerMapping implements HttpHandler {
         }
     }
 
-    private void putMapper(HttpExchange exchange, String path, ToDoController toDoController) {
+    private void putMapper(HttpExchange exchange, String path, ToDoController toDoController) throws IOException {
         if (isPathMatches("^/tasks/\\d+/?$", path)) {
-            toDoController.getTask(exchange, getTaskID(path));
+            toDoController.showTask(exchange, getTaskID(path));
         } else {
             toDoController.errorResponse(); // 405
         }
     }
 
-    private void patchMapper(HttpExchange exchange, String path, ToDoController toDoController) {
+    private void patchMapper(HttpExchange exchange, String path, ToDoController toDoController) throws IOException {
         if (isPathMatches("^/tasks/\\d+/?$", path)) {
-            toDoController.getTask(exchange, getTaskID(path));
+            toDoController.showTask(exchange, getTaskID(path));
         } else {
             toDoController.errorResponse(); // 405
         }
     }
 
-    private void deleteMapper(HttpExchange exchange, String path, ToDoController toDoController) {
+    private void deleteMapper(HttpExchange exchange, String path, ToDoController toDoController) throws IOException {
         if (isPathMatches("^/tasks/\\d+/?$", path)) {
-            toDoController.getTask(exchange, getTaskID(path));
+            toDoController.showTask(exchange, getTaskID(path));
         } else {
             toDoController.errorResponse(); // 405
         }
