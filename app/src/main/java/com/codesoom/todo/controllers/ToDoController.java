@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class ToDoController {
@@ -49,7 +50,6 @@ public class ToDoController {
     }
 
 
-
     public void editTaskTitleByID(HttpExchange exchange, Long id) {
 
     }
@@ -72,6 +72,25 @@ public class ToDoController {
         }
         return outputStream.toString();
     }
+
+    private String taskToString(Task task) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.writeValue(outputStream, task);
+
+        return outputStream.toString();
+    }
+
+    private String tasksToString(ConcurrentHashMap<Long, Task> tasks) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.writeValue(outputStream, tasks.values());
+
+        return outputStream.toString();
+    }
+
 
     private Task stringToTask(String content) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
