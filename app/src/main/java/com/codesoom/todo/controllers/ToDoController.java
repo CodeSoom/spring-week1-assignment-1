@@ -21,12 +21,13 @@ public class ToDoController {
         this.taskService = taskService;
     }
 
-    public void getTask(HttpExchange exchange, Long id) {
+    public void showTask(HttpExchange exchange, Long id) throws IOException {
         Task currentTask = this.taskService.getTask(id);
         if (currentTask == null){
             sendResponse(exchange, 404, "Task not found");
+        } else {
+            sendResponse(exchange, 200, taskToString(currentTask));
         }
-        sendResponse(exchange, 204, taskToJson(currentTask));
     }
 
 
