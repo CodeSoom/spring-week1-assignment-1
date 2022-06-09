@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.todo.TaskHandler;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -12,27 +13,26 @@ import java.util.stream.Collectors;
 
 public class SuperHttpHandler implements HttpHandler {
 
-    @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        // 1. Method - GET, POST, PUT/PATCH, DELETE, ...
-        // 2. Path - "/", "/tasks", "/tasks/1", ...
-        // 3. Headers, Body(Content)
+  @Override
+  public void handle(HttpExchange exchange) throws IOException {
+    URI requestURI = exchange.getRequestURI();
+    String sRequestMethod = exchange.getRequestMethod();
 
-        String method = exchange.getRequestMethod();
-        URI requestURI = exchange.getRequestURI();
-        String path = requestURI.getPath();
+    String sRequestPath = requestURI.getPath();
 
-        InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
+    InputStream inputStream = exchange.getRequestBody();
+    String sRequestBody =
+        new BufferedReader(new InputStreamReader(inputStream))
+            .lines()
+            .collect(Collectors.joining("\n"));
 
-        if(path.startsWith("/tasks")){
-            TaskHandler taskHandler = new TaskHandler();
-            taskHandler.handler(method, path, body, exchange);
-        }else {
-            // If response length has the value -1 then no response body is being sent.
-            exchange.sendResponseHeaders(404, -1);
-        }
+    if (sRequestPath.startsWith("/tasks")) {
+      TaskHandler taskHandler = new TaskHandler();
+      taskHandler.handler(sRequestMethod, sRequestPath, sRequestBody, exchange);
+    } else {
+      // If response length has the value -1 then no response body is being sent.
+      // response 길이가 -1 이라면 response body 가 전송되지 않습니다.
+      exchange.sendResponseHeaders(404, -1);
     }
+  }
 }
