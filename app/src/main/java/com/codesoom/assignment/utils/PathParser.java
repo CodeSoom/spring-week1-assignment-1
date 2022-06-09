@@ -14,11 +14,11 @@ public class PathParser {
     }
 
     public static Boolean isReqModifyOneTask(String path) {
-        return path.matches("/tasks/\\d+?");
+        return path.matches("/tasks/\\d+/?");
     }
 
     public static Boolean isReqDeleteOneTask(String path) {
-        return path.matches("/tasks/\\d+?");
+        return path.matches("/tasks/\\d+/?");
     }
 
     public static Long parseId(String path) {
