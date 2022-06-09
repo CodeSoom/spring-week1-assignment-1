@@ -49,7 +49,7 @@ public class ToDoHandlerMapping implements HttpHandler {
 
     private void putMapper(HttpExchange exchange, String path, ToDoController toDoController) throws IOException {
         if (isPathMatches("^/tasks/\\d+/?$", path)) {
-            toDoController.showTask(exchange, getTaskID(path));
+            toDoController.editTaskTitleByID(exchange, getTaskID(path));
         } else {
             toDoController.errorResponse(); // 405
         }
@@ -57,7 +57,7 @@ public class ToDoHandlerMapping implements HttpHandler {
 
     private void patchMapper(HttpExchange exchange, String path, ToDoController toDoController) throws IOException {
         if (isPathMatches("^/tasks/\\d+/?$", path)) {
-            toDoController.showTask(exchange, getTaskID(path));
+            toDoController.editTaskTitleByID(exchange, getTaskID(path));
         } else {
             toDoController.errorResponse(); // 405
         }
@@ -65,7 +65,7 @@ public class ToDoHandlerMapping implements HttpHandler {
 
     private void deleteMapper(HttpExchange exchange, String path, ToDoController toDoController) throws IOException {
         if (isPathMatches("^/tasks/\\d+/?$", path)) {
-            toDoController.showTask(exchange, getTaskID(path));
+            toDoController.deleteTaskByID(exchange, getTaskID(path));
         } else {
             toDoController.errorResponse(); // 405
         }
