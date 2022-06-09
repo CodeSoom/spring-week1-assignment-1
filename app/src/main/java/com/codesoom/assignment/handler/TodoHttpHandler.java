@@ -49,7 +49,8 @@ public class TodoHttpHandler implements HttpHandler {
                 content = todoService.deleteTask(taskId);
                 exchange.sendResponseHeaders(204, content.getBytes().length);
             } else {
-                throw new NotFoundException("존재하지 않는 API");
+                content = "bad request";
+                exchange.sendResponseHeaders(400, content.getBytes().length);
             }
         } catch (NotFoundException e) {
             content = e.getMessage();
