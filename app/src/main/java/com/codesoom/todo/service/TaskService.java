@@ -33,12 +33,15 @@ public class TaskService {
         return this.atomicID.get();
     }
 
-    public void editTask(Task newTask) {
+    public Long editTask(Task newTask) {
         Long id = newTask.getId();
         this.tasks.replace(id, newTask);
+        return id;
     }
 
-    public void deleteTask(Long id) {
+    public Task deleteTask(Long id) {
+        Task deletedTask = getTask(id);
         this.tasks.remove(id);
+        return deletedTask;
     }
 }
