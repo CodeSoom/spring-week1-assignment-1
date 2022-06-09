@@ -17,8 +17,9 @@ public class SuperHttpHandler implements HttpHandler {
   public void handle(HttpExchange exchange) throws IOException {
     URI requestURI = exchange.getRequestURI();
     String sRequestMethod = exchange.getRequestMethod();
-
     String sRequestPath = requestURI.getPath();
+    // TODO : query 값이 존재할 경우 어떻게 할 것인지 결정하라 -> exception 처리하고 나중에 생각하자
+    String sRequestQuery = requestURI.getQuery();
 
     InputStream inputStream = exchange.getRequestBody();
     String sRequestBody =

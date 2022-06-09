@@ -12,6 +12,7 @@ public class TaskController {
     this.taskService = taskService;
   }
 
+  // TODO : controller에서 직접 Response를 보낼 것인지 결정하라 -> error control 까지 끝낸 뒤 직접 response를 보낼 것
   public String getTasks(String sRequestPath) throws IOException {
     Long lTaskId = taskService.getTaskIdFromPath(sRequestPath);
     return taskService.getTasks(lTaskId);

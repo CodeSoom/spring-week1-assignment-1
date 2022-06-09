@@ -32,7 +32,7 @@ public class TaskService {
     if (lTaskId == 0L) {
       return tasksToJson();
     } else {
-      return taskMap.get(lTaskId).toString();
+      return tasksToJson(taskMap.get(lTaskId));
     }
   }
 
