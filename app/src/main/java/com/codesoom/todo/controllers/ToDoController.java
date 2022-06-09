@@ -30,9 +30,13 @@ public class ToDoController {
     }
 
 
-
-    public void getTasks(HttpExchange exchange) {
-
+    public void showTasks(HttpExchange exchange) throws IOException {
+        ConcurrentHashMap<Long, Task> currentTasks= this.taskService.getTasks();
+        if (currentTasks == null){
+            sendResponse(exchange, 404, "Task not found");
+        } else {
+            sendResponse(exchange, 200, tasksToString(currentTasks));
+        }
     }
 
     public void createTask(HttpExchange exchange) throws IOException {
