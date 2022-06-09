@@ -50,12 +50,28 @@ public class ToDoController {
     }
 
 
-    public void editTaskTitleByID(HttpExchange exchange, Long id) {
+    public void editTaskTitleByID(HttpExchange exchange, Long id) throws IOException {
+        String requestBody = getRequestBody(exchange);
+        if (taskService.isTaskExist(id)) {
+            Task newTask = stringToTask(requestBody);
+            newTask.setId(id);
+            Long editedID = taskService.editTask(newTask);
 
+            sendResponse(exchange, 200, taskToString(taskService.getTask(editedID)));
+        } else {
+            sendResponse(exchange, 404, "This request cannot be handled");
+        }
     }
 
-    public void deleteTaskByID(HttpExchange exchange, Long id) {
+    public void deleteTaskByID(HttpExchange exchange, Long id) throws IOException {
+        String requestBody = getRequestBody(exchange);
+        if (taskService.isTaskExist(id)) {
+            Task deletedTask = taskService.deleteTask(id);
 
+            sendResponse(exchange, 204, taskToString(deletedTask));
+        } else{
+            sendResponse(exchange, 404, "This request cannot be handled");
+        }
     }
 
     public void errorResponse() {
