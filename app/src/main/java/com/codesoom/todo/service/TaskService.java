@@ -25,6 +25,8 @@ public class TaskService {
         return this.tasks;
     }
 
+    public boolean isTaskExist(Long id) {return this.tasks.containsKey(id);}
+
     public Long addTask(Task newTasks) {
         newTasks.setId(atomicID.incrementAndGet());
         this.tasks.putIfAbsent(atomicID.get(), newTasks);
