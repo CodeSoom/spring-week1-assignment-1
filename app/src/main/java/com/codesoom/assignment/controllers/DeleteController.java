@@ -18,13 +18,13 @@ public class DeleteController {
 
     public void route(HttpExchange exchange, String path) throws IOException {
         if (PathParser.isReqDeleteOneTask(path)) {
-            handleDeleteOneTask(exchange, path);
+            deleteTask(exchange, path);
         } else {
             TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST.statusCode(), "This request can not be properly handled");
         }
     }
 
-    private void handleDeleteOneTask(HttpExchange exchange, String path) throws IOException {
+    private void deleteTask(HttpExchange exchange, String path) throws IOException {
         Long id = PathParser.parseId(path);
         Task task = this.taskService.delete(id);
         if (task == null) {

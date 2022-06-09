@@ -18,14 +18,14 @@ public class PostController {
 
     public void route(HttpExchange exchange, String path, String body) throws IOException {
         if (PathParser.isReqRegisterOneTask(path)) {
-            handleRegisterOneTask(exchange, body);
+            registerTask(exchange, body);
         } else {
             // FIXME - Controller마다 생기는 중복을 어떻게 하면 줄일 수 있을까?
             TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST.statusCode(), "This request can not be properly handled");
         }
     }
 
-    private void handleRegisterOneTask(HttpExchange exchange, String body) throws IOException {
+    private void registerTask(HttpExchange exchange, String body) throws IOException {
         Task task = Mapper.stringToTask(body);
         Task registeredTask = this.taskService.register(task);
         if (registeredTask == null) {

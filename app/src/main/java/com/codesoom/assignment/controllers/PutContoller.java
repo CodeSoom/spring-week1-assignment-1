@@ -18,13 +18,13 @@ public class PutContoller {
 
     public void route(HttpExchange exchange, String path, String body) throws IOException {
         if (PathParser.isReqModifyOneTask(path)) {
-            handleModifyOneTask(exchange, path, body);
+            modifyTask(exchange, path, body);
         } else {
             TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST.statusCode(), "This request can not be properly handled");
         }
     }
 
-    private void handleModifyOneTask(HttpExchange exchange, String path, String body) throws IOException {
+    private void modifyTask(HttpExchange exchange, String path, String body) throws IOException {
         Long id = PathParser.parseId(path);
         Task task = Mapper.stringToTask(body);
         task.setId(id);
