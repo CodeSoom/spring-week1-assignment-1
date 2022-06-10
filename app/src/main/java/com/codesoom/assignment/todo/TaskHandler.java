@@ -24,19 +24,28 @@ public class TaskHandler {
             System.out.println(validation.getResultMsg());
 
             if(!validation.getIsValid()){
-                return new Response(400, validation.getResultMsg());
+                return new Response(Response.BAD_REQUEST, validation.getResultMsg());
             }
 
             switch (sRequestMethod) {
-                case "GET" -> responseContent = taskController.getTasks(sRequestPath);
-                case "POST" -> responseContent = taskController.addTask(sRequestBody);
-                case "PUT", "PATCH" -> responseContent = taskController.modTask(sRequestPath, sRequestBody);
-                case "DELETE" -> responseContent = taskController.delTask(sRequestPath);
+                case "GET" -> {
+                    return taskController.getTasks(sRequestPath);
+                }
+                case "POST" -> {
+                    return taskController.addTask(sRequestBody);
+                }
+                case "PUT", "PATCH" -> {
+                    return taskController.modTask(sRequestPath, sRequestBody);
+                }
+                case "DELETE" -> {
+                    return taskController.delTask(sRequestPath);
+                }
                 default -> {
+                    return new Response(Response.BAD_REQUEST, "잘못된 요청입니다");
                 }
             }
 
-            return new Response(200, responseContent);
+
 
         } catch (Exception e) {
             e.printStackTrace();

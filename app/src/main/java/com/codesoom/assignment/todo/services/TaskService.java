@@ -45,7 +45,7 @@ public class TaskService {
     Long lTaskId = taskIndex.getNextIndex();
 
     if (isAlreadyExistTask(lTaskId)) {
-      throw new Exception("This Key is already exist");
+      throw new Exception("ALREADY_EXIST");
     }
 
     task.setId(lTaskId);
@@ -58,7 +58,7 @@ public class TaskService {
 
   public String modTask(Long lTaskId, Task task) throws Exception {
     if (!isAlreadyExistTask(lTaskId)) {
-      throw new Exception("This key is not exist");
+      throw new Exception("NOT_EXIST");
     } else {
       taskMap.get(lTaskId).setTitle(task.getTitle());
       return tasksToJson(taskMap.get(lTaskId));
@@ -67,9 +67,7 @@ public class TaskService {
 
   public String delTask(Long lTaskId) throws Exception {
     if (!isAlreadyExistTask(lTaskId)) {
-      // TODO : 삭제시 해당 task 의 존재여부가 확인되지 않을경우에 대한 대처 방법이 exception 을 던지는 것이 맞는가?
-      // 해당 task를 찾을 수 없어, 삭제할 수 없습니다... 정도의 메시지를 출력하도록 하자.
-      throw new Exception("this key is not exist");
+      throw new Exception("NOT_EXIST");
     }
     taskMap.remove(lTaskId);
     return tasksToJson();

@@ -10,6 +10,13 @@ public class Response {
   private final int iResponseStatusCode;
   private final String sResponseContent;
 
+  public static final int OK = 200;
+  public static final int CREATED = 201;
+  public static final int NO_CONTENT = 204;
+  public static final int BAD_REQUEST = 400;
+  public static final int NOT_FOUND = 404;
+  public static final int CONFLICT = 409;
+
   public Response(int iResponseStatusCode, String sResponseContent) {
     this.iResponseStatusCode = iResponseStatusCode;
     this.sResponseContent = sResponseContent;

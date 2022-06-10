@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class RequestValidation {
   private static boolean isValid;
   private static String resultMsg;
+
+  private static int responseStatus;
   private static final String SELECT_ONE_TASK_PATH_FORMAT = "^\\/tasks\\/\\d+\\/?$";
   private static final String SELECT_WHOLE_TASK_PATH_FORMAT = "^\\/tasks\\/?$";
   private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -13,6 +15,12 @@ public class RequestValidation {
   public RequestValidation(boolean isValid, String resultMsg) {
     this.isValid = isValid;
     this.resultMsg = resultMsg;
+  }
+
+  public RequestValidation(boolean isValid, String resultMsg, int responseStatus) {
+    this.isValid = isValid;
+    this.resultMsg = resultMsg;
+    this.responseStatus = responseStatus;
   }
 
   public RequestValidation validationCheck(

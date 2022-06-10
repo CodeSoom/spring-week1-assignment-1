@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 public class SuperHttpHandler implements HttpHandler {
 
   private static final String TASK_PATH = "/tasks";
+  private static final int EMPTY_RESPONSE_BODY_LENGTH = -1;
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {
@@ -39,7 +40,7 @@ public class SuperHttpHandler implements HttpHandler {
     } else {
       // If response length has the value -1 then no response body is being sent.
       // response 길이가 -1 이라면 response body 가 전송되지 않습니다.
-      exchange.sendResponseHeaders(404, -1);
+      exchange.sendResponseHeaders(Response.NOT_FOUND, EMPTY_RESPONSE_BODY_LENGTH);
     }
   }
 }
