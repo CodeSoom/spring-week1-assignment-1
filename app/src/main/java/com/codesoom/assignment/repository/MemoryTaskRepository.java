@@ -10,7 +10,7 @@ public class MemoryTaskRepository {
     private List<Task> tasks = new ArrayList<>();
     private Long sequence = 0L;
 
-    public Task save(Task task) {
+    public synchronized Task  save(Task task) {
         task.setId(sequence++);
         tasks.add(task);
         return task;
