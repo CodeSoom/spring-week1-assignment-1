@@ -23,9 +23,13 @@ public class TaskService {
 
     // Specify a value if task id exists in the path, and initializes to 0 if not.
     // 경로에 taskId 값이 존재한다면 해당 값으로, 존재하지 않는다면 long 타입의 기본값인 0L으로 선언한다.
-    return arrPath.length == LENGTH_OF_PATH_WITH_VALUE
-        ? Long.parseLong(arrPath[LOCATION_OF_VALUE_IN_PATH])
-        : DEFAULT_VALUE_ASSIGNED_TO_LONG_TYPE;
+    try {
+      return arrPath.length == LENGTH_OF_PATH_WITH_VALUE
+          ? Long.parseLong(arrPath[LOCATION_OF_VALUE_IN_PATH])
+          : DEFAULT_VALUE_ASSIGNED_TO_LONG_TYPE;
+    } catch (NumberFormatException ne) {
+      throw ne;
+    }
   }
 
   public String getTasks(long lTaskId) throws IOException {

@@ -1,6 +1,7 @@
 package com.codesoom.assignment.todo;
 
 import com.codesoom.assignment.todo.controllers.TaskController;
+import com.codesoom.assignment.todo.models.RequestValidation;
 import com.codesoom.assignment.todo.services.TaskService;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -15,10 +16,15 @@ public class TaskHandler {
     TaskService taskService = new TaskService();
     TaskController taskController = new TaskController(taskService);
 
-    public void handler(String sRequestMethod, String sRequestPath, String sRequestBody, HttpExchange exchange) {
+    public void handler(String sRequestMethod, String sRequestPath, String sRequestBody, String sRequestQuery, HttpExchange exchange) {
 
         try {
             String responseContent = null;
+
+            RequestValidation validation = new RequestValidation().validationCheck(sRequestMethod,sRequestPath,sRequestBody,sRequestQuery);
+
+            System.out.println(validation.getIsValid());
+            System.out.println(validation.getResultMsg());
 
             switch (sRequestMethod) {
                 case "GET" -> responseContent = taskController.getTasks(sRequestPath);

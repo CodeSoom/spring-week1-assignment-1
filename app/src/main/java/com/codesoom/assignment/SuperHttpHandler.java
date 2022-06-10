@@ -13,8 +13,11 @@ import java.util.stream.Collectors;
 
 public class SuperHttpHandler implements HttpHandler {
 
+  private static final String TASK_PATH = "/tasks";
+
   @Override
   public void handle(HttpExchange exchange) throws IOException {
+
     URI requestURI = exchange.getRequestURI();
     String sRequestMethod = exchange.getRequestMethod();
     String sRequestPath = requestURI.getPath();
@@ -27,9 +30,9 @@ public class SuperHttpHandler implements HttpHandler {
             .lines()
             .collect(Collectors.joining("\n"));
 
-    if (sRequestPath.startsWith("/tasks")) {
+    if (sRequestPath.startsWith(TASK_PATH)) {
       TaskHandler taskHandler = new TaskHandler();
-      taskHandler.handler(sRequestMethod, sRequestPath, sRequestBody, exchange);
+      taskHandler.handler(sRequestMethod, sRequestPath, sRequestBody, sRequestQuery, exchange);
     } else {
       // If response length has the value -1 then no response body is being sent.
       // response 길이가 -1 이라면 response body 가 전송되지 않습니다.
