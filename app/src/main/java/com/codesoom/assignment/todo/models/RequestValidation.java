@@ -82,25 +82,24 @@ public class RequestValidation {
     }
 
     String pathValidMsg = isPathFormatCorrect ? "CORRECT" : "비 정상적인 경로입니다.";
-//    String pathStatus = isPathFormatCorrect ? ( isPathFormatSelectOneTask ? "SELECT_ONE" : "SELECT_WHOLE") : "INCORRECT";
 
     return new RequestValidation(isPathFormatCorrect, pathValidMsg);
 
   }
   public RequestValidation isItPossibleToConvertToTask(String content){
 
-    try{
+    try {
       Task changedTask;
       changedTask = objectMapper.readValue(content, Task.class);
 
       String parsedTaskId = String.valueOf(changedTask.getId());
 
-      if(isItHasNoContent(parsedTaskId) || "null".equals(parsedTaskId)){
+      if (isItHasNoContent(parsedTaskId) || "null".equals(parsedTaskId)) {
         return new RequestValidation(true, "contentBody 가 Task Class 타입으로 정상적으로 변환됨");
-      }else{
+      } else {
         return new RequestValidation(false, "taskId 값을 지정하지 마십시오");
       }
-    }catch (Exception e){
+    } catch (Exception e) {
       return new RequestValidation(false, "contentBody 는 Task Class 타입으로 변환할 수 없습니다");
     }
 

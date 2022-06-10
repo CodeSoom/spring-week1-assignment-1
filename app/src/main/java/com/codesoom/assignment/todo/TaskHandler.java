@@ -2,12 +2,9 @@ package com.codesoom.assignment.todo;
 
 import com.codesoom.assignment.todo.controllers.TaskController;
 import com.codesoom.assignment.todo.models.RequestValidation;
+import com.codesoom.assignment.todo.models.Response;
 import com.codesoom.assignment.todo.services.TaskService;
 import com.sun.net.httpserver.HttpExchange;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Objects;
 
 
 public class TaskHandler {
@@ -16,7 +13,7 @@ public class TaskHandler {
     TaskService taskService = new TaskService();
     TaskController taskController = new TaskController(taskService);
 
-    public void handler(String sRequestMethod, String sRequestPath, String sRequestBody, String sRequestQuery, HttpExchange exchange) {
+    public Response handler(String sRequestMethod, String sRequestPath, String sRequestBody, String sRequestQuery, HttpExchange exchange) {
 
         try {
             String responseContent = null;
@@ -25,6 +22,10 @@ public class TaskHandler {
 
             System.out.println(validation.getIsValid());
             System.out.println(validation.getResultMsg());
+
+            if(!validation.getIsValid()){
+                return new Response(400, validation.getResultMsg());
+            }
 
             switch (sRequestMethod) {
                 case "GET" -> responseContent = taskController.getTasks(sRequestPath);
@@ -35,15 +36,8 @@ public class TaskHandler {
                 }
             }
 
-            exchange.sendResponseHeaders(200, Objects.requireNonNull(responseContent).getBytes().length);
-            OutputStream outputStream = exchange.getResponseBody();
-            outputStream.write(responseContent.getBytes());
-            outputStream.flush();
-            outputStream.close();
-        } catch(NumberFormatException e){
-            e.printStackTrace();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
+            return new Response(200, responseContent);
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
