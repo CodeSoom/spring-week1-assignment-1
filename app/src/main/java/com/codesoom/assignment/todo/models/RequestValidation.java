@@ -7,8 +7,8 @@ public class RequestValidation {
   private static String resultMsg;
 
   private static int responseStatus;
-  private static final String SELECT_ONE_TASK_PATH_FORMAT = "^\\/tasks\\/\\d+\\/?$";
-  private static final String SELECT_WHOLE_TASK_PATH_FORMAT = "^\\/tasks\\/?$";
+  public static final String SELECT_ONE_TASK_PATH_FORMAT = "^\\/tasks\\/\\d+\\/?$";
+  public static final String SELECT_WHOLE_TASK_PATH_FORMAT = "^\\/tasks\\/?$";
   private static final ObjectMapper objectMapper = new ObjectMapper();
   public RequestValidation() {}
 
@@ -23,28 +23,37 @@ public class RequestValidation {
     this.responseStatus = responseStatus;
   }
 
-  public RequestValidation validationCheck(
-      String sRequestMethod, String sRequestPath, String sRequestBody, String sRequestQuery) {
+  public RequestValidation validationCheck(Request request) {
+    String requestMethod = request.getRequestMethod();
+    String requestPath = request.getRequestPath();
+    String requestBody = request.getRequestBody();
+    String requestQuery = request.getRequestQuery();
 
-    boolean isRequestBodyExist = !isItHasNoContent(sRequestBody);
-    boolean isRequestQueryExist = !isItHasNoContent(sRequestQuery);
+    boolean isRequestBodyExist = !isItHasNoContent(requestBody);
+    boolean isRequestQueryExist = !isItHasNoContent(requestQuery);
 
     // query 존재 허용하지 않음
-    if(isRequestQueryExist) return new RequestValidation(false, "URI 에 Query 는 허용되지 않습니다");
+    if(isRequestQueryExist) {
+      return new RequestValidation(false, "URI 에 Query 는 허용되지 않습니다");
+    }
 
     // path format 정합성 체크
-    RequestValidation pathValidation = isPathFormatCorrect(sRequestMethod, sRequestPath);
-    if(!pathValidation.getIsValid()) return pathValidation;
+    RequestValidation pathValidation = isPathFormatCorrect(requestMethod, requestPath);
+    if(!pathValidation.getIsValid()){
+      return pathValidation;
+    }
 
-    switch (sRequestMethod) {
+    switch (requestMethod) {
       case "GET", "DELETE" -> {
         if (isRequestBodyExist)
           return new RequestValidation(false, "GET Method 로 접근할 때는 URI 에 Body 를 허용하지 않습니다");
-     }
+      }
       case "POST", "PUT", "PATCH"-> {
         if (isRequestBodyExist) {
-          RequestValidation convertToTaskValidation = isItPossibleToConvertToTask(sRequestBody);
-          if(!convertToTaskValidation.getIsValid()) return convertToTaskValidation;
+          RequestValidation convertToTaskValidation = isItPossibleToConvertToTask(requestBody);
+          if(!convertToTaskValidation.getIsValid()) {
+            return convertToTaskValidation;
+          }
         } else {
           return new RequestValidation(false, "저장할 데이터가 존재하지 않습니다");
         }
@@ -89,9 +98,9 @@ public class RequestValidation {
       }
     }
 
-    String pathValidMsg = isPathFormatCorrect ? "CORRECT" : "비 정상적인 경로입니다.";
+    String resultMsg = isPathFormatCorrect ? "CORRECT" : "비 정상적인 경로입니다.";
 
-    return new RequestValidation(isPathFormatCorrect, pathValidMsg);
+    return new RequestValidation(isPathFormatCorrect, resultMsg);
 
   }
   public RequestValidation isItPossibleToConvertToTask(String content){

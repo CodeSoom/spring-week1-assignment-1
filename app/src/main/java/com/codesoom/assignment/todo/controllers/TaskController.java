@@ -37,7 +37,7 @@ public class TaskController {
     try {
       Long lTaskId = taskService.getTaskIdFromPath(sRequestPath);
       Task task = taskService.toTask(sRequestBody);
-      String responseContent = taskService.modTask(lTaskId, task);
+      String responseContent = taskService.modifyTask(lTaskId, task);
       return new Response(Response.OK, responseContent);
     } catch (Exception e) {
       if (e.getMessage().equals("NOT_EXIST")) {
@@ -50,7 +50,7 @@ public class TaskController {
   public Response delTask(String sRequestPath) {
     try {
       Long lTaskId = taskService.getTaskIdFromPath(sRequestPath);
-      String responseContent = taskService.delTask(lTaskId);
+      String responseContent = taskService.deleteTask(lTaskId);
       return new Response(Response.OK, responseContent);
     } catch (Exception e) {
       if (e.getMessage().equals("NOT_EXIST")) {

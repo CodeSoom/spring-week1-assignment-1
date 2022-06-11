@@ -7,15 +7,11 @@ public class TaskIndex {
     lastIndex = 0L;
   }
 
-  public Long getLastIndex() {
-    return lastIndex;
-  }
-
   public Long getNextIndex() {
     return lastIndex + 1;
   }
 
-  public void addLastIndex() {
+  public synchronized void addLastIndex() {
     lastIndex += lastIndex + 1;
   }
 }
