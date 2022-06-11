@@ -33,25 +33,19 @@ public class TodoHttpHandler implements HttpHandler {
 
         if ("GET".equals(method) && path.equals("/tasks")) {
             todoService.getTasks(response);
-            exchange.sendResponseHeaders(200, content.getBytes().length);
         } else if ("POST".equals(method) && path.equals("/tasks")) {
             todoService.postTask(response, body);
-            exchange.sendResponseHeaders(201, content.getBytes().length);
         } else if ("PUT".equals(method) && path.matches("/tasks/[0-9]+$")) {
             taskId = Long.parseLong(path.split("/")[2]);
             todoService.putTask(response, taskId, body);
-            exchange.sendResponseHeaders(200, content.getBytes().length);
         } else if ("GET".equals(method) && path.matches("/tasks/[0-9]+$")) {
             taskId = Long.parseLong(path.split("/")[2]);
             todoService.getTask(response, taskId);
-            exchange.sendResponseHeaders(200, content.getBytes().length);
         } else if ("DELETE".equals(method) && path.matches("/tasks/[0-9]+$")) {
             taskId = Long.parseLong(path.split("/")[2]);
             todoService.deleteTask(response, taskId);
-            exchange.sendResponseHeaders(204, content.getBytes().length);
         } else {
-            content = "not found";
-            exchange.sendResponseHeaders(404, content.getBytes().length);
+            response.setResponse(404,"해당하는 API를 찾을 수 없습니다.");
         }
 
         response.sendResponseHeader(exchange);
