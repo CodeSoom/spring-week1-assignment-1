@@ -19,14 +19,14 @@ public class TodoService {
 
     public String getTasks(Response response) throws IOException {
         List<Task> tasks = taskRepository.findAll();
-        response.setResponse(200, "success");
+        response.setSuccess( "success");
         return tasksToJSON(tasks);
     }
 
     public void postTask(Response response, String content) throws IOException {
         Task task = JSONtoTask(content);
         taskRepository.save(task);
-        response.setResponse(201, taskToJSON(task));
+        response.setCreated( taskToJSON(task));
         return;
     }
 
@@ -37,17 +37,17 @@ public class TodoService {
              postTask(response,content);
              return;
         }
-        response.setResponse(200,taskToJSON(updatedTask.get()));
+        response.setSuccess(taskToJSON(updatedTask.get()));
         return;
     }
 
     public void getTask(Response response, Long taskId) throws IOException{
         Optional<Task> foundTask = taskRepository.findById(taskId);
         if (!foundTask.isPresent()) {
-            response.setResponse(400,"Task를 찾지 못했습니다." );
+            response.setBadRequest("Task를 찾지 못했습니다.");
             return;
         }
-        response.setResponse(200, taskToJSON(foundTask.get()));
+        response.setSuccess(taskToJSON(foundTask.get()));
         return;
     }
 
@@ -55,11 +55,11 @@ public class TodoService {
     public void deleteTask(Response response, Long taskId){
         Optional<Task> deleteTask = taskRepository.findById(taskId);
         if (!deleteTask.isPresent()) {
-            response.setResponse(400,"Task를 찾지 못해 삭제하지 못했습니다.");
+            response.setBadRequest("Task를 찾지 못해 삭제하지 못했습니다.");
             return;
         }
         taskRepository.delete(deleteTask.get());
-        response.setResponse(200,"success");
+        response.setSuccess("success");
         return ;
     }
 

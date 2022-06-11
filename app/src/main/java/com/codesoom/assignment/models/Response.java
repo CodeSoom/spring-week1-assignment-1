@@ -4,26 +4,34 @@ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 import java.io.OutputStream;
-
 public class Response {
+    HttpExchange exchange;
     private int statusCode;
     private String message;
-
-
-    public int getStatusCode() {
-        return statusCode;
+    public Response(HttpExchange exchange) {
+        this.exchange = exchange;
     }
 
-    public void setResponse(int statusCode, String message) {
-        this.statusCode = statusCode;
+
+    public void setSuccess(String message) {
+        this.statusCode = HttpStatus.OK.value();
+        this.message = message;
+    }
+    public void setCreated(String message) {
+        this.statusCode = HttpStatus.CREATED.value();
+        this.message = message;
+    }
+    public void setNotFound(String message) {
+        this.statusCode = HttpStatus.NOT_FOUND.value();
+        this.message = message;
+    }
+    public void setBadRequest(String message) {
+        this.statusCode = HttpStatus.BAD_REQUEST.value();
         this.message = message;
     }
 
-    public String getMessage() {
-        return message;
-    }
 
-    public void sendResponse(HttpExchange exchange) throws IOException {
+    public void sendResponse() throws IOException {
        exchange.sendResponseHeaders(statusCode, message.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(message.getBytes());

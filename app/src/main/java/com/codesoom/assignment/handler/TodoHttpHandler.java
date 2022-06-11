@@ -28,7 +28,7 @@ public class TodoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
         System.out.println(method + " " + path);
-        Response response = new Response();
+        Response response = new Response(exchange);
 
         if ("GET".equals(method) && path.equals("/tasks")) {
             todoService.getTasks(response);
@@ -44,9 +44,9 @@ public class TodoHttpHandler implements HttpHandler {
             taskId = Long.parseLong(path.split("/")[2]);
             todoService.deleteTask(response, taskId);
         } else {
-            response.setResponse(404,"해당하는 API를 찾을 수 없습니다.");
+            response.setNotFound("해당하는 API를 찾을 수 없습니다.");
         }
 
-        response.sendResponse(exchange);
+        response.sendResponse();
     }
 }
