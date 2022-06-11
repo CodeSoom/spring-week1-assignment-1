@@ -7,8 +7,8 @@ import java.io.OutputStream;
 import java.util.Objects;
 
 public class Response {
-  private final int iResponseStatusCode;
-  private final String sResponseContent;
+  private final int responseStatusCode;
+  private final String responseContent;
 
   public static final int OK = 200;
   public static final int CREATED = 201;
@@ -17,16 +17,16 @@ public class Response {
   public static final int NOT_FOUND = 404;
   public static final int CONFLICT = 409;
 
-  public Response(int iResponseStatusCode, String sResponseContent) {
-    this.iResponseStatusCode = iResponseStatusCode;
-    this.sResponseContent = sResponseContent;
+  public Response(int responseStatusCode, String responseContent) {
+    this.responseStatusCode = responseStatusCode;
+    this.responseContent = responseContent;
   }
 
   public void sendResponse(HttpExchange exchange) throws IOException {
     exchange.sendResponseHeaders(
-        iResponseStatusCode, Objects.requireNonNull(sResponseContent).getBytes().length);
+        responseStatusCode, Objects.requireNonNull(responseContent).getBytes().length);
     OutputStream outputStream = exchange.getResponseBody();
-    outputStream.write(sResponseContent.getBytes());
+    outputStream.write(responseContent.getBytes());
     outputStream.flush();
     outputStream.close();
   }
