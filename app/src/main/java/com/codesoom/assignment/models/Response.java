@@ -3,6 +3,7 @@ package com.codesoom.assignment.models;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 public class Response {
     private int statusCode;
@@ -22,7 +23,11 @@ public class Response {
         return message;
     }
 
-    public void sendResponseHeader(HttpExchange exchange) throws IOException {
+    public void sendResponse(HttpExchange exchange) throws IOException {
        exchange.sendResponseHeaders(statusCode, message.getBytes().length);
+        OutputStream outputStream = exchange.getResponseBody();
+        outputStream.write(message.getBytes());
+        outputStream.flush();
+        outputStream.close();
     }
 }

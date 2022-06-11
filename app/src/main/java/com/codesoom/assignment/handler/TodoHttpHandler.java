@@ -9,7 +9,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.URI;
 import java.util.stream.Collectors;
 
@@ -48,10 +47,6 @@ public class TodoHttpHandler implements HttpHandler {
             response.setResponse(404,"해당하는 API를 찾을 수 없습니다.");
         }
 
-        response.sendResponseHeader(exchange);
-        OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
+        response.sendResponse(exchange);
     }
 }
