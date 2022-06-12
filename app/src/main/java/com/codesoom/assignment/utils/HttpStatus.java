@@ -1,8 +1,7 @@
 package com.codesoom.assignment.utils;
 
 /**
- * Reference: HTTP/1.1 # Status Code and Reason Phrase
- * https://datatracker.ietf.org/doc/html/rfc2616#section-6.1.1
+ * @see <a href="https://datatracker.ietf.org/doc/html/rfc2616#section-6.1.1">HTTP/1.1 # Status Code and Reason Phrase</a>
  */
 public enum HttpStatus {
     OK(200),
