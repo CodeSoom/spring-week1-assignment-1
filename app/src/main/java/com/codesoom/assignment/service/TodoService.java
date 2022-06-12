@@ -17,10 +17,10 @@ public class TodoService {
     private MemoryTaskRepository taskRepository = new MemoryTaskRepository();
 
 
-    public String getTasks(Response response) throws IOException {
+    public void getTasks(Response response) throws IOException {
         List<Task> tasks = taskRepository.findAll();
-        response.setSuccess( "success");
-        return tasksToJSON(tasks);
+        response.setSuccess(tasksToJSON(tasks));
+        return;
     }
 
     public void postTask(Response response, String content) throws IOException {
@@ -44,7 +44,7 @@ public class TodoService {
     public void getTask(Response response, Long taskId) throws IOException{
         Optional<Task> foundTask = taskRepository.findById(taskId);
         if (!foundTask.isPresent()) {
-            response.setBadRequest("Task를 찾지 못했습니다.");
+            response.setNotFound("Task를 찾지 못했습니다.");
             return;
         }
         response.setSuccess(taskToJSON(foundTask.get()));
@@ -55,7 +55,7 @@ public class TodoService {
     public void deleteTask(Response response, Long taskId){
         Optional<Task> deleteTask = taskRepository.findById(taskId);
         if (!deleteTask.isPresent()) {
-            response.setBadRequest("Task를 찾지 못해 삭제하지 못했습니다.");
+            response.setNotFound("Task를 찾지 못해 삭제하지 못했습니다.");
             return;
         }
         taskRepository.delete(deleteTask.get());
