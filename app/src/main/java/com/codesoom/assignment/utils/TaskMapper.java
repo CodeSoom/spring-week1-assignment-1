@@ -9,13 +9,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
-public class Mapper {
-    public static Task stringToTask(String content) throws JsonProcessingException {
+public class TaskMapper {
+    public static Task toTask(String content) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readValue(content, Task.class);
     }
 
-    public static String taskToString(Task task) throws IOException {
+    public static String toString(Task task) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -24,7 +24,7 @@ public class Mapper {
         return outputStream.toString();
     }
 
-    public static String taskToString(List<Task> tasks) throws IOException {
+    public static String toString(List<Task> tasks) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
 
         ObjectMapper objectMapper = new ObjectMapper();

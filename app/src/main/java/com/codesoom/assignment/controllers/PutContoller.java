@@ -3,7 +3,7 @@ package com.codesoom.assignment.controllers;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.services.TaskService;
 import com.codesoom.assignment.utils.HttpStatus;
-import com.codesoom.assignment.utils.Mapper;
+import com.codesoom.assignment.utils.TaskMapper;
 import com.codesoom.assignment.utils.PathParser;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -26,7 +26,7 @@ public class PutContoller {
 
     private void modifyTask(HttpExchange exchange, String path, String body) throws IOException {
         Long id = PathParser.parseId(path);
-        Task task = Mapper.stringToTask(body);
+        Task task = TaskMapper.toTask(body);
         task.setId(id);
         Task modifiedTask = this.taskService.modify(task);
 
@@ -34,7 +34,7 @@ public class PutContoller {
             TaskController.sendResponse(exchange, HttpStatus.NOT_FOUND.statusCode(), "Task not found");
         }
 
-        TaskController.sendResponse(exchange, HttpStatus.OK.statusCode(), Mapper.taskToString(modifiedTask));
+        TaskController.sendResponse(exchange, HttpStatus.OK.statusCode(), TaskMapper.toString(modifiedTask));
 
     }
 

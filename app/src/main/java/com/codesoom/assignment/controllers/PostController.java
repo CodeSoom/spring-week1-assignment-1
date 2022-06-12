@@ -3,7 +3,7 @@ package com.codesoom.assignment.controllers;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.services.TaskService;
 import com.codesoom.assignment.utils.HttpStatus;
-import com.codesoom.assignment.utils.Mapper;
+import com.codesoom.assignment.utils.TaskMapper;
 import com.codesoom.assignment.utils.PathParser;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -26,12 +26,12 @@ public class PostController {
     }
 
     private void registerTask(HttpExchange exchange, String body) throws IOException {
-        Task task = Mapper.stringToTask(body);
+        Task task = TaskMapper.toTask(body);
         Task registeredTask = this.taskService.register(task.getTitle());
         if (registeredTask == null) {
             TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST.statusCode(), "Duplicated id");
         }
 
-        TaskController.sendResponse(exchange, HttpStatus.CREATED.statusCode(), Mapper.taskToString(registeredTask));
+        TaskController.sendResponse(exchange, HttpStatus.CREATED.statusCode(), TaskMapper.toString(registeredTask));
     }
 }

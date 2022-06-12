@@ -3,7 +3,7 @@ package com.codesoom.assignment.controllers;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.services.TaskService;
 import com.codesoom.assignment.utils.HttpStatus;
-import com.codesoom.assignment.utils.Mapper;
+import com.codesoom.assignment.utils.TaskMapper;
 import com.codesoom.assignment.utils.PathParser;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -31,7 +31,7 @@ public class DeleteController {
             TaskController.sendResponse(exchange, HttpStatus.NOT_FOUND.statusCode(), "Task not found");
         }
 
-        TaskController.sendResponse(exchange, HttpStatus.NO_CONTENT.statusCode(), Mapper.taskToString(task));
+        TaskController.sendResponse(exchange, HttpStatus.NO_CONTENT.statusCode(), TaskMapper.toString(task));
     }
 
 }

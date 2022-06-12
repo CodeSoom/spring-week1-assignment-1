@@ -3,7 +3,7 @@ package com.codesoom.assignment.controllers;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.services.TaskService;
 import com.codesoom.assignment.utils.HttpStatus;
-import com.codesoom.assignment.utils.Mapper;
+import com.codesoom.assignment.utils.TaskMapper;
 import com.codesoom.assignment.utils.PathParser;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -39,12 +39,12 @@ public class GetController {
             TaskController.sendResponse(exchange, HttpStatus.NOT_FOUND.statusCode(), "Task not found");
         }
 
-        TaskController.sendResponse(exchange, HttpStatus.OK.statusCode(), Mapper.taskToString(task));
+        TaskController.sendResponse(exchange, HttpStatus.OK.statusCode(), TaskMapper.toString(task));
     }
 
     private void getAllTasks(HttpExchange exchange, String path) throws IOException {
         List<Task> tasks = this.taskService.showAll();
 
-        TaskController.sendResponse(exchange, HttpStatus.OK.statusCode(), Mapper.taskToString(tasks));
+        TaskController.sendResponse(exchange, HttpStatus.OK.statusCode(), TaskMapper.toString(tasks));
     }
 }

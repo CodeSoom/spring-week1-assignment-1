@@ -36,7 +36,6 @@ public class TaskService {
     }
 
     public Task register(String title) {
-        System.out.println("reach here?");
         Long newId = nextId();
         this.registeredTasks.put(newId, title);
 
