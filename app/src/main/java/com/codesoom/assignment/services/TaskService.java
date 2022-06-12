@@ -3,62 +3,73 @@ package com.codesoom.assignment.services;
 import com.codesoom.assignment.models.Task;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TaskService {
-
-    private final List<Task> registeredTasks = new ArrayList<>();
+    
+    private final Map<Long, String> registeredTasks = new HashMap();
+    private Long lastId = 0L;
 
     public Task show(Long id) {
-        for (Task task: registeredTasks) {
-            if (task.getId().equals(id)) {
-                return task;
-            }
-        }
+        String title = registeredTasks.get(id);
+        if (title == null) return null;
 
-        return null;
+        Task task = new Task();
+        task.setId(id);
+        task.setTitle(title);
+        return task;
     }
 
     public List<Task> showAll() {
-        return this.registeredTasks;
+        List<Task> allTasks = new ArrayList<Task>();
+
+        for (Long id: registeredTasks.keySet()) {
+            Task task = new Task();
+            task.setId(id);
+            task.setTitle(registeredTasks.get(id));
+            allTasks.add(task);
+        }
+
+        return allTasks;
     }
 
-    public Task register(Task newTask) {
+    public Task register(String title) {
+        System.out.println("reach here?");
         Long newId = nextId();
-        newTask.setId(newId);
-        this.registeredTasks.add(newTask);
-        return newTask;
+        this.registeredTasks.put(newId, title);
+
+        Task task = new Task();
+        task.setId(newId);
+        task.setTitle(title);
+        return task;
     }
 
     public Task modify(Task newTask) {
-        for (Task task: registeredTasks) {
-            if (task.getId().equals(newTask.getId())) {
-                registeredTasks.remove(task);
-                registeredTasks.add(newTask);
-                return newTask;
-            }
+        if (!this.registeredTasks.containsKey(newTask.getId())) {
+            return null;
         }
 
-        return null;
+        this.registeredTasks.put(newTask.getId(), newTask.getTitle());
+        return newTask;
     }
 
     public Task delete(Long id) {
-        for (Task task: registeredTasks) {
-            if (task.getId().equals(id)) {
-                registeredTasks.remove(task);
-                return task;
-            }
+        if (!this.registeredTasks.containsKey(id)) {
+            return null;
         }
 
-        return null;
+        String title = this.registeredTasks.remove(id);
+        Task task = new Task();
+        task.setId(id);
+        task.setTitle(title);
+        return task;
     }
 
     private Long nextId() {
-        if (registeredTasks.isEmpty()) {
-            return 1L;
-        }
+        lastId += 1L;
 
-        Task lastTask = registeredTasks.get(registeredTasks.size() - 1);
-        return lastTask.getId() + 1;
+        return lastId;
     }
 }

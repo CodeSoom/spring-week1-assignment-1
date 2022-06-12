@@ -27,11 +27,11 @@ public class PostController {
 
     private void registerTask(HttpExchange exchange, String body) throws IOException {
         Task task = Mapper.stringToTask(body);
-        Task registeredTask = this.taskService.register(task);
+        Task registeredTask = this.taskService.register(task.getTitle());
         if (registeredTask == null) {
             TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST.statusCode(), "Duplicated id");
         }
 
-        TaskController.sendResponse(exchange, HttpStatus.CREATED.statusCode(), Mapper.taskToString(task));
+        TaskController.sendResponse(exchange, HttpStatus.CREATED.statusCode(), Mapper.taskToString(registeredTask));
     }
 }
