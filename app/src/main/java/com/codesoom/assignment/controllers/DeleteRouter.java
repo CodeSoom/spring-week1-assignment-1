@@ -1,7 +1,7 @@
 package com.codesoom.assignment.controllers;
 
 import com.codesoom.assignment.models.Task;
-import com.codesoom.assignment.services.TaskService;
+import com.codesoom.assignment.services.TaskManager;
 import com.codesoom.assignment.utils.HttpStatus;
 import com.codesoom.assignment.utils.TaskMapper;
 import com.codesoom.assignment.utils.PathParser;
@@ -9,11 +9,11 @@ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 
-public class DeleteController {
-    private final TaskService taskService;
+public class DeleteRouter {
+    private final TaskManager taskManager;
 
-    public DeleteController(TaskService taskService) {
-        this.taskService = taskService;
+    public DeleteRouter(TaskManager taskManager) {
+        this.taskManager = taskManager;
     }
 
     public void route(HttpExchange exchange, String path) throws IOException {
@@ -26,7 +26,7 @@ public class DeleteController {
 
     private void deleteTask(HttpExchange exchange, String path) throws IOException {
         Long id = PathParser.parseId(path);
-        Task task = this.taskService.delete(id);
+        Task task = this.taskManager.delete(id);
         if (task == null) {
             TaskController.sendResponse(exchange, HttpStatus.NOT_FOUND.statusCode(), "Task not found");
         }

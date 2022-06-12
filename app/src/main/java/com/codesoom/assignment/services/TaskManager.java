@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TaskService {
+public class TaskManager {
     
     private final Map<Long, String> registeredTasks = new HashMap();
     private Long lastId = 0L;

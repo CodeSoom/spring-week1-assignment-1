@@ -1,6 +1,6 @@
 package com.codesoom.assignment.controllers;
 
-import com.codesoom.assignment.services.TaskService;
+import com.codesoom.assignment.services.TaskManager;
 import com.codesoom.assignment.utils.HttpStatus;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -15,11 +15,11 @@ import java.util.stream.Collectors;
 
 public class TaskController implements HttpHandler {
 
-    private final TaskService taskService = new TaskService();
-    private final GetController getController = new GetController(taskService);
-    private final PostController postController = new PostController(taskService);
-    private final PutContoller putController = new PutContoller(taskService);
-    private final DeleteController deleteController = new DeleteController(taskService);
+    private final TaskManager taskManager = new TaskManager();
+    private final GetRouter getRouter = new GetRouter(taskManager);
+    private final PostRouter postRouter = new PostRouter(taskManager);
+    private final PutRouter putRouter = new PutRouter(taskManager);
+    private final DeleteRouter deleteRouter = new DeleteRouter(taskManager);
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -29,17 +29,17 @@ public class TaskController implements HttpHandler {
 
         switch (method) {
             case "GET":
-                this.getController.route(exchange, path);
+                this.getRouter.route(exchange, path);
                 break;
             case "POST":
-                this.postController.route(exchange, path, body);
+                this.postRouter.route(exchange, path, body);
                 break;
             case "PUT":
             case "PATCH":
-                this.putController.route(exchange, path, body);
+                this.putRouter.route(exchange, path, body);
                 break;
             case "DELETE":
-                this.deleteController.route(exchange, path);
+                this.deleteRouter.route(exchange, path);
                 break;
             default:
                 TaskController.sendResponse(exchange, HttpStatus.BAD_REQUEST.statusCode(), "This request can not be properly handled");

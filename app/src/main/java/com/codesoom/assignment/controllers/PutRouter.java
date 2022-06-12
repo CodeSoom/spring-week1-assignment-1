@@ -1,7 +1,7 @@
 package com.codesoom.assignment.controllers;
 
 import com.codesoom.assignment.models.Task;
-import com.codesoom.assignment.services.TaskService;
+import com.codesoom.assignment.services.TaskManager;
 import com.codesoom.assignment.utils.HttpStatus;
 import com.codesoom.assignment.utils.TaskMapper;
 import com.codesoom.assignment.utils.PathParser;
@@ -9,11 +9,11 @@ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 
-public class PutContoller {
-    private final TaskService taskService;
+public class PutRouter {
+    private final TaskManager taskManager;
 
-    public PutContoller(TaskService taskService) {
-        this.taskService = taskService;
+    public PutRouter(TaskManager taskManager) {
+        this.taskManager = taskManager;
     }
 
     public void route(HttpExchange exchange, String path, String body) throws IOException {
@@ -28,7 +28,7 @@ public class PutContoller {
         Long id = PathParser.parseId(path);
         Task task = TaskMapper.toTask(body);
         task.setId(id);
-        Task modifiedTask = this.taskService.modify(task);
+        Task modifiedTask = this.taskManager.modify(task);
 
         if (modifiedTask == null) {
             TaskController.sendResponse(exchange, HttpStatus.NOT_FOUND.statusCode(), "Task not found");
