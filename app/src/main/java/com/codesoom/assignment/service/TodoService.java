@@ -34,7 +34,7 @@ public class TodoService {
         Task newTask = JSONtoTask(content);
         Optional<Task> updatedTask = taskRepository.update(taskId, newTask.getTitle());
         if (!updatedTask.isPresent()) {
-             postTask(response,content);
+             response.setNotFound("Task를 찾지 못해 수정하지 못했습니다.");
              return;
         }
         response.setSuccess(taskToJSON(updatedTask.get()));
@@ -59,7 +59,7 @@ public class TodoService {
             return;
         }
         taskRepository.delete(deleteTask.get());
-        response.setSuccess("success");
+        response.setDeleteSuccess("");
         return ;
     }
 
