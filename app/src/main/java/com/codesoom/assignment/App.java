@@ -12,10 +12,15 @@ public class App {
     }
 
     public static void main(String[] args) {
+        InetSocketAddress address = new InetSocketAddress(8080);
+        HttpHandler handler = new TaskHttpHandler();
+
+        connectHttpServer(address, handler);
+    }
+    // HttpServer에 연결한다.
+    private static void connectHttpServer(InetSocketAddress address, HttpHandler handler) {
         try {
-            InetSocketAddress address = new InetSocketAddress(8080);
             HttpServer httpServer = HttpServer.create(address, 0);
-            HttpHandler handler = new TaskHttpHandler();
             httpServer.createContext("/", handler);
             httpServer.start();
         } catch (IOException e) {
