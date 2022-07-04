@@ -55,7 +55,7 @@ public class TaskHttpHandler implements HttpHandler {
         responseBody.flush();
         responseBody.close();
     }
-
+    // 요청 받은 content를 Task 객체로 매핑하고 리턴
     private Task toTask(String content) throws JsonProcessingException {
         Task task = objectMapper.readValue(content, Task.class);
         task.setId(id++);
