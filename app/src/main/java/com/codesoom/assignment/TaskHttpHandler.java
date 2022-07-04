@@ -12,12 +12,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DemoHttpHandler implements HttpHandler {
+// Task에 대한 응답과 요청을 처리하는 핸들러
+public class TaskHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
     private ObjectMapper objectMapper = new ObjectMapper();
     private Long id = 0L;
 
-    public DemoHttpHandler() {
+    public TaskHttpHandler() {
         Task task = new Task();
         task.setId(1L);
         task.setTitle("Nothing");
