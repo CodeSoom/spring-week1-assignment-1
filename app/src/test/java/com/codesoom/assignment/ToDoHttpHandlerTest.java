@@ -173,7 +173,7 @@ public class ToDoHttpHandlerTest {
         // then
         final ByteArrayOutputStream responseBody = (ByteArrayOutputStream) httpExchange.getResponseBody();
         assertEquals("", responseBody.toString());
-        assertEquals(200, httpExchange.getResponseCode());
+        assertEquals(204, httpExchange.getResponseCode());
     }
 
     private void postTask(HttpExchangeStub httpExchange, ToDoHttpHandler httpHandler, String title) throws URISyntaxException, IOException {
