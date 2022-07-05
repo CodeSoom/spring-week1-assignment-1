@@ -20,8 +20,8 @@ public class TaskHttpHandler implements HttpHandler {
 
     public TaskHttpHandler() {
         Task task = new Task();
-        task.setId(1L);
-        task.setTitle("Nothing");
+        task.setId(id++);
+        task.setTitle("a");
         tasks.add(task);
     }
 
@@ -35,6 +35,7 @@ public class TaskHttpHandler implements HttpHandler {
         String body = new BufferedReader(new InputStreamReader(requestBody))
                 .lines()
                 .collect(Collectors.joining("\n"));
+
         String content = "Hello, World";
 
         if (method.equals("GET") && path.equals("/tasks")) {
@@ -44,7 +45,7 @@ public class TaskHttpHandler implements HttpHandler {
         if (method.equals("POST") && path.equals("/tasks")) {
             content = "Created";
             if (!body.isBlank()) {
-                Task task = toTask(content);
+                Task task = toTask(body);
                 tasks.add(task);
             }
         }
@@ -61,10 +62,8 @@ public class TaskHttpHandler implements HttpHandler {
         task.setId(id++);
         return task;
     }
-
+    // 저장되어 있는 tasks을 Json으로 변환하는 메서드
     private String tasksToJson() throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
-        return objectMapper.toString();
+        return objectMapper.writeValueAsString(tasks);
     }
 }
