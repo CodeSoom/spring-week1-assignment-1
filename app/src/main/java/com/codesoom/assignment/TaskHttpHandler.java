@@ -32,6 +32,7 @@ public class TaskHttpHandler implements HttpHandler {
 
         if(method.equals("GET") && path.equals("/tasks")){
             content = taskToJSON();
+            returnCode = 200;
         }
 
         if(method.equals("GET") && path.startsWith("/tasks/")){
