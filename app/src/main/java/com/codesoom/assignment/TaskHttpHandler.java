@@ -96,11 +96,11 @@ public class TaskHttpHandler implements HttpHandler {
   /**
    * Task를 Json String으로 변환하여 리턴합니다.
    * 
-   * @param 
-   * @throws
+   * @param task 변환할 Task
+   * @throws JsonProcessingException Task를 Json으로 변환하지 못했을 때 던집니다.
+   * @return 변환된 문자열을 리턴합니다.
    **/
-    // 하나의 Task를 Json으로 반환해주는 메서드
-    private String taskToJson(Task task) throws IOException {
+    private String taskToJson(Task task) throws JsonProcessingException {
         return objectMapper.writeValueAsString(task);
     }
 }
