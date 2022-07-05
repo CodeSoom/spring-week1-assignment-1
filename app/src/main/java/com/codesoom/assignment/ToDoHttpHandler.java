@@ -20,14 +20,14 @@ public class ToDoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
+        final String method = exchange.getRequestMethod();
         if (method == null) {
             exchange.sendResponseHeaders(400, 0);
             return;
         }
 
-        URI uri = exchange.getRequestURI();
-        String path = uri.getPath();
+        final URI uri = exchange.getRequestURI();
+        final String path = uri.getPath();
         if (path == null) {
             exchange.sendResponseHeaders(400, 0);
             return;
@@ -35,7 +35,7 @@ public class ToDoHttpHandler implements HttpHandler {
 
         System.out.println(method + " " + path);
 
-        String body = getRequestBody(exchange).orElse("");
+        final String body = getRequestBody(exchange).orElse("");
         if (!body.isBlank()) {
             System.out.println(body);
         }
@@ -68,7 +68,7 @@ public class ToDoHttpHandler implements HttpHandler {
 
         exchange.sendResponseHeaders(responseCode, content.getBytes().length);
 
-        OutputStream outputStream = exchange.getResponseBody();
+        final OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
