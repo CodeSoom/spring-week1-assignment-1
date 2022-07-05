@@ -52,7 +52,10 @@ public class TaskHttpHandler implements HttpHandler {
                         .filter(t -> t.getId().equals(findId))
                         .findFirst()
                         .orElseThrow(() -> new RuntimeException("찾을 수 없는 Task입니다."));
-                storedTask.setTitle("변경되었습니당.");
+
+                Task taskToChange = toTask(request);
+                storedTask.setTitle(taskToChange.getTitle());
+
                 content = taskToJson(storedTask);
                 exchange.sendResponseHeaders(200, content.getBytes().length);
             } else {
