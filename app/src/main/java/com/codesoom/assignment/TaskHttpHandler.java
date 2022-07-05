@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 // Task에 대한 응답과 요청을 처리하는 핸들러
 public class TaskHttpHandler implements HttpHandler {
+    public static final String NOT_FOUND = "404 Not Found";
     private List<Task> tasks = new ArrayList<>();
     private ObjectMapper objectMapper = new ObjectMapper();
     private Long id = 0L;
@@ -30,13 +31,13 @@ public class TaskHttpHandler implements HttpHandler {
         String method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
+        String content = "200 OK";
+        content = validPath(path, content);
 
         InputStream requestBody = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(requestBody))
                 .lines()
                 .collect(Collectors.joining("\n"));
-
-        String content = "Hello, World";
 
         if (method.equals("GET") && path.equals("/tasks")) {
             content = tasksToJson();
@@ -56,6 +57,14 @@ public class TaskHttpHandler implements HttpHandler {
         responseBody.flush();
         responseBody.close();
     }
+    // 요청온 경로가 유효하지 않으면 에러 메시지 반환
+    private String validPath(String path, String content) {
+        if (!path.equals("/tasks")) {
+            content = NOT_FOUND;
+        }
+        return content;
+    }
+
     // 요청 받은 content를 Task 객체로 매핑하고 리턴
     private Task toTask(String content) throws JsonProcessingException {
         Task task = objectMapper.readValue(content, Task.class);
