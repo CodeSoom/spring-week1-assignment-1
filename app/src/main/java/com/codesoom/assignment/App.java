@@ -18,7 +18,7 @@ public class App {
         }
 
         final HttpHandler handler = new ToDoHttpHandler();
-        httpServer.createContext("/", handler);
+        httpServer.createContext("/tasks", handler);
         httpServer.start();
     }
 }

@@ -44,75 +44,99 @@ public class ToDoHttpHandler implements HttpHandler {
         }
 
         if (method.equals("GET") && path.equals("/tasks")) {
-            try {
-                sendResponse(exchange, 200, tasksToJSON());
-            } catch (IOException e) {
-                sendResponse(exchange, 500, "Failed to convert tasks to JSON");
-            }
+            sendGetResponse(exchange);
         } else if (method.equals("GET") && path.startsWith("/tasks") && path.split("/").length == 3) {
-            Long taskId = -1L;
-
-            try {
-                taskId = Long.parseLong(path.split("/")[2]);
-            } catch (final NumberFormatException e) {
-                sendResponse(exchange, 400, "Failed to parse task id");
-                return;
-            }
-
-            Optional<Task> task = getTaskById(taskId);
-            if (task.isPresent()) {
-                sendResponse(exchange, 200, taskToString(task.get()));
-            } else {
-                sendResponse(exchange, 404, "Not found task by id");
-            }
+            sendGetResponseWithId(exchange, path);
         } else if (method.equals("POST") && path.equals("/tasks") && !body.isBlank()) {
-            try {
-                Task task = contentToTask(body);
-                tasks.add(task);
-                sendResponse(exchange, 201, taskToString(task));
-            } catch (JsonProcessingException e) {
-                sendResponse(exchange, 400, "Failed to convert request body to Task");
-            } catch (IOException e) {
-                sendResponse(exchange, 500, "Failed to convert Task to string");
-            }
+            sendPostResponse(exchange, body);
         } else if (method.equals("PUT") && path.startsWith("/tasks") && path.split("/").length == 3 && !body.isBlank()) {
-            Long taskId = -1L;
-
-            try {
-                taskId = Long.parseLong(path.split("/")[2]);
-            } catch (final NumberFormatException e) {
-                sendResponse(exchange, 400, "Failed to parse task id");
-                return;
-            }
-
-            Optional<Task> task = getTaskById(taskId);
-            if (task.isPresent()) {
-                Task exitedTask = task.get();
-                updateTask(exitedTask, body);
-                sendResponse(exchange, 200, taskToString(task.get()));
-            } else {
-                sendResponse(exchange, 404, "Not found task by id");
-            }
+            sendPutResponse(exchange, path, body);
         } else if (method.equals("DELETE") && path.startsWith("/tasks") && path.split("/").length == 3) {
-            Long taskId = -1L;
-
-            try {
-                taskId = Long.parseLong(path.split("/")[2]);
-            } catch (final NumberFormatException e) {
-                sendResponse(exchange, 400, "Failed to parse task id");
-                return;
-            }
-
-            Optional<Task> task = getTaskById(taskId);
-            if (task.isPresent()) {
-                Task exitedTask = task.get();
-                deleteTask(exitedTask);
-                sendResponse(exchange, 204, "");
-            } else {
-                sendResponse(exchange, 404, "Not found task by id");
-            }
+            sendDeleteResponse(exchange, path);
         } else {
-            sendResponse(exchange, 404, null);
+            sendNotFoundResponse(exchange);
+        }
+    }
+
+    private void sendNotFoundResponse(HttpExchange exchange) throws IOException {
+        sendResponse(exchange, 404, null);
+    }
+
+    private void sendDeleteResponse(HttpExchange exchange, String path) throws IOException {
+        Long taskId = -1L;
+
+        try {
+            taskId = Long.parseLong(path.split("/")[2]);
+        } catch (final NumberFormatException e) {
+            sendResponse(exchange, 400, "Failed to parse task id");
+            return;
+        }
+
+        Optional<Task> task = getTaskById(taskId);
+        if (task.isPresent()) {
+            Task exitedTask = task.get();
+            deleteTask(exitedTask);
+            sendResponse(exchange, 204, "");
+        } else {
+            sendResponse(exchange, 404, "Not found task by id");
+        }
+    }
+
+    private void sendPutResponse(HttpExchange exchange, String path, String body) throws IOException {
+        Long taskId = -1L;
+
+        try {
+            taskId = Long.parseLong(path.split("/")[2]);
+        } catch (final NumberFormatException e) {
+            sendResponse(exchange, 400, "Failed to parse task id");
+            return;
+        }
+
+        Optional<Task> task = getTaskById(taskId);
+        if (task.isPresent()) {
+            Task exitedTask = task.get();
+            updateTask(exitedTask, body);
+            sendResponse(exchange, 200, taskToString(task.get()));
+        } else {
+            sendResponse(exchange, 404, "Not found task by id");
+        }
+    }
+
+    private void sendPostResponse(HttpExchange exchange, String body) throws IOException {
+        try {
+            Task task = contentToTask(body);
+            tasks.add(task);
+            sendResponse(exchange, 201, taskToString(task));
+        } catch (JsonProcessingException e) {
+            sendResponse(exchange, 400, "Failed to convert request body to Task");
+        } catch (IOException e) {
+            sendResponse(exchange, 500, "Failed to convert Task to string");
+        }
+    }
+
+    private void sendGetResponseWithId(HttpExchange exchange, String path) throws IOException {
+        Long taskId = -1L;
+
+        try {
+            taskId = Long.parseLong(path.split("/")[2]);
+        } catch (final NumberFormatException e) {
+            sendResponse(exchange, 400, "Failed to parse task id");
+            return;
+        }
+
+        Optional<Task> task = getTaskById(taskId);
+        if (task.isPresent()) {
+            sendResponse(exchange, 200, taskToString(task.get()));
+        } else {
+            sendResponse(exchange, 404, "Not found task by id");
+        }
+    }
+
+    private void sendGetResponse(HttpExchange exchange) throws IOException {
+        try {
+            sendResponse(exchange, 200, tasksToJSON());
+        } catch (IOException e) {
+            sendResponse(exchange, 500, "Failed to convert tasks to JSON");
         }
     }
 
