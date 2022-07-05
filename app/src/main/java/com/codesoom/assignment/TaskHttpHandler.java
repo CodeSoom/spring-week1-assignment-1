@@ -43,8 +43,22 @@ public class TaskHttpHandler implements HttpHandler {
                 content = taskToJson(storedTask);
                 exchange.sendResponseHeaders(201, content.getBytes().length);
             }
-        } else if (method.equals("PUT")) {
+        } else if (method.equals("PUT") && path.matches("/tasks/[0-9]+")) {
+            String[] splitedPath = path.split("/");
+            Long findId = Long.valueOf(splitedPath[2]);
 
+            if (!request.isBlank()) {
+                Task storedTask = tasks.stream()
+                        .filter(t -> t.getId().equals(findId))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("찾을 수 없는 Task입니다."));
+                storedTask.setTitle("변경되었습니당.");
+                content = taskToJson(storedTask);
+                exchange.sendResponseHeaders(200, content.getBytes().length);
+            } else {
+                content = "올바른 Request 요청이 아닙니다.";
+                exchange.sendResponseHeaders(400, content.getBytes().length);
+            }
         } else if (method.equals("DELETE")) {
 
         } else {
