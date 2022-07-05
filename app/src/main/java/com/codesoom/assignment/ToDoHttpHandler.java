@@ -23,7 +23,9 @@ public class ToDoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        final String method = exchange.getRequestMethod();
+        final HTTPRouter router = new HTTPRouter(exchange);
+        final HTTPMethod method = router.getHttpMethod();
+
         if (method == null) {
             exchange.sendResponseHeaders(400, 0);
             return;
@@ -43,18 +45,11 @@ public class ToDoHttpHandler implements HttpHandler {
             System.out.println(body);
         }
 
-        if (method.equals("GET") && path.equals("/tasks")) {
-            sendGetResponse(exchange);
-        } else if (method.equals("GET") && path.startsWith("/tasks") && path.split("/").length == 3) {
-            sendGetResponseWithId(exchange, path);
-        } else if (method.equals("POST") && path.equals("/tasks") && !body.isBlank()) {
-            sendPostResponse(exchange, body);
-        } else if (method.equals("PUT") && path.startsWith("/tasks") && path.split("/").length == 3 && !body.isBlank()) {
-            sendPutResponse(exchange, path, body);
-        } else if (method.equals("DELETE") && path.startsWith("/tasks") && path.split("/").length == 3) {
-            sendDeleteResponse(exchange, path);
-        } else {
-            sendNotFoundResponse(exchange);
+        switch (method) {
+            case GET -> sendGetResponse(exchange, path);
+            case POST -> sendPostResponse(exchange, body);
+            case PUT, PATCH -> sendPutResponse(exchange, path, body);
+            case DELETE -> sendDeleteResponse(exchange, path);
         }
     }
 
@@ -76,13 +71,18 @@ public class ToDoHttpHandler implements HttpHandler {
         if (task.isPresent()) {
             Task exitedTask = task.get();
             deleteTask(exitedTask);
-            sendResponse(exchange, 204, "");
+            sendResponse(exchange, 204, null);
         } else {
             sendResponse(exchange, 404, "Not found task by id");
         }
     }
 
     private void sendPutResponse(HttpExchange exchange, String path, String body) throws IOException {
+        if (!checkPathHasTaskId(path)) {
+            sendResponse(exchange, 400, "/tasks/:id 형식으로 path를 입력해주세요");
+            return;
+        }
+
         Long taskId = -1L;
 
         try {
@@ -103,6 +103,11 @@ public class ToDoHttpHandler implements HttpHandler {
     }
 
     private void sendPostResponse(HttpExchange exchange, String body) throws IOException {
+        if (body.isBlank()) {
+            sendResponse(exchange, 400, "Failed to convert request body to Task");
+            return;
+        }
+
         try {
             Task task = contentToTask(body);
             tasks.add(task);
@@ -132,11 +137,19 @@ public class ToDoHttpHandler implements HttpHandler {
         }
     }
 
-    private void sendGetResponse(HttpExchange exchange) throws IOException {
+    private void sendGetResponseRoot(HttpExchange exchange) throws IOException {
         try {
             sendResponse(exchange, 200, tasksToJSON());
         } catch (IOException e) {
             sendResponse(exchange, 500, "Failed to convert tasks to JSON");
+        }
+    }
+
+    private void sendGetResponse(HttpExchange exchange, String path) throws IOException {
+        if ("/tasks".equals(path)) {
+            sendGetResponseRoot(exchange);
+        } else if (path.startsWith("/tasks") && checkPathHasTaskId(path)) {
+            sendGetResponseWithId(exchange, path);
         }
     }
 
@@ -151,6 +164,10 @@ public class ToDoHttpHandler implements HttpHandler {
             outputStream.flush(); // 버퍼에 담겨있는 output byte들을 강제로 기록되게 한다. 버퍼에 효율적으로 담아두는 것을 추측해볼 수 있음. (Flushable Interface)
             outputStream.close(); // 이 stream에 관련된 리소스들을 해제해준다. (Closeable Interface)
         }
+    }
+
+    private boolean checkPathHasTaskId(String path) {
+        return path.matches("/tasks/\\d*");
     }
 
     private Optional<String> getRequestBody(HttpExchange exchange) {
