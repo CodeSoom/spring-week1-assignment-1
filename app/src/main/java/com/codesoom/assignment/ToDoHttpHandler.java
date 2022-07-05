@@ -75,6 +75,24 @@ public class ToDoHttpHandler implements HttpHandler {
             } catch (IOException e) {
                 sendResponse(exchange, 500, "Failed to convert Task to string");
             }
+        } else if (method.equals("PUT") && path.startsWith("/tasks") && path.split("/").length == 3 && !body.isBlank()) {
+            Long taskId = -1L;
+
+            try {
+                taskId = Long.parseLong(path.split("/")[2]);
+            } catch (final NumberFormatException e) {
+                sendResponse(exchange, 400, "Failed to parse task id");
+                return;
+            }
+
+            Optional<Task> task = getTaskById(taskId);
+            if (task.isPresent()) {
+                Task exitedTask = task.get();
+                updateTask(exitedTask, body);
+                sendResponse(exchange, 200, taskToString(task.get()));
+            } else {
+                sendResponse(exchange, 404, "Not found task by id");
+            }
         } else {
             sendResponse(exchange, 404, null);
         }
@@ -117,6 +135,12 @@ public class ToDoHttpHandler implements HttpHandler {
 
         task.setId(lastId++);
         return task;
+    }
+
+    private void updateTask(Task existedTask, String content) throws JsonProcessingException {
+        Task newTask = objectMapper.readValue(content, Task.class);
+
+        existedTask.setTitle(newTask.getTitle());
     }
 
     private String taskToString(Task task) throws IOException {
