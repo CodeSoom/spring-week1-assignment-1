@@ -27,7 +27,7 @@ public class TaskHttpHandler implements HttpHandler {
         String path = uri.getPath();
 
         String content = null;
-        String request = parsingRequest(exchange);
+        String request = parsingRequest(exchange.getRequestBody());
 
         if (method.equals("GET")) {
             content = tasksToJson();
@@ -71,34 +71,44 @@ public class TaskHttpHandler implements HttpHandler {
         responseBody.flush();
         responseBody.close();
     }
-    // 요청온 requestBody를 파싱해주는 기능
-    private String parsingRequest(HttpExchange exchange) {
-        return new BufferedReader(new InputStreamReader(exchange.getRequestBody()))
+
+    /**
+     * 수신된 Http 요청의 본문을 String으로 변환하여 리턴한다.
+     * @param requestBody 수신된 Http 요청의 본문
+     * @return 본문을 String으로 변환하여 리턴
+     */
+    private String parsingRequest(InputStream requestBody) {
+        return new BufferedReader(new InputStreamReader(requestBody))
                 .lines()
                 .collect(Collectors.joining("\n"));
     }
 
-    // 요청온 경로가 유효한지 확인해서 boolean 반환
-    private boolean validPath(String path) {
-        return path.equals("/tasks");
-    }
-
-    // 요청 받은 content를 Task 객체로 매핑하고 리턴
+    /**
+     * 요청 받은 컨텐트를 Task로 매핑하고 id를 설정해주어 리턴한다.
+     * @param content 요청 받은 컨텐트
+     * @return 생성한 Task를 리턴
+     * @throws JsonProcessingException 요청 받은 컨텐트를 Task로 매핑하지 못햇을 때 던집니다.
+     */
     private Task toTask(String content) throws JsonProcessingException {
         Task task = objectMapper.readValue(content, Task.class);
         task.setId(id++);
         return task;
     }
-    // 저장되어 있는 tasks을 Json으로 변환하는 메서드
+
+    /**
+     * Tasks를 Json String으로 변환하여 리턴
+     * @return 변환된 문자열을 리턴
+     * @throws JsonProcessingException Task를 Json으로 변환하지 못했을 때 던집니다.
+     **/
     private String tasksToJson() throws IOException {
         return objectMapper.writeValueAsString(tasks);
     }
+
   /**
-   * Task를 Json String으로 변환하여 리턴합니다.
-   * 
+   * Task를 Json String으로 변환하여 리턴
    * @param task 변환할 Task
+   * @return 변환된 문자열을 리턴
    * @throws JsonProcessingException Task를 Json으로 변환하지 못했을 때 던집니다.
-   * @return 변환된 문자열을 리턴합니다.
    **/
     private String taskToJson(Task task) throws JsonProcessingException {
         return objectMapper.writeValueAsString(task);
