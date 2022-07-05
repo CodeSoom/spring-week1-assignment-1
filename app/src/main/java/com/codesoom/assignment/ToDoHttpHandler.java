@@ -23,8 +23,7 @@ public class ToDoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        final HTTPRouter router = new HTTPRouter(exchange);
-        final HTTPMethod method = router.getHttpMethod();
+        final String method = exchange.getRequestMethod();
 
         if (method == null) {
             exchange.sendResponseHeaders(400, 0);
@@ -45,7 +44,13 @@ public class ToDoHttpHandler implements HttpHandler {
             System.out.println(body);
         }
 
-        switch (method) {
+        final HTTPMethod methodType = HTTPMethod.convert(method);
+        if (methodType == null) {
+            sendNotFoundResponse(exchange);
+            return;
+        }
+
+        switch (methodType) {
             case GET -> getHandler.handle(new ToDoHttpResponder(exchange), path);
             case POST -> sendPostResponse(exchange, body);
             case PUT, PATCH -> sendPutResponse(exchange, path, body);
