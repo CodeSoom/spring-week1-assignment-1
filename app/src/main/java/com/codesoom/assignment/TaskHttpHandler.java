@@ -39,16 +39,17 @@ public class TaskHttpHandler implements HttpHandler {
             String searchIDString = path.substring("/tasks/".length());
             System.out.println("ID String : " + searchIDString);
             Long searchID;
-
+            int taskIdx;
             try{
                 searchID = Long.parseLong(searchIDString);
-
-                if(findTaskIdx(searchID) != -1){
+                taskIdx = findTaskIdx(searchID);
+                if(taskIdx!= -1){
                     returnCode = 200;
+                    content = taskList.get(taskIdx).toString();
                 }
                 else{
                     returnCode = 404;
-                    content = "Not Valid ID";
+                    content = "no ID";
                 }
 
             }catch (Exception e){
@@ -69,6 +70,7 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
+
         exchange.sendResponseHeaders(returnCode, content.getBytes().length );
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
@@ -79,7 +81,7 @@ public class TaskHttpHandler implements HttpHandler {
     private int findTaskIdx(Long id){
 
         for(int i=0; i<taskList.size(); i++){
-            if(taskList.get(i).equals(id)){
+            if(taskList.get(i).getId().equals(id)){
                 return i;
             }
         }
