@@ -6,6 +6,9 @@ caches
 daemon
 native
 notifications
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
 
 # Ignore Gradle build output directory
 build
