@@ -29,10 +29,7 @@ public class TaskHttpHandler implements HttpHandler {
         String content = null;
         String request = parsingRequest(exchange);
 
-        if (!validPath(path)) {
-            content = NOT_FOUND;
-            exchange.sendResponseHeaders(404, content.getBytes().length);
-        } else if (method.equals("GET")) {
+        if (method.equals("GET")) {
             content = tasksToJson();
             exchange.sendResponseHeaders(200, content.getBytes().length);
         } else if (method.equals("POST")) {
