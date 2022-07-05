@@ -19,13 +19,6 @@ public class TaskHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
     private Long id = 0L;
 
-    public TaskHttpHandler() {
-        Task task = new Task();
-        task.setId(id++);
-        task.setTitle("a");
-        tasks.add(task);
-    }
-
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
