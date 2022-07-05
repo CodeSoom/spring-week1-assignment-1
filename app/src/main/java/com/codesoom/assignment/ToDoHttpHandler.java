@@ -18,8 +18,8 @@ import java.util.stream.Collectors;
  */
 public class ToDoHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
-    private List<Task> tasks = new ArrayList<>();
-    private Long lastId = 1L;
+    private ToDoRepository repository = new ToDoRepository();
+    private ToDoGetHandler getHandler = new ToDoGetHandler(repository);
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -46,7 +46,7 @@ public class ToDoHttpHandler implements HttpHandler {
         }
 
         switch (method) {
-            case GET -> sendGetResponse(exchange, path);
+            case GET -> getHandler.handle(new ToDoHttpResponder(exchange), path);
             case POST -> sendPostResponse(exchange, body);
             case PUT, PATCH -> sendPutResponse(exchange, path, body);
             case DELETE -> sendDeleteResponse(exchange, path);
@@ -67,10 +67,10 @@ public class ToDoHttpHandler implements HttpHandler {
             return;
         }
 
-        Optional<Task> task = getTaskById(taskId);
+        Optional<Task> task = repository.getTaskById(taskId);
         if (task.isPresent()) {
             Task exitedTask = task.get();
-            deleteTask(exitedTask);
+            repository.deleteTask(exitedTask);
             sendResponse(exchange, 204, null);
         } else {
             sendResponse(exchange, 404, "Not found task by id");
@@ -92,11 +92,11 @@ public class ToDoHttpHandler implements HttpHandler {
             return;
         }
 
-        Optional<Task> task = getTaskById(taskId);
+        Optional<Task> task = repository.getTaskById(taskId);
         if (task.isPresent()) {
             Task exitedTask = task.get();
-            updateTask(exitedTask, body);
-            sendResponse(exchange, 200, taskToString(task.get()));
+            repository.updateTask(exitedTask, body);
+            sendResponse(exchange, 200, repository.taskToString(task.get()));
         } else {
             sendResponse(exchange, 404, "Not found task by id");
         }
@@ -109,47 +109,13 @@ public class ToDoHttpHandler implements HttpHandler {
         }
 
         try {
-            Task task = contentToTask(body);
-            tasks.add(task);
-            sendResponse(exchange, 201, taskToString(task));
+            Task task = repository.createTask(body);
+            repository.addTask(task);
+            sendResponse(exchange, 201, repository.taskToString(task));
         } catch (JsonProcessingException e) {
             sendResponse(exchange, 400, "Failed to convert request body to Task");
         } catch (IOException e) {
             sendResponse(exchange, 500, "Failed to convert Task to string");
-        }
-    }
-
-    private void sendGetResponseWithId(HttpExchange exchange, String path) throws IOException {
-        Long taskId = -1L;
-
-        try {
-            taskId = Long.parseLong(path.split("/")[2]);
-        } catch (final NumberFormatException e) {
-            sendResponse(exchange, 400, "Failed to parse task id");
-            return;
-        }
-
-        Optional<Task> task = getTaskById(taskId);
-        if (task.isPresent()) {
-            sendResponse(exchange, 200, taskToString(task.get()));
-        } else {
-            sendResponse(exchange, 404, "Not found task by id");
-        }
-    }
-
-    private void sendGetResponseRoot(HttpExchange exchange) throws IOException {
-        try {
-            sendResponse(exchange, 200, tasksToJSON());
-        } catch (IOException e) {
-            sendResponse(exchange, 500, "Failed to convert tasks to JSON");
-        }
-    }
-
-    private void sendGetResponse(HttpExchange exchange, String path) throws IOException {
-        if ("/tasks".equals(path)) {
-            sendGetResponseRoot(exchange);
-        } else if (path.startsWith("/tasks") && checkPathHasTaskId(path)) {
-            sendGetResponseWithId(exchange, path);
         }
     }
 
@@ -182,34 +148,4 @@ public class ToDoHttpHandler implements HttpHandler {
         return Optional.ofNullable(body);
     }
 
-    private Optional<Task> getTaskById(Long taskId) {
-        return tasks
-                .stream()
-                .filter(task -> task.getId().equals(taskId))
-                .findFirst();
-    }
-
-    private Task contentToTask(String content) throws JsonProcessingException {
-        Task task = objectMapper.readValue(content, Task.class);
-
-        task.setId(lastId++);
-        return task;
-    }
-
-    private void updateTask(Task existedTask, String content) throws JsonProcessingException {
-        Task newTask = objectMapper.readValue(content, Task.class);
-        existedTask.setTitle(newTask.getTitle());
-    }
-
-    private void deleteTask(Task targetTask) {
-        tasks.removeIf(task -> task.getId().equals(targetTask.getId()));
-    }
-
-    private String taskToString(Task task) throws IOException {
-        return objectMapper.writeValueAsString(task);
-    }
-
-    private String tasksToJSON() throws IOException {
-        return objectMapper.writeValueAsString(tasks);
-    }
 }
