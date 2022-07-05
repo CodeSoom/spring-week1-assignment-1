@@ -29,6 +29,26 @@ public class ToDoHttpHandlerTest {
         // then
         final ByteArrayOutputStream responseBody = (ByteArrayOutputStream) httpExchange.getResponseBody();
         assertEquals("[]", responseBody.toString());
+        assertEquals(200, httpExchange.getResponseCode());
+    }
+
+    @Test
+    @DisplayName("POST /tasks 요청하면 등록 성공한 Task 객체를 JSON으로 리턴합니다")
+    public void givenEmptyTasks_whenPostTask_thenReturnTaskJSON() throws IOException, URISyntaxException {
+        // given
+        final HttpExchangeStub httpExchange = new HttpExchangeStub();
+        httpExchange.setRequestMethod("POST");
+        URI uri = new URI("http://localhost:8000/tasks");
+        httpExchange.setRequestURI(uri);
+        httpExchange.setRequestBody("{\"title\":\"test_title\"}");
+
+        // when
+        new ToDoHttpHandler().handle(httpExchange);
+
+        // then
+        final ByteArrayOutputStream responseBody = (ByteArrayOutputStream) httpExchange.getResponseBody();
+        assertEquals("{\"id\":0,\"title\":\"test_title\"}", responseBody.toString());
+        assertEquals(201, httpExchange.getResponseCode());
     }
 
 }

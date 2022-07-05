@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpPrincipal;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -116,5 +117,9 @@ public class HttpExchangeStub extends HttpExchange {
 
     public void setRequestURI(URI requestURI) {
         this.requestURI = requestURI;
+    }
+
+    public void setRequestBody(String body) {
+        this.requestBody = new ByteArrayInputStream(body.getBytes());
     }
 }
