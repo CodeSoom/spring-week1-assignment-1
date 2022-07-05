@@ -114,6 +114,7 @@ public class ToDoHttpHandler implements HttpHandler {
 
     private Task contentToTask(String content) throws JsonProcessingException {
         Task task = objectMapper.readValue(content, Task.class);
+
         task.setId(lastId++);
         return task;
     }

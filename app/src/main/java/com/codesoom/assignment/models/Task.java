@@ -1,7 +1,10 @@
 package com.codesoom.assignment.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Task {
     private Long id;
+    @JsonProperty(value = "title", required = true)
     private String title;
 
     public Long getId() {
