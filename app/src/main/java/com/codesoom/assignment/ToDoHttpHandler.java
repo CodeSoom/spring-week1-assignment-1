@@ -79,6 +79,10 @@ public class ToDoHttpHandler implements HttpHandler {
 
     private Optional<String> getRequestBody(HttpExchange exchange) {
         final InputStream inputStream = exchange.getRequestBody();
+        if (inputStream == null) {
+            return Optional.empty();
+        }
+
         final String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
