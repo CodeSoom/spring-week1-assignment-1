@@ -93,6 +93,24 @@ public class ToDoHttpHandler implements HttpHandler {
             } else {
                 sendResponse(exchange, 404, "Not found task by id");
             }
+        } else if (method.equals("DELETE") && path.startsWith("/tasks") && path.split("/").length == 3) {
+            Long taskId = -1L;
+
+            try {
+                taskId = Long.parseLong(path.split("/")[2]);
+            } catch (final NumberFormatException e) {
+                sendResponse(exchange, 400, "Failed to parse task id");
+                return;
+            }
+
+            Optional<Task> task = getTaskById(taskId);
+            if (task.isPresent()) {
+                Task exitedTask = task.get();
+                deleteTask(exitedTask);
+                sendResponse(exchange, 204, "");
+            } else {
+                sendResponse(exchange, 404, "Not found task by id");
+            }
         } else {
             sendResponse(exchange, 404, null);
         }
@@ -139,8 +157,11 @@ public class ToDoHttpHandler implements HttpHandler {
 
     private void updateTask(Task existedTask, String content) throws JsonProcessingException {
         Task newTask = objectMapper.readValue(content, Task.class);
-
         existedTask.setTitle(newTask.getTitle());
+    }
+
+    private void deleteTask(Task targetTask) {
+        tasks.removeIf(task -> task.getId().equals(targetTask.getId()));
     }
 
     private String taskToString(Task task) throws IOException {

@@ -113,7 +113,7 @@ public class ToDoHttpHandlerTest {
 
     @Test
     @DisplayName("존재하지 않는 id에 PUT /tasks/:id 요청하면 404 status code가 리턴됩니다")
-    public void givenEmptyTasks_whenPUTTaskWithId_thenReturn404() throws IOException, URISyntaxException {
+    public void givenEmptyTasks_whenPutTaskWithId_thenReturn404() throws IOException, URISyntaxException {
         // given
         final HttpExchangeStub httpExchange = new HttpExchangeStub();
         final ToDoHttpHandler httpHandler = new ToDoHttpHandler();
@@ -133,7 +133,7 @@ public class ToDoHttpHandlerTest {
 
     @Test
     @DisplayName("존재하는 id로 PUT /tasks/:id 요청하면 변경된 Task가 JSON으로 리턴됩니다")
-    public void givenExistedTasks_whenPUTTaskWithId_thenReturn404() throws IOException, URISyntaxException {
+    public void givenExistedTasks_whenPutTaskWithId_thenReturn404() throws IOException, URISyntaxException {
         // given
         final HttpExchangeStub setupHttpExchange = new HttpExchangeStub();
         final ToDoHttpHandler httpHandler = new ToDoHttpHandler();
@@ -151,6 +151,28 @@ public class ToDoHttpHandlerTest {
         // then
         final ByteArrayOutputStream responseBody = (ByteArrayOutputStream) httpExchange.getResponseBody();
         assertEquals("{\"id\":1,\"title\":\"hello\"}", responseBody.toString());
+        assertEquals(200, httpExchange.getResponseCode());
+    }
+
+    @Test
+    @DisplayName("존재하는 task id로 DELETE /tasks/:id 요청하면 200 리턴됩니다")
+    public void givenExistedTasks_whenDeleteTaskWithId_thenReturn404() throws IOException, URISyntaxException {
+        // given
+        final HttpExchangeStub setupHttpExchange = new HttpExchangeStub();
+        final ToDoHttpHandler httpHandler = new ToDoHttpHandler();
+        postTask(setupHttpExchange, httpHandler, "title1");
+        postTask(setupHttpExchange, httpHandler, "title2");
+
+        // when
+        final HttpExchangeStub httpExchange = new HttpExchangeStub();
+        httpExchange.setRequestMethod("DELETE");
+        URI uri = new URI("http://localhost:8000/tasks/1");
+        httpExchange.setRequestURI(uri);
+        httpHandler.handle(httpExchange);
+
+        // then
+        final ByteArrayOutputStream responseBody = (ByteArrayOutputStream) httpExchange.getResponseBody();
+        assertEquals("", responseBody.toString());
         assertEquals(200, httpExchange.getResponseCode());
     }
 
