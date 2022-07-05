@@ -93,6 +93,12 @@ public class TaskHttpHandler implements HttpHandler {
     private String tasksToJson() throws IOException {
         return objectMapper.writeValueAsString(tasks);
     }
+  /**
+   * Task를 Json String으로 변환하여 리턴합니다.
+   * 
+   * @param 
+   * @throws
+   **/
     // 하나의 Task를 Json으로 반환해주는 메서드
     private String taskToJson(Task task) throws IOException {
         return objectMapper.writeValueAsString(task);
