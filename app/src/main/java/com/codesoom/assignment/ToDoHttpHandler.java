@@ -43,38 +43,54 @@ public class ToDoHttpHandler implements HttpHandler {
             System.out.println(body);
         }
 
-        String content = "";
-        int responseCode = 404;
-
         if (method.equals("GET") && path.equals("/tasks")) {
             try {
-                content = tasksToJSON();
-                responseCode = 200;
+                sendResponse(exchange, 200, tasksToJSON());
             } catch (IOException e) {
-                content = "Failed to convert tasks to JSON";
-                responseCode = 500;
+                sendResponse(exchange, 500, "Failed to convert tasks to JSON");
+            }
+        } else if (method.equals("GET") && path.startsWith("/tasks") && path.split("/").length == 3) {
+            Long taskId = -1L;
+
+            try {
+                taskId = Long.parseLong(path.split("/")[2]);
+            } catch (final NumberFormatException e) {
+                sendResponse(exchange, 400, "Failed to parse task id");
+                return;
+            }
+
+            Optional<Task> task = getTaskById(taskId);
+            if (task.isPresent()) {
+                sendResponse(exchange, 200, taskToString(task.get()));
+            } else {
+                sendResponse(exchange, 204, null);
             }
         } else if (method.equals("POST") && path.equals("/tasks") && !body.isBlank()) {
             try {
-                Task task = toTask(body);
+                Task task = contentToTask(body);
                 tasks.add(task);
-                content = toString(task);
-                responseCode = 201;
+                sendResponse(exchange, 201, taskToString(task));
             } catch (JsonProcessingException e) {
-                content = "Failed to convert request body to Task";
-                responseCode = 400;
+                sendResponse(exchange, 400, "Failed to convert request body to Task");
             } catch (IOException e) {
-                content = "Failed to convert Task to string";
-                responseCode = 500;
+                sendResponse(exchange, 500, "Failed to convert Task to string");
             }
+        } else {
+            sendResponse(exchange, 404, null);
         }
+    }
 
-        exchange.sendResponseHeaders(responseCode, content.getBytes().length);
+    private void sendResponse(HttpExchange exchange, int responseCode, String content) throws IOException {
+        if (content == null) {
+            exchange.sendResponseHeaders(responseCode, -1);
+        } else {
+            exchange.sendResponseHeaders(responseCode, content.getBytes().length);
 
-        final OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
+            final OutputStream outputStream = exchange.getResponseBody();
+            outputStream.write(content.getBytes());
+            outputStream.flush();
+            outputStream.close();
+        }
     }
 
     private Optional<String> getRequestBody(HttpExchange exchange) {
@@ -89,13 +105,20 @@ public class ToDoHttpHandler implements HttpHandler {
         return Optional.ofNullable(body);
     }
 
-    private Task toTask(String content) throws JsonProcessingException {
+    private Optional<Task> getTaskById(Long taskId) {
+        return tasks
+                .stream()
+                .filter(task -> task.getId().equals(taskId))
+                .findFirst();
+    }
+
+    private Task contentToTask(String content) throws JsonProcessingException {
         Task task = objectMapper.readValue(content, Task.class);
         task.setId(lastId++);
         return task;
     }
 
-    private String toString(Task task) throws IOException {
+    private String taskToString(Task task) throws IOException {
         return objectMapper.writeValueAsString(task);
     }
 

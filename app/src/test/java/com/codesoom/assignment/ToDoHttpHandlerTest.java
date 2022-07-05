@@ -38,8 +38,8 @@ public class ToDoHttpHandlerTest {
         // given
         final HttpExchangeStub setupHttpExchange = new HttpExchangeStub();
         final ToDoHttpHandler httpHandler = new ToDoHttpHandler();
+        postTask(setupHttpExchange, httpHandler, "title0");
         postTask(setupHttpExchange, httpHandler, "title1");
-        postTask(setupHttpExchange, httpHandler, "title2");
 
         // when
         final HttpExchangeStub httpExchange = new HttpExchangeStub();
@@ -50,7 +50,7 @@ public class ToDoHttpHandlerTest {
 
         // then
         final ByteArrayOutputStream responseBody = (ByteArrayOutputStream) httpExchange.getResponseBody();
-        assertEquals("[{\"id\":0,\"title\":\"title1\"},{\"id\":1,\"title\":\"title2\"}]", responseBody.toString());
+        assertEquals("[{\"id\":0,\"title\":\"title0\"},{\"id\":1,\"title\":\"title1\"}]", responseBody.toString());
         assertEquals(200, httpExchange.getResponseCode());
     }
 
@@ -68,6 +68,28 @@ public class ToDoHttpHandlerTest {
         final ByteArrayOutputStream responseBody = (ByteArrayOutputStream) httpExchange.getResponseBody();
         assertEquals("{\"id\":0,\"title\":\"test_title\"}", responseBody.toString());
         assertEquals(201, httpExchange.getResponseCode());
+    }
+
+    @Test
+    @DisplayName("POST /tasks/:id 요청하면 해당 id Task 객체를 JSON으로 리턴합니다")
+    public void givenAddedTasks_whenGetTaskWithId_thenReturnTaskJSON() throws IOException, URISyntaxException {
+        // given
+        final HttpExchangeStub setupHttpExchange = new HttpExchangeStub();
+        final ToDoHttpHandler httpHandler = new ToDoHttpHandler();
+        postTask(setupHttpExchange, httpHandler, "title0");
+        postTask(setupHttpExchange, httpHandler, "title1");
+
+        // when
+        final HttpExchangeStub httpExchange = new HttpExchangeStub();
+        httpExchange.setRequestMethod("GET");
+        URI uri = new URI("http://localhost:8000/tasks/0");
+        httpExchange.setRequestURI(uri);
+        httpHandler.handle(httpExchange);
+
+        // then
+        final ByteArrayOutputStream responseBody = (ByteArrayOutputStream) httpExchange.getResponseBody();
+        assertEquals("{\"id\":0,\"title\":\"title0\"}", responseBody.toString());
+        assertEquals(200, httpExchange.getResponseCode());
     }
 
     private void postTask(HttpExchangeStub httpExchange, ToDoHttpHandler httpHandler, String title) throws URISyntaxException, IOException {
