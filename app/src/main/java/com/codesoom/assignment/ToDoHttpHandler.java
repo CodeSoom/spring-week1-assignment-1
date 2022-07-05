@@ -100,9 +100,6 @@ public class ToDoHttpHandler implements HttpHandler {
     }
 
     private String tasksToJSON() throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
-
-        return outputStream.toString();
+        return objectMapper.writeValueAsString(tasks);
     }
 }

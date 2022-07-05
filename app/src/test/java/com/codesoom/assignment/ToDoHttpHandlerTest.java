@@ -33,17 +33,36 @@ public class ToDoHttpHandlerTest {
     }
 
     @Test
+    @DisplayName("tasks가 2개 있고 GET /tasks 요청하면 2개의 Task를 리턴합니다")
+    public void givenThreeTasks_whenGetTasks_thenReturnThreeTasks() throws IOException, URISyntaxException {
+        // given
+        final HttpExchangeStub setupHttpExchange = new HttpExchangeStub();
+        final ToDoHttpHandler httpHandler = new ToDoHttpHandler();
+        postTask(setupHttpExchange, httpHandler, "title1");
+        postTask(setupHttpExchange, httpHandler, "title2");
+
+        // when
+        final HttpExchangeStub httpExchange = new HttpExchangeStub();
+        httpExchange.setRequestMethod("GET");
+        URI uri = new URI("http://localhost:8000/tasks");
+        httpExchange.setRequestURI(uri);
+        httpHandler.handle(httpExchange);
+
+        // then
+        final ByteArrayOutputStream responseBody = (ByteArrayOutputStream) httpExchange.getResponseBody();
+        assertEquals("[{\"id\":0,\"title\":\"title1\"},{\"id\":1,\"title\":\"title2\"}]", responseBody.toString());
+        assertEquals(200, httpExchange.getResponseCode());
+    }
+
+    @Test
     @DisplayName("POST /tasks 요청하면 등록 성공한 Task 객체를 JSON으로 리턴합니다")
     public void givenEmptyTasks_whenPostTask_thenReturnTaskJSON() throws IOException, URISyntaxException {
         // given
         final HttpExchangeStub httpExchange = new HttpExchangeStub();
-        httpExchange.setRequestMethod("POST");
-        URI uri = new URI("http://localhost:8000/tasks");
-        httpExchange.setRequestURI(uri);
-        httpExchange.setRequestBody("{\"title\":\"test_title\"}");
+        final ToDoHttpHandler httpHandler = new ToDoHttpHandler();
 
         // when
-        new ToDoHttpHandler().handle(httpExchange);
+        postTask(httpExchange, httpHandler, "test_title");
 
         // then
         final ByteArrayOutputStream responseBody = (ByteArrayOutputStream) httpExchange.getResponseBody();
@@ -51,4 +70,11 @@ public class ToDoHttpHandlerTest {
         assertEquals(201, httpExchange.getResponseCode());
     }
 
+    private void postTask(HttpExchangeStub httpExchange, ToDoHttpHandler httpHandler, String title) throws URISyntaxException, IOException {
+        httpExchange.setRequestMethod("POST");
+        URI uri = new URI("http://localhost:8000/tasks");
+        httpExchange.setRequestURI(uri);
+        httpExchange.setRequestBody("{\"title\":\"" + title + "\"}");
+        httpHandler.handle(httpExchange);
+    }
 }
