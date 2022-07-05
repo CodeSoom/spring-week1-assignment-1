@@ -59,7 +59,17 @@ public class TaskHttpHandler implements HttpHandler {
                 content = "Not Valid ID";
             }
         }
-        
+
+        if(method.equals("POST") && path.equals("/tasks")) {
+            if(!body.isBlank()){
+                Task task = makeTask(body);
+                taskList.add(task);
+
+                returnCode = 200;
+                content = task.toString();
+            }
+        }
+
         exchange.sendResponseHeaders(returnCode, content.getBytes().length );
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
