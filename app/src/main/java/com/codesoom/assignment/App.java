@@ -8,16 +8,17 @@ import java.net.InetSocketAddress;
 
 public class App {
     public static void main(String[] args) {
-        InetSocketAddress address = new InetSocketAddress(8000);
+        final InetSocketAddress address = new InetSocketAddress(8000);
 
+        final HttpServer httpServer;
         try {
-            HttpServer httpServer = HttpServer.create(address, 0);
-            HttpHandler handler = new ToDoHttpHandler();
-            httpServer.createContext("/", handler);
-            httpServer.start();
+            httpServer = HttpServer.create(address, 0);
         } catch (IOException e) {
-            // 이 상황에서는 에러 처리 어떻게 해주면 좋을까?
             throw new RuntimeException(e);
         }
+
+        final HttpHandler handler = new ToDoHttpHandler();
+        httpServer.createContext("/", handler);
+        httpServer.start();
     }
 }
