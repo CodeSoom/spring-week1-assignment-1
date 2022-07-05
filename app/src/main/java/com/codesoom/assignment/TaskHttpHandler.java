@@ -31,24 +31,28 @@ public class TaskHttpHandler implements HttpHandler {
         String method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
-        String content = "200 OK";
-        content = validPath(path, content);
 
-        InputStream requestBody = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(requestBody))
-                .lines()
-                .collect(Collectors.joining("\n"));
+        String content = null;
+        String request = parsingRequest(exchange);
 
-        if (method.equals("GET") && path.equals("/tasks")) {
+        if (!validPath(path)) {
+            content = NOT_FOUND;
+            exchange.sendResponseHeaders(404, content.getBytes().length);
+        } else if (method.equals("GET")) {
             content = tasksToJson();
-        }
-
-        if (method.equals("POST") && path.equals("/tasks")) {
+        } else if (method.equals("POST")) {
             content = "Created";
-            if (!body.isBlank()) {
-                Task task = toTask(body);
+            if (!request.isBlank()) {
+                Task task = toTask(request);
                 tasks.add(task);
             }
+        } else if (method.equals("PUT")) {
+
+        } else if (method.equals("DELETE")) {
+
+        } else {
+            content = "Bad Request";
+            exchange.sendResponseHeaders(400, content.getBytes().length);
         }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
@@ -57,12 +61,16 @@ public class TaskHttpHandler implements HttpHandler {
         responseBody.flush();
         responseBody.close();
     }
-    // 요청온 경로가 유효하지 않으면 에러 메시지 반환
-    private String validPath(String path, String content) {
-        if (!path.equals("/tasks")) {
-            content = NOT_FOUND;
-        }
-        return content;
+    // 요청온 requestBody를 파싱해주는 기능
+    private String parsingRequest(HttpExchange exchange) {
+        return new BufferedReader(new InputStreamReader(exchange.getRequestBody()))
+                .lines()
+                .collect(Collectors.joining("\n"));
+    }
+
+    // 요청온 경로가 유효한지 확인해서 boolean 반환
+    private boolean validPath(String path) {
+        return path.equals("/tasks");
     }
 
     // 요청 받은 content를 Task 객체로 매핑하고 리턴
