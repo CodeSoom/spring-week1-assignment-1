@@ -10,6 +10,7 @@ import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 // Task에 대한 응답과 요청을 처리하는 핸들러
@@ -33,11 +34,17 @@ public class TaskHttpHandler implements HttpHandler {
             exchange.sendResponseHeaders(404, content.getBytes().length);
         } else if (method.equals("GET")) {
             content = tasksToJson();
+            exchange.sendResponseHeaders(200, content.getBytes().length);
         } else if (method.equals("POST")) {
-            content = "Created";
             if (!request.isBlank()) {
                 Task task = toTask(request);
                 tasks.add(task);
+                Task storedTask = tasks.stream()
+                        .filter(t -> t.getId().equals(id - 1))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("생성 과정 중 오류가 발생했습니다."));
+                content = taskToJson(storedTask);
+                exchange.sendResponseHeaders(201, content.getBytes().length);
             }
         } else if (method.equals("PUT")) {
 
@@ -48,7 +55,6 @@ public class TaskHttpHandler implements HttpHandler {
             exchange.sendResponseHeaders(400, content.getBytes().length);
         }
 
-        exchange.sendResponseHeaders(200, content.getBytes().length);
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.write(content.getBytes());
         responseBody.flush();
@@ -75,5 +81,9 @@ public class TaskHttpHandler implements HttpHandler {
     // 저장되어 있는 tasks을 Json으로 변환하는 메서드
     private String tasksToJson() throws IOException {
         return objectMapper.writeValueAsString(tasks);
+    }
+    // 하나의 Task를 Json으로 반환해주는 메서드
+    private String taskToJson(Task task) throws IOException {
+        return objectMapper.writeValueAsString(task);
     }
 }
