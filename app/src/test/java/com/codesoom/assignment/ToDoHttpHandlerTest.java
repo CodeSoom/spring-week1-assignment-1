@@ -50,7 +50,7 @@ public class ToDoHttpHandlerTest {
 
         // then
         final ByteArrayOutputStream responseBody = (ByteArrayOutputStream) httpExchange.getResponseBody();
-        assertEquals("[{\"id\":0,\"title\":\"title0\"},{\"id\":1,\"title\":\"title1\"}]", responseBody.toString());
+        assertEquals("[{\"id\":1,\"title\":\"title0\"},{\"id\":2,\"title\":\"title1\"}]", responseBody.toString());
         assertEquals(200, httpExchange.getResponseCode());
     }
 
@@ -66,7 +66,7 @@ public class ToDoHttpHandlerTest {
 
         // then
         final ByteArrayOutputStream responseBody = (ByteArrayOutputStream) httpExchange.getResponseBody();
-        assertEquals("{\"id\":0,\"title\":\"test_title\"}", responseBody.toString());
+        assertEquals("{\"id\":1,\"title\":\"test_title\"}", responseBody.toString());
         assertEquals(201, httpExchange.getResponseCode());
     }
 
@@ -76,11 +76,30 @@ public class ToDoHttpHandlerTest {
         // given
         final HttpExchangeStub setupHttpExchange = new HttpExchangeStub();
         final ToDoHttpHandler httpHandler = new ToDoHttpHandler();
-        postTask(setupHttpExchange, httpHandler, "title0");
         postTask(setupHttpExchange, httpHandler, "title1");
+        postTask(setupHttpExchange, httpHandler, "title2");
 
         // when
         final HttpExchangeStub httpExchange = new HttpExchangeStub();
+        httpExchange.setRequestMethod("GET");
+        URI uri = new URI("http://localhost:8000/tasks/1");
+        httpExchange.setRequestURI(uri);
+        httpHandler.handle(httpExchange);
+
+        // then
+        final ByteArrayOutputStream responseBody = (ByteArrayOutputStream) httpExchange.getResponseBody();
+        assertEquals("{\"id\":1,\"title\":\"title1\"}", responseBody.toString());
+        assertEquals(200, httpExchange.getResponseCode());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 id로 POST /tasks/:id 요청하면 404 status code가 리턴됩니다")
+    public void givenEmptyTasks_whenGetTaskWithId_thenReturn404() throws IOException, URISyntaxException {
+        // given
+        final HttpExchangeStub httpExchange = new HttpExchangeStub();
+        final ToDoHttpHandler httpHandler = new ToDoHttpHandler();
+
+        // when
         httpExchange.setRequestMethod("GET");
         URI uri = new URI("http://localhost:8000/tasks/0");
         httpExchange.setRequestURI(uri);
@@ -88,8 +107,8 @@ public class ToDoHttpHandlerTest {
 
         // then
         final ByteArrayOutputStream responseBody = (ByteArrayOutputStream) httpExchange.getResponseBody();
-        assertEquals("{\"id\":0,\"title\":\"title0\"}", responseBody.toString());
-        assertEquals(200, httpExchange.getResponseCode());
+        assertEquals("Not found task by id", responseBody.toString());
+        assertEquals(404, httpExchange.getResponseCode());
     }
 
     private void postTask(HttpExchangeStub httpExchange, ToDoHttpHandler httpHandler, String title) throws URISyntaxException, IOException {

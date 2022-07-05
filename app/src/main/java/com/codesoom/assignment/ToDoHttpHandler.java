@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class ToDoHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
-    private Long lastId = 0L;
+    private Long lastId = 1L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -63,7 +63,7 @@ public class ToDoHttpHandler implements HttpHandler {
             if (task.isPresent()) {
                 sendResponse(exchange, 200, taskToString(task.get()));
             } else {
-                sendResponse(exchange, 204, null);
+                sendResponse(exchange, 404, "Not found task by id");
             }
         } else if (method.equals("POST") && path.equals("/tasks") && !body.isBlank()) {
             try {
