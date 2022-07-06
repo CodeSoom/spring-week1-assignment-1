@@ -18,6 +18,7 @@ public class TaskHttpHandler implements HttpHandler {
     private Long curTaskID = 0L;
     private final int SUCCESS = 200;
     private final int NOT_FOUND = 404;
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
@@ -86,6 +87,35 @@ public class TaskHttpHandler implements HttpHandler {
                 returnCode = SUCCESS;
                 content = taskList.get(taskIdx).toString();
                 
+            } catch (IndexOutOfBoundsException idxError) {
+                System.out.println(idxError);
+                returnCode = NOT_FOUND;
+                content = "ID not exist";
+
+            } catch (Exception e) {
+                System.out.println("유효한 주소가 아닙니다.");
+                returnCode = NOT_FOUND;
+                content = "Not valid URL";
+            }
+        }
+
+        if (method.equals("DELETE") && path.startsWith("/tasks/")) {
+            String searchIDString = path.substring("/tasks/".length());
+            System.out.println("ID String : " + searchIDString);
+
+            Long searchID;
+            int taskIdx;
+
+            try {
+                searchID = Long.parseLong(searchIDString);
+                taskIdx = findTaskIdx(searchID);
+
+                taskList.remove(taskIdx);
+                //curTaskID--;
+
+                returnCode = SUCCESS;
+                content = new String();
+
             } catch (IndexOutOfBoundsException idxError) {
                 System.out.println(idxError);
                 returnCode = NOT_FOUND;
