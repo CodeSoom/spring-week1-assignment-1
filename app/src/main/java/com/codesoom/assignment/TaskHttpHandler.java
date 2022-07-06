@@ -57,7 +57,8 @@ public class TaskHttpHandler implements HttpHandler {
         } else if (method.equals("DELETE")) {
 
         } else {
-            content = sendBadRequest(exchange);
+            content = handleBadRequest();
+            exchange.sendResponseHeaders(400, content.getBytes().length);
         }
 
         OutputStream responseBody = exchange.getResponseBody();
@@ -67,15 +68,11 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     /**
-     * 수신된 Http 요청이 잘못된 경우 에러 코드를 만들고 응답 본문을 리턴한다.
-     * @param exchange 수신된 Http 요청을 가진 파라미터
+     * 수신된 Http 요청이 잘못된 경우 응답 본문을 만들어 리턴한다.
      * @return 응답할 본문
-     * @throws IOException 응답 헤더가 이미 전송되었거나 I/O에 문제가 있으면 던집니다.
      */
-    private String sendBadRequest(HttpExchange exchange) throws IOException {
-        String content = "Bad Request";
-        exchange.sendResponseHeaders(400, content.getBytes().length);
-        return content;
+    private String handleBadRequest() {
+        return "Bad Request";
     }
 
     private String handlePost(String content, String request) {
