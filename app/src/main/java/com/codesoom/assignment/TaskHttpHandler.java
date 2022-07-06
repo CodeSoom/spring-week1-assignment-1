@@ -31,7 +31,7 @@ public class TaskHttpHandler implements HttpHandler {
         String request = parsingRequest(exchange.getRequestBody());
 
         if (method.equals("GET")) {
-            if (path.matches("/tasks/[0-9]+")) {
+            if (isDetailMatches(path)) {
                 try {
                     content = handleDetailGet(path);
                     exchange.sendResponseHeaders(200, content.getBytes().length);
@@ -45,14 +45,14 @@ public class TaskHttpHandler implements HttpHandler {
         } else if (method.equals("POST") && path.equals("/tasks")) {
             content = handlePost(request);
             exchange.sendResponseHeaders(201, content.getBytes().length);
-        } else if (method.equals("PUT") && path.matches("/tasks/[0-9]+")) {
+        } else if (method.equals("PUT") && isDetailMatches(path)) {
             try {
                 content = handlePut(path, request);
                 exchange.sendResponseHeaders(200, content.getBytes().length);
             } catch (NoSuchElementException e) {
                 exchange.sendResponseHeaders(404, -1);
             }
-        } else if (method.equals("DELETE") && path.matches("/tasks/[0-9]+")) {
+        } else if (method.equals("DELETE") && isDetailMatches(path)) {
             try {
                 content = handleDelete(path);
                 exchange.sendResponseHeaders(204, -1);
@@ -68,6 +68,15 @@ public class TaskHttpHandler implements HttpHandler {
         responseBody.write(content.getBytes());
         responseBody.flush();
         responseBody.close();
+    }
+
+    /**
+     * Task의 id가 경로에 포함되어 있으면 true, 아니면 false를 리턴합니다.
+     * @param path 수신된 Http 요청의 경로
+     * @return id가 경로에 포함되어 있으면 true, 아니면 fasle
+     */
+    private boolean isDetailMatches(String path) {
+        return path.matches("/tasks/[0-9]+");
     }
 
     /**
