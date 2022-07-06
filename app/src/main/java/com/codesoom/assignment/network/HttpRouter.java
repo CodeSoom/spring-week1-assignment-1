@@ -10,6 +10,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -63,9 +64,9 @@ public class HttpRouter {
 
         final String body = getRequestBody(exchange).orElse("");
 
-        System.out.println(method + " " + path);
+        Logger.getGlobal().info(method + " " + path);
         if (!body.isEmpty()) {
-            System.out.println(body);
+            Logger.getGlobal().info(body);
         }
 
         Iterator<HttpRouterKey> keys = pathMap.keySet().iterator();

@@ -5,9 +5,13 @@ import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class App {
     public static void main(String[] args) {
+        Logger.getGlobal().setLevel(Level.INFO);
+
         final InetSocketAddress address = new InetSocketAddress(8000);
 
         final HttpServer httpServer;
