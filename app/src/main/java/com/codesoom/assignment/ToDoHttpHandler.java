@@ -40,6 +40,9 @@ public class ToDoHttpHandler implements HttpHandler {
         router.patch("/tasks/\\d*", (request, response) -> {
             this.sendPutResponse(response, request.getPath(), request.getBody());
         });
+        router.delete("/tasks/\\d*", (request, response) -> {
+            this.sendDeleteResponse(response, request.getPath());
+        });
     }
 
     @Override
@@ -66,13 +69,7 @@ public class ToDoHttpHandler implements HttpHandler {
             return;
         }
 
-        final HttpResponse responder = new HttpResponse(exchange);
-
         router.route(exchange);
-
-        switch (methodType) {
-            case DELETE -> sendDeleteResponse(exchange, path);
-        }
     }
 
     private void sendGetResponseWithId(String path, HttpResponse response) throws IOException {
@@ -105,13 +102,13 @@ public class ToDoHttpHandler implements HttpHandler {
         sendResponse(exchange, 404, null);
     }
 
-    private void sendDeleteResponse(HttpExchange exchange, String path) throws IOException {
+    private void sendDeleteResponse(HttpResponse response, String path) throws IOException {
         Long taskId = -1L;
 
         try {
             taskId = Long.parseLong(path.split("/")[2]);
         } catch (final NumberFormatException e) {
-            sendResponse(exchange, 400, "Failed to parse task id");
+            response.send(400, "Failed to parse task id");
             return;
         }
 
@@ -119,9 +116,9 @@ public class ToDoHttpHandler implements HttpHandler {
         if (task.isPresent()) {
             Task exitedTask = task.get();
             repository.deleteTask(exitedTask);
-            sendResponse(exchange, 204, null);
+            response.send(204, null);
         } else {
-            sendResponse(exchange, 404, "Not found task by id");
+            response.send(404, "Not found task by id");
         }
     }
 
@@ -173,18 +170,6 @@ public class ToDoHttpHandler implements HttpHandler {
 
     private boolean checkPathHasTaskId(String path) {
         return path.matches("/tasks/\\d*");
-    }
-
-    private Optional<String> getRequestBody(HttpExchange exchange) {
-        final InputStream inputStream = exchange.getRequestBody();
-        if (inputStream == null) {
-            return Optional.empty();
-        }
-
-        final String body = new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
-        return Optional.ofNullable(body);
     }
 
 }
