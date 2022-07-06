@@ -1,8 +1,9 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.network.HttpRouter;
 import com.codesoom.assignment.network.HttpMethod;
-import com.codesoom.assignment.network.HttpResponder;
+import com.codesoom.assignment.network.HttpResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -17,8 +18,20 @@ import java.util.stream.Collectors;
  * HTTP exchanges를 통해 전달받은 Request를 분석해서 할일 목록을 관리하고 적절한 Response를 전달하는 객체
  */
 public class ToDoHttpHandler implements HttpHandler {
-    private ObjectMapper objectMapper = new ObjectMapper();
-    private ToDoRepository repository = new ToDoRepository();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ToDoRepository repository = new ToDoRepository();
+
+    private final HttpRouter router;
+
+    public ToDoHttpHandler() {
+        router = new HttpRouter();
+        router.get("/tasks", (request, response) -> {
+            this.sendGetResponseRoot(response);
+        });
+        router.get("/tasks/\\d*", (request, response) -> {
+            this.sendGetResponseWithId(request.getPath(), response);
+        });
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -49,47 +62,40 @@ public class ToDoHttpHandler implements HttpHandler {
             return;
         }
 
-        final HttpResponder responder = new HttpResponder(exchange);
+        final HttpResponse responder = new HttpResponse(exchange);
+
+        router.route(exchange);
 
         switch (methodType) {
-            case GET -> sendGetResponse(responder, path);
             case POST -> sendPostResponse(exchange, body);
             case PUT, PATCH -> sendPutResponse(exchange, path, body);
             case DELETE -> sendDeleteResponse(exchange, path);
         }
     }
 
-    public void sendGetResponse(HttpResponder responder, String path) throws IOException {
-        if ("/tasks".equals(path)) {
-            sendGetResponseRoot(responder);
-        } else if (path.matches("/tasks/\\d*")) {
-            sendGetResponseWithId(responder, path);
-        }
-    }
-
-    private void sendGetResponseWithId(HttpResponder responder, String path) throws IOException {
+    private void sendGetResponseWithId(String path, HttpResponse responder) throws IOException {
         Long taskId = -1L;
 
         try {
             taskId = Long.parseLong(path.split("/")[2]);
         } catch (final NumberFormatException e) {
-            responder.sendResponse(400, "Failed to parse task id");
+            responder.send(400, "Failed to parse task id");
             return;
         }
 
         Optional<Task> task = repository.getTaskById(taskId);
         if (task.isPresent()) {
-            responder.sendResponse(200, repository.taskToString(task.get()));
+            responder.send(200, repository.taskToString(task.get()));
         } else {
-            responder.sendResponse(404, "Not found task by id");
+            responder.send(404, "Not found task by id");
         }
     }
 
-    private void sendGetResponseRoot(HttpResponder responder) throws IOException {
+    private void sendGetResponseRoot(HttpResponse responder) throws IOException {
         try {
-            responder.sendResponse(200, repository.getTasksJSON());
+            responder.send(200, repository.getTasksJSON());
         } catch (IOException e) {
-            responder.sendResponse(500, "Failed to convert tasks to JSON");
+            responder.send(500, "Failed to convert tasks to JSON");
         }
     }
 
@@ -160,7 +166,7 @@ public class ToDoHttpHandler implements HttpHandler {
     }
 
     private void sendResponse(HttpExchange exchange, int responseCode, String content) throws IOException {
-        new HttpResponder(exchange).sendResponse(responseCode, content);
+        new HttpResponse(exchange).send(responseCode, content);
     }
 
     private boolean checkPathHasTaskId(String path) {

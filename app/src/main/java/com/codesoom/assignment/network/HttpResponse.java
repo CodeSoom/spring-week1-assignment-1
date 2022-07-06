@@ -5,15 +5,15 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class HttpResponder {
+public class HttpResponse {
 
     private HttpExchange exchange;
 
-    public HttpResponder(HttpExchange exchange) {
+    public HttpResponse(HttpExchange exchange) {
         this.exchange = exchange;
     }
 
-    public void sendResponse(int responseCode, String content) throws IOException {
+    public void send(int responseCode, String content) throws IOException {
         if (content == null) {
             exchange.sendResponseHeaders(responseCode, -1);
         } else {
