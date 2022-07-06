@@ -33,7 +33,7 @@ public class TaskHttpHandler implements HttpHandler {
             content = tasksToJson();
             exchange.sendResponseHeaders(200, content.getBytes().length);
         } else if (method.equals("POST") && path.equals("/tasks")) {
-            content = handlePost(content, request);
+            content = handlePost(request);
             exchange.sendResponseHeaders(201, content.getBytes().length);
         } else if (method.equals("PUT") && path.matches("/tasks/[0-9]+")) {
             String[] splitedPath = path.split("/");
@@ -75,7 +75,14 @@ public class TaskHttpHandler implements HttpHandler {
         return "Bad Request";
     }
 
-    private String handlePost(String content, String request) {
+    /**
+     * POST 요청이 왔을 때 요청 본문이 있으면 Task를 만들어 저장한 후 리턴, 없으면 잘못된 요청 메시지를 리턴
+     * @param request 수신된 요청 본문
+     * @return 본문이 있을 경우 만든 Task 리턴, 없으면 잘못된 요청 메시지 리턴
+     */
+    private String handlePost(String request) {
+        String content;
+        
         if (!request.isBlank()) {
             try {
                 Task task = toTask(request);
@@ -90,9 +97,12 @@ public class TaskHttpHandler implements HttpHandler {
 
                 content = taskToJson(storedTask);
             } catch (JsonProcessingException e) {
-                throw new RuntimeException("요청이 처리되지 않았습니다.");
+                throw new RuntimeException("Json으로 변환할 때, 에러가 발생했습니다.");
             }
+        } else {
+            return handleBadRequest();
         }
+
         return content;
     }
 
