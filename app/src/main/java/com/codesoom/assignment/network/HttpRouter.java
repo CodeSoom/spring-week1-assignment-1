@@ -23,6 +23,10 @@ public class HttpRouter {
         pathMap.put(new HttpRouterKey(HttpMethod.GET, path), executor);
     }
 
+    public void post(String path, RouterExecutable executor) {
+        pathMap.put(new HttpRouterKey(HttpMethod.POST, path), executor);
+    }
+
     public void route(HttpExchange exchange) throws IOException {
         final String method = exchange.getRequestMethod();
         final HttpResponse responder = new HttpResponse(exchange);
@@ -45,6 +49,8 @@ public class HttpRouter {
             return;
         }
 
+        final String body = getRequestBody(exchange).orElse("");
+
         boolean didMatch = false;
         Iterator<HttpRouterKey> keys = pathMap.keySet().iterator();
         while(keys.hasNext() && !didMatch) {
@@ -52,7 +58,6 @@ public class HttpRouter {
 
             if (key.equalsMethod(methodType) && key.matchesPath(path)) {
                 final RouterExecutable executor = pathMap.get(key);
-                final String body = getRequestBody(exchange).orElse("");
                 final HttpRequest request = new HttpRequest(path, body);
 
                 executor.execute(request, responder);

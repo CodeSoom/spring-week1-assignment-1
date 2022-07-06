@@ -31,6 +31,9 @@ public class ToDoHttpHandler implements HttpHandler {
         router.get("/tasks/\\d*", (request, response) -> {
             this.sendGetResponseWithId(request.getPath(), response);
         });
+        router.post("/tasks", (request, response) -> {
+            this.sendPostResponse(response, request.getBody());
+        });
     }
 
     @Override
@@ -51,11 +54,6 @@ public class ToDoHttpHandler implements HttpHandler {
 
         System.out.println(method + " " + path);
 
-        final String body = getRequestBody(exchange).orElse("");
-        if (!body.isBlank()) {
-            System.out.println(body);
-        }
-
         final HttpMethod methodType = HttpMethod.convert(method);
         if (methodType == null) {
             sendNotFoundResponse(exchange);
@@ -67,35 +65,34 @@ public class ToDoHttpHandler implements HttpHandler {
         router.route(exchange);
 
         switch (methodType) {
-            case POST -> sendPostResponse(exchange, body);
-            case PUT, PATCH -> sendPutResponse(exchange, path, body);
+            case PUT, PATCH -> sendPutResponse(exchange, path, "TEMP_BODY");
             case DELETE -> sendDeleteResponse(exchange, path);
         }
     }
 
-    private void sendGetResponseWithId(String path, HttpResponse responder) throws IOException {
+    private void sendGetResponseWithId(String path, HttpResponse response) throws IOException {
         Long taskId = -1L;
 
         try {
             taskId = Long.parseLong(path.split("/")[2]);
         } catch (final NumberFormatException e) {
-            responder.send(400, "Failed to parse task id");
+            response.send(400, "Failed to parse task id");
             return;
         }
 
         Optional<Task> task = repository.getTaskById(taskId);
         if (task.isPresent()) {
-            responder.send(200, repository.taskToString(task.get()));
+            response.send(200, repository.taskToString(task.get()));
         } else {
-            responder.send(404, "Not found task by id");
+            response.send(404, "Not found task by id");
         }
     }
 
-    private void sendGetResponseRoot(HttpResponse responder) throws IOException {
+    private void sendGetResponseRoot(HttpResponse response) throws IOException {
         try {
-            responder.send(200, repository.getTasksJSON());
+            response.send(200, repository.getTasksJSON());
         } catch (IOException e) {
-            responder.send(500, "Failed to convert tasks to JSON");
+            response.send(500, "Failed to convert tasks to JSON");
         }
     }
 
@@ -148,20 +145,20 @@ public class ToDoHttpHandler implements HttpHandler {
         }
     }
 
-    private void sendPostResponse(HttpExchange exchange, String body) throws IOException {
-        if (body.isBlank()) {
-            sendResponse(exchange, 400, "Failed to convert request body to Task");
+    private void sendPostResponse(HttpResponse response, String body) throws IOException {
+        if (body == null || body.isBlank()) {
+            response.send(400, "Failed to convert request body to Task");
             return;
         }
 
         try {
             Task task = repository.createTask(body);
             repository.addTask(task);
-            sendResponse(exchange, 201, repository.taskToString(task));
+            response.send(201, repository.taskToString(task));
         } catch (JsonProcessingException e) {
-            sendResponse(exchange, 400, "Failed to convert request body to Task");
+            response.send(400, "Failed to convert request body to Task");
         } catch (IOException e) {
-            sendResponse(exchange, 500, "Failed to convert Task to string");
+            response.send(500, "Failed to convert Task to string");
         }
     }
 

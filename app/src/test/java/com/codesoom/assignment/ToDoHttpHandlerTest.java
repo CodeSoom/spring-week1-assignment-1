@@ -71,7 +71,7 @@ public class ToDoHttpHandlerTest {
     }
 
     @Test
-    @DisplayName("POST /tasks/:id 요청하면 해당 id Task 객체를 JSON으로 리턴합니다")
+    @DisplayName("GET /tasks/:id 요청하면 해당 id Task 객체를 JSON으로 리턴합니다")
     public void givenAddedTasks_whenGetTaskWithId_thenReturnTaskJSON() throws IOException, URISyntaxException {
         // given
         final HttpExchangeStub setupHttpExchange = new HttpExchangeStub();
