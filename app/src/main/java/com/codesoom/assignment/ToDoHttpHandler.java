@@ -87,7 +87,7 @@ public class ToDoHttpHandler implements HttpHandler {
 
     private void sendGetResponseRoot(HttpResponder responder) throws IOException {
         try {
-            responder.sendResponse(200, repository.tasksToJSON());
+            responder.sendResponse(200, repository.getTasksJSON());
         } catch (IOException e) {
             responder.sendResponse(500, "Failed to convert tasks to JSON");
         }
