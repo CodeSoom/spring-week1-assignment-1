@@ -88,7 +88,6 @@ public class TaskHttpHandler implements HttpHandler {
      * @throws NoSuchElementException 요청된 id를 찾지 못했을 경우 던집니다.
      */
     private String handleDetailGet(String path) throws JsonProcessingException, NoSuchElementException {
-        String content;
         String[] splitedPath = path.split("/");
         Long findId = Long.parseLong(splitedPath[2]);
 
@@ -97,8 +96,7 @@ public class TaskHttpHandler implements HttpHandler {
                     .findFirst()
                     .orElseThrow();
 
-        content = taskToJson(task);
-        return content;
+        return taskToJson(task);
     }
 
     /**
@@ -137,7 +135,6 @@ public class TaskHttpHandler implements HttpHandler {
     private String handlePut(String path, String request) {
         String[] splitedPath = path.split("/");
         Long findId = Long.valueOf(splitedPath[2]);
-        String content;
 
         if (!request.isBlank()) {
             try {
@@ -150,15 +147,13 @@ public class TaskHttpHandler implements HttpHandler {
                         (String) objectMapper.readValue(request, HashMap.class)
                                 .get("title"));
 
-                content = taskToJson(storedTask);
+                return taskToJson(storedTask);
             } catch (JsonProcessingException e) {
                 throw new RuntimeException("Json으로 변환할 때, 에러가 발생했습니다.");
             }
-        } else {
-            content = handleBadRequest();
         }
 
-        return content;
+        return handleBadRequest();
     }
 
     /**
@@ -176,8 +171,6 @@ public class TaskHttpHandler implements HttpHandler {
      * @throws RuntimeException JSon으로 변환할 때, 에러가 발생하면 던집니다.
      */
     private String handlePost(String request) {
-        String content;
-        
         if (!request.isBlank()) {
             try {
                 Task task = toTask(request);
@@ -190,15 +183,13 @@ public class TaskHttpHandler implements HttpHandler {
                         .findFirst()
                         .orElseThrow(RuntimeException::new);
 
-                content = taskToJson(storedTask);
+                return taskToJson(storedTask);
             } catch (JsonProcessingException e) {
                 throw new RuntimeException("Json으로 변환할 때, 에러가 발생했습니다.");
             }
-        } else {
-            return handleBadRequest();
         }
 
-        return content;
+        return handleBadRequest();
     }
 
     /**
