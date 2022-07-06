@@ -10,6 +10,7 @@ import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 /**
@@ -26,13 +27,17 @@ public class TaskHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
-        String content;
+        String content = "";
         String request = parsingRequest(exchange.getRequestBody());
 
         if (method.equals("GET")) {
             if (path.matches("/tasks/[0-9]+")) {
-                content = handleDetailGet(path);
-                exchange.sendResponseHeaders(200, content.getBytes().length);
+                try {
+                    content = handleDetailGet(path);
+                    exchange.sendResponseHeaders(200, content.getBytes().length);
+                } catch (NoSuchElementException e) {
+                    exchange.sendResponseHeaders(404, -1);
+                }
             } else {
                 content = tasksToJson();
                 exchange.sendResponseHeaders(200, content.getBytes().length);
@@ -41,11 +46,19 @@ public class TaskHttpHandler implements HttpHandler {
             content = handlePost(request);
             exchange.sendResponseHeaders(201, content.getBytes().length);
         } else if (method.equals("PUT") && path.matches("/tasks/[0-9]+")) {
-            content = handlePut(path, request);
-            exchange.sendResponseHeaders(200, content.getBytes().length);
+            try {
+                content = handlePut(path, request);
+                exchange.sendResponseHeaders(200, content.getBytes().length);
+            } catch (NoSuchElementException e) {
+                exchange.sendResponseHeaders(404, -1);
+            }
         } else if (method.equals("DELETE") && path.matches("/tasks/[0-9]+")) {
-            content = handleDelete(path);
-            exchange.sendResponseHeaders(200, content.getBytes().length);
+            try {
+                content = handleDelete(path);
+                exchange.sendResponseHeaders(204, -1);
+            } catch (NoSuchElementException e) {
+                exchange.sendResponseHeaders(404, -1);
+            }
         } else {
             content = handleBadRequest();
             exchange.sendResponseHeaders(400, content.getBytes().length);
@@ -62,16 +75,17 @@ public class TaskHttpHandler implements HttpHandler {
      * @param path 수신된 Http 요청의 경로
      * @return 요청한 Task를 String으로 변환해서 리턴한다.
      * @throws JsonProcessingException Json으로 변환하면서 에러가 발생한 경우 던집니다.
+     * @throws NoSuchElementException 요청된 id를 찾지 못했을 경우 던집니다.
      */
-    private String handleDetailGet(String path) throws JsonProcessingException {
+    private String handleDetailGet(String path) throws JsonProcessingException, NoSuchElementException {
         String content;
         String[] splitedPath = path.split("/");
         Long findId = Long.parseLong(splitedPath[2]);
 
         Task task = tasks.stream()
-                .filter(t -> t.getId().equals(findId))
-                .findFirst()
-                .orElseThrow();
+                    .filter(t -> t.getId().equals(findId))
+                    .findFirst()
+                    .orElseThrow();
 
         content = taskToJson(task);
         return content;
@@ -81,7 +95,7 @@ public class TaskHttpHandler implements HttpHandler {
      * DELETE 요청이 왔을 때 경로의 id를 찾아 제거하고 빈 문자열을 리턴한다.
      * @param path 수신된 Http 요청의 경로
      * @return 빈 문자열을 리턴
-     * @throws RuntimeException 제거할 Task를 찾지 못했을 때 던집니다.
+     * @throws NoSuchElementException 요청된 id를 찾지 못했을 경우 던집니다.
      */
     private String handleDelete(String path) {
         String[] splitedPath = path.split("/");
@@ -96,7 +110,7 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         if (index == -1) {
-            throw new RuntimeException("제거할 Task를 찾지 못했습니다.");
+            throw new NoSuchElementException();
         }
         tasks.remove(index);
         return "";
@@ -108,6 +122,7 @@ public class TaskHttpHandler implements HttpHandler {
      * @param request 수신된 요청 본문
      * @return 본문이 있을 경우 만든 변경된 Task 리턴, 없으면 잘못된 요청 메시지 리턴
      * @throws RuntimeException JSon으로 변환할 때, 에러가 발생하면 던집니다.
+     * @throws NoSuchElementException 요청된 id를 찾지 못했을 경우 던집니다.
      */
     private String handlePut(String path, String request) {
         String[] splitedPath = path.split("/");
@@ -119,7 +134,7 @@ public class TaskHttpHandler implements HttpHandler {
                 Task storedTask = tasks.stream()
                         .filter(t -> t.getId().equals(findId))
                         .findFirst()
-                        .orElseThrow(RuntimeException::new);
+                        .orElseThrow();
 
                 Task taskToChange = toTask(request);
                 storedTask.setTitle(taskToChange.getTitle());
