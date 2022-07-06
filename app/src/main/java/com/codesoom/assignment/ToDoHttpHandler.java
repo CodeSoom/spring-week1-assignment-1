@@ -50,7 +50,7 @@ public class ToDoHttpHandler implements HttpHandler {
     }
 
     private void sendGetResponseWithId(String path, HttpResponse response) throws IOException {
-        Long taskId = -1L;
+        Long taskId;
 
         try {
             taskId = Long.parseLong(path.split("/")[2]);
@@ -80,7 +80,7 @@ public class ToDoHttpHandler implements HttpHandler {
     }
 
     private void sendDeleteResponse(HttpResponse response, String path) throws IOException {
-        Long taskId = -1L;
+        Long taskId;
 
         try {
             taskId = Long.parseLong(path.split("/")[2]);
@@ -100,7 +100,7 @@ public class ToDoHttpHandler implements HttpHandler {
     }
 
     private void sendPutResponse(HttpResponse response, String path, String body) throws IOException {
-        Long taskId = -1L;
+        Long taskId;
 
         try {
             taskId = Long.parseLong(path.split("/")[2]);
