@@ -26,23 +26,15 @@ public class TaskHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
-        String content = null;
+        String content = "Basic";
         String request = parsingRequest(exchange.getRequestBody());
 
         if (method.equals("GET")) {
             content = tasksToJson();
             exchange.sendResponseHeaders(200, content.getBytes().length);
-        } else if (method.equals("POST")) {
-            if (!request.isBlank()) {
-                Task task = toTask(request);
-                tasks.add(task);
-                Task storedTask = tasks.stream()
-                        .filter(t -> t.getId().equals(id - 1))
-                        .findFirst()
-                        .orElseThrow(() -> new RuntimeException("생성 과정 중 오류가 발생했습니다."));
-                content = taskToJson(storedTask);
-                exchange.sendResponseHeaders(201, content.getBytes().length);
-            }
+        } else if (method.equals("POST") && path.equals("/tasks")) {
+            content = handlePost(content, request);
+            exchange.sendResponseHeaders(201, content.getBytes().length);
         } else if (method.equals("PUT") && path.matches("/tasks/[0-9]+")) {
             String[] splitedPath = path.split("/");
             Long findId = Long.valueOf(splitedPath[2]);
@@ -75,6 +67,27 @@ public class TaskHttpHandler implements HttpHandler {
         responseBody.close();
     }
 
+    private String handlePost(String content, String request) {
+        if (!request.isBlank()) {
+            try {
+                Task task = toTask(request);
+                task.setId(id++);
+
+                tasks.add(task);
+
+                Task storedTask = tasks.stream()
+                        .filter(t -> t.getId().equals(id - 1))
+                        .findFirst()
+                        .orElseThrow(RuntimeException::new);
+
+                content = taskToJson(storedTask);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("요청이 처리되지 않았습니다.");
+            }
+        }
+        return content;
+    }
+
     /**
      * 수신된 Http 요청의 본문을 String으로 변환하여 리턴한다.
      * @param requestBody 수신된 Http 요청의 본문
@@ -87,15 +100,13 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     /**
-     * 요청 받은 컨텐트를 Task로 매핑하고 id를 설정해주어 리턴한다.
+     * 요청 받은 컨텐트를 Task로 매핑하여 리턴한다.
      * @param content 요청 받은 컨텐트
      * @return 생성한 Task를 리턴
      * @throws JsonProcessingException 요청 받은 컨텐트를 Task로 매핑하지 못햇을 때 던집니다.
      */
     private Task toTask(String content) throws JsonProcessingException {
-        Task task = objectMapper.readValue(content, Task.class);
-        task.setId(id++);
-        return task;
+        return objectMapper.readValue(content, Task.class);
     }
 
     /**
@@ -103,7 +114,7 @@ public class TaskHttpHandler implements HttpHandler {
      * @return 변환된 문자열을 리턴
      * @throws JsonProcessingException Task를 Json으로 변환하지 못했을 때 던집니다.
      **/
-    private String tasksToJson() throws IOException {
+    private String tasksToJson() throws JsonProcessingException {
         return objectMapper.writeValueAsString(tasks);
     }
 
