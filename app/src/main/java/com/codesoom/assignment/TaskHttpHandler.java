@@ -17,6 +17,8 @@ public class TaskHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
     private Long curTaskID = 0L;
     private final int SUCCESS = 200;
+    private final int CREATED = 201;
+    private final int DELETED = 204;
     private final int NOT_FOUND = 404;
 
     @Override
@@ -67,7 +69,7 @@ public class TaskHttpHandler implements HttpHandler {
             task.setId(++curTaskID);
             taskList.add(task);
 
-            returnCode = SUCCESS;
+            returnCode = CREATED;
             content = task.toString();
         }
 
@@ -112,8 +114,8 @@ public class TaskHttpHandler implements HttpHandler {
 
                 taskList.remove(taskIdx);
                 //curTaskID--;
-
-                returnCode = SUCCESS;
+                
+                returnCode = DELETED;
                 content = new String();
 
             } catch (IndexOutOfBoundsException idxError) {
