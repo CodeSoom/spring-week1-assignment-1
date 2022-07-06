@@ -61,48 +61,44 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
-        if(method.equals("POST") && path.equals("/tasks")) {
-            if(!body.isBlank()){
-                Task task = makeTask(body);
-                task.setId(++curTaskID);
-                taskList.add(task);
+        if(method.equals("POST") && path.equals("/tasks") && !body.isBlank()) {
+            Task task = makeTask(body);
+            task.setId(++curTaskID);
+            taskList.add(task);
 
+            returnCode = SUCCESS;
+            content = task.toString();
+        }
+
+        if (method.equals("PUT") && path.startsWith("/tasks/") && !body.isBlank()) {
+            String searchIDString = path.substring("/tasks/".length());
+            System.out.println("ID String : " + searchIDString);
+
+            Long searchID;
+            int taskIdx;
+
+            try {
+                searchID = Long.parseLong(searchIDString);
+                taskIdx = findTaskIdx(searchID);
+
+                Task revisedTask = makeTask(body);
+                taskList.get(taskIdx).setTitle(revisedTask.getTitle());
                 returnCode = SUCCESS;
-                content = task.toString();
+                content = taskList.get(taskIdx).toString();
+                
+            } catch (IndexOutOfBoundsException idxError) {
+                System.out.println(idxError);
+                returnCode = NOT_FOUND;
+                content = "ID not exist";
+
+            } catch (Exception e) {
+                System.out.println("유효한 주소가 아닙니다.");
+                returnCode = NOT_FOUND;
+                content = "Not valid URL";
             }
         }
 
-        if(method.equals("PUT") && path.startsWith("/tasks/")){
-
-            if(!body.isBlank()) {
-                String searchIDString = path.substring("/tasks/".length());
-                System.out.println("ID String : " + searchIDString);
-                Long searchID;
-                int taskIdx;
-
-                try {
-                    searchID = Long.parseLong(searchIDString);
-                    taskIdx = findTaskIdx(searchID);
-
-                    if (taskIdx != -1) {
-                        Task revisedTask = makeTask(body);
-                        taskList.get(taskIdx).setTitle(revisedTask.getTitle());
-                        returnCode = SUCCESS;
-                        content = taskList.get(taskIdx).toString();
-                    }
-                    else {
-                        returnCode = NOT_FOUND;
-                        content = "Not Valid ID";
-                    }
-                } catch (Exception e) {
-                    System.out.println("Not Valid ID");
-                    returnCode = NOT_FOUND;
-                    content = "Not Valid ID";
-                }
-            }
-        }
-
-        exchange.sendResponseHeaders(returnCode, content.getBytes().length );
+        exchange.sendResponseHeaders(returnCode, content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
@@ -110,15 +106,13 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private int findTaskIdx(Long id){
-
         for(int i=0; i<taskList.size(); i++){
             if(taskList.get(i).getId().equals(id)){
                 return i;
             }
         }
-        return -1;
+        throw new IndexOutOfBoundsException("해당 ID가 존재하지 않습니다.");
     }
-
 
     private Task makeTask(String body) throws JsonProcessingException {
         return objectMapper.readValue(body, Task.class);
