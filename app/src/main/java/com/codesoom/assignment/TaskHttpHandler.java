@@ -127,7 +127,6 @@ public class TaskHttpHandler implements HttpHandler {
                 content = "Not valid URL";
             }
         }
-
         exchange.sendResponseHeaders(returnCode, content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
@@ -148,7 +147,13 @@ public class TaskHttpHandler implements HttpHandler {
         return objectMapper.readValue(body, Task.class);
     }
 
-    //taskList -> JSON으로 변환 후 return
+    /**
+     * taskList -> JSON으로 변환 후 return
+     *
+     * @return JSON
+     * @throws IOException JSON으로 변환 불가
+     * (Task Class 내에 Getter 미존재)
+     */
     private String taskListToJSON() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, taskList);
@@ -156,6 +161,11 @@ public class TaskHttpHandler implements HttpHandler {
         return outputStream.toString();
     }
 
+    /**
+     * task -> JSON -> JSONString 변환
+     * @return JSONString
+     * @throws JsonProcessingException JSON파싱 에러
+     * */
     private String taskToJSON(Task task) throws JsonProcessingException {
         return objectMapper.writeValueAsString(task);
     }
