@@ -34,6 +34,12 @@ public class ToDoHttpHandler implements HttpHandler {
         router.post("/tasks", (request, response) -> {
             this.sendPostResponse(response, request.getBody());
         });
+        router.put("/tasks/\\d*", (request, response) -> {
+            this.sendPutResponse(response, request.getPath(), request.getBody());
+        });
+        router.patch("/tasks/\\d*", (request, response) -> {
+            this.sendPutResponse(response, request.getPath(), request.getBody());
+        });
     }
 
     @Override
@@ -65,7 +71,6 @@ public class ToDoHttpHandler implements HttpHandler {
         router.route(exchange);
 
         switch (methodType) {
-            case PUT, PATCH -> sendPutResponse(exchange, path, "TEMP_BODY");
             case DELETE -> sendDeleteResponse(exchange, path);
         }
     }
@@ -120,9 +125,9 @@ public class ToDoHttpHandler implements HttpHandler {
         }
     }
 
-    private void sendPutResponse(HttpExchange exchange, String path, String body) throws IOException {
+    private void sendPutResponse(HttpResponse response, String path, String body) throws IOException {
         if (!checkPathHasTaskId(path)) {
-            sendResponse(exchange, 400, "/tasks/:id 형식으로 path를 입력해주세요");
+            response.send(400, "/tasks/:id 형식으로 path를 입력해주세요");
             return;
         }
 
@@ -131,7 +136,7 @@ public class ToDoHttpHandler implements HttpHandler {
         try {
             taskId = Long.parseLong(path.split("/")[2]);
         } catch (final NumberFormatException e) {
-            sendResponse(exchange, 400, "Failed to parse task id");
+            response.send(400, "Failed to parse task id");
             return;
         }
 
@@ -139,9 +144,9 @@ public class ToDoHttpHandler implements HttpHandler {
         if (task.isPresent()) {
             Task exitedTask = task.get();
             repository.updateTask(exitedTask, body);
-            sendResponse(exchange, 200, repository.taskToString(task.get()));
+            response.send(200, repository.taskToString(task.get()));
         } else {
-            sendResponse(exchange, 404, "Not found task by id");
+            response.send(404, "Not found task by id");
         }
     }
 

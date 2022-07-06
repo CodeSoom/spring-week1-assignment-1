@@ -27,6 +27,18 @@ public class HttpRouter {
         pathMap.put(new HttpRouterKey(HttpMethod.POST, path), executor);
     }
 
+    public void put(String path, RouterExecutable executor) {
+        pathMap.put(new HttpRouterKey(HttpMethod.PUT, path), executor);
+    }
+
+    public void patch(String path, RouterExecutable executor) {
+        pathMap.put(new HttpRouterKey(HttpMethod.PATCH, path), executor);
+    }
+
+    public void delete(String path, RouterExecutable executor) {
+        pathMap.put(new HttpRouterKey(HttpMethod.DELETE, path), executor);
+    }
+
     public void route(HttpExchange exchange) throws IOException {
         final String method = exchange.getRequestMethod();
         final HttpResponse responder = new HttpResponse(exchange);
