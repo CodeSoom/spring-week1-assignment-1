@@ -68,7 +68,7 @@ public class HttpRouter {
         final HttpResponse responder = new HttpResponse(exchange);
 
         if (request.isNotValid()) {
-            responder.send(404, null);
+            responder.send(HttpResponseCode.NotFound, null);
             return;
         }
 

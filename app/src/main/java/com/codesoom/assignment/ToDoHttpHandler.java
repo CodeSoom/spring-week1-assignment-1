@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.network.HttpResponseCode;
 import com.codesoom.assignment.network.HttpRouter;
 import com.codesoom.assignment.network.HttpMethod;
 import com.codesoom.assignment.network.HttpResponse;
@@ -53,23 +54,23 @@ public class ToDoHttpHandler implements HttpHandler {
         try {
             taskId = Long.parseLong(path.split("/")[2]);
         } catch (final NumberFormatException e) {
-            response.send(400, "Failed to parse task id");
+            response.send(HttpResponseCode.BadRequest, "Failed to parse task id");
             return;
         }
 
         Optional<Task> task = repository.getTaskById(taskId);
         if (task.isPresent()) {
-            response.send(200, repository.taskToString(task.get()));
+            response.send(HttpResponseCode.OK, repository.taskToString(task.get()));
         } else {
-            response.send(404, "Not found task by id");
+            response.send(HttpResponseCode.NotFound, "Not found task by id");
         }
     }
 
     private void sendGetResponseRoot(HttpResponse response) throws IOException {
         try {
-            response.send(200, repository.getTasksJSON());
+            response.send(HttpResponseCode.OK, repository.getTasksJSON());
         } catch (IOException e) {
-            response.send(500, "Failed to convert tasks to JSON");
+            response.send(HttpResponseCode.InternalServerError, "Failed to convert tasks to JSON");
         }
     }
 
@@ -79,7 +80,7 @@ public class ToDoHttpHandler implements HttpHandler {
         try {
             taskId = Long.parseLong(path.split("/")[2]);
         } catch (final NumberFormatException e) {
-            response.send(400, "Failed to parse task id");
+            response.send(HttpResponseCode.BadRequest, "Failed to parse task id");
             return;
         }
 
@@ -87,9 +88,9 @@ public class ToDoHttpHandler implements HttpHandler {
         if (task.isPresent()) {
             Task exitedTask = task.get();
             repository.deleteTask(exitedTask);
-            response.send(204, null);
+            response.send(HttpResponseCode.NoContent, null);
         } else {
-            response.send(404, "Not found task by id");
+            response.send(HttpResponseCode.NotFound, "Not found task by id");
         }
     }
 
@@ -99,7 +100,7 @@ public class ToDoHttpHandler implements HttpHandler {
         try {
             taskId = Long.parseLong(path.split("/")[2]);
         } catch (final NumberFormatException e) {
-            response.send(400, "Failed to parse task id");
+            response.send(HttpResponseCode.BadRequest, "Failed to parse task id");
             return;
         }
 
@@ -107,26 +108,26 @@ public class ToDoHttpHandler implements HttpHandler {
         if (task.isPresent()) {
             Task exitedTask = task.get();
             repository.updateTask(exitedTask, body);
-            response.send(200, repository.taskToString(task.get()));
+            response.send(HttpResponseCode.OK, repository.taskToString(task.get()));
         } else {
-            response.send(404, "Not found task by id");
+            response.send(HttpResponseCode.NotFound, "Not found task by id");
         }
     }
 
     private void sendPostResponse(HttpResponse response, String body) throws IOException {
         if (body == null || body.isBlank()) {
-            response.send(400, "Failed to convert request body to Task");
+            response.send(HttpResponseCode.BadRequest, "Failed to convert request body to Task");
             return;
         }
 
         try {
             Task task = repository.createTask(body);
             repository.addTask(task);
-            response.send(201, repository.taskToString(task));
+            response.send(HttpResponseCode.Created, repository.taskToString(task));
         } catch (JsonProcessingException e) {
-            response.send(400, "Failed to convert request body to Task");
+            response.send(HttpResponseCode.BadRequest, "Failed to convert request body to Task");
         } catch (IOException e) {
-            response.send(500, "Failed to convert Task to string");
+            response.send(HttpResponseCode.InternalServerError, "Failed to convert Task to string");
         }
     }
 

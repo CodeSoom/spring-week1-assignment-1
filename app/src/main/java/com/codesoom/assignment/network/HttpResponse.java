@@ -23,11 +23,11 @@ public class HttpResponse {
      * @param content 응답에 담을 content
      * @throws IOException
      */
-    public void send(int responseCode, @Nullable String content) throws IOException {
+    public void send(HttpResponseCode responseCode, @Nullable String content) throws IOException {
         if (content == null) {
-            exchange.sendResponseHeaders(responseCode, -1);
+            exchange.sendResponseHeaders(responseCode.getRawValue(), -1);
         } else {
-            exchange.sendResponseHeaders(responseCode, content.getBytes().length);
+            exchange.sendResponseHeaders(responseCode.getRawValue(), content.getBytes().length);
 
             final OutputStream outputStream = exchange.getResponseBody();
             outputStream.write(content.getBytes()); // 전달받은 byte array로부터 output stream에 기록하기
