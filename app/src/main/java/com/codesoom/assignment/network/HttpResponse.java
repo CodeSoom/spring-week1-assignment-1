@@ -2,9 +2,13 @@ package com.codesoom.assignment.network;
 
 import com.sun.net.httpserver.HttpExchange;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
 
+/**
+ * Http 응답을 전달하는 객체
+ */
 public class HttpResponse {
 
     private HttpExchange exchange;
@@ -13,7 +17,13 @@ public class HttpResponse {
         this.exchange = exchange;
     }
 
-    public void send(int responseCode, String content) throws IOException {
+    /**
+     * 응답을 전송합니다
+     * @param responseCode 응답코드
+     * @param content 응답에 담을 content
+     * @throws IOException
+     */
+    public void send(int responseCode, @Nullable String content) throws IOException {
         if (content == null) {
             exchange.sendResponseHeaders(responseCode, -1);
         } else {

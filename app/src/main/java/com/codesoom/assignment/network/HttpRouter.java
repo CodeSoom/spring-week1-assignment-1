@@ -18,28 +18,58 @@ import java.util.stream.Collectors;
  */
 public class HttpRouter {
 
-    HashMap<HttpRouterKey, RouterExecutable> pathMap = new HashMap<>();
+    private HashMap<HttpRouterKey, RouterExecutable> pathMap = new HashMap<>();
 
-    public void get(String path, RouterExecutable executor) {
-        pathMap.put(new HttpRouterKey(HttpMethod.GET, path), executor);
+    /**
+     * GET method에 대한 executor를 등록합니다.
+     * @param pathRegex 매칭에 활용할 path 정규식
+     * @param executor 등록된 method와 path가 일치할 때 executor를 호출합니다
+     */
+    public void get(String pathRegex, RouterExecutable executor) {
+        pathMap.put(new HttpRouterKey(HttpMethod.GET, pathRegex), executor);
     }
 
-    public void post(String path, RouterExecutable executor) {
-        pathMap.put(new HttpRouterKey(HttpMethod.POST, path), executor);
+    /**
+     * POST method에 대한 executor를 등록합니다.
+     * @param pathRegex 매칭에 활용할 path 정규식
+     * @param executor 등록된 method와 path가 일치할 때 executor를 호출합니다
+     */
+    public void post(String pathRegex, RouterExecutable executor) {
+        pathMap.put(new HttpRouterKey(HttpMethod.POST, pathRegex), executor);
     }
 
-    public void put(String path, RouterExecutable executor) {
-        pathMap.put(new HttpRouterKey(HttpMethod.PUT, path), executor);
+    /**
+     * PUT method에 대한 executor를 등록합니다.
+     * @param pathRegex 매칭에 활용할 path 정규식
+     * @param executor 등록된 method와 path가 일치할 때 executor를 호출합니다
+     */
+    public void put(String pathRegex, RouterExecutable executor) {
+        pathMap.put(new HttpRouterKey(HttpMethod.PUT, pathRegex), executor);
     }
 
-    public void patch(String path, RouterExecutable executor) {
-        pathMap.put(new HttpRouterKey(HttpMethod.PATCH, path), executor);
+    /**
+     * PATCH method에 대한 executor를 등록합니다.
+     * @param pathRegex 매칭에 활용할 path 정규식
+     * @param executor 등록된 method와 path가 일치할 때 executor를 호출합니다
+     */
+    public void patch(String pathRegex, RouterExecutable executor) {
+        pathMap.put(new HttpRouterKey(HttpMethod.PATCH, pathRegex), executor);
     }
 
-    public void delete(String path, RouterExecutable executor) {
-        pathMap.put(new HttpRouterKey(HttpMethod.DELETE, path), executor);
+    /**
+     * DELETE method에 대한 executor를 등록합니다.
+     * @param pathRegex 매칭에 활용할 path 정규식
+     * @param executor 등록된 method와 path가 일치할 때 executor를 호출합니다
+     */
+    public void delete(String pathRegex, RouterExecutable executor) {
+        pathMap.put(new HttpRouterKey(HttpMethod.DELETE, pathRegex), executor);
     }
 
+    /**
+     * http request를 분석해서 등록된 규칙과 매칭되는 핸들러를 실행합니다.
+     * @param exchange http 요청이 들어왔을 때 전달되는 HttpExchange 객체
+     * @throws IOException responseCode, content를 작성할 때 에러가 발생할 수 있습니다
+     */
     public void route(HttpExchange exchange) throws IOException {
         final String method = exchange.getRequestMethod();
         final HttpResponse responder = new HttpResponse(exchange);
