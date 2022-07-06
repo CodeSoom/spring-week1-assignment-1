@@ -1,8 +1,12 @@
 package com.codesoom.assignment.models;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.JSONPObject;
+
 public class Task {
     private Long id;
     private String title;
+    private ObjectMapper objectMapperForoneTask = new ObjectMapper();
 
     public Long getId() {
         return id;
@@ -18,10 +22,5 @@ public class Task {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String toString(){
-        String JSONString = "{\"id\":" + id + ",\"title\":" + title + "}";
-        return JSONString;
     }
 }

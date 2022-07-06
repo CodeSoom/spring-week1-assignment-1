@@ -36,7 +36,7 @@ public class TaskHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         if(method.equals("GET") && path.equals("/tasks")){
-            content = taskToJSON();
+            content = taskListToJSON();
             returnCode = SUCCESS;
         }
 
@@ -50,7 +50,7 @@ public class TaskHttpHandler implements HttpHandler {
                 taskIdx = findTaskIdx(searchID);
 
                 returnCode = SUCCESS;
-                content = taskList.get(taskIdx).toString();
+                content = taskToJSON(taskList.get(taskIdx));
             }
             catch (IndexOutOfBoundsException idxError) {
                 System.out.println(idxError);
@@ -70,7 +70,7 @@ public class TaskHttpHandler implements HttpHandler {
             taskList.add(task);
 
             returnCode = CREATED;
-            content = task.toString();
+            content = taskToJSON(task);
         }
 
         if (method.equals("PUT") && path.startsWith("/tasks/") && !body.isBlank()) {
@@ -87,7 +87,7 @@ public class TaskHttpHandler implements HttpHandler {
                 Task revisedTask = makeTask(body);
                 taskList.get(taskIdx).setTitle(revisedTask.getTitle());
                 returnCode = SUCCESS;
-                content = taskList.get(taskIdx).toString();
+                content = taskToJSON(taskList.get(taskIdx));
                 
             } catch (IndexOutOfBoundsException idxError) {
                 System.out.println(idxError);
@@ -113,8 +113,6 @@ public class TaskHttpHandler implements HttpHandler {
                 taskIdx = findTaskIdx(searchID);
 
                 taskList.remove(taskIdx);
-                //curTaskID--;
-                
                 returnCode = DELETED;
                 content = new String();
 
@@ -151,10 +149,14 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     //taskList -> JSON으로 변환 후 return
-    private String taskToJSON() throws IOException {
+    private String taskListToJSON() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, taskList);
 
         return outputStream.toString();
+    }
+
+    private String taskToJSON(Task task) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(task);
     }
 }
