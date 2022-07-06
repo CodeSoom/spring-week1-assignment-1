@@ -9,6 +9,7 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -73,7 +74,7 @@ public class TaskHttpHandler implements HttpHandler {
     /**
      * Task의 id가 경로에 포함되어 있으면 true, 아니면 false를 리턴합니다.
      * @param path 수신된 Http 요청의 경로
-     * @return id가 경로에 포함되어 있으면 true, 아니면 fasle
+     * @return id가 경로에 포함되어 있으면 true, 아니면 false
      */
     private boolean isDetailMatches(String path) {
         return path.matches("/tasks/[0-9]+");
@@ -145,8 +146,9 @@ public class TaskHttpHandler implements HttpHandler {
                         .findFirst()
                         .orElseThrow();
 
-                Task taskToChange = toTask(request);
-                storedTask.setTitle(taskToChange.getTitle());
+                storedTask.setTitle(
+                        (String) objectMapper.readValue(request, HashMap.class)
+                                .get("title"));
 
                 content = taskToJson(storedTask);
             } catch (JsonProcessingException e) {
