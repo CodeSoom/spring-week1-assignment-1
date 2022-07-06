@@ -72,9 +72,9 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     /**
-     * Task의 id가 경로에 포함되어 있으면 true, 아니면 false를 리턴합니다.
+     * Task의 숫자 형식의 id가 경로에 포함되어 있으면 true, 아니면 false를 리턴합니다.
      * @param path 수신된 Http 요청의 경로
-     * @return id가 경로에 포함되어 있으면 true, 아니면 false
+     * @return 숫자 형식의 id가 경로에 포함되어 있으면 true, 아니면 false
      */
     private boolean isDetailMatches(String path) {
         return path.matches("/tasks/[0-9]+");
