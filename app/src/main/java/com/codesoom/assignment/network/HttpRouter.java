@@ -63,6 +63,11 @@ public class HttpRouter {
 
         final String body = getRequestBody(exchange).orElse("");
 
+        System.out.println(method + " " + path);
+        if (!body.isEmpty()) {
+            System.out.println(body);
+        }
+
         boolean didMatch = false;
         Iterator<HttpRouterKey> keys = pathMap.keySet().iterator();
         while(keys.hasNext() && !didMatch) {

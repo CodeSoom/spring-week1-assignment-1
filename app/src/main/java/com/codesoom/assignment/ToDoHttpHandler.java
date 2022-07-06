@@ -47,28 +47,6 @@ public class ToDoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        final String method = exchange.getRequestMethod();
-
-        if (method == null) {
-            exchange.sendResponseHeaders(400, 0);
-            return;
-        }
-
-        final URI uri = exchange.getRequestURI();
-        final String path = uri.getPath();
-        if (path == null) {
-            exchange.sendResponseHeaders(400, 0);
-            return;
-        }
-
-        System.out.println(method + " " + path);
-
-        final HttpMethod methodType = HttpMethod.convert(method);
-        if (methodType == null) {
-            sendNotFoundResponse(exchange);
-            return;
-        }
-
         router.route(exchange);
     }
 
