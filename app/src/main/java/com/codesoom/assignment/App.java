@@ -7,15 +7,11 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class App {
-    public String getGreeting() {
-        return "Hello World!";
-    }
 
     public static void main(String[] args) {
-        InetSocketAddress address = new InetSocketAddress(8080);
-        HttpHandler handler = new TaskHttpHandler();
-
-        connectHttpServer(address, handler);
+        connectHttpServer(
+                new InetSocketAddress(8000),
+                new TaskHttpHandler());
     }
     // HttpServer에 연결한다.
     private static void connectHttpServer(InetSocketAddress address, HttpHandler handler) {
