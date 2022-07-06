@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- *
+ *  Task의 로직을 가지고 있고 관련된 Http 요청을 처리하는 클래스
  */
 public class TaskHttpHandler implements HttpHandler {
     private final List<Task> tasks = new ArrayList<>();
