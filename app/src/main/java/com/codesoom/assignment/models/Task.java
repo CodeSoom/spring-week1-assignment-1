@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.util.JSONPObject;
 public class Task {
     private Long id;
     private String title;
-    private ObjectMapper objectMapperForoneTask = new ObjectMapper();
 
     public Long getId() {
         return id;
