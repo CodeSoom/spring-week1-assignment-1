@@ -127,7 +127,13 @@ public class TaskHttpHandler implements HttpHandler {
                 content = "Not valid URL";
             }
         }
-        exchange.sendResponseHeaders(returnCode, content.getBytes().length);
+
+        if(returnCode == DELETED){
+            exchange.sendResponseHeaders(returnCode, -1);
+        }
+        else{
+            exchange.sendResponseHeaders(returnCode, content.getBytes().length);
+        }
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
