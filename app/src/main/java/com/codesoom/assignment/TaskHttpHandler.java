@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 // Task에 대한 응답과 요청을 처리하는 핸들러
 public class TaskHttpHandler implements HttpHandler {
-    public static final String NOT_FOUND = "404 Not Found";
     private List<Task> tasks = new ArrayList<>();
     private ObjectMapper objectMapper = new ObjectMapper();
     private Long id = 0L;
@@ -36,24 +35,8 @@ public class TaskHttpHandler implements HttpHandler {
             content = handlePost(request);
             exchange.sendResponseHeaders(201, content.getBytes().length);
         } else if (method.equals("PUT") && path.matches("/tasks/[0-9]+")) {
-            String[] splitedPath = path.split("/");
-            Long findId = Long.valueOf(splitedPath[2]);
-
-            if (!request.isBlank()) {
-                Task storedTask = tasks.stream()
-                        .filter(t -> t.getId().equals(findId))
-                        .findFirst()
-                        .orElseThrow(() -> new RuntimeException("찾을 수 없는 Task입니다."));
-
-                Task taskToChange = toTask(request);
-                storedTask.setTitle(taskToChange.getTitle());
-
-                content = taskToJson(storedTask);
-                exchange.sendResponseHeaders(200, content.getBytes().length);
-            } else {
-                content = "올바른 Request 요청이 아닙니다.";
-                exchange.sendResponseHeaders(400, content.getBytes().length);
-            }
+            content = handlePut(path, request);
+            exchange.sendResponseHeaders(200, content.getBytes().length);
         } else if (method.equals("DELETE")) {
 
         } else {
@@ -68,6 +51,39 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     /**
+     * POST 요청이 왔을 때 요청 본문이 있으면 path의 id에 맞는 Task를 찾아 변경한 후 리턴, 없으면 잘못된 요청 메시지를 리턴
+     * @param path 찾을 Task의 id를 가지고 있는 경로
+     * @param request 수신된 요청 본문
+     * @return 본문이 있을 경우 만든 변경된 Task 리턴, 없으면 잘못된 요청 메시지 리턴
+     * @throws RuntimeException JSon으로 변환할 때, 에러가 발생하면 던집니다.
+     */
+    private String handlePut(String path, String request) {
+        String[] splitedPath = path.split("/");
+        Long findId = Long.valueOf(splitedPath[2]);
+        String content;
+
+        if (!request.isBlank()) {
+            try {
+                Task storedTask = tasks.stream()
+                        .filter(t -> t.getId().equals(findId))
+                        .findFirst()
+                        .orElseThrow(RuntimeException::new);
+
+                Task taskToChange = toTask(request);
+                storedTask.setTitle(taskToChange.getTitle());
+
+                content = taskToJson(storedTask);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("Json으로 변환할 때, 에러가 발생했습니다.");
+            }
+        } else {
+            content = handleBadRequest();
+        }
+
+        return content;
+    }
+
+    /**
      * 수신된 Http 요청이 잘못된 경우 응답 본문을 만들어 리턴한다.
      * @return 응답할 본문
      */
@@ -79,6 +95,7 @@ public class TaskHttpHandler implements HttpHandler {
      * POST 요청이 왔을 때 요청 본문이 있으면 Task를 만들어 저장한 후 리턴, 없으면 잘못된 요청 메시지를 리턴
      * @param request 수신된 요청 본문
      * @return 본문이 있을 경우 만든 Task 리턴, 없으면 잘못된 요청 메시지 리턴
+     * @throws RuntimeException JSon으로 변환할 때, 에러가 발생하면 던집니다.
      */
     private String handlePost(String request) {
         String content;
