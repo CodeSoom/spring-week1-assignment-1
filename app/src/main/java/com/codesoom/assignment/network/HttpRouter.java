@@ -68,9 +68,8 @@ public class HttpRouter {
             System.out.println(body);
         }
 
-        boolean didMatch = false;
         Iterator<HttpRouterKey> keys = pathMap.keySet().iterator();
-        while(keys.hasNext() && !didMatch) {
+        while(keys.hasNext()) {
             HttpRouterKey key = keys.next();
 
             if (key.equalsMethod(methodType) && key.matchesPath(path)) {
@@ -78,7 +77,7 @@ public class HttpRouter {
                 final HttpRequest request = new HttpRequest(path, body);
 
                 executor.execute(request, responder);
-                didMatch = true;
+                return;
             }
         }
     }
