@@ -30,8 +30,13 @@ public class TaskHttpHandler implements HttpHandler {
         String request = parsingRequest(exchange.getRequestBody());
 
         if (method.equals("GET")) {
-            content = tasksToJson();
-            exchange.sendResponseHeaders(200, content.getBytes().length);
+            if (path.matches("/tasks/[0-9]+")) {
+                content = handleDetailGet(path);
+                exchange.sendResponseHeaders(200, content.getBytes().length);
+            } else {
+                content = tasksToJson();
+                exchange.sendResponseHeaders(200, content.getBytes().length);
+            }
         } else if (method.equals("POST") && path.equals("/tasks")) {
             content = handlePost(request);
             exchange.sendResponseHeaders(201, content.getBytes().length);
@@ -50,6 +55,26 @@ public class TaskHttpHandler implements HttpHandler {
         responseBody.write(content.getBytes());
         responseBody.flush();
         responseBody.close();
+    }
+
+    /**
+     * 특정 Task를 GET 요청이 왔을 때, 요청한 Task를 리턴한다.
+     * @param path 수신된 Http 요청의 경로
+     * @return 요청한 Task를 String으로 변환해서 리턴한다.
+     * @throws JsonProcessingException Json으로 변환하면서 에러가 발생한 경우 던집니다.
+     */
+    private String handleDetailGet(String path) throws JsonProcessingException {
+        String content;
+        String[] splitedPath = path.split("/");
+        Long findId = Long.parseLong(splitedPath[2]);
+
+        Task task = tasks.stream()
+                .filter(t -> t.getId().equals(findId))
+                .findFirst()
+                .orElseThrow();
+
+        content = taskToJson(task);
+        return content;
     }
 
     /**
