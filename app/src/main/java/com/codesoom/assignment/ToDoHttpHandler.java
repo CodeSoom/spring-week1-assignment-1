@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 public class ToDoHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
     private ToDoRepository repository = new ToDoRepository();
-    private ToDoGetHandler getHandler = new ToDoGetHandler(repository);
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -50,11 +49,47 @@ public class ToDoHttpHandler implements HttpHandler {
             return;
         }
 
+        final ToDoHttpResponder responder = new ToDoHttpResponder(exchange);
+
         switch (methodType) {
-            case GET -> getHandler.handle(new ToDoHttpResponder(exchange), path);
+            case GET -> sendGetResponse(responder, path);
             case POST -> sendPostResponse(exchange, body);
             case PUT, PATCH -> sendPutResponse(exchange, path, body);
             case DELETE -> sendDeleteResponse(exchange, path);
+        }
+    }
+
+    public void sendGetResponse(ToDoHttpResponder responder, String path) throws IOException {
+        if ("/tasks".equals(path)) {
+            sendGetResponseRoot(responder);
+        } else if (path.matches("/tasks/\\d*")) {
+            sendGetResponseWithId(responder, path);
+        }
+    }
+
+    private void sendGetResponseWithId(ToDoHttpResponder responder, String path) throws IOException {
+        Long taskId = -1L;
+
+        try {
+            taskId = Long.parseLong(path.split("/")[2]);
+        } catch (final NumberFormatException e) {
+            responder.sendResponse(400, "Failed to parse task id");
+            return;
+        }
+
+        Optional<Task> task = repository.getTaskById(taskId);
+        if (task.isPresent()) {
+            responder.sendResponse(200, repository.taskToString(task.get()));
+        } else {
+            responder.sendResponse(404, "Not found task by id");
+        }
+    }
+
+    private void sendGetResponseRoot(ToDoHttpResponder responder) throws IOException {
+        try {
+            responder.sendResponse(200, repository.tasksToJSON());
+        } catch (IOException e) {
+            responder.sendResponse(500, "Failed to convert tasks to JSON");
         }
     }
 
@@ -125,16 +160,7 @@ public class ToDoHttpHandler implements HttpHandler {
     }
 
     private void sendResponse(HttpExchange exchange, int responseCode, String content) throws IOException {
-        if (content == null) {
-            exchange.sendResponseHeaders(responseCode, -1);
-        } else {
-            exchange.sendResponseHeaders(responseCode, content.getBytes().length);
-
-            final OutputStream outputStream = exchange.getResponseBody();
-            outputStream.write(content.getBytes()); // 전달받은 byte array로부터 output stream에 기록하기
-            outputStream.flush(); // 버퍼에 담겨있는 output byte들을 강제로 기록되게 한다. 버퍼에 효율적으로 담아두는 것을 추측해볼 수 있음. (Flushable Interface)
-            outputStream.close(); // 이 stream에 관련된 리소스들을 해제해준다. (Closeable Interface)
-        }
+        new ToDoHttpResponder(exchange).sendResponse(responseCode, content);
     }
 
     private boolean checkPathHasTaskId(String path) {
