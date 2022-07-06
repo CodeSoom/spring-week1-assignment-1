@@ -73,10 +73,6 @@ public class ToDoHttpHandler implements HttpHandler {
         }
     }
 
-    private void sendNotFoundResponse(HttpExchange exchange) throws IOException {
-        sendResponse(exchange, 404, null);
-    }
-
     private void sendDeleteResponse(HttpResponse response, String path) throws IOException {
         Long taskId;
 
@@ -132,10 +128,6 @@ public class ToDoHttpHandler implements HttpHandler {
         } catch (IOException e) {
             response.send(500, "Failed to convert Task to string");
         }
-    }
-
-    private void sendResponse(HttpExchange exchange, int responseCode, String content) throws IOException {
-        new HttpResponse(exchange).send(responseCode, content);
     }
 
 }
