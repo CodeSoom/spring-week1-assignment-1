@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 public class ToDoHttpHandler implements HttpHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ToDoRepository repository = new ToDoRepository();
-
     private final HttpRouter router;
 
     public ToDoHttpHandler() {
@@ -101,11 +100,6 @@ public class ToDoHttpHandler implements HttpHandler {
     }
 
     private void sendPutResponse(HttpResponse response, String path, String body) throws IOException {
-        if (!checkPathHasTaskId(path)) {
-            response.send(400, "/tasks/:id 형식으로 path를 입력해주세요");
-            return;
-        }
-
         Long taskId = -1L;
 
         try {
@@ -144,10 +138,6 @@ public class ToDoHttpHandler implements HttpHandler {
 
     private void sendResponse(HttpExchange exchange, int responseCode, String content) throws IOException {
         new HttpResponse(exchange).send(responseCode, content);
-    }
-
-    private boolean checkPathHasTaskId(String path) {
-        return path.matches("/tasks/\\d*");
     }
 
 }
