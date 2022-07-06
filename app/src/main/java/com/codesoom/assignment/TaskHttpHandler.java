@@ -45,19 +45,19 @@ public class TaskHttpHandler implements HttpHandler {
             try{
                 searchID = Long.parseLong(searchIDString);
                 taskIdx = findTaskIdx(searchID);
-                if(taskIdx!= -1){
-                    returnCode = SUCCESS;
-                    content = taskList.get(taskIdx).toString();
-                }
-                else{
-                    returnCode = NOT_FOUND;
-                    content = "no ID";
-                }
 
-            }catch (Exception e){
-                System.out.println("Not Valid ID");
+                returnCode = SUCCESS;
+                content = taskList.get(taskIdx).toString();
+            }
+            catch (IndexOutOfBoundsException idxError) {
+                System.out.println(idxError);
                 returnCode = NOT_FOUND;
-                content = "Not Valid ID";
+                content = "ID not exist";
+            }
+            catch (Exception e){
+                System.out.println("Not Valid URL");
+                returnCode = NOT_FOUND;
+                content = "Not Valid URL";
             }
         }
 
