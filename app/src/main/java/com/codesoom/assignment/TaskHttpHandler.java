@@ -13,10 +13,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-// Task에 대한 응답과 요청을 처리하는 핸들러
+/**
+ *
+ */
 public class TaskHttpHandler implements HttpHandler {
-    private List<Task> tasks = new ArrayList<>();
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final List<Task> tasks = new ArrayList<>();
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private Long id = 0L;
 
     @Override
@@ -25,7 +27,7 @@ public class TaskHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
-        String content = "Basic";
+        String content;
         String request = parsingRequest(exchange.getRequestBody());
 
         if (method.equals("GET")) {
@@ -37,8 +39,9 @@ public class TaskHttpHandler implements HttpHandler {
         } else if (method.equals("PUT") && path.matches("/tasks/[0-9]+")) {
             content = handlePut(path, request);
             exchange.sendResponseHeaders(200, content.getBytes().length);
-        } else if (method.equals("DELETE")) {
-
+        } else if (method.equals("DELETE") && path.matches("/tasks/[0-9]+")) {
+            content = handleDelete(path);
+            exchange.sendResponseHeaders(200, content.getBytes().length);
         } else {
             content = handleBadRequest();
             exchange.sendResponseHeaders(400, content.getBytes().length);
@@ -48,6 +51,31 @@ public class TaskHttpHandler implements HttpHandler {
         responseBody.write(content.getBytes());
         responseBody.flush();
         responseBody.close();
+    }
+
+    /**
+     * DELETE 요청이 왔을 때 경로의 id를 찾아 제거하고 빈 문자열을 리턴한다.
+     * @param path 수신된 Http 요청의 경로
+     * @return 빈 문자열을 리턴
+     * @throws RuntimeException 제거할 Task를 찾지 못했을 때 던집니다.
+     */
+    private String handleDelete(String path) {
+        String[] splitedPath = path.split("/");
+        Long findId = Long.valueOf(splitedPath[2]);
+
+        int index = -1;
+        for (int i = 0; i < tasks.size(); i++) {
+            if (tasks.get(i).getId().equals(findId)) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index == -1) {
+            throw new RuntimeException("제거할 Task를 찾지 못했습니다.");
+        }
+        tasks.remove(index);
+        return "";
     }
 
     /**
