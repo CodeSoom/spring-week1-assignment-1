@@ -43,6 +43,17 @@ public class HttpRouterKey {
         return method;
     }
 
+    public boolean matches(HttpRequest request) {
+        final HttpMethod requestMethod = request.getMethod();
+        final String requestPath = request.getPath();
+
+        if (requestMethod == null || requestPath == null) {
+            return false;
+        }
+
+        return equalsMethod(requestMethod) && matchesPath(requestPath);
+    }
+
     /**
      * @param path request로 들어온 path
      * @return 등록된 path 정규식과 매칭 여부 반환
