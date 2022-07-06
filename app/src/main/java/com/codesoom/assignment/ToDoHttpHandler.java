@@ -1,6 +1,8 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.network.HttpMethod;
+import com.codesoom.assignment.network.HttpResponder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -8,8 +10,6 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -43,13 +43,13 @@ public class ToDoHttpHandler implements HttpHandler {
             System.out.println(body);
         }
 
-        final HTTPMethod methodType = HTTPMethod.convert(method);
+        final HttpMethod methodType = HttpMethod.convert(method);
         if (methodType == null) {
             sendNotFoundResponse(exchange);
             return;
         }
 
-        final ToDoHttpResponder responder = new ToDoHttpResponder(exchange);
+        final HttpResponder responder = new HttpResponder(exchange);
 
         switch (methodType) {
             case GET -> sendGetResponse(responder, path);
@@ -59,7 +59,7 @@ public class ToDoHttpHandler implements HttpHandler {
         }
     }
 
-    public void sendGetResponse(ToDoHttpResponder responder, String path) throws IOException {
+    public void sendGetResponse(HttpResponder responder, String path) throws IOException {
         if ("/tasks".equals(path)) {
             sendGetResponseRoot(responder);
         } else if (path.matches("/tasks/\\d*")) {
@@ -67,7 +67,7 @@ public class ToDoHttpHandler implements HttpHandler {
         }
     }
 
-    private void sendGetResponseWithId(ToDoHttpResponder responder, String path) throws IOException {
+    private void sendGetResponseWithId(HttpResponder responder, String path) throws IOException {
         Long taskId = -1L;
 
         try {
@@ -85,7 +85,7 @@ public class ToDoHttpHandler implements HttpHandler {
         }
     }
 
-    private void sendGetResponseRoot(ToDoHttpResponder responder) throws IOException {
+    private void sendGetResponseRoot(HttpResponder responder) throws IOException {
         try {
             responder.sendResponse(200, repository.tasksToJSON());
         } catch (IOException e) {
@@ -160,7 +160,7 @@ public class ToDoHttpHandler implements HttpHandler {
     }
 
     private void sendResponse(HttpExchange exchange, int responseCode, String content) throws IOException {
-        new ToDoHttpResponder(exchange).sendResponse(responseCode, content);
+        new HttpResponder(exchange).sendResponse(responseCode, content);
     }
 
     private boolean checkPathHasTaskId(String path) {

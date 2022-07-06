@@ -1,15 +1,15 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.network;
 
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class ToDoHttpResponder {
+public class HttpResponder {
 
     private HttpExchange exchange;
 
-    public ToDoHttpResponder(HttpExchange exchange) {
+    public HttpResponder(HttpExchange exchange) {
         this.exchange = exchange;
     }
 
