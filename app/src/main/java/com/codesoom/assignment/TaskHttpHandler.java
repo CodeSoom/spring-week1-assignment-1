@@ -16,6 +16,8 @@ public class TaskHttpHandler implements HttpHandler {
     private List<Task> taskList = new ArrayList<>();
     private ObjectMapper objectMapper = new ObjectMapper();
     private Long curTaskID = 0L;
+    private final int SUCCESS = 200;
+    private final int NOT_FOUND = 404;
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
@@ -32,7 +34,7 @@ public class TaskHttpHandler implements HttpHandler {
 
         if(method.equals("GET") && path.equals("/tasks")){
             content = taskToJSON();
-            returnCode = 200;
+            returnCode = SUCCESS;
         }
 
         if(method.equals("GET") && path.startsWith("/tasks/")){
@@ -44,17 +46,17 @@ public class TaskHttpHandler implements HttpHandler {
                 searchID = Long.parseLong(searchIDString);
                 taskIdx = findTaskIdx(searchID);
                 if(taskIdx!= -1){
-                    returnCode = 200;
+                    returnCode = SUCCESS;
                     content = taskList.get(taskIdx).toString();
                 }
                 else{
-                    returnCode = 404;
+                    returnCode = NOT_FOUND;
                     content = "no ID";
                 }
 
             }catch (Exception e){
                 System.out.println("Not Valid ID");
-                returnCode = 404;
+                returnCode = NOT_FOUND;
                 content = "Not Valid ID";
             }
         }
@@ -65,7 +67,7 @@ public class TaskHttpHandler implements HttpHandler {
                 task.setId(++curTaskID);
                 taskList.add(task);
 
-                returnCode = 200;
+                returnCode = SUCCESS;
                 content = task.toString();
             }
         }
@@ -85,16 +87,16 @@ public class TaskHttpHandler implements HttpHandler {
                     if (taskIdx != -1) {
                         Task revisedTask = makeTask(body);
                         taskList.get(taskIdx).setTitle(revisedTask.getTitle());
-                        returnCode = 200;
+                        returnCode = SUCCESS;
                         content = taskList.get(taskIdx).toString();
                     }
                     else {
-                        returnCode = 404;
+                        returnCode = NOT_FOUND;
                         content = "Not Valid ID";
                     }
                 } catch (Exception e) {
                     System.out.println("Not Valid ID");
-                    returnCode = 404;
+                    returnCode = NOT_FOUND;
                     content = "Not Valid ID";
                 }
             }
