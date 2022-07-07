@@ -137,11 +137,11 @@ public class TaskHttpHandler implements HttpHandler {
      * @throws NoSuchElementException 요청된 id를 찾지 못했을 경우 던집니다.
      */
     private String handlePut(String path, String request) {
-        String[] splitedPath = path.split("/");
-        Long findId = Long.valueOf(splitedPath[2]);
-
         if (!request.isBlank()) {
             try {
+                String[] splitedPath = path.split("/");
+                Long findId = Long.valueOf(splitedPath[2]);
+
                 Task storedTask = tasks.stream()
                         .filter(t -> t.getId().equals(findId))
                         .findFirst()
