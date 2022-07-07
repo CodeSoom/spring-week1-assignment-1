@@ -124,13 +124,10 @@ public class ToDoHttpHandler implements HttpHandler {
         }
 
         try {
-            Task task = repository.createTask(body);
-            repository.addTask(task);
+            Task task = controller.addTask(body);
             response.send(HttpResponseCode.Created, taskMapper.taskToString(task));
         } catch (JsonProcessingException e) {
             response.send(HttpResponseCode.BadRequest, "Failed to convert request body to Task");
-        } catch (IOException e) {
-            response.send(HttpResponseCode.InternalServerError, "Failed to convert Task to string");
         }
     }
 

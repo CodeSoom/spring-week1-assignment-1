@@ -14,19 +14,12 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ToDoRepository {
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = Collections.synchronizedList(new ArrayList<>());
-    private AtomicLong lastId = new AtomicLong(1L);
 
     public Optional<Task> getTaskById(Long taskId) {
         return tasks
                 .stream()
                 .filter(task -> task.getId().equals(taskId))
                 .findFirst();
-    }
-
-    public Task createTask(String content) throws JsonProcessingException {
-        Task task = objectMapper.readValue(content, Task.class);
-        task.setId(lastId.getAndIncrement());
-        return task;
     }
 
     public void addTask(Task task) {
