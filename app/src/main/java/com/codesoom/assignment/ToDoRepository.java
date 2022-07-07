@@ -6,13 +6,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ToDoRepository {
     private ObjectMapper objectMapper = new ObjectMapper();
-    private List<Task> tasks = new ArrayList<>();
-    private Long lastId = 1L;
+    private List<Task> tasks = Collections.synchronizedList(new ArrayList<>());
+    private AtomicLong lastId = new AtomicLong(1L);
 
     public Optional<Task> getTaskById(Long taskId) {
         return tasks
@@ -23,7 +25,7 @@ public class ToDoRepository {
 
     public Task createTask(String content) throws JsonProcessingException {
         Task task = objectMapper.readValue(content, Task.class);
-        task.setId(lastId++);
+        task.setId(lastId.getAndIncrement());
         return task;
     }
 
