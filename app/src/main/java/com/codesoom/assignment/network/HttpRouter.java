@@ -11,14 +11,14 @@ import java.util.Iterator;
  */
 public class HttpRouter {
 
-    private HashMap<HttpRouterKey, RouterExecutable> pathMap = new HashMap<>();
+    private HashMap<HttpRouterKey, HttpRouterExecutable> pathMap = new HashMap<>();
 
     /**
      * GET method에 대한 executor를 등록합니다.
      * @param pathRegex 매칭에 활용할 path 정규식
      * @param executor 등록된 method와 path가 일치할 때 executor를 호출합니다
      */
-    public void get(String pathRegex, RouterExecutable executor) {
+    public void get(String pathRegex, HttpRouterExecutable executor) {
         pathMap.put(new HttpRouterKey(HttpMethod.GET, pathRegex), executor);
     }
 
@@ -27,7 +27,7 @@ public class HttpRouter {
      * @param pathRegex 매칭에 활용할 path 정규식
      * @param executor 등록된 method와 path가 일치할 때 executor를 호출합니다
      */
-    public void post(String pathRegex, RouterExecutable executor) {
+    public void post(String pathRegex, HttpRouterExecutable executor) {
         pathMap.put(new HttpRouterKey(HttpMethod.POST, pathRegex), executor);
     }
 
@@ -36,7 +36,7 @@ public class HttpRouter {
      * @param pathRegex 매칭에 활용할 path 정규식
      * @param executor 등록된 method와 path가 일치할 때 executor를 호출합니다
      */
-    public void put(String pathRegex, RouterExecutable executor) {
+    public void put(String pathRegex, HttpRouterExecutable executor) {
         pathMap.put(new HttpRouterKey(HttpMethod.PUT, pathRegex), executor);
     }
 
@@ -45,7 +45,7 @@ public class HttpRouter {
      * @param pathRegex 매칭에 활용할 path 정규식
      * @param executor 등록된 method와 path가 일치할 때 executor를 호출합니다
      */
-    public void patch(String pathRegex, RouterExecutable executor) {
+    public void patch(String pathRegex, HttpRouterExecutable executor) {
         pathMap.put(new HttpRouterKey(HttpMethod.PATCH, pathRegex), executor);
     }
 
@@ -54,7 +54,7 @@ public class HttpRouter {
      * @param pathRegex 매칭에 활용할 path 정규식
      * @param executor 등록된 method와 path가 일치할 때 executor를 호출합니다
      */
-    public void delete(String pathRegex, RouterExecutable executor) {
+    public void delete(String pathRegex, HttpRouterExecutable executor) {
         pathMap.put(new HttpRouterKey(HttpMethod.DELETE, pathRegex), executor);
     }
 
@@ -77,7 +77,7 @@ public class HttpRouter {
             HttpRouterKey key = keys.next();
 
             if (key.matches(request)) {
-                final RouterExecutable executor = pathMap.get(key);
+                final HttpRouterExecutable executor = pathMap.get(key);
                 executor.execute(request, responder);
                 return;
             }

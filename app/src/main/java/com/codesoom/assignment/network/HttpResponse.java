@@ -17,6 +17,14 @@ public class HttpResponse {
         this.exchange = exchange;
     }
 
+    public int getResponseCode() {
+        return exchange.getResponseCode();
+    }
+
+    public OutputStream getResponseBody() {
+        return exchange.getResponseBody();
+    }
+
     /**
      * 응답을 전송합니다
      * @param responseCode 응답코드
