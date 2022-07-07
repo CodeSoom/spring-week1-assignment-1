@@ -30,11 +30,24 @@ public class TaskHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
+        if (method.equals("GET") && path.equals("/tasks")) {
+            sendGetResponse(exchange);
+        }
+
+        if (method.equals("GET") && isDetailMatches(path)) {
+
+        }
 
         if (method.equals("POST") && path.equals("/tasks")) {
             sendPostResponse(exchange);
         }
 
+    }
+
+    private void sendGetResponse(HttpExchange exchange) throws IOException {
+        String content = tasksToJson(taskService.getTasks());
+        exchange.sendResponseHeaders(200, content.getBytes().length);
+        writeResponseBody(exchange, content);
     }
 
     /**
@@ -242,7 +255,7 @@ public class TaskHttpHandler implements HttpHandler {
      * @return 변환된 문자열을 리턴
      * @throws JsonProcessingException Task를 Json으로 변환하지 못했을 때 던집니다.
      **/
-    private String tasksToJson() throws JsonProcessingException {
+    private String tasksToJson(List<Task> tasks) throws JsonProcessingException {
         return objectMapper.writeValueAsString(tasks);
     }
 

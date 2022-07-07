@@ -32,4 +32,13 @@ public class TaskService {
     private Task toTask(String title) {
         return new Task(id++, title);
     }
+
+    /**
+     * 현재 가지고 있는 tasks를 리턴한다.
+     *
+     * @return 현재까지 저장된 tasks
+     */
+    public List<Task> getTasks() {
+        return tasks;
+    }
 }
