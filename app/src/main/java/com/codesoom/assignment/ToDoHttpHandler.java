@@ -12,6 +12,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -53,7 +54,6 @@ public class ToDoHttpHandler implements HttpHandler {
 
     private void sendGetResponseWithId(String path, HttpResponse response) throws IOException {
         Long taskId;
-
         try {
             taskId = parseTaskIdFromPath(path);
         } catch (final NumberFormatException e) {
@@ -61,17 +61,18 @@ public class ToDoHttpHandler implements HttpHandler {
             return;
         }
 
-        Optional<Task> task = repository.getTaskById(taskId);
-        if (task.isPresent()) {
-            response.send(HttpResponseCode.OK, taskMapper.taskToString(task.get()));
-        } else {
+        try {
+            Task task = controller.getTaskById(taskId);
+            response.send(HttpResponseCode.OK, taskMapper.taskToString(task));
+        } catch (TaskNotFoundException e) {
             response.send(HttpResponseCode.NotFound, "Not found task by id");
         }
     }
 
     private void sendGetResponseRoot(HttpResponse response) throws IOException {
         try {
-            response.send(HttpResponseCode.OK, repository.getTasksJSON());
+            List<Task> tasks = controller.getTasks();
+            response.send(HttpResponseCode.OK, taskMapper.tasksToString(tasks));
         } catch (IOException e) {
             response.send(HttpResponseCode.InternalServerError, "Failed to convert tasks to JSON");
         }
@@ -79,7 +80,6 @@ public class ToDoHttpHandler implements HttpHandler {
 
     private void sendDeleteResponse(HttpResponse response, String path) throws IOException {
         Long taskId;
-
         try {
             taskId = parseTaskIdFromPath(path);
         } catch (final NumberFormatException e) {
@@ -89,16 +89,14 @@ public class ToDoHttpHandler implements HttpHandler {
 
         try {
             controller.deleteTask(taskId);
+            response.send(HttpResponseCode.NoContent, null);
         } catch (TaskNotFoundException e) {
             response.send(HttpResponseCode.NotFound, "Not found task by id");
         }
-
-        response.send(HttpResponseCode.NoContent, null);
     }
 
     private void sendPutResponse(HttpResponse response, String path, String body) throws IOException {
         Long taskId;
-
         try {
             taskId = parseTaskIdFromPath(path);
         } catch (final NumberFormatException e) {

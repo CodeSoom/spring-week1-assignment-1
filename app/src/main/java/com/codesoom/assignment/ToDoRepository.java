@@ -39,8 +39,4 @@ public class ToDoRepository {
         return tasks;
     }
 
-    public String getTasksJSON() throws IOException {
-        return objectMapper.writeValueAsString(tasks);
-    }
-
 }

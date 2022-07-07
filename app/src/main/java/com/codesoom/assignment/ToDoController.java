@@ -6,13 +6,14 @@ import com.codesoom.assignment.network.HttpResponseCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class ToDoController {
 
     private final ToDoRepository repository;
-    private AtomicLong lastId = new AtomicLong(1L);
+    private final AtomicLong lastId = new AtomicLong(1L);
     private final TaskMapper mapper = new TaskMapper();
 
     public ToDoController(ToDoRepository repository) {
@@ -25,6 +26,10 @@ public class ToDoController {
             throw new TaskNotFoundException();
         }
         return task.get();
+    }
+
+    public List<Task> getTasks() {
+        return repository.getTasks();
     }
 
     public Task addTask(String body) throws JsonProcessingException {
