@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.service.TaskService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -18,9 +19,10 @@ import java.util.stream.Collectors;
  *  Task의 로직을 가지고 있고 관련된 Http 요청을 처리하는 클래스
  */
 public class TaskHttpHandler implements HttpHandler {
+    private Long id = 0L;
     private final List<Task> tasks = new ArrayList<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private Long id = 0L;
+    private final TaskService taskService = new TaskService();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -28,43 +30,56 @@ public class TaskHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
 
-        String content = "";
-        String request = parsingRequest(exchange.getRequestBody());
 
-        if (method.equals("GET")) {
-            if (isDetailMatches(path)) {
-                try {
-                    content = handleDetailGet(path);
-                    exchange.sendResponseHeaders(200, content.getBytes().length);
-                } catch (NoSuchElementException e) {
-                    exchange.sendResponseHeaders(404, -1);
-                }
-            } else {
-                content = tasksToJson();
-                exchange.sendResponseHeaders(200, content.getBytes().length);
-            }
-        } else if (method.equals("POST") && path.equals("/tasks")) {
-            content = handlePost(request);
-            exchange.sendResponseHeaders(201, content.getBytes().length);
-        } else if (method.equals("PUT") && isDetailMatches(path)) {
-            try {
-                content = handlePut(path, request);
-                exchange.sendResponseHeaders(200, content.getBytes().length);
-            } catch (NoSuchElementException e) {
-                exchange.sendResponseHeaders(404, -1);
-            }
-        } else if (method.equals("DELETE") && isDetailMatches(path)) {
-            try {
-                content = handleDelete(path);
-                exchange.sendResponseHeaders(204, -1);
-            } catch (NoSuchElementException e) {
-                exchange.sendResponseHeaders(404, -1);
-            }
-        } else {
-            content = handleBadRequest();
-            exchange.sendResponseHeaders(400, content.getBytes().length);
+        if (method.equals("POST") && path.equals("/tasks")) {
+            sendPostResponse(exchange);
         }
 
+    }
+
+    /**
+     * POST 응답을 받아 요청 본문이 비었으면 400을 리턴하고
+     * 아니라면 Task 객체를 생성하고 201과 함께 리턴합니다.
+     *
+     * @param exchange 수신된 요청과 응답을 가진 파라미터
+     * @throws IOException 입출력에 문제가 있는 경우 던집니다.
+     */
+    private void sendPostResponse(HttpExchange exchange) throws IOException {
+        String request = parsingRequest(exchange.getRequestBody());
+
+        if (request.isBlank()) {
+            exchange.sendResponseHeaders(400, -1);
+            return;
+        }
+
+        HashMap requestMap = getRequestMap(request);
+        request = (String) requestMap.get("title");
+
+        String content = taskToJson(taskService.createTask(request));
+        exchange.sendResponseHeaders(201, content.getBytes().length);
+        writeResponseBody(exchange, content);
+    }
+
+    /**
+     * 요청된 본문을 HashMap으로 변환해서 리턴합니다.
+     *
+     * @param request 요청된 본문
+     * @return 변환된 HashMap 리턴
+     * @throws JsonProcessingException Json 변환에 문제가 발생할 경우 던집니다.
+     */
+    // 타입을 정의하지 않은 HashMap을 던져도 괜찮을까요?
+    private HashMap getRequestMap(String request) throws JsonProcessingException {
+        return objectMapper.readValue(request, HashMap.class);
+    }
+
+    /**
+     * 응답할 본문을 받아 응답 본문에 담아 보냅니다.
+     *
+     * @param exchange 응답을 담을 본문을 가진 파라미터
+     * @param content 응답 내용
+     * @throws IOException 입출력이 잘못될 경우 던집니다.
+     */
+    private void writeResponseBody(HttpExchange exchange, String content) throws IOException {
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.write(content.getBytes());
         responseBody.flush();
