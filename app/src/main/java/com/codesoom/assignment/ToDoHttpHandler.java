@@ -16,9 +16,8 @@ import java.util.List;
  * HTTP exchanges를 통해 전달받은 Request를 분석해서 할일 목록을 관리하고 적절한 Response를 전달하는 객체
  */
 public class ToDoHttpHandler implements HttpHandler {
-    private final ToDoRepository repository = new ToDoRepository();
     private final TaskMapper taskMapper = new TaskMapper();
-    private final ToDoController controller = new ToDoController(repository);
+    private final ToDoController controller = new ToDoController(new ToDoRepository());
     private final HttpRouter router;
 
     public ToDoHttpHandler() {
