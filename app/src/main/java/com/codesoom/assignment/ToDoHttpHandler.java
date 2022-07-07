@@ -4,22 +4,18 @@ import com.codesoom.assignment.exception.TaskNotFoundException;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.network.HttpResponseCode;
 import com.codesoom.assignment.network.HttpRouter;
-import com.codesoom.assignment.network.HttpMethod;
 import com.codesoom.assignment.network.HttpResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * HTTP exchanges를 통해 전달받은 Request를 분석해서 할일 목록을 관리하고 적절한 Response를 전달하는 객체
  */
 public class ToDoHttpHandler implements HttpHandler {
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private final ToDoRepository repository = new ToDoRepository();
     private final TaskMapper taskMapper = new TaskMapper();
     private final ToDoController controller = new ToDoController(repository);
@@ -63,7 +59,7 @@ public class ToDoHttpHandler implements HttpHandler {
 
         try {
             Task task = controller.getTaskById(taskId);
-            response.send(HttpResponseCode.OK, taskMapper.taskToString(task));
+            response.send(HttpResponseCode.OK, taskMapper.writeTaskAsString(task));
         } catch (TaskNotFoundException e) {
             response.send(HttpResponseCode.NotFound, "Not found task by id");
         }
@@ -72,7 +68,7 @@ public class ToDoHttpHandler implements HttpHandler {
     private void sendGetResponseRoot(HttpResponse response) throws IOException {
         try {
             List<Task> tasks = controller.getTasks();
-            response.send(HttpResponseCode.OK, taskMapper.tasksToString(tasks));
+            response.send(HttpResponseCode.OK, taskMapper.writeTasksAsString(tasks));
         } catch (IOException e) {
             response.send(HttpResponseCode.InternalServerError, "Failed to convert tasks to JSON");
         }
@@ -107,7 +103,7 @@ public class ToDoHttpHandler implements HttpHandler {
         try {
             controller.updateTask(taskId, body);
             Task updatedTask = controller.getTaskById(taskId);
-            response.send(HttpResponseCode.OK, taskMapper.taskToString(updatedTask));
+            response.send(HttpResponseCode.OK, taskMapper.writeTaskAsString(updatedTask));
         } catch (TaskNotFoundException e) {
             response.send(HttpResponseCode.NotFound, "Not found task by id");
         } catch (JsonProcessingException e) {
@@ -123,7 +119,7 @@ public class ToDoHttpHandler implements HttpHandler {
 
         try {
             Task task = controller.addTask(body);
-            response.send(HttpResponseCode.Created, taskMapper.taskToString(task));
+            response.send(HttpResponseCode.Created, taskMapper.writeTaskAsString(task));
         } catch (JsonProcessingException e) {
             response.send(HttpResponseCode.BadRequest, "Failed to convert request body to Task");
         }

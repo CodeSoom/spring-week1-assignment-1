@@ -2,10 +2,8 @@ package com.codesoom.assignment;
 
 import com.codesoom.assignment.exception.TaskNotFoundException;
 import com.codesoom.assignment.models.Task;
-import com.codesoom.assignment.network.HttpResponseCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
@@ -33,7 +31,7 @@ public class ToDoController {
     }
 
     public Task addTask(String body) throws JsonProcessingException {
-        Task task = mapper.stringToTask(body);
+        Task task = mapper.readValue(body);
         task.setId(lastId.getAndIncrement());
         repository.addTask(task);
         return task;
