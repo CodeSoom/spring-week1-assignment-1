@@ -9,10 +9,7 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -36,7 +33,8 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         if (method.equals("GET") && isDetailMatches(path)) {
-
+            sendDetailGetResponse(exchange, path);
+            return;
         }
 
         if (method.equals("POST") && path.equals("/tasks")) {
@@ -53,6 +51,29 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         sendBadResponse(exchange);
+    }
+
+
+    /**
+     * 숫자 형식의 id를 가진 GET 요청이 왔을 때 id와 같은 task를 찾아 리턴한다.
+     *
+     * @param exchange 수신된 요청과 응답을 설정할 수 있는 파라미터
+     * @param path 수신된 경로
+     * @throws IOException 입출력에 문제가 발생하면 던집니다.
+     */
+    // try catch 대신 Optional을 사용해봤습니다.
+    private void sendDetailGetResponse(HttpExchange exchange, String path) throws IOException {
+        String[] splitedPath = path.split("/");
+        Optional<Task> storedTask = taskService.getTask(Long.valueOf(splitedPath[2]));
+
+        if (storedTask.isPresent()) {
+            String content = taskToJson(storedTask.get());
+            exchange.sendResponseHeaders(200, content.getBytes().length);
+            writeResponseBody(exchange, content);
+            return;
+        }
+
+        exchange.sendResponseHeaders(404, -1);
     }
 
     /**

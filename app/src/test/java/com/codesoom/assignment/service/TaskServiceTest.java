@@ -22,4 +22,11 @@ class TaskServiceTest {
     void getTasksTest() {
         assertEquals(0, taskService.getTasks().size());
     }
+
+    @Test
+    @DisplayName("특정 id를 가진 객체를 리턴한다.")
+    void getTaskTest() {
+        taskService.createTask("BJP");
+        assertEquals(new Task(0L, "BJP"), taskService.getTask(0L));
+    }
 }

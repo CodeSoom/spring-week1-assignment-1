@@ -4,6 +4,8 @@ import com.codesoom.assignment.models.Task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * Task를 CRUD 로직을 처리하는 클래스입니다.
@@ -40,5 +42,18 @@ public class TaskService {
      */
     public List<Task> getTasks() {
         return tasks;
+    }
+
+    /**
+     * 요청 받은 숫자 타입 id에 맞는 task를 찾아 리턴한다.
+     *
+     * @param findId 요청 받은 숫자 타입의 id
+     * @return 찾은 task를 리턴
+     * @throws NoSuchElementException id에 맞는 task를 찾지 못하면 리턴
+     */
+    public Optional<Task> getTask(Long findId) {
+        return tasks.stream()
+                .filter(t -> t.getId().equals(findId))
+                .findFirst();
     }
 }
