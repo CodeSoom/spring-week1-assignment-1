@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.exception.TaskNotFoundException;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.network.HttpResponseCode;
 import com.codesoom.assignment.network.HttpRouter;
@@ -19,6 +20,8 @@ import java.util.Optional;
 public class ToDoHttpHandler implements HttpHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ToDoRepository repository = new ToDoRepository();
+
+    private final ToDoController controller = new ToDoController(repository);
     private final HttpRouter router;
 
     public ToDoHttpHandler() {
@@ -84,14 +87,13 @@ public class ToDoHttpHandler implements HttpHandler {
             return;
         }
 
-        Optional<Task> task = repository.getTaskById(taskId);
-        if (task.isPresent()) {
-            Task exitedTask = task.get();
-            repository.deleteTask(exitedTask);
-            response.send(HttpResponseCode.NoContent, null);
-        } else {
+        try {
+            controller.deleteTask(taskId);
+        } catch (TaskNotFoundException e) {
             response.send(HttpResponseCode.NotFound, "Not found task by id");
         }
+
+        response.send(HttpResponseCode.NoContent, null);
     }
 
     private void sendPutResponse(HttpResponse response, String path, String body) throws IOException {
