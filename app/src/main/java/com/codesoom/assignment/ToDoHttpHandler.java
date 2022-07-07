@@ -20,7 +20,7 @@ import java.util.Optional;
 public class ToDoHttpHandler implements HttpHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ToDoRepository repository = new ToDoRepository();
-
+    private final TaskMapper taskMapper = new TaskMapper();
     private final ToDoController controller = new ToDoController(repository);
     private final HttpRouter router;
 
@@ -63,7 +63,7 @@ public class ToDoHttpHandler implements HttpHandler {
 
         Optional<Task> task = repository.getTaskById(taskId);
         if (task.isPresent()) {
-            response.send(HttpResponseCode.OK, repository.taskToString(task.get()));
+            response.send(HttpResponseCode.OK, taskMapper.taskToString(task.get()));
         } else {
             response.send(HttpResponseCode.NotFound, "Not found task by id");
         }
@@ -106,13 +106,14 @@ public class ToDoHttpHandler implements HttpHandler {
             return;
         }
 
-        Optional<Task> task = repository.getTaskById(taskId);
-        if (task.isPresent()) {
-            Task exitedTask = task.get();
-            repository.updateTask(exitedTask, body);
-            response.send(HttpResponseCode.OK, repository.taskToString(task.get()));
-        } else {
+        try {
+            controller.updateTask(taskId, body);
+            Task updatedTask = controller.getTaskById(taskId);
+            response.send(HttpResponseCode.OK, taskMapper.taskToString(updatedTask));
+        } catch (TaskNotFoundException e) {
             response.send(HttpResponseCode.NotFound, "Not found task by id");
+        } catch (JsonProcessingException e) {
+            response.send(HttpResponseCode.BadRequest, "Failed to parse request body to Task");
         }
     }
 
@@ -125,7 +126,7 @@ public class ToDoHttpHandler implements HttpHandler {
         try {
             Task task = repository.createTask(body);
             repository.addTask(task);
-            response.send(HttpResponseCode.Created, repository.taskToString(task));
+            response.send(HttpResponseCode.Created, taskMapper.taskToString(task));
         } catch (JsonProcessingException e) {
             response.send(HttpResponseCode.BadRequest, "Failed to convert request body to Task");
         } catch (IOException e) {

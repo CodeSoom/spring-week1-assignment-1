@@ -50,7 +50,4 @@ public class ToDoRepository {
         return objectMapper.writeValueAsString(tasks);
     }
 
-    public String taskToString(Task task) throws IOException {
-        return objectMapper.writeValueAsString(task);
-    }
 }
