@@ -185,22 +185,15 @@ public class TaskHttpHandler implements HttpHandler {
      * @throws NoSuchElementException 요청된 id를 찾지 못했을 경우 던집니다.
      */
     private String handleDelete(String path) {
-        String[] splitedPath = path.split("/");
-        Long findId = Long.valueOf(splitedPath[2]);
+        Long findId = Long.valueOf(path.split("/")[2]);
 
-        int index = -1;
         for (int i = 0; i < tasks.size(); i++) {
             if (tasks.get(i).getId().equals(findId)) {
-                index = i;
-                break;
+                tasks.remove(i);
+                return i;
             }
         }
-
-        if (index == -1) {
-            throw new NoSuchElementException();
-        }
-        tasks.remove(index);
-        return "";
+        throw new NoSuchElementException();
     }
 
     /**
