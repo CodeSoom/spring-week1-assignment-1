@@ -32,6 +32,7 @@ public class TaskHttpHandler implements HttpHandler {
 
         if (method.equals("GET") && path.equals("/tasks")) {
             sendGetResponse(exchange);
+            return;
         }
 
         if (method.equals("GET") && isDetailMatches(path)) {
@@ -40,10 +41,36 @@ public class TaskHttpHandler implements HttpHandler {
 
         if (method.equals("POST") && path.equals("/tasks")) {
             sendPostResponse(exchange);
+            return;
         }
 
+        if (method.equals("PUT") && isDetailMatches(path)) {
+
+        }
+
+        if (method.equals("DELETE") && isDetailMatches(path)) {
+
+        }
+
+        sendBadResponse(exchange);
     }
 
+    /**
+     * 요청이 어떤 분기문에도 처리되지 않은 경우 400을 헤더에 저장합니다.
+     *
+     * @param exchange 수신된 요청과 응답을 설정할 수 있는 파라미터
+     * @throws IOException 입출력에 문제가 발생하면 던집니다.
+     */
+    private void sendBadResponse(HttpExchange exchange) throws IOException {
+        exchange.sendResponseHeaders(400, -1);
+    }
+
+    /**
+     * GET 요청을 받아 저장된 Tasks를 찾아 리턴한다.
+     *
+     * @param exchange 수신된 요청과 응답을 설정할 수 있는 파라미터
+     * @throws IOException 입출력에 문제가 발생하면 던집니다.
+     */
     private void sendGetResponse(HttpExchange exchange) throws IOException {
         String content = tasksToJson(taskService.getTasks());
         exchange.sendResponseHeaders(200, content.getBytes().length);
@@ -51,7 +78,7 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     /**
-     * POST 응답을 받아 요청 본문이 비었으면 400을 리턴하고
+     * POST 요청을 받아 요청 본문이 비었으면 400을 리턴하고
      * 아니라면 Task 객체를 생성하고 201과 함께 리턴합니다.
      *
      * @param exchange 수신된 요청과 응답을 가진 파라미터
