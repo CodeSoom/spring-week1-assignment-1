@@ -52,7 +52,7 @@ public class ToDoHttpHandler implements HttpHandler {
         Long taskId;
 
         try {
-            taskId = Long.parseLong(path.split("/")[2]);
+            taskId = parseTaskIdFromPath(path);
         } catch (final NumberFormatException e) {
             response.send(HttpResponseCode.BadRequest, "Failed to parse task id");
             return;
@@ -78,7 +78,7 @@ public class ToDoHttpHandler implements HttpHandler {
         Long taskId;
 
         try {
-            taskId = Long.parseLong(path.split("/")[2]);
+            taskId = parseTaskIdFromPath(path);
         } catch (final NumberFormatException e) {
             response.send(HttpResponseCode.BadRequest, "Failed to parse task id");
             return;
@@ -98,7 +98,7 @@ public class ToDoHttpHandler implements HttpHandler {
         Long taskId;
 
         try {
-            taskId = Long.parseLong(path.split("/")[2]);
+            taskId = parseTaskIdFromPath(path);
         } catch (final NumberFormatException e) {
             response.send(HttpResponseCode.BadRequest, "Failed to parse task id");
             return;
@@ -131,4 +131,7 @@ public class ToDoHttpHandler implements HttpHandler {
         }
     }
 
+    private long parseTaskIdFromPath(String path) throws NumberFormatException {
+        return Long.parseLong(path.split("/")[2]);
+    }
 }
