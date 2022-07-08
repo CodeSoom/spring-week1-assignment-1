@@ -1,8 +1,5 @@
 package com.codesoom.assignment.models;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.JSONPObject;
-
 public class Task {
     private Long id;
     private String title;

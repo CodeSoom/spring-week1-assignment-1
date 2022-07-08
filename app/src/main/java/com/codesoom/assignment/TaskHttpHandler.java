@@ -43,11 +43,10 @@ public class TaskHttpHandler implements HttpHandler {
         if(method.equals("GET") && path.startsWith("/tasks/")){
             String searchIDString = path.substring("/tasks/".length());
             System.out.println("ID String : " + searchIDString);
-            Long searchID;
-            int taskIdx;
+
             try{
-                searchID = Long.parseLong(searchIDString);
-                taskIdx = findTaskIdx(searchID);
+                Long searchID = Long.parseLong(searchIDString);
+                int taskIdx = findTaskIdx(searchID);
 
                 returnCode = SUCCESS;
                 content = taskToJSON(taskList.get(taskIdx));
@@ -77,12 +76,9 @@ public class TaskHttpHandler implements HttpHandler {
             String searchIDString = path.substring("/tasks/".length());
             System.out.println("ID String : " + searchIDString);
 
-            Long searchID;
-            int taskIdx;
-
             try {
-                searchID = Long.parseLong(searchIDString);
-                taskIdx = findTaskIdx(searchID);
+                Long searchID = Long.parseLong(searchIDString);
+                int taskIdx = findTaskIdx(searchID);
 
                 Task revisedTask = makeTask(body);
                 taskList.get(taskIdx).setTitle(revisedTask.getTitle());
@@ -105,12 +101,10 @@ public class TaskHttpHandler implements HttpHandler {
             String searchIDString = path.substring("/tasks/".length());
             System.out.println("ID String : " + searchIDString);
 
-            Long searchID;
-            int taskIdx;
 
             try {
-                searchID = Long.parseLong(searchIDString);
-                taskIdx = findTaskIdx(searchID);
+                Long searchID = Long.parseLong(searchIDString);
+                int taskIdx = findTaskIdx(searchID);
 
                 taskList.remove(taskIdx);
                 returnCode = DELETED;
