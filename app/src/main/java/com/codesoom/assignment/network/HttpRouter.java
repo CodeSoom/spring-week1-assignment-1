@@ -74,7 +74,8 @@ public class HttpRouter {
         }
 
         for (Map.Entry<HttpRouterKey, HttpRouterExecutable> entry: pathMap.entrySet()) {
-            if (entry.getKey().matches(request)) {
+            final boolean isMatches = entry.getKey().matches(request);
+            if (isMatches) {
                 entry.getValue().execute(request, response);
                 return;
             }
