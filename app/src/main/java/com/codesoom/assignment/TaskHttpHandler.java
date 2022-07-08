@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.mapper.TaskMapper;
+import com.codesoom.assignment.models.HttpStatus;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.service.TaskService;
 import com.sun.net.httpserver.HttpExchange;
@@ -51,15 +52,15 @@ public class TaskHttpHandler implements HttpHandler {
             return;
         }
 
-        sendResponse(exchange, 400, -1);
+        sendResponse(exchange, HttpStatus.OK, -1);
     }
 
     private void sendDeleteResponse(HttpExchange exchange, String path) throws IOException {
         try {
             taskService.deleteTask(extractId(path.split("/")));
-            sendResponse(exchange, 204, -1);
+            sendResponse(exchange, HttpStatus.NO_CONTENT, -1);
         } catch (NoSuchElementException e) {
-            sendResponse(exchange, 404, -1);
+            sendResponse(exchange, HttpStatus.NOT_FOUND, -1);
         }
     }
 
@@ -76,7 +77,7 @@ public class TaskHttpHandler implements HttpHandler {
     private void sendPutResponse(HttpExchange exchange, String path) throws IOException {
         String request = parsingRequest(exchange.getRequestBody());
         if (request.isBlank()) {
-            sendResponse(exchange, 400, -1);
+            sendResponse(exchange, HttpStatus.BAD_REQUEST, -1);
         }
 
         HashMap requestMap = taskMapper.getRequestMap(request);
@@ -85,15 +86,15 @@ public class TaskHttpHandler implements HttpHandler {
         try {
             Task changedTask = taskService.changeTask(findId, (String) requestMap.get("title"));
             String content = taskMapper.taskToJson(changedTask);
-            sendResponse(exchange, 200, content.getBytes().length);
+            sendResponse(exchange, HttpStatus.OK, content.getBytes().length);
             writeResponseBody(exchange, content);
         } catch (NoSuchElementException e) {
-            sendResponse(exchange, 404, -1);
+            sendResponse(exchange, HttpStatus.NOT_FOUND, -1);
         }
     }
 
-    private void sendResponse(HttpExchange exchange, int rCode, int responseLength) throws IOException {
-        exchange.sendResponseHeaders(rCode, responseLength);
+    private void sendResponse(HttpExchange exchange, HttpStatus httpStatus, int responseLength) throws IOException {
+        exchange.sendResponseHeaders(httpStatus.getCode(), responseLength);
     }
 
     /**
@@ -109,12 +110,12 @@ public class TaskHttpHandler implements HttpHandler {
 
         if (storedTask.isPresent()) {
             String content = taskMapper.taskToJson(storedTask.get());
-            sendResponse(exchange, 200, content.getBytes().length);
+            sendResponse(exchange, HttpStatus.OK, content.getBytes().length);
             writeResponseBody(exchange, content);
             return;
         }
 
-        sendResponse(exchange, 404, -1);
+        sendResponse(exchange, HttpStatus.NOT_FOUND, -1);
     }
 
     /**
@@ -125,7 +126,7 @@ public class TaskHttpHandler implements HttpHandler {
      */
     private void sendGetResponse(HttpExchange exchange) throws IOException {
         String content = taskMapper.tasksToJson(taskService.getTasks());
-        sendResponse(exchange, 200, content.getBytes().length);
+        sendResponse(exchange, HttpStatus.OK, content.getBytes().length);
         writeResponseBody(exchange, content);
     }
 
@@ -140,7 +141,7 @@ public class TaskHttpHandler implements HttpHandler {
         String request = parsingRequest(exchange.getRequestBody());
 
         if (request.isBlank()) {
-            sendResponse(exchange, 400, -1);
+            sendResponse(exchange, HttpStatus.BAD_REQUEST, -1);
             return;
         }
 
@@ -148,7 +149,7 @@ public class TaskHttpHandler implements HttpHandler {
         request = (String) requestMap.get("title");
 
         String content =  taskMapper.taskToJson(taskService.createTask(request));
-        sendResponse(exchange, 201, content.getBytes().length);
+        sendResponse(exchange, HttpStatus.CREATED, content.getBytes().length);
         writeResponseBody(exchange, content);
     }
 

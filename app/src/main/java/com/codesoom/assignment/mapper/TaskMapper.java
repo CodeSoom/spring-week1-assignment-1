@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Task를 매핑하는 기능을 가진 클래스입니다.
+ */
 public class TaskMapper {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
