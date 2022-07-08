@@ -8,13 +8,13 @@ public enum HttpResponseCode {
     NotFound(404),
     InternalServerError(500);
 
-    public int getRawValue() {
-        return rawValue;
-    }
-
     private final int rawValue;
 
     HttpResponseCode(int rawValue) {
         this.rawValue = rawValue;
+    }
+
+    public int getRawValue() {
+        return rawValue;
     }
 }
