@@ -46,10 +46,20 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         if (method.equals("DELETE") && isDetailMatches(path)) {
-
+            sendDeleteResponse(exchange, path);
+            return;
         }
 
         sendResponse(exchange, 400, -1);
+    }
+
+    private void sendDeleteResponse(HttpExchange exchange, String path) throws IOException {
+        try {
+            taskService.deleteTask(Long.valueOf(path.split("/")[2]));
+            sendResponse(exchange, 200, -1);
+        } catch (NoSuchElementException e) {
+            sendResponse(exchange, 400, -1);
+        }
     }
 
     private void sendPutResponse(HttpExchange exchange, String path) throws IOException {
