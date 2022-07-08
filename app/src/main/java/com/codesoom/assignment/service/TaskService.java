@@ -3,13 +3,14 @@ package com.codesoom.assignment.service;
 import com.codesoom.assignment.models.Task;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Task를 CRUD 로직을 처리하는 클래스입니다.
  */
 public class TaskService {
     private Long id = 0L;
-    private final List<Task> tasks = new ArrayList<>();
+    private final List<Task> tasks = new CopyOnWriteArrayList<>();
 
     /**
      * 받은 정보로 Task를 생성하여 저장하고 리턴한다.
