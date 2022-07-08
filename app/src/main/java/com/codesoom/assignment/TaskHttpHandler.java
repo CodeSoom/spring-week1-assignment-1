@@ -27,111 +27,131 @@ public class TaskHttpHandler implements HttpHandler {
         URI requestURI = exchange.getRequestURI();
         String path = requestURI.getPath();
 
-        int returnCode = -1;
-        String content = "[]";
-
         InputStream inputStream = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
 
         if(method.equals("GET") && path.equals("/tasks")){
-            content = taskListToJSON();
-            returnCode = SUCCESS;
+            String content = taskListToJSON();
+            exchange.sendResponseHeaders(SUCCESS, content.getBytes().length);
+            sendResponseBody(exchange,content);
         }
 
         if(method.equals("GET") && path.startsWith("/tasks/")){
             String searchIDString = path.substring("/tasks/".length());
             System.out.println("ID String : " + searchIDString);
-
-            try{
-                Long searchID = Long.parseLong(searchIDString);
-                int taskIdx = findTaskIdx(searchID);
-
-                returnCode = SUCCESS;
-                content = taskToJSON(taskList.get(taskIdx));
-            }
-            catch (IndexOutOfBoundsException idxError) {
-                System.out.println(idxError);
-                returnCode = NOT_FOUND;
-                content = "ID not exist";
-            }
-            catch (Exception e){
-                System.out.println("Not Valid URL");
-                returnCode = NOT_FOUND;
-                content = "Not Valid URL";
-            }
+            getRequest(exchange,searchIDString);
         }
 
         if(method.equals("POST") && path.equals("/tasks") && !body.isBlank()) {
-            Task task = makeTask(body);
-            task.setId(++curTaskID);
-            taskList.add(task);
-
-            returnCode = CREATED;
-            content = taskToJSON(task);
+            postRequest(exchange, body);
         }
 
         if (method.equals("PUT") && path.startsWith("/tasks/") && !body.isBlank()) {
             String searchIDString = path.substring("/tasks/".length());
             System.out.println("ID String : " + searchIDString);
-
-            try {
-                Long searchID = Long.parseLong(searchIDString);
-                int taskIdx = findTaskIdx(searchID);
-
-                Task revisedTask = makeTask(body);
-                taskList.get(taskIdx).setTitle(revisedTask.getTitle());
-                returnCode = SUCCESS;
-                content = taskToJSON(taskList.get(taskIdx));
-                
-            } catch (IndexOutOfBoundsException idxError) {
-                System.out.println(idxError);
-                returnCode = NOT_FOUND;
-                content = "ID not exist";
-
-            } catch (Exception e) {
-                System.out.println("유효한 주소가 아닙니다.");
-                returnCode = NOT_FOUND;
-                content = "Not valid URL";
-            }
+            putRequest(exchange,searchIDString, body);
         }
 
         if (method.equals("DELETE") && path.startsWith("/tasks/")) {
             String searchIDString = path.substring("/tasks/".length());
             System.out.println("ID String : " + searchIDString);
-
-
-            try {
-                Long searchID = Long.parseLong(searchIDString);
-                int taskIdx = findTaskIdx(searchID);
-
-                taskList.remove(taskIdx);
-                returnCode = DELETED;
-                content = new String();
-
-            } catch (IndexOutOfBoundsException idxError) {
-                System.out.println(idxError);
-                returnCode = NOT_FOUND;
-                content = "ID not exist";
-
-            } catch (Exception e) {
-                System.out.println("유효한 주소가 아닙니다.");
-                returnCode = NOT_FOUND;
-                content = "Not valid URL";
-            }
+            deleteRequest(exchange, searchIDString);
         }
+    }
 
-        if(returnCode == DELETED){
-            exchange.sendResponseHeaders(returnCode, -1);
+    private Long isValidURL(String IDString)  {
+
+        try {
+            Long searchID = Long.parseLong(IDString);
+            return searchID;
         }
-        else{
-            exchange.sendResponseHeaders(returnCode, content.getBytes().length);
+        catch (Exception e){
+            throw e;
         }
+    }
+
+    private void sendResponseBody(HttpExchange exchange, String content) throws IOException {
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private void postRequest(HttpExchange exchange, String body) throws IOException {
+        Task task = makeTask(body);
+        task.setId(++curTaskID);
+        taskList.add(task);
+
+        String content = taskToJSON(task);
+        exchange.sendResponseHeaders(CREATED, content.getBytes().length);
+        sendResponseBody(exchange, content);
+    }
+
+    private void getRequest(HttpExchange exchange, String strID) throws IOException {
+        String content = "";
+        try{
+            Long searchID = Long.parseLong(strID);
+            int taskIdx = findTaskIdx(searchID);
+
+            content = taskToJSON(taskList.get(taskIdx));
+            exchange.sendResponseHeaders(SUCCESS, content.getBytes().length);
+        }
+        catch (IndexOutOfBoundsException idxError) {
+            System.out.println(idxError);
+            content = "ID not exist";
+            exchange.sendResponseHeaders(NOT_FOUND, content.getBytes().length);
+        }
+        catch (Exception e){
+            System.out.println("Not Valid URL");
+            content = "Not Valid URL";
+            exchange.sendResponseHeaders(NOT_FOUND, content.getBytes().length);
+        }
+
+        sendResponseBody(exchange,content);
+    }
+
+    private void putRequest(HttpExchange exchange, String strID, String body) throws IOException {
+
+        String content = "";
+        try {
+            int taskIdx = findTaskIdx(isValidURL(strID));
+
+            Task revisedTask = makeTask(body);
+            taskList.get(taskIdx).setTitle(revisedTask.getTitle());
+
+            content = taskToJSON(taskList.get(taskIdx));
+            exchange.sendResponseHeaders(SUCCESS, content.getBytes().length);
+
+        } catch (IndexOutOfBoundsException idxError) {
+            System.out.println(idxError);
+            content = "ID not exist";
+            exchange.sendResponseHeaders(NOT_FOUND, content.getBytes().length);
+        } catch (Exception e) {
+            System.out.println("유효한 주소가 아닙니다.");
+            content = "Not valid URL";
+            exchange.sendResponseHeaders(NOT_FOUND, content.getBytes().length);
+        }
+        sendResponseBody(exchange,content);
+    }
+
+    private void deleteRequest(HttpExchange exchange, String strID) throws IOException {
+
+        String content = new String();
+        try{
+            int taskIdx = findTaskIdx(isValidURL(strID));
+            taskList.remove(taskIdx);
+            exchange.sendResponseHeaders(DELETED, -1);
+        }catch (IndexOutOfBoundsException idxError){
+            content = "ID NOT EXIST";
+            exchange.sendResponseHeaders(NOT_FOUND, content.getBytes().length);
+        }catch (Exception e) {
+            content = "Not valid URL";
+            exchange.sendResponseHeaders(NOT_FOUND, content.getBytes().length);
+        }
+
+        sendResponseBody(exchange,content);
     }
 
     private int findTaskIdx(Long id){
