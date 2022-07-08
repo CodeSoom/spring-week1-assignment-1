@@ -55,11 +55,21 @@ public class TaskHttpHandler implements HttpHandler {
 
     private void sendDeleteResponse(HttpExchange exchange, String path) throws IOException {
         try {
-            taskService.deleteTask(Long.valueOf(path.split("/")[2]));
+            taskService.deleteTask(extractId(path.split("/")));
             sendResponse(exchange, 204, -1);
         } catch (NoSuchElementException e) {
             sendResponse(exchange, 404, -1);
         }
+    }
+
+    /**
+     * 나누어진 path에서 Id에 해당하는 값을 가져와 숫자 형식으로 변환해서 리턴합니다.
+     *
+     * @param path 특정 문자로 나누어진 경로
+     * @return 경로를 숫자로 변환해 리턴
+     */
+    private Long extractId(String[] path) {
+        return Long.valueOf(path[2]);
     }
 
     private void sendPutResponse(HttpExchange exchange, String path) throws IOException {
@@ -69,7 +79,7 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         HashMap requestMap = getRequestMap(request);
-        Long findId = Long.valueOf(path.split("/")[2]);
+        Long findId = extractId(path.split("/"));
 
         try {
             Task changedTask = taskService.changeTask(findId, (String) requestMap.get("title"));
@@ -94,7 +104,7 @@ public class TaskHttpHandler implements HttpHandler {
      */
     private void sendDetailGetResponse(HttpExchange exchange, String path) throws IOException {
         String[] splitedPath = path.split("/");
-        Optional<Task> storedTask = taskService.getTask(Long.valueOf(splitedPath[2]));
+        Optional<Task> storedTask = taskService.getTask(extractId(splitedPath));
 
         if (storedTask.isPresent()) {
             String content = taskToJson(storedTask.get());
