@@ -72,4 +72,20 @@ public class TaskService {
 
         throw new NoSuchElementException();
     }
+
+    /**
+     * 요청된 숫자 형식의 id와 같은 Task를 찾고 있으면 제거하고, 없으면 예외를 던집니다.
+     * @param findId 요청된 숫자 형식의 id
+     * @throws NoSuchElementException id와 같은 Task를 찾지 못하면 던집니다.
+     */
+    public void deleteTask(Long findId) {
+        Optional<Task> optionalTask = getTask(findId);
+
+        if (optionalTask.isPresent()) {
+            tasks.remove(optionalTask.get());
+            return;
+        }
+
+        throw new NoSuchElementException();
+    }
 }
