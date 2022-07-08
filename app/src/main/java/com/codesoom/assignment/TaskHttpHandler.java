@@ -6,16 +6,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import javax.swing.plaf.basic.BasicScrollPaneUI;
 import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class TaskHttpHandler implements HttpHandler {
-    private HashMap<Long, Task> taskList = new HashMap<>();
+    private List<Task> taskList = new ArrayList<>();
     private ObjectMapper objectMapper = new ObjectMapper();
     private Long curTaskID = 0L;
     private final int SUCCESS = 200;
@@ -83,7 +81,7 @@ public class TaskHttpHandler implements HttpHandler {
     private void postRequest(HttpExchange exchange, String body) throws IOException {
         Task task = makeTask(body);
         task.setId(++curTaskID);
-        taskList.put(curTaskID, task);
+        taskList.add(task);
 
         String content = taskToJSON(task);
         exchange.sendResponseHeaders(CREATED, content.getBytes().length);
@@ -94,21 +92,22 @@ public class TaskHttpHandler implements HttpHandler {
         String content = "";
         try{
             Long searchID = Long.parseLong(strID);
+            int taskIdx = findTaskIdx(searchID);
 
-            if(taskList.containsKey(searchID)){
-                content = taskToJSON(taskList.get(searchID));
-                exchange.sendResponseHeaders(SUCCESS, content.getBytes().length);
-            }
-            else{
-                content = "ID not exist";
-                exchange.sendResponseHeaders(NOT_FOUND, content.getBytes().length);
-            }
+            content = taskToJSON(taskList.get(taskIdx));
+            exchange.sendResponseHeaders(SUCCESS, content.getBytes().length);
+        }
+        catch (IndexOutOfBoundsException idxError) {
+            System.out.println(idxError);
+            content = "ID not exist";
+            exchange.sendResponseHeaders(NOT_FOUND, content.getBytes().length);
         }
         catch (Exception e){
             System.out.println("Not Valid URL");
             content = "Not Valid URL";
             exchange.sendResponseHeaders(NOT_FOUND, content.getBytes().length);
         }
+
         sendResponseBody(exchange,content);
     }
 
@@ -116,19 +115,18 @@ public class TaskHttpHandler implements HttpHandler {
 
         String content = "";
         try {
-            Long task_id = isValidURL(strID);
+            int taskIdx = findTaskIdx(isValidURL(strID));
 
-            if(taskList.containsKey(task_id)){
-                Task revisedTask = makeTask(body);
-                taskList.get(task_id).setTitle(revisedTask.getTitle());
+            Task revisedTask = makeTask(body);
+            taskList.get(taskIdx).setTitle(revisedTask.getTitle());
 
-                content = taskToJSON(taskList.get(task_id));
-                exchange.sendResponseHeaders(SUCCESS, content.getBytes().length);
-            }
-            else{
-                content = "ID not exist";
-                exchange.sendResponseHeaders(NOT_FOUND, content.getBytes().length);
-            }
+            content = taskToJSON(taskList.get(taskIdx));
+            exchange.sendResponseHeaders(SUCCESS, content.getBytes().length);
+
+        } catch (IndexOutOfBoundsException idxError) {
+            System.out.println(idxError);
+            content = "ID not exist";
+            exchange.sendResponseHeaders(NOT_FOUND, content.getBytes().length);
         } catch (Exception e) {
             System.out.println("유효한 주소가 아닙니다.");
             content = "Not valid URL";
@@ -141,21 +139,25 @@ public class TaskHttpHandler implements HttpHandler {
 
         String content = new String();
         try{
-            Long task_id = isValidURL(strID);
-            if(taskList.containsKey(task_id)){
-                taskList.remove(task_id);
-                exchange.sendResponseHeaders(DELETED, -1);
-            }
-            else{
-                content = "ID NOT EXIST";
-                exchange.sendResponseHeaders(NOT_FOUND, content.getBytes().length);
-            }
+            int taskIdx = findTaskIdx(isValidURL(strID));
+            taskList.remove(taskIdx);
+            exchange.sendResponseHeaders(DELETED, -1);
         }catch (Exception e) {
             content = "Not valid URL";
             exchange.sendResponseHeaders(NOT_FOUND, content.getBytes().length);
         }
         sendResponseBody(exchange,content);
     }
+
+    private int findTaskIdx(Long id){
+        for(int i=0; i<taskList.size(); i++){
+            if(taskList.get(i).getId().equals(id)){
+                return i;
+            }
+        }
+        throw new IndexOutOfBoundsException("해당 ID가 존재하지 않습니다.");
+    }
+
 
     private Task makeTask(String body) throws JsonProcessingException {
         return objectMapper.readValue(body, Task.class);
