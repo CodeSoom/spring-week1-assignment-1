@@ -11,16 +11,27 @@ import java.io.OutputStream;
  */
 public class HttpResponse {
 
-    private HttpExchange exchange;
+    private final HttpExchange exchange;
+    private static final int EMPTY_RESPONSE_BYTE_LENGTH = -1;
 
+    /**
+     * Http Response 전송을 위한 객체를 생성합니다
+     * @param exchange HttpExchange
+     */
     public HttpResponse(HttpExchange exchange) {
         this.exchange = exchange;
     }
 
+    /**
+     * @return ResponseCode
+     */
     public int getResponseCode() {
         return exchange.getResponseCode();
     }
 
+    /**
+     * @return ResponseBody
+     */
     public OutputStream getResponseBody() {
         return exchange.getResponseBody();
     }
@@ -29,11 +40,11 @@ public class HttpResponse {
      * 응답을 전송합니다
      * @param responseCode 응답코드
      * @param content 응답에 담을 content
-     * @throws IOException
+     * @throws IOException outputStream 쓰기 작업에서 발생하는 에러 전달
      */
     public void send(HttpResponseCode responseCode, @Nullable String content) throws IOException {
         if (content == null) {
-            exchange.sendResponseHeaders(responseCode.getRawValue(), -1);
+            exchange.sendResponseHeaders(responseCode.getRawValue(), EMPTY_RESPONSE_BYTE_LENGTH);
         } else {
             exchange.sendResponseHeaders(responseCode.getRawValue(), content.getBytes().length);
 
