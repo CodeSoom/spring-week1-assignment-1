@@ -8,9 +8,9 @@ import java.util.Objects;
  * hashCode를 지원해서 HashMap의 Key로 사용될 수 있습니다.
  */
 public class HttpRouterKey {
-    private HttpMethod method;
-    private String pathRegex;
-    private int hashCode;
+    private final HttpMethod method;
+    private final String pathRegex;
+    private final int hashCode;
 
     public HttpRouterKey(HttpMethod method, String pathRegex) {
         this.method = method;
@@ -27,7 +27,7 @@ public class HttpRouterKey {
             return false;
         }
         HttpRouterKey that = (HttpRouterKey) obj;
-        return method == that.method && pathRegex == that.pathRegex;
+        return Objects.equals(method, that.method) && Objects.equals(pathRegex, that.pathRegex);
     }
 
     @Override
@@ -35,14 +35,11 @@ public class HttpRouterKey {
         return this.hashCode;
     }
 
-    public String getPathRegex() {
-        return pathRegex;
-    }
-
-    public HttpMethod getMethod() {
-        return method;
-    }
-
+    /**
+     * 요청받은 Http Request와 Router Key가 매칭되는지 여부 확인
+     * @param request Http Request
+     * @return 요청받은 Http Request와 Router Key가 매칭되는지 여부
+     */
     public boolean matches(HttpRequest request) {
         final HttpMethod requestMethod = request.getMethod();
         final String requestPath = request.getPath();
