@@ -5,13 +5,14 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * 등록된 path, method에 맞는 executor를 실행해줍니다
  */
 public class HttpRouter {
 
-    private HashMap<HttpRouterKey, HttpRouterExecutable> pathMap = new HashMap<>();
+    private final HashMap<HttpRouterKey, HttpRouterExecutable> pathMap = new HashMap<>();
 
     /**
      * GET method에 대한 executor를 등록합니다.
@@ -65,20 +66,16 @@ public class HttpRouter {
      */
     public void route(HttpExchange exchange) throws IOException {
         final HttpRequest request = new HttpRequest(exchange);
-        final HttpResponse responder = new HttpResponse(exchange);
+        final HttpResponse response = new HttpResponse(exchange);
 
         if (request.isNotValid()) {
-            responder.send(HttpResponseCode.NotFound, null);
+            response.send(HttpResponseCode.NotFound, null);
             return;
         }
 
-        Iterator<HttpRouterKey> keys = pathMap.keySet().iterator();
-        while(keys.hasNext()) {
-            HttpRouterKey key = keys.next();
-
-            if (key.matches(request)) {
-                final HttpRouterExecutable executor = pathMap.get(key);
-                executor.execute(request, responder);
+        for (Map.Entry<HttpRouterKey, HttpRouterExecutable> entry: pathMap.entrySet()) {
+            if (entry.getKey().matches(request)) {
+                entry.getValue().execute(request, response);
                 return;
             }
         }
