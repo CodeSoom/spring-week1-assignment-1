@@ -12,8 +12,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class ToDoRepository {
-    private ObjectMapper objectMapper = new ObjectMapper();
-    private List<Task> tasks = Collections.synchronizedList(new ArrayList<>());
+    private final List<Task> tasks = Collections.synchronizedList(new ArrayList<>());
 
     public Optional<Task> getTaskById(Long taskId) {
         return tasks
@@ -24,11 +23,6 @@ public class ToDoRepository {
 
     public void addTask(Task task) {
         tasks.add(task);
-    }
-
-    public void updateTask(Task existedTask, String content) throws JsonProcessingException {
-        Task newTask = objectMapper.readValue(content, Task.class);
-        existedTask.setTitle(newTask.getTitle());
     }
 
     public void deleteTask(Task targetTask) {

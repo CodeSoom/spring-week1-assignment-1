@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class ToDoController {
-
     private final ToDoRepository repository;
     private final AtomicLong lastId = new AtomicLong(1L);
     private final TaskMapper mapper = new TaskMapper();
@@ -31,15 +30,16 @@ public class ToDoController {
     }
 
     public Task addTask(String body) throws JsonProcessingException {
-        Task task = mapper.readValue(body);
+        Task task = mapper.readTask(body);
         task.setId(lastId.getAndIncrement());
         repository.addTask(task);
         return task;
     }
 
     public void updateTask(Long taskId, String body) throws TaskNotFoundException, JsonProcessingException {
-        Task task = getTaskById(taskId);
-        repository.updateTask(task, body);
+        Task oldTask = getTaskById(taskId);
+        Task newTask = mapper.readTask(body);
+        oldTask.update(newTask);
     }
 
     public void deleteTask(Long taskId) throws TaskNotFoundException {

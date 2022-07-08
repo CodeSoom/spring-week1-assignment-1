@@ -68,7 +68,7 @@ public class ToDoHttpHandler implements HttpHandler {
         try {
             List<Task> tasks = controller.getTasks();
             response.send(HttpResponseCode.OK, taskMapper.writeTasksAsString(tasks));
-        } catch (IOException e) {
+        } catch (JsonProcessingException e) {
             response.send(HttpResponseCode.InternalServerError, "Failed to convert tasks to JSON");
         }
     }

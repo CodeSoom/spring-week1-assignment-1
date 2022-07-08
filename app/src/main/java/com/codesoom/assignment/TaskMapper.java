@@ -9,7 +9,7 @@ import java.util.List;
 public class TaskMapper {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public Task readValue(String content) throws JsonProcessingException {
+    public Task readTask(String content) throws JsonProcessingException {
         return objectMapper.readValue(content, Task.class);
     }
 
