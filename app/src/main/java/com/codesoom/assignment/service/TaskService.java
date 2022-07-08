@@ -2,10 +2,7 @@ package com.codesoom.assignment.service;
 
 import com.codesoom.assignment.models.Task;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Task를 CRUD 로직을 처리하는 클래스입니다.
@@ -49,11 +46,30 @@ public class TaskService {
      *
      * @param findId 요청 받은 숫자 타입의 id
      * @return 찾은 task를 리턴
-     * @throws NoSuchElementException id에 맞는 task를 찾지 못하면 리턴
      */
     public Optional<Task> getTask(Long findId) {
         return tasks.stream()
                 .filter(t -> t.getId().equals(findId))
                 .findFirst();
+    }
+
+    /**
+     * 요청 받은 숫자 타입 id에 맞는 Task가 있으면 받은 title을 수정해서 리턴하고 없으면 예외를 던집니다.
+     *
+     * @param findId 요청 받은 숫자 타입의 id
+     * @param title Task의 변경할 title
+     * @return 변경한 Task
+     * @throws NoSuchElementException Task를 찾지 못하면 던집니다.
+     */
+    public Task changeTask(Long findId, String title) {
+        Optional<Task> optionalTask = getTask(findId);
+
+        if (optionalTask.isPresent()) {
+            Task task = optionalTask.get();
+            task.setTitle(title);
+            return task;
+        }
+
+        throw new NoSuchElementException();
     }
 }

@@ -27,6 +27,13 @@ class TaskServiceTest {
     @DisplayName("Task를 조회하는 요청이 들어왔고 숫자 형식의 id와 같은 Task가 존재할 때, getTask 메서드가 해당 Task를 리턴한다.")
     void getTaskTest() {
         taskService.createTask("BJP");
-        assertEquals(new Task(0L, "BJP"), taskService.getTask(0L));
+        assertEquals(new Task(0L, "BJP"), taskService.getTask(0L).get());
+    }
+
+    @Test
+    @DisplayName("Task를 수정하는 요청이 들어왔고 숫자 형식의 id와 같은 Task가 존재할 때, changeTask 메서드가 해당 Task의 title을 수정하고 리턴한다.")
+    void changeTaskTest() {
+        taskService.createTask("BJP");
+        assertEquals(new Task(0L, "변경"), taskService.changeTask(0L, "변경"));
     }
 }

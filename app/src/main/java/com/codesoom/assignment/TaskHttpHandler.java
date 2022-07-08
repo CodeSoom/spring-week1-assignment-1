@@ -43,7 +43,8 @@ public class TaskHttpHandler implements HttpHandler {
         }
 
         if (method.equals("PUT") && isDetailMatches(path)) {
-
+            sendPutResponse(exchange, path);
+            return;
         }
 
         if (method.equals("DELETE") && isDetailMatches(path)) {
@@ -53,6 +54,28 @@ public class TaskHttpHandler implements HttpHandler {
         sendBadResponse(exchange);
     }
 
+    private void sendPutResponse(HttpExchange exchange, String path) throws IOException {
+        String request = parsingRequest(exchange.getRequestBody());
+        if (request.isBlank()) {
+            sendBadResponse(exchange);
+        }
+
+        HashMap requestMap = getRequestMap(request);
+        Long findId = Long.valueOf(path.split("/")[2]);
+
+        try {
+            Task changedTask = taskService.changeTask(findId, (String) requestMap.get("title"));
+            String content = taskToJson(changedTask);
+            sendGetResponse(exchange);
+            writeResponseBody(exchange, content);
+        } catch (NoSuchElementException e) {
+            sendNotFoundResponse(exchange, 404, -1);
+        }
+    }
+
+    private void sendNotFoundResponse(HttpExchange exchange, int rCode, int responseLength) throws IOException {
+        exchange.sendResponseHeaders(rCode, responseLength);
+    }
 
     /**
      * 숫자 형식의 id를 가진 GET 요청이 왔을 때 id와 같은 task를 찾아 리턴한다.
@@ -68,12 +91,12 @@ public class TaskHttpHandler implements HttpHandler {
 
         if (storedTask.isPresent()) {
             String content = taskToJson(storedTask.get());
-            exchange.sendResponseHeaders(200, content.getBytes().length);
+            sendNotFoundResponse(exchange, 200, content.getBytes().length);
             writeResponseBody(exchange, content);
             return;
         }
 
-        exchange.sendResponseHeaders(404, -1);
+        sendNotFoundResponse(exchange, 404, -1);
     }
 
     /**
@@ -83,7 +106,7 @@ public class TaskHttpHandler implements HttpHandler {
      * @throws IOException 입출력에 문제가 발생하면 던집니다.
      */
     private void sendBadResponse(HttpExchange exchange) throws IOException {
-        exchange.sendResponseHeaders(400, -1);
+        sendNotFoundResponse(exchange, 400, -1);
     }
 
     /**
@@ -94,7 +117,7 @@ public class TaskHttpHandler implements HttpHandler {
      */
     private void sendGetResponse(HttpExchange exchange) throws IOException {
         String content = tasksToJson(taskService.getTasks());
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+        sendNotFoundResponse(exchange, 200, content.getBytes().length);
         writeResponseBody(exchange, content);
     }
 
@@ -109,7 +132,7 @@ public class TaskHttpHandler implements HttpHandler {
         String request = parsingRequest(exchange.getRequestBody());
 
         if (request.isBlank()) {
-            exchange.sendResponseHeaders(400, -1);
+            sendNotFoundResponse(exchange, 400, -1);
             return;
         }
 
@@ -117,7 +140,7 @@ public class TaskHttpHandler implements HttpHandler {
         request = (String) requestMap.get("title");
 
         String content = taskToJson(taskService.createTask(request));
-        exchange.sendResponseHeaders(201, content.getBytes().length);
+        sendNotFoundResponse(exchange, 201, content.getBytes().length);
         writeResponseBody(exchange, content);
     }
 
@@ -190,7 +213,7 @@ public class TaskHttpHandler implements HttpHandler {
         for (int i = 0; i < tasks.size(); i++) {
             if (tasks.get(i).getId().equals(findId)) {
                 tasks.remove(i);
-                return i;
+//                return i;
             }
         }
         throw new NoSuchElementException();
