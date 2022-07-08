@@ -56,9 +56,9 @@ public class TaskHttpHandler implements HttpHandler {
     private void sendDeleteResponse(HttpExchange exchange, String path) throws IOException {
         try {
             taskService.deleteTask(Long.valueOf(path.split("/")[2]));
-            sendResponse(exchange, 200, -1);
+            sendResponse(exchange, 204, -1);
         } catch (NoSuchElementException e) {
-            sendResponse(exchange, 400, -1);
+            sendResponse(exchange, 404, -1);
         }
     }
 
@@ -186,17 +186,6 @@ public class TaskHttpHandler implements HttpHandler {
         return new BufferedReader(new InputStreamReader(requestBody))
                 .lines()
                 .collect(Collectors.joining("\n"));
-    }
-
-    /**
-     * 요청 받은 컨텐트를 Task로 매핑하여 리턴한다.
-     *
-     * @param content 요청 받은 컨텐트
-     * @return 생성한 Task를 리턴
-     * @throws JsonProcessingException 요청 받은 컨텐트를 Task로 매핑하지 못햇을 때 던집니다.
-     */
-    private Task toTask(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
     }
 
     /**
