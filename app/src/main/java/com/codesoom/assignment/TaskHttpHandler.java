@@ -1,22 +1,23 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.mapper.TaskMapper;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.service.TaskService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
-import java.util.*;
+import java.util.HashMap;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
  *  Task의 로직을 가지고 있고 관련된 Http 요청을 처리하는 클래스
  */
 public class TaskHttpHandler implements HttpHandler {
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final TaskMapper taskMapper = new TaskMapper();
     private final TaskService taskService = new TaskService();
 
     @Override
@@ -78,12 +79,12 @@ public class TaskHttpHandler implements HttpHandler {
             sendResponse(exchange, 400, -1);
         }
 
-        HashMap requestMap = getRequestMap(request);
+        HashMap requestMap = taskMapper.getRequestMap(request);
         Long findId = extractId(path.split("/"));
 
         try {
             Task changedTask = taskService.changeTask(findId, (String) requestMap.get("title"));
-            String content = taskToJson(changedTask);
+            String content = taskMapper.taskToJson(changedTask);
             sendResponse(exchange, 200, content.getBytes().length);
             writeResponseBody(exchange, content);
         } catch (NoSuchElementException e) {
@@ -107,7 +108,7 @@ public class TaskHttpHandler implements HttpHandler {
         Optional<Task> storedTask = taskService.getTask(extractId(splitedPath));
 
         if (storedTask.isPresent()) {
-            String content = taskToJson(storedTask.get());
+            String content = taskMapper.taskToJson(storedTask.get());
             sendResponse(exchange, 200, content.getBytes().length);
             writeResponseBody(exchange, content);
             return;
@@ -123,7 +124,7 @@ public class TaskHttpHandler implements HttpHandler {
      * @throws IOException 입출력에 문제가 발생하면 던집니다.
      */
     private void sendGetResponse(HttpExchange exchange) throws IOException {
-        String content = tasksToJson(taskService.getTasks());
+        String content = taskMapper.tasksToJson(taskService.getTasks());
         sendResponse(exchange, 200, content.getBytes().length);
         writeResponseBody(exchange, content);
     }
@@ -143,23 +144,12 @@ public class TaskHttpHandler implements HttpHandler {
             return;
         }
 
-        HashMap requestMap = getRequestMap(request);
+        HashMap requestMap = taskMapper.getRequestMap(request);
         request = (String) requestMap.get("title");
 
-        String content = taskToJson(taskService.createTask(request));
+        String content =  taskMapper.taskToJson(taskService.createTask(request));
         sendResponse(exchange, 201, content.getBytes().length);
         writeResponseBody(exchange, content);
-    }
-
-    /**
-     * 요청된 본문을 HashMap으로 변환해서 리턴합니다.
-     *
-     * @param request 요청된 본문
-     * @return 변환된 HashMap 리턴
-     * @throws JsonProcessingException Json 변환에 문제가 발생할 경우 던집니다.
-     */
-    private HashMap getRequestMap(String request) throws JsonProcessingException {
-        return objectMapper.readValue(request, HashMap.class);
     }
 
     /**
@@ -196,26 +186,5 @@ public class TaskHttpHandler implements HttpHandler {
         return new BufferedReader(new InputStreamReader(requestBody))
                 .lines()
                 .collect(Collectors.joining("\n"));
-    }
-
-    /**
-     * Tasks를 Json String으로 변환하여 리턴
-     *
-     * @return 변환된 문자열을 리턴
-     * @throws JsonProcessingException Task를 Json으로 변환하지 못했을 때 던집니다.
-     **/
-    private String tasksToJson(List<Task> tasks) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(tasks);
-    }
-
-  /**
-   * Task를 Json String으로 변환하여 리턴
-   *
-   * @param task 변환할 Task
-   * @return 변환된 문자열을 리턴
-   * @throws JsonProcessingException Task를 Json으로 변환하지 못했을 때 던집니다.
-   **/
-    private String taskToJson(Task task) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(task);
     }
 }
