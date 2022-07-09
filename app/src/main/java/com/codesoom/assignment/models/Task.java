@@ -14,9 +14,6 @@ public class Task {
         this.title = title;
     }
 
-    public Task(int id, String bjp) {
-    }
-
     public Long getId() {
         return id;
     }
@@ -45,5 +42,4 @@ public class Task {
     public int hashCode() {
         return Objects.hash(id, title);
     }
-
 }

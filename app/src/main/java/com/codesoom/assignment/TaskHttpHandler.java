@@ -56,12 +56,14 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private void sendDeleteResponse(HttpExchange exchange, String path) throws IOException {
-        try {
-            taskService.deleteTask(extractId(path.split("/")));
+        boolean result = taskService.deleteTask(extractId(path.split("/")));
+
+        if (result) {
             sendResponse(exchange, HttpStatus.NO_CONTENT, -1);
-        } catch (NoSuchElementException e) {
-            sendResponse(exchange, HttpStatus.NOT_FOUND, -1);
+            return;
         }
+
+        sendResponse(exchange, HttpStatus.NOT_FOUND, -1);
     }
 
     /**
@@ -83,14 +85,16 @@ public class TaskHttpHandler implements HttpHandler {
         HashMap requestMap = taskMapper.getRequestMap(request);
         Long findId = extractId(path.split("/"));
 
-        try {
-            Task changedTask = taskService.changeTask(findId, (String) requestMap.get("title"));
-            String content = taskMapper.taskToJson(changedTask);
-            sendResponse(exchange, HttpStatus.OK, content.getBytes().length);
-            writeResponseBody(exchange, content);
-        } catch (NoSuchElementException e) {
+        Task changedTask = taskService.changeTask(findId, (String) requestMap.get("title"));
+
+        if (changedTask == null) {
             sendResponse(exchange, HttpStatus.NOT_FOUND, -1);
+            return;
         }
+
+        String content = taskMapper.taskToJson(changedTask);
+        sendResponse(exchange, HttpStatus.OK, content.getBytes().length);
+        writeResponseBody(exchange, content);
     }
 
     private void sendResponse(HttpExchange exchange, HttpStatus httpStatus, int responseLength) throws IOException {

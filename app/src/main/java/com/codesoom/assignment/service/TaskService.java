@@ -2,6 +2,7 @@ package com.codesoom.assignment.service;
 
 import com.codesoom.assignment.models.Task;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -55,12 +56,11 @@ public class TaskService {
     }
 
     /**
-     * 요청 받은 숫자 타입 id에 맞는 Task가 있으면 받은 title을 수정해서 리턴하고 없으면 예외를 던집니다.
+     * 요청 받은 숫자 타입 id에 맞는 Task가 있으면 받은 title을 수정해서 리턴하고 없으면 null을 리턴합니다.
      *
      * @param findId 요청 받은 숫자 타입의 id
      * @param title Task의 변경할 title
-     * @return 변경한 Task
-     * @throws NoSuchElementException Task를 찾지 못하면 던집니다.
+     * @return 변경한 Task를 리턴, Task가 없다면 null 리턴
      */
     public Task changeTask(Long findId, String title) {
         Optional<Task> optionalTask = getTask(findId);
@@ -71,22 +71,22 @@ public class TaskService {
             return task;
         }
 
-        throw new NoSuchElementException();
+        return null;
     }
 
     /**
      * 요청된 숫자 형식의 id와 같은 Task를 찾고 있으면 제거하고, 없으면 예외를 던집니다.
      * @param findId 요청된 숫자 형식의 id
-     * @throws NoSuchElementException id와 같은 Task를 찾지 못하면 던집니다.
+     * @return 제거했다면 true, 아니라면 false 리턴
      */
-    public void deleteTask(Long findId) {
+    public boolean deleteTask(Long findId) {
         Optional<Task> optionalTask = getTask(findId);
 
         if (optionalTask.isPresent()) {
             tasks.remove(optionalTask.get());
-            return;
+            return true;
         }
 
-        throw new NoSuchElementException();
+        return false;
     }
 }
