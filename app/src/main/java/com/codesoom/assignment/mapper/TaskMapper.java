@@ -2,6 +2,7 @@ package com.codesoom.assignment.mapper;
 
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
@@ -20,8 +21,9 @@ public class TaskMapper {
      * @return 변환된 HashMap 리턴
      * @throws JsonProcessingException Json 변환에 문제가 발생할 경우 던집니다.
      */
-    public static HashMap getRequestMap(String request) throws JsonProcessingException {
-        return objectMapper.readValue(request, HashMap.class);
+    public static HashMap<String, String> getRequestMap(String request) throws JsonProcessingException {
+        TypeReference<HashMap<String, String>> hashMapTypeReference = new TypeReference<>(){};
+        return objectMapper.readValue(request, hashMapTypeReference);
     }
 
     /**

@@ -32,8 +32,8 @@ public class PostRouter {
             return;
         }
 
-        HashMap requestMap = TaskMapper.getRequestMap(request);
-        request = (String) requestMap.get("title");
+        HashMap<String, String> requestMap = TaskMapper.getRequestMap(request);
+        request = requestMap.get("title");
 
         String content =  TaskMapper.taskToJson(taskService.createTask(request));
 

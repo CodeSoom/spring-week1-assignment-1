@@ -25,10 +25,10 @@ public class PutRouter {
             TaskHttpHandler.sendResponse(exchange, HttpStatus.BAD_REQUEST, -1);
         }
 
-        HashMap requestMap = TaskMapper.getRequestMap(request);
+        HashMap<String, String> requestMap = TaskMapper.getRequestMap(request);
         Long findId = Parser.extractId(path.split("/"));
 
-        Task changedTask = taskService.changeTask(findId, (String) requestMap.get("title"));
+        Task changedTask = taskService.changeTask(findId, requestMap.get("title"));
 
         if (changedTask == null) {
             TaskHttpHandler.sendResponse(exchange, HttpStatus.NOT_FOUND, -1);
