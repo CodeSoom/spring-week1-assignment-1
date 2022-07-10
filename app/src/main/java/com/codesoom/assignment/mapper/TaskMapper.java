@@ -22,8 +22,7 @@ public class TaskMapper {
      * @throws JsonProcessingException Json 변환에 문제가 발생할 경우 던집니다.
      */
     public static HashMap<String, String> getRequestMap(String request) throws JsonProcessingException {
-        TypeReference<HashMap<String, String>> hashMapTypeReference = new TypeReference<>(){};
-        return objectMapper.readValue(request, hashMapTypeReference);
+        return objectMapper.readValue(request, new TypeReference<>() {});
     }
 
     /**

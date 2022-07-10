@@ -38,8 +38,7 @@ public class GetRouter {
      * @throws IOException 입출력에 문제가 발생하면 던집니다.
      */
     private void detailHandle(HttpExchange exchange, String path) throws IOException {
-        String[] splitedPath = path.split("/");
-        Optional<Task> storedTask = taskService.getTask(Parser.extractId(splitedPath));
+        Optional<Task> storedTask = taskService.getTask(Parser.extractId(path.split("/")));
 
         if (storedTask.isPresent()) {
             String content = TaskMapper.taskToJson(storedTask.get());
