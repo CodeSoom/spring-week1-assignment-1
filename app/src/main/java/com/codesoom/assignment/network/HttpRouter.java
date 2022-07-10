@@ -60,7 +60,7 @@ public class HttpRouter {
     }
 
     /**
-     * http request를 분석해서 등록된 규칙과 매칭되는 핸들러를 실행합니다.
+     * http request가 등록된 규칙과 매칭되는 핸들러를 실행합니다.
      * @param exchange http 요청이 들어왔을 때 전달되는 HttpExchange 객체
      * @throws IOException responseCode, content를 작성할 때 에러가 발생할 수 있습니다
      */
