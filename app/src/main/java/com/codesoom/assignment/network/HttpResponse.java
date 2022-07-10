@@ -43,11 +43,15 @@ public class HttpResponse {
      * @throws IOException outputStream 쓰기 작업에서 발생하는 에러 전달
      */
     public void send(HttpResponseCode responseCode, @Nullable String content) throws IOException {
+        sendHeaders(responseCode, content);
+        write(content);
+    }
+
+    private void sendHeaders(HttpResponseCode responseCode, String content) throws IOException {
         int codeRawValue = responseCode.getRawValue();
         int contentLength = (content == null) ? EMPTY_RESPONSE_BYTE_LENGTH : content.getBytes().length;
 
         exchange.sendResponseHeaders(codeRawValue, contentLength);
-        write(content);
     }
 
     private void write(String content) throws IOException {
