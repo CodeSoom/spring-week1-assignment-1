@@ -10,7 +10,7 @@ public enum HttpStatus {
     BAD_REQUEST(400),
     NOT_FOUND(404);
 
-    private int code;
+    private final int code;
 
     HttpStatus(int code) {
         this.code = code;

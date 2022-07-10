@@ -6,11 +6,19 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 
 public class Router {
-    private final TaskService taskService = new TaskService();
-    private final PostRouter postRouter = new PostRouter(taskService);
-    private final PutRouter putRouter = new PutRouter(taskService);
-    private final DeleteRouter deleteRouter = new DeleteRouter(taskService);
-    private final GetRouter getRouter = new GetRouter(taskService);
+    private final TaskService taskService;
+    private final PostRouter postRouter;
+    private final PutRouter putRouter;
+    private final DeleteRouter deleteRouter;
+    private final GetRouter getRouter;
+
+    public Router(TaskService taskService) {
+        this.taskService = taskService;
+        postRouter = new PostRouter(taskService);
+        putRouter = new PutRouter(taskService);
+        deleteRouter = new DeleteRouter(taskService);
+        getRouter = new GetRouter(taskService);
+    }
 
     public void getHandle(HttpExchange exchange, String path) throws IOException {
         getRouter.handle(exchange, path);

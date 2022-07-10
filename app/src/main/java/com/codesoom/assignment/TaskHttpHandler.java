@@ -3,6 +3,7 @@ package com.codesoom.assignment;
 import com.codesoom.assignment.models.HttpStatus;
 import com.codesoom.assignment.router.*;
 import com.codesoom.assignment.service.Parser;
+import com.codesoom.assignment.service.TaskService;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -14,7 +15,7 @@ import java.net.URI;
  *  Task의 로직을 가지고 있고 관련된 Http 요청을 처리하는 클래스
  */
 public class TaskHttpHandler implements HttpHandler {
-    private final Router router = new Router();
+    private final Router router = new Router(new TaskService());
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
