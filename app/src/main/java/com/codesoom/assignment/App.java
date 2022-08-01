@@ -1,10 +1,28 @@
 package com.codesoom.assignment;
 
-public class App {
-    public String getGreeting() {
-        return "Hello World!";
-    }
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class App {
     public static void main(String[] args) {
+        Logger.getGlobal().setLevel(Level.INFO);
+
+        final InetSocketAddress address = new InetSocketAddress(8000);
+
+        final HttpServer httpServer;
+        try {
+            httpServer = HttpServer.create(address, 0);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        final HttpHandler handler = new ToDoHttpHandler();
+        httpServer.createContext("/tasks", handler);
+        httpServer.start();
     }
 }
