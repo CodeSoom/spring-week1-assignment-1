@@ -12,8 +12,8 @@ public class TaskHandler implements HttpHandler {
     public final int SUCCESSFUL_OK = 200;
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
-        String path = exchange.getRequestURI().getPath();
+        final String method = exchange.getRequestMethod();
+        final String path = exchange.getRequestURI().getPath();
         System.out.println(String.format("[method] : %s , [path] : %s" , method , path));
 
         String content = "Hello Codesoom!!!";
