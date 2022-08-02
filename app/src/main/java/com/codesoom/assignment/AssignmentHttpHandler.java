@@ -73,7 +73,7 @@ public class AssignmentHttpHandler implements HttpHandler {
     }
 
     private void ifBodyPresentOrThrow(String body, HttpExchange exchange)
-        throws RuntimeException, IOException {
+        throws IOException {
         if (body.isEmpty()) {
             String content = "Empty body";
             this.response(exchange, content, 400);
@@ -81,7 +81,7 @@ public class AssignmentHttpHandler implements HttpHandler {
     }
 
     private void ifTitlePresentOrThrow(String title, HttpExchange exchange)
-        throws RuntimeException, IOException {
+        throws IOException {
         if (title.isEmpty()) {
             String content = "Title must be required.";
             this.response(exchange, content, 400);
