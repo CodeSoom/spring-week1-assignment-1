@@ -36,17 +36,11 @@ public class AssignmentHttpHandler implements HttpHandler {
 
             String body = toBody(requestBody);
 
-            if (body.isEmpty()) {
-                content = "Empty body";
-                response(exchange, content, 400);
-            }
+            ifBodyPresentOrThrow(body, exchange);
 
             Task task = toTask(body);
 
-            if (task.getTitle() == null) {
-                content = "Title must be required.";
-                response(exchange, content, 400);
-            }
+            ifTitlePresentOrThrow(task.getTitle(), exchange);
 
             addTask(task);
             content = getOneTask(task.getId());
@@ -76,6 +70,22 @@ public class AssignmentHttpHandler implements HttpHandler {
         return new BufferedReader(new InputStreamReader(requestBody))
             .lines()
             .collect(Collectors.joining("\n"));
+    }
+
+    private void ifBodyPresentOrThrow(String body, HttpExchange exchange)
+        throws RuntimeException, IOException {
+        if (body.isEmpty()) {
+            String content = "Empty body";
+            this.response(exchange, content, 400);
+        }
+    }
+
+    private void ifTitlePresentOrThrow(String title, HttpExchange exchange)
+        throws RuntimeException, IOException {
+        if (title.isEmpty()) {
+            String content = "Title must be required.";
+            this.response(exchange, content, 400);
+        }
     }
 
     private Task toTask(String content) throws JsonProcessingException {
