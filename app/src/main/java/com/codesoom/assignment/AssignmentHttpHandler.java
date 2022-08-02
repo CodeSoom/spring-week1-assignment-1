@@ -38,7 +38,6 @@ public class AssignmentHttpHandler implements HttpHandler {
 
             if (body.isEmpty()) {
                 content = "Empty body";
-                exchange.sendResponseHeaders(400, content.getBytes().length);
                 response(exchange, content, 400);
             }
 
