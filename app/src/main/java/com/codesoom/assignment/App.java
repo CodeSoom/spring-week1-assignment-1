@@ -14,16 +14,12 @@ public class App {
 
     public static void main(String[] args) {
         System.out.println(new App().getGreeting());
-
         InetSocketAddress address = new InetSocketAddress(8000);
 
         try {
             HttpServer server = HttpServer.create(address , 0);
             HttpHandler handler = new TaskHandler();
             server.createContext("/" , handler);
-            
-
-
             server.start();
 
         } catch (IOException e) {
