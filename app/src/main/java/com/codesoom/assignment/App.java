@@ -11,17 +11,11 @@ public class App {
         return "Hello World!";
     }
 
-    public static void main(String[] args) {
-
-        try {
-            InetSocketAddress address = new InetSocketAddress(8000);
-            HttpServer httpServer = HttpServer.create(address, 0);
-            HttpHandler handler = new AssignmentHttpHandler();
-            httpServer.createContext("/", handler);
-            httpServer.start();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
+    public static void main(String[] args) throws IOException {
+        InetSocketAddress address = new InetSocketAddress(8000);
+        HttpServer httpServer = HttpServer.create(address, 0);
+        HttpHandler handler = new AssignmentHttpHandler();
+        httpServer.createContext("/", handler);
+        httpServer.start();
     }
 }
