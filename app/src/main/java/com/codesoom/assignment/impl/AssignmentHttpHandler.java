@@ -1,17 +1,58 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.impl;
 
+import com.codesoom.assignment.IHttphandler;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AssignmentHttpHandler implements HttpHandler {
+/**
+ * @ClassName AssignmentHttpHandler
+ * @Description TODO
+ *
+ * @method handle handle Http request
+ * @params HttpExchange exchange
+ * @return void
+ *
+ * @method getAllTasks get all tasks
+ * @params null
+ * @return List<Task>
+ *
+ * @method getOneTask get one task
+ * @params Long id
+ * @return Task
+ *
+ * @method addTask add one task
+ * @params Task task
+ * @return void
+ *
+ * @method toBody get body from request
+ * @params InputStream requestBody
+ * @return String
+ *
+ * @method ifBodyPresent if body is present
+ * @params String body, HttpExchange exchange
+ * @return Boolean
+ *
+ * @method ifTitlePresent if title is present or throw 400 error
+ * @params String title, HttpExchange exchange
+ * @return Boolean
+ *
+ * @method toTask toTask from body
+ * @params String content
+ * @return Task
+ *
+ * @method response make response and close http session
+ * @params HttpExchange exchange, String content, int statusCode
+ * @return void
+ */
+
+public class AssignmentHttpHandler implements IHttphandler {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
