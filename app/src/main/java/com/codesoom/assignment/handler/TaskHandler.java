@@ -1,22 +1,26 @@
 package com.codesoom.assignment.handler;
 
+import com.codesoom.assignment.enums.HttpResponse;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.*;
-import java.util.*;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class TaskHandler implements HttpHandler {
 
     public static List<Task> tasks = new LinkedList<>();
     public ObjectMapper mapper = new ObjectMapper();
-
-    public final int HTTP_STATUS_OK = 200;
-    public final int HTTP_STATUS_CREATED = 201;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -29,7 +33,7 @@ public class TaskHandler implements HttpHandler {
         System.out.println(String.format("[method] : %s , [path] : %s , [body] : %s" , method , path[1] , body));
 
         String content = "";
-        int responseCode = HTTP_STATUS_OK;
+        HttpResponse httpResponse = HttpResponse.OK;
 
         /*TODO
           path를 짜르고 안전하게 접근할 방법은 없을까?
@@ -54,7 +58,7 @@ public class TaskHandler implements HttpHandler {
                 task.setId((long) (tasks.size() + 1));
                 tasks.add(task);
                 content = taskToJson(task);
-                responseCode = HTTP_STATUS_CREATED;
+                httpResponse = HttpResponse.CREATED;
             }
             else if("PUT".equals(method) || "PATCH".equals(method)){
                 Task newTask = jsonToTask(body);
@@ -67,7 +71,7 @@ public class TaskHandler implements HttpHandler {
             }
         }
 
-        exchange.sendResponseHeaders(responseCode , content.getBytes().length);
+        exchange.sendResponseHeaders(httpResponse.getCode() , content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
