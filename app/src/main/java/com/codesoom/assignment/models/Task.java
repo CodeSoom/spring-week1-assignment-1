@@ -1,8 +1,10 @@
 package com.codesoom.assignment.models;
 
 public class Task {
-    private final Long id;
-    private final String title;
+    private Long id;
+    private String title;
+
+    public Task(){}
 
     public Task(Long id , String title){
         this.id = id;
