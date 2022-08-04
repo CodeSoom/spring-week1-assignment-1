@@ -31,7 +31,7 @@ public class TaskHandler implements HttpHandler {
         final HttpMethod method = HttpMethod.valueOf(exchange.getRequestMethod());
         final Path path = new Path(exchange.getRequestURI().getPath());
         final String body = getBody(exchange.getRequestBody());
-        System.out.printf("[method] : %s , [path] : %s , [body] : %s%n", method , path , body);
+        System.out.printf("[method] : %s , [path] : %s , [body] : %s%n", method , path.getFullPath() , body);
 
         String content = "";
         HttpResponse httpResponse = HttpResponse.OK;
