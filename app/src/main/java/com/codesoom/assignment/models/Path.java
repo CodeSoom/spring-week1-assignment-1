@@ -23,6 +23,10 @@ public class Path {
         return pathVariable;
     }
 
+    public boolean resourceEquals(String resource){
+        return this.resource.equals(resource);
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Path{");
