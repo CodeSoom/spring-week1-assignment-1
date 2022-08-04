@@ -1,6 +1,7 @@
 package com.codesoom.assignment.handler;
 
 import com.codesoom.assignment.converter.TaskConverter;
+import com.codesoom.assignment.enums.HttpMethod;
 import com.codesoom.assignment.enums.HttpResponse;
 import com.codesoom.assignment.exceptions.ParameterNotFoundException;
 import com.codesoom.assignment.models.Path;
@@ -27,7 +28,7 @@ public class TaskHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        final String method = exchange.getRequestMethod();
+        final HttpMethod method = HttpMethod.valueOf(exchange.getRequestMethod());
         final Path path = new Path(exchange.getRequestURI().getPath());
         final String body = getBody(exchange.getRequestBody());
         System.out.printf("[method] : %s , [path] : %s , [body] : %s%n", method , path , body);
@@ -46,7 +47,7 @@ public class TaskHandler implements HttpHandler {
           어떻게 하면 한 번에 이해 되는 코드를 짤 수 있을까?
          */
         if(path.resourceEquals("tasks")){
-            if ("GET".equals(method)) {
+            if (method.equals("GET")) {
                 try {
                     Task task = tasks.get(Long.parseLong(path.getPathVariable()));
                     if(task == null){
@@ -57,7 +58,7 @@ public class TaskHandler implements HttpHandler {
                 } catch (ParameterNotFoundException e) {
                     content = taskConverter.convert(tasks);
                 }
-            } else if ("POST".equals(method)) {
+            } else if (method.equals("POST")) {
                 long id = getNextId();
                 try{
                     Task task = taskConverter.convert(body);
@@ -68,7 +69,7 @@ public class TaskHandler implements HttpHandler {
                 } catch(Exception e){
                     e.printStackTrace();
                 }
-            } else if ("PUT".equals(method) || "PATCH".equals(method)) {
+            } else if (method.equals("PUT") || method.equals("PATCH")) {
                 try {
                     long taskId = Long.parseLong(path.getPathVariable());
                     Task task = taskConverter.convert(body);
@@ -83,7 +84,7 @@ public class TaskHandler implements HttpHandler {
                 catch (ParameterNotFoundException e) {
                     httpResponse = HttpResponse.BAD_REQUEST;
                 }
-            } else if ("DELETE".equals(method)) {
+            } else if (method.equals("DELETE")) {
                 try {
                     long taskId = Long.parseLong(path.getPathVariable());
                     if(tasks.get(taskId) == null){
