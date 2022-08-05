@@ -1,5 +1,10 @@
 package com.codesoom.assignment.enums;
 
+/**
+ * HTTP Response Status Code를 관리한다 <a href="https://datatracker.ietf.org/doc/html/rfc9110#section-15">RFC9110</a>
+ *
+ * @see HttpResponse#getCode() Response Status Code를 반환한다
+ */
 public enum HttpResponse {
     OK(200),
     CREATED(201),
