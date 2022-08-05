@@ -39,12 +39,8 @@ public class TaskHandler implements HttpHandler {
         /*TODO
           if문 부분을 더 깔끔하게 할 수 있는 방법은 없을까?
           1. 서비스 계층을 추가하여 method , path , body를 넘겨 CRUD 작업을 맡기게 되면 ??
-          - 응답코드와 응답 바디에 담을 데이터를 같이 반환받게 되면 추가적인 if문이 필요한데
-          - exchange를 같이 넘기면 ??
-          - 서비스 계층에서 exchange를 조작하는 것은 이상하다
 
-          반복 되는 코드 , null확인 하는 코드가 많다
-          어떻게 하면 한 번에 이해 되는 코드를 짤 수 있을까?
+          2. 반복 되는 코드들을 어떻게 없앨 수 있을까 ?? 어떻게 하면 한 번에 이해 되는 코드를 짤 수 있을까?
          */
         if(path.hasResource() && path.resourceEquals("tasks")){
             if ("GET".equals(method.name())) {
