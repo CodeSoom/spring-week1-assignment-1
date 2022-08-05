@@ -46,9 +46,6 @@ public class TaskHandler implements HttpHandler {
           반복 되는 코드 , null확인 하는 코드가 많다
           어떻게 하면 한 번에 이해 되는 코드를 짤 수 있을까?
          */
-        try{
-
-
         if(path.resourceEquals("tasks")){
             if (method.equals("GET")) {
                 try {
@@ -96,10 +93,7 @@ public class TaskHandler implements HttpHandler {
                 }
             }
         }
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
+
         exchange.sendResponseHeaders(httpResponse.getCode() , content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
