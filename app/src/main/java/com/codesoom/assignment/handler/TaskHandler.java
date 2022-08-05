@@ -6,6 +6,7 @@ import com.codesoom.assignment.enums.HttpResponse;
 import com.codesoom.assignment.exceptions.ParameterNotFoundException;
 import com.codesoom.assignment.models.Path;
 import com.codesoom.assignment.models.Task;
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -90,6 +91,8 @@ public class TaskHandler implements HttpHandler {
             }
         }
 
+        Headers responseHeaders = exchange.getResponseHeaders();
+        responseHeaders.set("Content-Type" , "application/json; charset=UTF-8");
         exchange.sendResponseHeaders(httpResponse.getCode() , content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
