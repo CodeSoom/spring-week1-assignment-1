@@ -1,15 +1,10 @@
 package com.codesoom.assignment.converter;
 
 import com.codesoom.assignment.models.Task;
-import com.fasterxml.jackson.core.JsonProcessingException;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.reflect.Field;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,36 +18,26 @@ public class TaskConverter {
         public static final TaskConverter INSTANCE = new TaskConverter();
     }
 
-    public Task convert(String content) throws JsonProcessingException {
+    public Task newTask(String content , Long taskId){
         Map<String , String> map = jsonToMap(content);
-        Task task = new Task();
-        Arrays.stream(getTaskDeclaredFields()).forEach(field -> {
-            field.setAccessible(true);
-            try {
-                field.set(map.get(field.getName()) , task);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        });
-        System.out.println(task);
-        return task;
-//        return objectMapper.readValue(content , Task.class);
+        String title = map.get("title");
+        return new Task(taskId , title);
     }
 
-    public String convert(Task task) throws IOException {
-//        OutputStream outputStream = new ByteArrayOutputStream();
-//        objectMapper.writeValue(outputStream , task);
-        return "";
+    public String convert(Task task){
+        return String.format("{\"id\":%d,\"title\":\"%s\"}" , task.getId() , task.getTitle());
     }
 
-    public String convert(Map<Long , Task> tasks) throws IOException {
-//        OutputStream outputStream = new ByteArrayOutputStream();
-//        objectMapper.writeValue(outputStream , new ArrayList<>(tasks.values()));
-        return "";
-    }
-
-    public Field[] getTaskDeclaredFields(){
-        return Task.class.getDeclaredFields();
+    public String convert(Map<Long , Task> tasks){
+        StringBuilder sb = new StringBuilder();
+        StringJoiner sj = new StringJoiner(",");
+        sb.append("[");
+        for(Task task : new ArrayList<>(tasks.values())){
+            sj.add(convert(task));
+        }
+        sb.append(sj);
+        sb.append("]");
+        return sb.toString();
     }
 
     public Map<String , String> jsonToMap(String content){
@@ -61,10 +46,16 @@ public class TaskConverter {
         Pattern pattern = Pattern.compile("\"(.*?)\"");
         for(String test : contents){
             Matcher matcher = pattern.matcher(test);
-            String key = matcher.find() ? matcher.group().replace("\"" , "") : "";
-            String value = matcher.find() ? matcher.group().replace("\"" , "") : "";
+            String key = getContent(matcher);
+            String value = getContent(matcher);
             map.put(key , value);
         }
         return map;
+    }
+
+    public String getContent(Matcher matcher){
+        if(!matcher.find())
+            return "";
+        return matcher.group().replace("\"" , "");
     }
 }

@@ -46,6 +46,9 @@ public class TaskHandler implements HttpHandler {
           반복 되는 코드 , null확인 하는 코드가 많다
           어떻게 하면 한 번에 이해 되는 코드를 짤 수 있을까?
          */
+        try{
+
+
         if(path.resourceEquals("tasks")){
             if (method.equals("GET")) {
                 try {
@@ -59,26 +62,20 @@ public class TaskHandler implements HttpHandler {
                     content = taskConverter.convert(tasks);
                 }
             } else if (method.equals("POST")) {
-                long id = getNextId();
-                try{
-                    Task task = taskConverter.convert(body);
-                    Task newTask = new Task(id, task.getTitle());
-                    tasks.put(id, newTask);
-                    content = taskConverter.convert(newTask);
-                    httpResponse = HttpResponse.CREATED;
-                } catch(Exception e){
-                    e.printStackTrace();
-                }
+                long taskId = getNextId();
+                Task task = taskConverter.newTask(body , taskId);
+                tasks.put(taskId, task);
+                content = taskConverter.convert(task);
+                httpResponse = HttpResponse.CREATED;
             } else if (method.equals("PUT") || method.equals("PATCH")) {
                 try {
                     long taskId = Long.parseLong(path.getPathVariable());
-                    Task task = taskConverter.convert(body);
                     if(tasks.get(taskId) == null){
                         httpResponse = HttpResponse.NOT_FOUND;
                     } else{
-                        Task newTask = new Task(taskId, task.getTitle());
-                        tasks.replace(taskId, newTask);
-                        content = taskConverter.convert(newTask);
+                        Task task = taskConverter.newTask(body , taskId);
+                        tasks.replace(taskId, task);
+                        content = taskConverter.convert(task);
                     }
                 }
                 catch (ParameterNotFoundException e) {
@@ -99,7 +96,10 @@ public class TaskHandler implements HttpHandler {
                 }
             }
         }
-
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
         exchange.sendResponseHeaders(httpResponse.getCode() , content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
