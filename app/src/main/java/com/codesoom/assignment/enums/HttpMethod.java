@@ -10,7 +10,7 @@ public enum HttpMethod {
     POST,
     PUT,
     PATCH,
-    DELETED;
+    DELETE;
     
     public boolean equals(String method){
         return this.name().equals(method);
