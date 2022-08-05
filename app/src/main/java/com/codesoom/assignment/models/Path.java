@@ -10,7 +10,7 @@ public class Path {
     public Path(String path){
         this.fullPath = path;
         String[] pathArr = path.split("/");
-        this.resource = pathArr[1];
+        this.resource = pathArr.length >= 2 ? pathArr[1] : null;
         this.pathVariable = pathArr.length >= 3 ? pathArr[2] : null;
     }
 
@@ -27,6 +27,10 @@ public class Path {
             throw new ParameterNotFoundException("not existing pathVariable");
         }
         return pathVariable;
+    }
+
+    public boolean hasResource(){
+        return this.resource != null;
     }
 
     public boolean resourceEquals(String resource){

@@ -46,7 +46,7 @@ public class TaskHandler implements HttpHandler {
           반복 되는 코드 , null확인 하는 코드가 많다
           어떻게 하면 한 번에 이해 되는 코드를 짤 수 있을까?
          */
-        if(path.resourceEquals("tasks")){
+        if(path.hasResource() && path.resourceEquals("tasks")){
             if ("GET".equals(method.name())) {
                 try {
                     Task task = tasks.get(Long.parseLong(path.getPathVariable()));
