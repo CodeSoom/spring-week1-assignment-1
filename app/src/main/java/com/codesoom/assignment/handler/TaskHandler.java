@@ -47,7 +47,7 @@ public class TaskHandler implements HttpHandler {
           어떻게 하면 한 번에 이해 되는 코드를 짤 수 있을까?
          */
         if(path.resourceEquals("tasks")){
-            if (method.equals("GET")) {
+            if ("GET".equals(method.name())) {
                 try {
                     Task task = tasks.get(Long.parseLong(path.getPathVariable()));
                     if(task == null){
@@ -58,13 +58,13 @@ public class TaskHandler implements HttpHandler {
                 } catch (ParameterNotFoundException e) {
                     content = taskConverter.convert(tasks);
                 }
-            } else if (method.equals("POST")) {
+            } else if ("POST".equals(method.name())) {
                 long taskId = getNextId();
                 Task task = taskConverter.newTask(body , taskId);
                 tasks.put(taskId, task);
                 content = taskConverter.convert(task);
                 httpResponse = HttpResponse.CREATED;
-            } else if (method.equals("PUT") || method.equals("PATCH")) {
+            } else if ("PUT".equals(method.name()) || "PATCH".equals(method.name())) {
                 try {
                     long taskId = Long.parseLong(path.getPathVariable());
                     if(tasks.get(taskId) == null){
@@ -78,7 +78,7 @@ public class TaskHandler implements HttpHandler {
                 catch (ParameterNotFoundException e) {
                     httpResponse = HttpResponse.BAD_REQUEST;
                 }
-            } else if (method.equals("DELETE")) {
+            } else if ("DELETE".equals(method.name())) {
                 try {
                     long taskId = Long.parseLong(path.getPathVariable());
                     if(tasks.get(taskId) == null){
