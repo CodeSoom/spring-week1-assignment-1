@@ -22,13 +22,13 @@ public class Path {
         return resource;
     }
 
-    public String getPathVariable() throws ParameterNotFoundException {
-        if(pathVariable == null){
-            throw new ParameterNotFoundException("not existing pathVariable");
-        }
+    public String getPathVariable() {
         return pathVariable;
     }
 
+    public boolean hasPathVariable(){
+        return this.pathVariable != null;
+    }
     public boolean hasResource(){
         return this.resource != null;
     }
