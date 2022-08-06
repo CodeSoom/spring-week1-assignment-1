@@ -32,16 +32,19 @@ public class TaskHandler implements HttpHandler {
         final HttpMethod method = HttpMethod.valueOf(exchange.getRequestMethod());
         final Path path = new Path(exchange.getRequestURI().getPath());
         System.out.printf("[method] : %s , [path] : %s%n", method , path.getFullPath());
-        if(!path.hasResource() || !path.resourceEquals("tasks")) {
-            send(exchange, HttpResponse.OK.getCode() , "");
+
+        HttpResponse httpResponse = HttpResponse.NO_CONTENT;
+        if(path.hasResource() && path.resourceEquals("tasks")){
+            if(path.hasPathVariable()){
+                handleUsingTaskId(exchange , method , Long.parseLong(path.getPathVariable()));
+            }
+            else{
+                handleTask(exchange , method);
+            }
+            return;
         }
 
-        if(path.hasPathVariable()){
-            handleUsingTaskId(exchange , method , Long.parseLong(path.getPathVariable()));
-        }
-        else{
-            handleTask(exchange , method);
-        }
+        send(exchange , httpResponse.getCode() , "");
     }
 
     private void handleUsingTaskId(HttpExchange exchange, HttpMethod method , Long id) throws IOException {
