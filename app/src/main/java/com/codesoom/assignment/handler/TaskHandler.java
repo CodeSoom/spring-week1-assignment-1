@@ -31,73 +31,78 @@ public class TaskHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         final HttpMethod method = HttpMethod.valueOf(exchange.getRequestMethod());
         final Path path = new Path(exchange.getRequestURI().getPath());
-        final String body = getBody(exchange.getRequestBody());
-        System.out.printf("[method] : %s , [path] : %s , [body] : %s%n", method , path.getFullPath() , body);
+        System.out.printf("[method] : %s , [path] : %s%n", method , path.getFullPath());
 
-        String content = "";
-        HttpResponse httpResponse = HttpResponse.OK;
-
-        /*TODO
-          if문 부분을 더 깔끔하게 할 수 있는 방법은 없을까?
-          1. 서비스 계층을 추가하여 method , path , body를 넘겨 CRUD 작업을 맡기게 되면 ??
-
-          2. 반복 되는 코드들을 어떻게 없앨 수 있을까 ?? 어떻게 하면 한 번에 이해 되는 코드를 짤 수 있을까?
-         */
+        HttpResponse httpResponse = HttpResponse.NO_CONTENT;
         if(path.hasResource() && path.resourceEquals("tasks")){
-            if ("GET".equals(method.name())) {
-                try {
-                    Task task = tasks.get(Long.parseLong(path.getPathVariable()));
-                    if(task == null){
-                        httpResponse = HttpResponse.NOT_FOUND;
-                    } else{
-                        content = taskConverter.convert(task);
-                    }
-                } catch (ParameterNotFoundException e) {
-                    content = taskConverter.convert(tasks);
-                }
-            } else if ("POST".equals(method.name())) {
-                long taskId = getNextId();
-                Task task = taskConverter.newTask(body , taskId);
-                tasks.put(taskId, task);
-                content = taskConverter.convert(task);
-                httpResponse = HttpResponse.CREATED;
-            } else if ("PUT".equals(method.name()) || "PATCH".equals(method.name())) {
-                try {
-                    long taskId = Long.parseLong(path.getPathVariable());
-                    if(tasks.get(taskId) == null){
-                        httpResponse = HttpResponse.NOT_FOUND;
-                    } else{
-                        Task task = taskConverter.newTask(body , taskId);
-                        tasks.replace(taskId, task);
-                        content = taskConverter.convert(task);
-                    }
-                }
-                catch (ParameterNotFoundException e) {
-                    httpResponse = HttpResponse.BAD_REQUEST;
-                }
-            } else if ("DELETE".equals(method.name())) {
-                try {
-                    long taskId = Long.parseLong(path.getPathVariable());
-                    if(tasks.get(taskId) == null){
-                        httpResponse = HttpResponse.NOT_FOUND;
-                    } else{
-                        tasks.remove(taskId);
-                        httpResponse = HttpResponse.NO_CONTENT;
-                    }
-                }
-                catch (ParameterNotFoundException e) {
-                    httpResponse = HttpResponse.BAD_REQUEST;
-                }
+            if(path.hasPathVariable()){
+                handleUsingTaskId(exchange , method , Long.parseLong(path.getPathVariable()));
             }
+            else{
+                handleTask(exchange , method);
+            }
+            return;
         }
 
+        send(exchange , httpResponse.getCode() , "");
+    }
+
+    private void handleUsingTaskId(HttpExchange exchange, HttpMethod method , Long id) throws IOException {
+        String content = "";
+        Task task = tasks.get(id);
+        if(task == null){
+            send(exchange , HttpResponse.NOT_FOUND.getCode(), content);
+            return;
+        }
+
+        HttpResponse response = HttpResponse.OK;
+        if ("GET".equals(method.name())) {
+            content = taskConverter.convert(task);
+        } else if ("PUT".equals(method.name()) || "PATCH".equals(method.name())) {
+            content = updateTask(exchange, id);
+        } else if ("DELETE".equals(method.name())) {
+            tasks.remove(id);
+            response = HttpResponse.NO_CONTENT;
+        }
+
+        send(exchange , response.getCode(), content);
+    }
+
+    private void handleTask(HttpExchange exchange, HttpMethod method) throws IOException {
+        String content = "";
+        HttpResponse response = HttpResponse.OK;
+        if ("GET".equals(method.name())) {
+            content = taskConverter.convert(tasks);
+        } else if ("POST".equals(method.name())) {
+            content = createTask(exchange);
+            response = HttpResponse.CREATED;
+        }
+        send(exchange, response.getCode() , content);
+    }
+
+    private String createTask(HttpExchange exchange) throws IOException {
+        long taskId = getNextId();
+        Task task = taskConverter.newTask(getBody(exchange.getRequestBody()) , taskId);
+        tasks.put(taskId, task);
+        return taskConverter.convert(task);
+    }
+
+    private void send(HttpExchange exchange, int code, String content) throws IOException {
         Headers responseHeaders = exchange.getResponseHeaders();
         responseHeaders.set("Content-Type" , "application/json; charset=UTF-8");
-        exchange.sendResponseHeaders(httpResponse.getCode() , content.getBytes().length);
+        exchange.sendResponseHeaders(code , content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private String updateTask(HttpExchange exchange, Long id) {
+        String content;
+        Task newTask = taskConverter.newTask(getBody(exchange.getRequestBody()) , id);
+        tasks.replace(id, newTask);
+        content = taskConverter.convert(newTask);
+        return content;
     }
 
     private String getBody(InputStream inputStream){
