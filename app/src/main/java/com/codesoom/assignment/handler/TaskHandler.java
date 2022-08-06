@@ -31,13 +31,13 @@ public class TaskHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         final HttpMethod method = HttpMethod.valueOf(exchange.getRequestMethod());
         final Path path = new Path(exchange.getRequestURI().getPath());
-        System.out.printf("[method] : %s , [path] : %s%n", method , path.getFullPath());
-        if(!path.hasResource() || !path.resourceEquals("tasks")){
-            send(exchange , HttpResponse.NO_CONTENT.getCode(), "");
+        System.out.printf("[method] : %s , [path] : %s%n", method , path.fullPath);
+        if(!path.hasResource() || !path.resourceEquals("tasks")) {
+            send(exchange, HttpResponse.OK.getCode() , "");
         }
 
         if(path.hasPathVariable()){
-            handleUsingTaskId(exchange , method , Long.parseLong(path.getPathVariable()));
+            handleUsingTaskId(exchange , method , Long.parseLong(path.pathVariable));
         }
         else{
             handleTask(exchange , method);
