@@ -1,13 +1,19 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.controller.TodoHttpController;
+import com.codesoom.assignment.models.HttpStatus;
 import com.codesoom.assignment.models.Todo;
 import com.codesoom.assignment.validate.TodoValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -33,98 +39,123 @@ public class TodoHttpHandler implements HttpHandler {
                 todoValidator.isContainsInvalidId(path);
             } catch (IllegalArgumentException e) {
                 objectMapper.writeValue(outputStream, Arrays.asList());
-                exchange.sendResponseHeaders(404, outputStream.toString().getBytes().length);
+                exchange.sendResponseHeaders(HttpStatus.NOTFOUND.code(), outputStream.toString().getBytes().length);
                 e.printStackTrace();
             }
 
-            if (requestMethod.equals("GET") &&
-                    exchange.getRequestURI().getPath().substring(1).equals("tasks") &&
-                    exchange.getRequestURI().getPath().substring(1).split("/").length == 1) {
+            if (isGetTodos(requestMethod, path)) {
 
-                objectMapper.writeValue(outputStream, todoHttpController.getTodo());
+                objectMapper.writeValue(outputStream, todoHttpController.getTodos());
 
-                exchange.sendResponseHeaders(200, outputStream.toString().getBytes().length);
+                exchange.sendResponseHeaders(HttpStatus.SUCCESS.code(), outputStream.toString().getBytes().length);
                 responseBody.write(outputStream.toString().getBytes());
             }
 
-            if (requestMethod.equals("GET") &&
-                    path.contains("tasks") &&
-                    path.split("/").length > 1) {
+            if (isGetTodo(requestMethod, path)) {
                 String id = path.split("/")[1];
 
-                int status = 200;
                 if (todoHttpController.isEmpty() || !todoHttpController.isExist(id)) {
                     objectMapper.writeValue(outputStream, Arrays.asList());
-                    status = 404;
-                } else {
-                    objectMapper.writeValue(outputStream,todoHttpController.getTodo(id));
+                    exchange.sendResponseHeaders(HttpStatus.NOTFOUND.code(), outputStream.toString().getBytes().length);
+                    responseBody.write(outputStream.toString().getBytes());
+
+                    close(outputStream, requestBody, responseBody);
+                    return;
                 }
-                exchange.sendResponseHeaders(status, outputStream.toString().getBytes().length);
+
+                objectMapper.writeValue(outputStream,todoHttpController.getTodos(id));
+                exchange.sendResponseHeaders(HttpStatus.SUCCESS.code(), outputStream.toString().getBytes().length);
                 responseBody.write(outputStream.toString().getBytes());
             }
 
 
-            if (requestMethod.equals("POST") && path.equals("tasks")) {
+            if (isInsert(requestMethod, path)) {
                 String content = new BufferedReader(new InputStreamReader(requestBody))
                         .lines()
                         .collect(Collectors.joining("\n"));
-                if (!content.isBlank()) {
-                    Todo inserted = todoHttpController.insert(objectMapper.readValue(content, Todo.class));
-                    exchange.sendResponseHeaders(201, inserted.toString().getBytes().length);
-                    responseBody.write(inserted.toString().getBytes());
-                }
+                if (content.isBlank()) return;
+                Todo inserted = todoHttpController.insert(objectMapper.readValue(content, Todo.class));
+                exchange.sendResponseHeaders(HttpStatus.CREATED.code(), inserted.toString().getBytes().length);
+                responseBody.write(inserted.toString().getBytes());
             }
 
-            if ((requestMethod.equals("PUT") || requestMethod.equals("PATCH")) && path.contains("tasks")) {
+            if (isUpdate(requestMethod, path)) {
                 String id = path.split("/")[1];
 
-                int status = 200;
                 String content = new BufferedReader(new InputStreamReader(requestBody))
                         .lines()
                         .collect(Collectors.joining("\n"));
-                if (!content.isBlank()) {
-                    Todo body = objectMapper.readValue(content, Todo.class);
-                    body.setId(Integer.parseInt(id));
+                if (content.isBlank()) return;
+                Todo body = objectMapper.readValue(content, Todo.class);
+                body.setId(Integer.parseInt(id));
 
-                    if (!todoHttpController.isExist(id)) {
-                        objectMapper.writeValue(outputStream, Arrays.asList());
-                        status = 404;
-                        exchange.sendResponseHeaders(status, 0);
-                    } else {
-                        Todo updated = todoHttpController.update(body);
-                        exchange.sendResponseHeaders(status, updated.toString().getBytes().length);
-                        responseBody.write(updated.toString().getBytes());
-                    }
-                }
-            }
-
-            if (requestMethod.equals("DELETE") && path.contains("tasks")) {
-                String id = path.split("/")[1];
-                int status = 204;
                 if (!todoHttpController.isExist(id)) {
                     objectMapper.writeValue(outputStream, Arrays.asList());
-                    status = 404;
-                    exchange.sendResponseHeaders(status, 0);
-                } else {
-                    todoHttpController.delete(id);
-                    exchange.sendResponseHeaders(status, 0);
+                    exchange.sendResponseHeaders(HttpStatus.NOTFOUND.code(), 0);
+
+                    close(outputStream, requestBody, responseBody);
+                    return;
                 }
+
+                Todo updated = todoHttpController.update(body);
+                exchange.sendResponseHeaders(HttpStatus.SUCCESS.code(), updated.toString().getBytes().length);
+                responseBody.write(updated.toString().getBytes());
             }
 
-            if (requestBody != null) {
-                requestBody.close();
+            if (isDelete(requestMethod, path)) {
+                String id = path.split("/")[1];
+                if (!todoHttpController.isExist(id)) {
+                    objectMapper.writeValue(outputStream, Arrays.asList());
+                    exchange.sendResponseHeaders(HttpStatus.NOTFOUND.code(), 0);
+                    close(outputStream, requestBody, responseBody);
+                    return;
+                }
+                todoHttpController.delete(id);
+                exchange.sendResponseHeaders(HttpStatus.NOCONTENT.code(), 0);
             }
-            if (responseBody != null) {
-                responseBody.flush();
-                responseBody.close();
-            }
-            if (outputStream != null ) {
-                outputStream.flush();
-                outputStream.close();
-            }
+
+            close(outputStream, requestBody, responseBody);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+    }
+
+    private void close(OutputStream outputStream, InputStream requestBody, OutputStream responseBody) throws IOException {
+        if (requestBody != null) {
+            requestBody.close();
+        }
+        if (responseBody != null) {
+            responseBody.flush();
+            responseBody.close();
+        }
+        if (outputStream != null ) {
+            outputStream.flush();
+            outputStream.close();
+        }
+    }
+
+    private boolean isGetTodos(String requestMethod, String path) {
+        return "GET".equals(requestMethod) &&
+                path.equals("tasks") &&
+                path.split("/").length == 1;
+    }
+
+    private boolean isGetTodo(String requestMethod, String path) {
+        return "GET".equals(requestMethod) &&
+                path.contains("tasks") &&
+                path.split("/").length > 1;
+    }
+
+    private boolean isInsert(String requestMethod, String path) {
+        return "POST".equals(requestMethod) && path.equals("tasks");
+    }
+
+    private boolean isUpdate(String requestMethod, String path) {
+        return ("PUT".equals(requestMethod) || "PATCH".equals(requestMethod)) && path.contains("tasks");
+    }
+
+    private boolean isDelete(String requestMethod, String path) {
+        return "DELETE".equals(requestMethod) && path.contains("tasks");
     }
 }

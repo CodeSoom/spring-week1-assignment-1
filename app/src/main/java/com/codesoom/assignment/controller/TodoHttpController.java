@@ -13,11 +13,11 @@ public class TodoHttpController {
         this.id = 0;
     }
 
-    public List<Todo> getTodo() {
+    public List<Todo> getTodos() {
         return this.todoList;
     }
 
-    public Todo getTodo(String id) {
+    public Todo getTodos(String id) {
         return this.todoList.stream()
                 .filter(t -> t.getId().equals(Integer.parseInt(id)))
                 .findFirst()
