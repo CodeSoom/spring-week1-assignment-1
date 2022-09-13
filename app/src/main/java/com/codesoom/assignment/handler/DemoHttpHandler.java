@@ -66,7 +66,7 @@ public class DemoHttpHandler implements HttpHandler {
             String id = split[2];
             if (!isNumeric(id)) {
                 System.out.println("tasks id not a number");
-//                status = 404;
+                status = 404;
                 return;
             }
 
