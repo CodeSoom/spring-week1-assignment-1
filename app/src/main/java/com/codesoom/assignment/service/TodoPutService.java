@@ -4,7 +4,7 @@ import com.codesoom.assignment.model.ResponseData;
 import com.codesoom.assignment.model.Task;
 import com.codesoom.assignment.repository.TaskRepository;
 import com.codesoom.assignment.repository.TaskRepositoryImpl;
-import com.codesoom.assignment.util.HttpConst;
+import com.codesoom.assignment.util.HttpStatus;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -16,10 +16,12 @@ public class TodoPutService implements TodoService {
         if (isUpdateRequest(pathVariable, taskParam)) {
             taskParam.setId(Long.parseLong(pathVariable));
 
-            return new ResponseData(HttpConst.HTTP_OK, convertToJSON(taskRepository.updateTask(taskParam)));
+            return taskRepository.findById(Long.parseLong(pathVariable)) != null ?
+                    new ResponseData(HttpStatus.HTTP_OK, convertToJSON(taskRepository.updateTask(taskParam))) :
+                    new ResponseData(HttpStatus.HTTP_BAD_REQUEST, "");
 
         } else {
-            return new ResponseData(HttpConst.HTTP_OK, "");
+            return new ResponseData(HttpStatus.HTTP_OK, "");
 
         }
     }

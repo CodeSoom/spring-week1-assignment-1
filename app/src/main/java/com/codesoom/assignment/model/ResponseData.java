@@ -1,25 +1,27 @@
 package com.codesoom.assignment.model;
 
+import com.codesoom.assignment.util.HttpStatus;
+
 public class ResponseData {
 
-    private int statusCode;
+    private HttpStatus httpStatus;
 
     private String content;
 
     public ResponseData() {
     }
 
-    public ResponseData(int statusCode, String content) {
-        this.statusCode = statusCode;
+    public ResponseData(HttpStatus httpStatus, String content) {
+        this.httpStatus = httpStatus;
         this.content = content;
     }
 
-    public int getStatusCode() {
-        return statusCode;
+    public HttpStatus getHttpStatus() {
+        return httpStatus;
     }
 
-    public void setStatusCode(int statusCode) {
-        this.statusCode = statusCode;
+    public void setHttpStatus(HttpStatus httpStatus) {
+        this.httpStatus = httpStatus;
     }
 
     public String getContent() {
@@ -30,10 +32,18 @@ public class ResponseData {
         this.content = content;
     }
 
+    public int getStatusCode() {
+        return httpStatus.getStatusCode();
+    }
+
+    public String getDescription() {
+        return httpStatus.getDescription();
+    }
+
     @Override
     public String toString() {
         return "ResponseData{" +
-                "statusCode=" + statusCode +
+                "httpStatus=" + httpStatus +
                 ", content='" + content + '\'' +
                 '}';
     }

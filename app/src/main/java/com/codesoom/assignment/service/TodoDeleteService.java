@@ -4,7 +4,7 @@ import com.codesoom.assignment.model.ResponseData;
 import com.codesoom.assignment.model.Task;
 import com.codesoom.assignment.repository.TaskRepository;
 import com.codesoom.assignment.repository.TaskRepositoryImpl;
-import com.codesoom.assignment.util.HttpConst;
+import com.codesoom.assignment.util.HttpStatus;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -15,11 +15,11 @@ public class TodoDeleteService implements TodoService {
     public ResponseData processRequest(HttpExchange exchange, Task taskParam, String pathVariable) throws IOException {
         if (isDeleteRequest(pathVariable, taskParam)) {
             return taskRepository.deleteTask(Long.parseLong(pathVariable)) ?
-                        new ResponseData(HttpConst.HTTP_OK, "") :
-                            new ResponseData(HttpConst.HTTP_NO_CONTENT, "");
+                        new ResponseData(HttpStatus.HTTP_NO_CONTENT, "") :
+                            new ResponseData(HttpStatus.HTTP_NOT_FOUND, "");
 
         } else {
-            return new ResponseData(HttpConst.HTTP_BAD_REQUEST, "");
+            return new ResponseData(HttpStatus.HTTP_BAD_REQUEST, "");
 
         }
     }

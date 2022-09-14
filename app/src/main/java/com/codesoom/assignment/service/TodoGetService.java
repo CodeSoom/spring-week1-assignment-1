@@ -4,7 +4,7 @@ import com.codesoom.assignment.model.ResponseData;
 import com.codesoom.assignment.model.Task;
 import com.codesoom.assignment.repository.TaskRepository;
 import com.codesoom.assignment.repository.TaskRepositoryImpl;
-import com.codesoom.assignment.util.HttpConst;
+import com.codesoom.assignment.util.HttpStatus;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -16,14 +16,16 @@ public class TodoGetService implements TodoService {
     public ResponseData processRequest(HttpExchange exchange, Task taskParam, String pathVariable) throws IOException {
         if (isAllSearchRequest(pathVariable)) {
             List<Task> taskList = taskRepository.findAll();
-            return new ResponseData(HttpConst.HTTP_OK, convertToJSON(taskList));
+            return new ResponseData(HttpStatus.HTTP_OK, convertToJSON(taskList));
 
         } else if (isBadRequest(pathVariable)) {
-            return new ResponseData(HttpConst.HTTP_BAD_REQUEST, "");
+            return new ResponseData(HttpStatus.HTTP_BAD_REQUEST, "");
 
         } else {
             Task task = taskRepository.findById(Long.parseLong(pathVariable));
-            return new ResponseData(HttpConst.HTTP_OK, task != null ? convertToJSON(task) : "");
+            return task != null ?
+                    new ResponseData(HttpStatus.HTTP_OK, convertToJSON(task)) :
+                    new ResponseData(HttpStatus.HTTP_NOT_FOUND, "");
 
         }
     }

@@ -1,15 +1,13 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.util.HttpConst;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import com.sun.net.httpserver.spi.HttpServerProvider;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 
 public class App {
+    public static final int SERVER_PORT = 8000;
     public String getGreeting() {
         return "[Server Start ...]";
     }
@@ -18,7 +16,7 @@ public class App {
         System.out.println(new App().getGreeting());
 
         try {
-            InetSocketAddress address = new InetSocketAddress(HttpConst.SERVER_PORT);
+            InetSocketAddress address = new InetSocketAddress(SERVER_PORT);
             HttpServer httpServer = HttpServer.create(address, 0);
 
             HttpHandler handler = new TodoHttpHandler();
