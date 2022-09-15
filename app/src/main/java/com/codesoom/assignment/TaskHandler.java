@@ -3,14 +3,11 @@ package com.codesoom.assignment;
 import com.codesoom.controller.HttpMethod;
 import com.codesoom.http.HttpRequest;
 import com.codesoom.http.HttpResponse;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 
 import static com.codesoom.assignment.HttpStatus.BAD_REQUEST;
@@ -46,7 +43,7 @@ public class TaskHandler implements HttpHandler {
         if (method.isGet() && "/tasks".equals(path)) {
             List<Task> tasks = taskRepository.findAll();
 
-            content = objectToJson(tasks);
+            content = JsonParser.objectToJson(tasks);
             httpResponse.response(OK, content);
             return;
 
@@ -60,16 +57,16 @@ public class TaskHandler implements HttpHandler {
             if (task == null) {
                 status = NOT_FOUND;
             } else {
-                content = objectToJson(task);
+                content = JsonParser.objectToJson(task);
             }
             httpResponse.response(status, content);
             return;
 
         } else if (method.isPost()) {
-            Task task = requestBodyToObject(body, Task.class);
+            Task task = JsonParser.requestBodyToObject(body, Task.class);
             Task savedTask = taskRepository.save(task);
 
-            content = objectToJson(savedTask);
+            content = JsonParser.objectToJson(savedTask);
             httpResponse.response(CREATED, content);
             return;
 
@@ -82,12 +79,12 @@ public class TaskHandler implements HttpHandler {
             if (taskRepository.findById(id) == null) {
                 status = NOT_FOUND;
             } else {
-                Task task = requestBodyToObject(body, Task.class);
+                Task task = JsonParser.requestBodyToObject(body, Task.class);
                 task.setId(id);
 
                 Task updateTask = taskRepository.update(task);
 
-                content = objectToJson(updateTask);
+                content = JsonParser.objectToJson(updateTask);
 
             }
             httpResponse.response(status, content);
@@ -120,15 +117,5 @@ public class TaskHandler implements HttpHandler {
             return Long.parseLong(splitPath[idx]);
         }
         return null;
-    }
-
-    private <T> T requestBodyToObject(String body, Class<T> type) throws JsonProcessingException {
-        return objectMapper.readValue(body, type);
-    }
-
-    private <T> String objectToJson(T object) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, object);
-        return outputStream.toString();
     }
 }
