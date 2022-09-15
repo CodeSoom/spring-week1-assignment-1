@@ -18,7 +18,7 @@ public class TodoPutService implements TodoService {
 
             return taskRepository.findById(Long.parseLong(pathVariable)) != null ?
                     new ResponseData(HttpStatus.HTTP_OK, convertToJSON(taskRepository.updateTask(taskParam))) :
-                    new ResponseData(HttpStatus.HTTP_BAD_REQUEST, "");
+                    new ResponseData(HttpStatus.HTTP_NOT_FOUND, "");
 
         } else {
             return new ResponseData(HttpStatus.HTTP_OK, "");

@@ -49,7 +49,6 @@ public class TodoHttpHandler implements HttpHandler {
         String content = "";
         ResponseData responseData = null;
 
-
         if(isIncorrectURL(path)){
             responseData = new ResponseData(HttpStatus.HTTP_NOT_FOUND, content);
         } else {

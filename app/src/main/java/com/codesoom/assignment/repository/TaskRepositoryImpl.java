@@ -21,7 +21,7 @@ public class TaskRepositoryImpl implements TaskRepository {
 
     @Override
     public Task save(Task task) {
-        task.setId(++seq);
+        task.setId(seq++);
         database.put(task.getId(), task);
         return task;
     }
