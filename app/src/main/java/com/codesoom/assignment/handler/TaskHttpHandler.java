@@ -1,30 +1,26 @@
 package com.codesoom.assignment.handler;
 
 import com.codesoom.assignment.http.HttpStatus;
+import com.codesoom.assignment.http.JsonParser;
 import com.codesoom.assignment.http.RequestMethod;
 import com.codesoom.assignment.http.RequestUtils;
 import com.codesoom.assignment.http.ResponseUtils;
 import com.codesoom.assignment.model.Task;
+import com.codesoom.assignment.repository.TaskRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 public class TaskHttpHandler implements HttpHandler {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final TaskRepository taskRepository;
 
-    private final List<Task> tasks = new ArrayList<>();
-
-    private final Long ID_NOT_GIVEN = -1L;
+    public TaskHttpHandler(TaskRepository taskRepository) {
+        this.taskRepository = taskRepository;
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -37,14 +33,13 @@ public class TaskHttpHandler implements HttpHandler {
             ResponseUtils.sendError(exchange, HttpStatus.BAD_REQUEST);
         }
 
-        Optional<Long> optionalId = RequestUtils.getResourceId(requestURI);
-        Long id = optionalId.orElse(ID_NOT_GIVEN);
+        Long id = RequestUtils.getResourceId(requestURI).orElse(null);
         switch (requestMethod) {
             case GET:
                 listTodos(exchange, id);
                 break;
             case POST:
-                createTodo(exchange, id, requestBody);
+                createTodo(exchange, requestBody);
                 break;
             case PUT:
             case PATCH:
@@ -54,66 +49,53 @@ public class TaskHttpHandler implements HttpHandler {
                 deleteTodo(exchange, id);
                 break;
             default:
+                throw new IllegalStateException("처리할 수 없는 잘못된 요청입니다.");
         }
     }
 
     private void listTodos(HttpExchange exchange, Long id) throws IOException {
         try {
-            String json = toJSON(id);
+            String json;
+            if (id == null) {
+                json = JsonParser.toJSON(taskRepository.getTasks());
+            } else {
+                Task task = taskRepository.getTaskById(id);
+                json = JsonParser.toJSON(task);
+            }
             ResponseUtils.sendResponse(exchange, json, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             ResponseUtils.sendError(exchange, HttpStatus.NOT_FOUND);
         }
     }
 
-    private void createTodo(HttpExchange exchange, Long id, String requestBody) throws IOException {
-
-    }
-
-    private void updateTodo(HttpExchange exchange, Long id, String requestBody) {
-
-    }
-
-    private void deleteTodo(HttpExchange exchange, Long id) {
-
-    }
-
-    /**
-     * 요청 바디 데이터를 Task 객체로 변환합니다.
-     * @param requestBody 요청 바디
-     * @return Task 객체
-     * @throws JsonProcessingException
-     */
-    private Task toTask(String requestBody) throws JsonProcessingException {
-        return objectMapper.readValue(requestBody, Task.class);
-    }
-
-    /**
-     * 아이디를 기준으로 Task를 찾아 JSON으로 변환하여 반환합니다.
-     * @param id Task 아이디
-     * @return JSON 문자열
-     * @throws IOException
-     */
-    private String toJSON(Long id) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        if (id == ID_NOT_GIVEN) {
-            objectMapper.writeValue(outputStream, tasks);
-        } else {
-            Task task = getTaskById(id);
-            objectMapper.writeValue(outputStream, task);
+    private void createTodo(HttpExchange exchange, String requestBody) throws IOException {
+        try {
+            Task newTask = JsonParser.toTask(requestBody);
+            taskRepository.addTask(newTask);
+            String taskJson = JsonParser.toJSON(newTask);
+            ResponseUtils.sendResponse(exchange, taskJson, HttpStatus.CREATED);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
-        return outputStream.toString();
     }
 
-    /**
-     * Task 아이디를 기준으로 목록에서 찾아 반환합니다.
-     * @param id
-     * @return Task 객체
-     */
-    private Task getTaskById(Long id) {
-        return tasks.stream()
-                .filter(t -> t.getId() == id)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException());
+    private void updateTodo(HttpExchange exchange, Long id, String requestBody) throws IOException {
+        Task task = JsonParser.toTask(requestBody);
+        try {
+            Task updatedTask = taskRepository.updateTask(id, task);
+            String json = JsonParser.toJSON(updatedTask);
+            ResponseUtils.sendResponse(exchange, json, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            ResponseUtils.sendError(exchange, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    private void deleteTodo(HttpExchange exchange, Long id) throws IOException {
+        boolean isDeleted = taskRepository.deleteTask(id);
+        if (isDeleted) {
+            ResponseUtils.sendResponse(exchange, "Task is deleted.", HttpStatus.NO_CONTENT);
+        } else {
+            ResponseUtils.sendError(exchange, HttpStatus.NOT_FOUND);
+        }
     }
 }
