@@ -1,6 +1,8 @@
 package com.codesoom.assignment.handler;
 
 
+import com.codesoom.assignment.enums.HttpStatus;
+import com.codesoom.assignment.enums.Method;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,50 +15,90 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.codesoom.assignment.enums.Method.*;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
+
 public class DemoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private int status = 200;
+    private HttpStatus httpStatus;
     String content = "Hello World!";
+    private Long id = 0L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
+
+        Method method = valueOf(exchange.getRequestMethod());
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
-
         InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader((inputStream))).lines().collect(Collectors.joining("\n"));
+        String body = new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.joining("\n"));
 
         System.out.println(method + " " + path);
 
-        if (!body.isEmpty()) {
+        addTaskToLists(body);
 
+        methodDispatcher(method, path);
+
+        exchange.sendResponseHeaders(httpStatus.getStatus(), content.getBytes().length);
+
+        sendResponseBody(exchange);
+    }
+
+    private void addTaskToLists(String body) throws JsonProcessingException {
+        if (!body.isEmpty()) {
             Task task1 = toTask(body);
+            task1.setId(++id);
             tasks.add(task1);
         }
+    }
 
-        getMappingTasks(method, path);
-
-
-        if (method.equals("POST") && path.equals("/tasks")) {
-            content = "Create a new task";
-        }
-
-        exchange.sendResponseHeaders(status, content.getBytes().length);
-
+    private void sendResponseBody(HttpExchange exchange) throws IOException {
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.write(content.getBytes());
         responseBody.flush();
         responseBody.close();
     }
 
-    private void getMappingTasks(String method, String path) throws IOException {
+    private void methodDispatcher(Method method, String path) throws IOException {
+        switch (method) {
+            case GET:
+
+//        GET /tasks/{id}
+                getMappingTasks(method, path);
+                break;
+            case POST:
+                //       POST /tasks
+                if (method.equals(POST) && path.equals("/tasks")) {
+
+                    content = "Create a new task";
+                }
+                httpStatus = HttpStatus.CREATED;
+                break;
+
+            case DELETE:
+                httpStatus = HttpStatus.NOTFOUND;
+                break;
+
+            case PATCH:
+                httpStatus = HttpStatus.NOTFOUND;
+                break;
+            case PUT:
+                httpStatus = HttpStatus.NOTFOUND;
+                break;
+
+            default:
+
+        }
+    }
+
+    private void getMappingTasks(Method method, String path) throws IOException {
 
 //        GET /tasks
-        if (method.equals("GET") && path.equals("/tasks")) {
+        if (method.equals(GET) && path.equals("/tasks")) {
             content = tasksToJson();
+            httpStatus = HttpStatus.OK;
             return;
         }
 //        GET /tasks/{id}
@@ -66,18 +108,19 @@ public class DemoHttpHandler implements HttpHandler {
             String id = split[2];
             if (!isNumeric(id)) {
                 System.out.println("tasks id not a number");
-                status = 404;
+                httpStatus = HttpStatus.NOTFOUND;
                 return;
             }
 
             for (Task task : tasks) {
                 if (task.getId() == Long.parseLong(id)) {
                     content = taskToJson(task);
-                    status = 200;
+                    httpStatus = HttpStatus.OK;
                     return;
                 }
             }
 
+            httpStatus = HttpStatus.NOTFOUND;
             content = "";
         }
 
@@ -85,6 +128,7 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private Task toTask(String body) throws JsonProcessingException {
+        System.out.println(body);
         return objectMapper.readValue(body, Task.class);
     }
 
@@ -96,19 +140,8 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     private String taskToJson(Task task) throws IOException {
-
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, task);
         return outputStream.toString();
-    }
-
-
-    public static boolean isNumeric(String str) {
-        try {
-            Double.parseDouble(str);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 }
