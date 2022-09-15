@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.handler.TaskHttpHandler;
+import com.codesoom.assignment.repository.TaskRepository;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
@@ -14,7 +15,7 @@ public class App {
         InetSocketAddress address = new InetSocketAddress(SERVER_PORT);
         try {
             HttpServer httpServer = HttpServer.create(address, 0);
-            HttpHandler handler = new TaskHttpHandler();
+            HttpHandler handler = new TaskHttpHandler(new TaskRepository());
             httpServer.createContext("/", handler);
 
             httpServer.start();
