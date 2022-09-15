@@ -15,6 +15,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.codesoom.assignment.HttpStatus.BAD_REQUEST;
+import static com.codesoom.assignment.HttpStatus.CREATED;
+import static com.codesoom.assignment.HttpStatus.NOT_FOUND;
+import static com.codesoom.assignment.HttpStatus.NO_CONTENT;
+import static com.codesoom.assignment.HttpStatus.OK;
+
 public class TaskHandler implements HttpHandler {
     private final TaskRepository taskRepository = new TaskRepository();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -39,29 +45,29 @@ public class TaskHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        int code = 200;
+        HttpStatus status = OK;
         String content = "";
 
         if ("GET".equals(method) && "/tasks".equals(path)) {
             List<Task> tasks = taskRepository.findAll();
 
             content = objectToJson(tasks);
-            response(code, exchange, content);
+            response(OK, exchange, content);
             return;
 
         } else if ("GET".equals(method) && path.startsWith("/tasks/")) {
             Long id = getLongFromPathParameter(path, 2);
             if (id == null) {
-                response(400, exchange, content);
+                response(BAD_REQUEST, exchange, content);
             }
 
             Task task = taskRepository.findById(id);
             if (task == null) {
-                code = 404;
+                status = NOT_FOUND;
             } else {
                 content = objectToJson(task);
             }
-            response(code, exchange, content);
+            response(status, exchange, content);
             return;
 
         } else if ("POST".equals(method)) {
@@ -69,17 +75,17 @@ public class TaskHandler implements HttpHandler {
             Task savedTask = taskRepository.save(task);
 
             content = objectToJson(savedTask);
-            response(201, exchange, content);
+            response(CREATED, exchange, content);
             return;
 
         } else if ("PUT".equals(method)) {
             Long id = getLongFromPathParameter(path, 2);
             if (id == null) {
-                response(400, exchange, content);
+                response(BAD_REQUEST, exchange, content);
             }
 
             if (taskRepository.findById(id) == null) {
-                code = 404;
+                status = NOT_FOUND;
             } else {
                 Task task = requestBodyToObject(body, Task.class);
                 task.setId(id);
@@ -89,28 +95,28 @@ public class TaskHandler implements HttpHandler {
                 content = objectToJson(updateTask);
 
             }
-            response(code, exchange, content);
+            response(status, exchange, content);
             return;
 
 
         } else if ("DELETE".equals(method)) {
             Long id = getLongFromPathParameter(path, 2);
             if (id == null) {
-                response(400, exchange, content);
+                response(BAD_REQUEST, exchange, content);
             }
 
             if (taskRepository.findById(id) == null) {
-                code = 404;
+                status = NOT_FOUND;
             } else {
                 taskRepository.delete(id);
-                code = 204;
+                status = NO_CONTENT;
             }
-            response(code, exchange, content);
+            response(status, exchange, content);
             return;
         }
 
         // 404
-        response(404, exchange, content);
+        response(NOT_FOUND, exchange, content);
 
     }
 
@@ -126,8 +132,8 @@ public class TaskHandler implements HttpHandler {
         return objectMapper.readValue(body, type);
     }
 
-    private void response(int code, HttpExchange exchange, String content) throws IOException {
-        exchange.sendResponseHeaders(code, content.getBytes().length);
+    private void response(HttpStatus status, HttpExchange exchange, String content) throws IOException {
+        exchange.sendResponseHeaders(status.getCode(), content.getBytes().length);
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.write(content.getBytes(StandardCharsets.UTF_8));
         responseBody.flush();
