@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class TaskHandler implements HttpHandler {
-    TaskRepository taskRepository = new TaskRepository();
-    ObjectMapper objectMapper = new ObjectMapper();
+    private final TaskRepository taskRepository = new TaskRepository();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void handle(HttpExchange exchange) {
