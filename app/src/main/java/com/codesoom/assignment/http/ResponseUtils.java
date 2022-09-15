@@ -18,9 +18,9 @@ public class ResponseUtils {
      */
     public static void sendError(HttpExchange exchange, HttpStatus httpStatus) throws IOException {
         OutputStream responseBody = exchange.getResponseBody();
-        String emptyStr = "";
-        exchange.sendResponseHeaders(httpStatus.getCode(), emptyStr.getBytes().length);
-        responseBody.write(emptyStr.getBytes());
+        String message = "Request was not processed!";
+        exchange.sendResponseHeaders(httpStatus.getCode(), message.getBytes().length);
+        responseBody.write(message.getBytes());
         responseBody.close();
     }
 
