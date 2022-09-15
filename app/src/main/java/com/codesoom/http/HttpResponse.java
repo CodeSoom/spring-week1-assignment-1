@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
+// todo 클래스로 분리하긴 했는데 역할이 애매한 것 같다ㅏ.
 public class HttpResponse {
     private final HttpExchange exchange;
 

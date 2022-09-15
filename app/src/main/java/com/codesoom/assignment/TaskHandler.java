@@ -3,7 +3,6 @@ package com.codesoom.assignment;
 import com.codesoom.controller.HttpMethod;
 import com.codesoom.http.HttpRequest;
 import com.codesoom.http.HttpResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -17,15 +16,17 @@ import static com.codesoom.assignment.HttpStatus.NO_CONTENT;
 import static com.codesoom.assignment.HttpStatus.OK;
 
 public class TaskHandler implements HttpHandler {
+    private static final int PLACE_OF_TASK_ID_FROM_PATH = 2;
+
     private final TaskRepository taskRepository = new TaskRepository();
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void handle(HttpExchange exchange) {
+    public void handle(HttpExchange exchange) throws IOException {
         try {
             handleRequest(exchange);
         } catch (Throwable throwable) {
             throwable.printStackTrace();
+            throw throwable;
         }
     }
 
@@ -48,7 +49,7 @@ public class TaskHandler implements HttpHandler {
             return;
 
         } else if (method.isGet() && path.startsWith("/tasks/")) {
-            Long id = getLongFromPathParameter(path, 2);
+            Long id = httpRequest.getLongFromPathParameter(PLACE_OF_TASK_ID_FROM_PATH);
             if (id == null) {
                 httpResponse.response(BAD_REQUEST, content);
             }
@@ -71,7 +72,7 @@ public class TaskHandler implements HttpHandler {
             return;
 
         } else if (method.isPut()) {
-            Long id = getLongFromPathParameter(path, 2);
+            Long id = httpRequest.getLongFromPathParameter(PLACE_OF_TASK_ID_FROM_PATH);
             if (id == null) {
                 httpResponse.response(BAD_REQUEST, content);
             }
@@ -92,7 +93,7 @@ public class TaskHandler implements HttpHandler {
 
 
         } else if (method.isDelete()) {
-            Long id = getLongFromPathParameter(path, 2);
+            Long id = httpRequest.getLongFromPathParameter(PLACE_OF_TASK_ID_FROM_PATH);
             if (id == null) {
                 httpResponse.response(BAD_REQUEST, content);
             }
@@ -109,13 +110,5 @@ public class TaskHandler implements HttpHandler {
 
         // 404
         httpResponse.response(NOT_FOUND, content);
-    }
-
-    private Long getLongFromPathParameter(String path, int idx) {
-        String[] splitPath = path.split("/");
-        if (idx < splitPath.length) {
-            return Long.parseLong(splitPath[idx]);
-        }
-        return null;
     }
 }
