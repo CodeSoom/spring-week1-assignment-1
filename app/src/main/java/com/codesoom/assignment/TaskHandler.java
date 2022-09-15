@@ -1,19 +1,17 @@
 package com.codesoom.assignment;
 
+import com.codesoom.controller.HttpMethod;
+import com.codesoom.http.HttpRequest;
+import com.codesoom.http.HttpResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.codesoom.assignment.HttpStatus.BAD_REQUEST;
 import static com.codesoom.assignment.HttpStatus.CREATED;
@@ -35,30 +33,27 @@ public class TaskHandler implements HttpHandler {
     }
 
     private void handleRequest(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
-        if (method == null) {
-            throw new IllegalArgumentException("method는 null이 올 수 없습니다.");
-        }
-        String path = exchange.getRequestURI().getPath();
-        InputStream in = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(in))
-                .lines()
-                .collect(Collectors.joining("\n"));
+        HttpRequest httpRequest = new HttpRequest(exchange);
+        HttpResponse httpResponse = new HttpResponse(exchange);
+
+        HttpMethod method = httpRequest.getMethod();
+        String path = httpRequest.getPath();
+        String body = httpRequest.getBody();
 
         HttpStatus status = OK;
         String content = "";
 
-        if ("GET".equals(method) && "/tasks".equals(path)) {
+        if (method.isGet() && "/tasks".equals(path)) {
             List<Task> tasks = taskRepository.findAll();
 
             content = objectToJson(tasks);
-            response(OK, exchange, content);
+            httpResponse.response(OK, content);
             return;
 
-        } else if ("GET".equals(method) && path.startsWith("/tasks/")) {
+        } else if (method.isGet() && path.startsWith("/tasks/")) {
             Long id = getLongFromPathParameter(path, 2);
             if (id == null) {
-                response(BAD_REQUEST, exchange, content);
+                httpResponse.response(BAD_REQUEST, content);
             }
 
             Task task = taskRepository.findById(id);
@@ -67,21 +62,21 @@ public class TaskHandler implements HttpHandler {
             } else {
                 content = objectToJson(task);
             }
-            response(status, exchange, content);
+            httpResponse.response(status, content);
             return;
 
-        } else if ("POST".equals(method)) {
+        } else if (method.isPost()) {
             Task task = requestBodyToObject(body, Task.class);
             Task savedTask = taskRepository.save(task);
 
             content = objectToJson(savedTask);
-            response(CREATED, exchange, content);
+            httpResponse.response(CREATED, content);
             return;
 
-        } else if ("PUT".equals(method)) {
+        } else if (method.isPut()) {
             Long id = getLongFromPathParameter(path, 2);
             if (id == null) {
-                response(BAD_REQUEST, exchange, content);
+                httpResponse.response(BAD_REQUEST, content);
             }
 
             if (taskRepository.findById(id) == null) {
@@ -95,14 +90,14 @@ public class TaskHandler implements HttpHandler {
                 content = objectToJson(updateTask);
 
             }
-            response(status, exchange, content);
+            httpResponse.response(status, content);
             return;
 
 
-        } else if ("DELETE".equals(method)) {
+        } else if (method.isDelete()) {
             Long id = getLongFromPathParameter(path, 2);
             if (id == null) {
-                response(BAD_REQUEST, exchange, content);
+                httpResponse.response(BAD_REQUEST, content);
             }
 
             if (taskRepository.findById(id) == null) {
@@ -111,13 +106,12 @@ public class TaskHandler implements HttpHandler {
                 taskRepository.delete(id);
                 status = NO_CONTENT;
             }
-            response(status, exchange, content);
+            httpResponse.response(status, content);
             return;
         }
 
         // 404
-        response(NOT_FOUND, exchange, content);
-
+        httpResponse.response(NOT_FOUND, content);
     }
 
     private Long getLongFromPathParameter(String path, int idx) {
@@ -130,14 +124,6 @@ public class TaskHandler implements HttpHandler {
 
     private <T> T requestBodyToObject(String body, Class<T> type) throws JsonProcessingException {
         return objectMapper.readValue(body, type);
-    }
-
-    private void response(HttpStatus status, HttpExchange exchange, String content) throws IOException {
-        exchange.sendResponseHeaders(status.getCode(), content.getBytes().length);
-        OutputStream responseBody = exchange.getResponseBody();
-        responseBody.write(content.getBytes(StandardCharsets.UTF_8));
-        responseBody.flush();
-        responseBody.close();
     }
 
     private <T> String objectToJson(T object) throws IOException {
