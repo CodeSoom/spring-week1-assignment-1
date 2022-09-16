@@ -30,9 +30,10 @@ public class JsonParser {
      * @throws IOException
      */
     public static String toJSON(Task task) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, task);
-        return outputStream.toString();
+        try (OutputStream outputStream = new ByteArrayOutputStream()) {
+            objectMapper.writeValue(outputStream, task);
+            return outputStream.toString();
+        }
     }
 
     /**
@@ -42,8 +43,9 @@ public class JsonParser {
      * @throws IOException
      */
     public static String toJSON(List<Task> tasks) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
-        return outputStream.toString();
+        try (OutputStream outputStream = new ByteArrayOutputStream()) {
+            objectMapper.writeValue(outputStream, tasks);
+            return outputStream.toString();
+        }
     }
 }

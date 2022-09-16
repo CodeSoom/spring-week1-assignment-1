@@ -17,11 +17,11 @@ public class ResponseUtils {
      * @throws IOException
      */
     public static void sendError(HttpExchange exchange, HttpStatus httpStatus) throws IOException {
-        OutputStream responseBody = exchange.getResponseBody();
-        String message = "Request was not processed!";
-        exchange.sendResponseHeaders(httpStatus.getCode(), message.getBytes().length);
-        responseBody.write(message.getBytes());
-        responseBody.close();
+        try (OutputStream responseBody = exchange.getResponseBody()) {
+            String message = "Request was not processed!";
+            exchange.sendResponseHeaders(httpStatus.getCode(), message.getBytes().length);
+            responseBody.write(message.getBytes());
+        }
     }
 
     /**
@@ -32,9 +32,9 @@ public class ResponseUtils {
      * @throws IOException
      */
     public static void sendResponse(HttpExchange exchange, String content, HttpStatus httpStatus) throws IOException {
-        OutputStream responseBody = exchange.getResponseBody();
-        exchange.sendResponseHeaders(httpStatus.getCode(), content.getBytes().length);
-        responseBody.write(content.getBytes());
-        responseBody.close();
+        try (OutputStream responseBody = exchange.getResponseBody()) {
+            exchange.sendResponseHeaders(httpStatus.getCode(), content.getBytes().length);
+            responseBody.write(content.getBytes());
+        }
     }
 }
