@@ -32,4 +32,8 @@ public class TaskRepository {
     public Task findById(Long id) {
         return tasks.get(id);
     }
+
+    public boolean isExist(Long id) {
+        return findById(id) != null;
+    }
 }

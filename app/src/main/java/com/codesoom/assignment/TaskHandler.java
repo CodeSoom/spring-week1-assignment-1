@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
-import com.codesoom.controller.HttpMethod;
+import com.codesoom.http.HttpMethod;
+import com.codesoom.exception.MethodNotExistException;
 import com.codesoom.http.HttpRequest;
 import com.codesoom.http.HttpResponse;
 import com.sun.net.httpserver.HttpExchange;
@@ -31,105 +32,98 @@ public class TaskHandler implements HttpHandler {
     }
 
     private void handleRequest(HttpExchange exchange) throws IOException {
-        HttpRequest httpRequest = new HttpRequest(exchange);
         HttpResponse httpResponse = new HttpResponse(exchange);
+        HttpRequest httpRequest;
+        // todo Exception을 어디서 처리해야할지 고민된다.
+        try {
+            httpRequest = new HttpRequest(exchange);
+        } catch (MethodNotExistException e) {
+            httpResponse.response(BAD_REQUEST, e.getMessage());
+            return;
+        }
 
         HttpMethod method = httpRequest.getMethod();
         String path = httpRequest.getPath();
-        String body = httpRequest.getBody();
-
-        HttpStatus status = OK;
-        String content = "";
 
         if (method.isGet() && "/tasks".equals(path)) {
             list(httpResponse);
             return;
 
         } else if (method.isGet() && path.startsWith("/tasks/")) {
-            retrieve(httpRequest, httpResponse, status, content);
+            retrieve(httpRequest, httpResponse);
             return;
 
         } else if (method.isPost()) {
-            post(httpResponse, body);
+            post(httpRequest, httpResponse);
             return;
 
         } else if (method.isPut()) {
-            put(httpRequest, httpResponse, body, status, content);
+            put(httpRequest, httpResponse);
             return;
 
         } else if (method.isDelete()) {
-            delete(httpRequest, httpResponse, content);
+            delete(httpRequest, httpResponse);
             return;
         }
 
-        httpResponse.response(NOT_FOUND, content);
+        httpResponse.response(NOT_FOUND, "");
     }
 
     private void list(HttpResponse httpResponse) throws IOException {
-        String content;
         List<Task> tasks = taskRepository.findAll();
-
-        content = JsonParser.objectToJson(tasks);
+        String content = JsonParser.objectToJson(tasks);
         httpResponse.response(OK, content);
     }
 
-    private void retrieve(HttpRequest httpRequest, HttpResponse httpResponse, HttpStatus status, String content) throws IOException {
+    private void retrieve(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
         Long id = httpRequest.getLongFromPathParameter(PLACE_OF_TASK_ID_FROM_PATH);
-        if (id == null) {
-            httpResponse.response(BAD_REQUEST, content);
-        }
 
-        Task task = taskRepository.findById(id);
-        if (task == null) {
-            status = NOT_FOUND;
+        if (taskRepository.isExist(id)) {
+            Task task = taskRepository.findById(id);
+            httpResponse.response(OK, JsonParser.objectToJson(task));
+
         } else {
-            content = JsonParser.objectToJson(task);
+            httpResponse.response(NOT_FOUND, "");
+
         }
-        httpResponse.response(status, content);
     }
 
-    private void post(HttpResponse httpResponse, String body) throws IOException {
-        String content;
+    private void post(HttpRequest request, HttpResponse httpResponse) throws IOException {
+        String body = request.getBody();
         Task task = JsonParser.requestBodyToObject(body, Task.class);
         Task savedTask = taskRepository.save(task);
 
-        content = JsonParser.objectToJson(savedTask);
+        String content = JsonParser.objectToJson(savedTask);
         httpResponse.response(CREATED, content);
     }
 
-    private void put(HttpRequest httpRequest, HttpResponse httpResponse, String body, HttpStatus status, String content) throws IOException {
+    private void put(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
         Long id = httpRequest.getLongFromPathParameter(PLACE_OF_TASK_ID_FROM_PATH);
-        if (id == null) {
-            httpResponse.response(BAD_REQUEST, content);
-        }
 
-        if (taskRepository.findById(id) == null) {
-            status = NOT_FOUND;
-        } else {
+        if (taskRepository.isExist(id)) {
+            String body = httpRequest.getBody();
             Task task = JsonParser.requestBodyToObject(body, Task.class);
             task.setId(id);
 
             Task updateTask = taskRepository.update(task);
 
-            content = JsonParser.objectToJson(updateTask);
+            String content = JsonParser.objectToJson(updateTask);
+            httpResponse.response(OK, content);
 
+        } else {
+            httpResponse.response(NOT_FOUND, "");
         }
-        httpResponse.response(status, content);
     }
 
-    private void delete(HttpRequest httpRequest, HttpResponse httpResponse, String content) throws IOException {
-        HttpStatus status;
+    private void delete(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
         Long id = httpRequest.getLongFromPathParameter(PLACE_OF_TASK_ID_FROM_PATH);
-        if (id == null) {
-            httpResponse.response(BAD_REQUEST, content);
-        }
 
-        if (taskRepository.findById(id) == null) {
-            status = NOT_FOUND;
-        } else {
+        if (taskRepository.isExist(id)) {
             taskRepository.delete(id);
-            status = NO_CONTENT;
+            httpResponse.response(NO_CONTENT, "");
+
+        } else {
+            httpResponse.response(NOT_FOUND, "");
         }
-        httpResponse.response(status, content);
     }
 }
