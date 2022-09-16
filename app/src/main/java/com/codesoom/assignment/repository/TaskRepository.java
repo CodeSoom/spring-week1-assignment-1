@@ -7,7 +7,7 @@ import java.util.List;
 
 public class TaskRepository {
 
-    private Long seq = 1L;
+    private Long seq = 0L;
     private final List<Task> tasks = new ArrayList<>();
 
     public List<Task> getTasks() {
@@ -27,11 +27,21 @@ public class TaskRepository {
     }
 
     /**
+     * 최신 Sequence ID를 반환합니다.
+     * @return 생성한 id
+     */
+    private synchronized Long getCurrentId() {
+        seq += 1;
+        return seq;
+    }
+
+    /**
      * Task 목록에 Task를 추가합니다.
      * @param newTask 추가할 새로운 Task
      */
     public void addTask(Task newTask) {
-        newTask.setId(seq++);
+        Long id = getCurrentId();
+        newTask.setId(id);
         tasks.add(newTask);
     }
 
