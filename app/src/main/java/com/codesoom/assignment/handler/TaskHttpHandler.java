@@ -13,6 +13,7 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
 
 public class TaskHttpHandler implements HttpHandler {
 
@@ -54,17 +55,16 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     private void listTodos(HttpExchange exchange, Long id) throws IOException {
-        try {
-            String json;
-            if (id == null) {
-                json = JsonParser.toJSON(taskRepository.getTasks());
-            } else {
+        if (id == null) {
+            List<Task> tasks = taskRepository.getTasks();
+            ResponseUtils.sendResponse(exchange, JsonParser.toJSON(tasks), HttpStatus.OK);
+        } else {
+            try {
                 Task task = taskRepository.getTaskById(id);
-                json = JsonParser.toJSON(task);
+                ResponseUtils.sendResponse(exchange, JsonParser.toJSON(task), HttpStatus.OK);
+            } catch (IllegalArgumentException e) {
+                ResponseUtils.sendError(exchange, HttpStatus.NOT_FOUND);
             }
-            ResponseUtils.sendResponse(exchange, json, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            ResponseUtils.sendError(exchange, HttpStatus.NOT_FOUND);
         }
     }
 
@@ -75,17 +75,22 @@ public class TaskHttpHandler implements HttpHandler {
             String taskJson = JsonParser.toJSON(newTask);
             ResponseUtils.sendResponse(exchange, taskJson, HttpStatus.CREATED);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            // 요청 바디 정보 변환중에 오류가 발생하면 실행된다. (클라이언트 요청 정보 오류)
+            ResponseUtils.sendError(exchange, HttpStatus.BAD_REQUEST);
         }
     }
 
     private void updateTodo(HttpExchange exchange, Long id, String requestBody) throws IOException {
-        Task task = JsonParser.toTask(requestBody);
         try {
+            Task task = JsonParser.toTask(requestBody);
             Task updatedTask = taskRepository.updateTask(id, task);
             String json = JsonParser.toJSON(updatedTask);
             ResponseUtils.sendResponse(exchange, json, HttpStatus.OK);
+        } catch (JsonProcessingException e) {
+            // 요청 바디 정보 변환중에 오류가 발생하면 실행된다. (클라이언트 요청 정보 오류)
+            ResponseUtils.sendError(exchange, HttpStatus.BAD_REQUEST);
         } catch (IllegalArgumentException e) {
+            // 업데이트 할 Task 객체를 찾지 못했을 때 실행된다.
             ResponseUtils.sendError(exchange, HttpStatus.NOT_FOUND);
         }
     }
