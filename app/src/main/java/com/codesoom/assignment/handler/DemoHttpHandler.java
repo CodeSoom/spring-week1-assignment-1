@@ -72,12 +72,23 @@ public class DemoHttpHandler implements HttpHandler {
                 //       POST /tasks
                 if (method.equals(POST) && path.equals("/tasks")) {
 
-                    content = "Create a new task";
+                    content = taskToJson(tasks.get(id.intValue()-1));
                 }
                 httpStatus = HttpStatus.CREATED;
                 break;
 
             case DELETE:
+                String id = path.split("/")[2];
+
+                for (Task task : tasks) {
+                    if (task.getId() == Long.parseLong(id)) {
+                        System.out.println(task);
+                        tasks.remove(task);
+                        content = taskToJson(task);
+                        httpStatus = HttpStatus.OK;
+                        return;
+                    }
+                }
                 httpStatus = HttpStatus.NOTFOUND;
                 break;
 
@@ -89,23 +100,21 @@ public class DemoHttpHandler implements HttpHandler {
                 break;
 
             default:
+                httpStatus = HttpStatus.METHODNOTFOUND;
 
         }
     }
 
     private void getMappingTasks(Method method, String path) throws IOException {
-
 //        GET /tasks
-        if (method.equals(GET) && path.equals("/tasks")) {
+        if (method.equals(GET) && "/tasks".equals(path)) {
             content = tasksToJson();
             httpStatus = HttpStatus.OK;
             return;
         }
 //        GET /tasks/{id}
         else if (method.equals("GET") && path.contains("/tasks/")) {
-            String[] split = path.split("/");
-
-            String id = split[2];
+            String id = path.split("/")[2];
             if (!isNumeric(id)) {
                 System.out.println("tasks id not a number");
                 httpStatus = HttpStatus.NOTFOUND;
@@ -119,9 +128,8 @@ public class DemoHttpHandler implements HttpHandler {
                     return;
                 }
             }
-
             httpStatus = HttpStatus.NOTFOUND;
-            content = "";
+            content = "id is not found.";
         }
 
 
