@@ -12,6 +12,7 @@ import java.util.List;
 
 public class TodoGetService implements TodoService {
     private final TaskRepository taskRepository = TaskRepositoryImpl.getInstance();
+
     @Override
     public ResponseData processRequest(HttpExchange exchange, Task taskParam, String pathVariable) throws IOException {
         if (isAllSearchRequest(pathVariable)) {

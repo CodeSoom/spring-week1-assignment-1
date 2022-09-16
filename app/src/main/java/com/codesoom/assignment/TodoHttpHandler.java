@@ -1,8 +1,13 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.model.Path;
 import com.codesoom.assignment.model.ResponseData;
 import com.codesoom.assignment.model.Task;
-import com.codesoom.assignment.service.*;
+import com.codesoom.assignment.service.TodoService;
+import com.codesoom.assignment.service.TodoGetService;
+import com.codesoom.assignment.service.TodoPostService;
+import com.codesoom.assignment.service.TodoPutService;
+import com.codesoom.assignment.service.TodoDeleteService;
 import com.codesoom.assignment.util.HttpStatus;
 import com.codesoom.assignment.util.RequestMethod;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,7 +26,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
-    public static final String REQUEST_MAPPING_URL = "/tasks";
     private final Map<RequestMethod, TodoService> methodMappingMap = new HashMap<>();
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -49,11 +53,11 @@ public class TodoHttpHandler implements HttpHandler {
         String content = "";
         ResponseData responseData = null;
 
-        if(isIncorrectURL(path)){
+        if (isIncorrectURL(path)) {
             responseData = new ResponseData(HttpStatus.HTTP_NOT_FOUND, content);
         } else {
             Task task = null;
-            String pathVariable =  extractPathVariable(path);
+            String pathVariable = Path.getPathVariable(path);
 
             if (isExistRequestBody(requestBody)) {
                 task = convertToTask(requestBody);
@@ -85,32 +89,19 @@ public class TodoHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
     }
 
+    /**
+     * 요청 URI가 /tasks가 맞는지 여부 확인
+     * ex)
+     * /tasks/1 (O)
+     * /abcd/3 (X)
+     * @param path URI 경로
+     */
     private boolean isIncorrectURL(String path) {
-        return !path.contains(REQUEST_MAPPING_URL);
+        return !path.contains(Path.REQUEST_MAPPING_URL);
     }
 
     private boolean isExistRequestBody(String requestBody) {
         return !requestBody.isBlank();
-    }
-
-    private String extractPathVariable(String path) {
-        String[] splitPaths = path.replace(REQUEST_MAPPING_URL, "").split("/");
-
-        if(splitPaths.length == 1 && splitPaths[0].isBlank()) {
-            return null;
-        }
-        if (splitPaths.length != 2) {
-            return "";
-        }
-        if (!isNumeric(splitPaths[1])){
-            return "";
-        }
-
-        return splitPaths[1];
-    }
-
-    private boolean isNumeric(String value) {
-        return value.matches("[+-]?\\d*(\\.\\d+)?");
     }
 
     private Task convertToTask(String content) throws JsonProcessingException {

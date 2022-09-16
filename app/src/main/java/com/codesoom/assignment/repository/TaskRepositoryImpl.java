@@ -6,10 +6,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TaskRepositoryImpl implements TaskRepository {
 
-    private static Map<Long, Task> database = new HashMap<>();
+    private static final ConcurrentHashMap<Long, Task> database = new ConcurrentHashMap<>();
     private static long seq = 0L;
     private static final TaskRepositoryImpl instance = new TaskRepositoryImpl();
 
@@ -17,7 +18,8 @@ public class TaskRepositoryImpl implements TaskRepository {
         return instance;
     }
 
-    private TaskRepositoryImpl() {}
+    private TaskRepositoryImpl() {
+    }
 
     @Override
     public Task save(Task task) {
