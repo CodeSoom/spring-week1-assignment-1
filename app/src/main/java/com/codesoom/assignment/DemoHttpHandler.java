@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public class DemoHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
-
+    private static Long idCount =1L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -24,30 +24,39 @@ public class DemoHttpHandler implements HttpHandler {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
         String num = path.replaceAll("[^0-9]", "");
-        String content = "Hello world!";
+        String content = "";
+        int rCode = 200;
+
 
         InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream))
+        String title= new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        if(method.equals("GET") && path.contains("/tasks")){
-            content = tasksToJSON(num);
-            if(!body.isBlank()) {
-                content = "GET은 조회만 가능합니다.";
-            }
+
+        if (("GET").equals(method) && path.contains("/tasks")){
+            content = title.isBlank() ? tasksToJSON(findById(num)) : "GET은 조회만 가능합니다";
         }
 
-        if(method.equals("POST") && path.contains("/tasks")){
-            if (!body.isBlank()) {
-                Task task = toTask(body);
-                task.setId((long) tasks.size()+1);
-                tasks.add(task);
-            }
-            content = tasksToJSON(num);
+        if(("POST").equals(method) && path.contains("/tasks")){
+            Task task = toTask(title);
+            task.setId(idCount++);
+            tasks.add(task);
+            content = tasksToJSON(findById(num));
+            rCode=201;
         }
 
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+        if(("PUT").equals(method) && path.contains("/tasks")) {
+            setTitle(findTask(num), title);
+            content = tasksToJSON(findById(num));
+
+        }
+
+        if(("DELETE").equals(method) && path.contains("/tasks")) {
+            tasks.remove(findTask(num));
+        }
+
+        exchange.sendResponseHeaders(rCode, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
@@ -60,22 +69,28 @@ public class DemoHttpHandler implements HttpHandler {
         return objectMapper.readValue(content, Task.class);
     }
 
-    private String tasksToJSON(String num) throws IOException {
-
+    private String tasksToJSON(Object obj) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        if(!num.isEmpty()) {
-            for (Task t : tasks) {
-                if (t.getId() == Long.parseLong(num)) {
-                    objectMapper.writeValue(outputStream, t);
-                    return outputStream.toString();
-                }
-            }
-        }
-        objectMapper.writeValue(outputStream, tasks);
+        objectMapper.writeValue(outputStream, obj);
         return outputStream.toString();
     }
 
+    private Object findById(String num) {
+       return num.isEmpty() ? tasks : findTask(num);
+    }
 
+    private Task findTask(String num) {
+        for (Task t : tasks) {
+            if (t.getId() == Long.parseLong(num)) {
+                return t;
+            }
+        }
+        return null;
+    }
+
+    private void setTitle(Task task,String body) throws JsonProcessingException {
+        tasks.get(tasks.indexOf(task)).setTitle(toTask(body).getTitle());
+    }
 
 
 }
