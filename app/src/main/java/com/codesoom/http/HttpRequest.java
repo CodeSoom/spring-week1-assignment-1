@@ -1,6 +1,5 @@
 package com.codesoom.http;
 
-import com.codesoom.controller.HttpMethod;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.BufferedReader;
@@ -9,13 +8,18 @@ import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
 public class HttpRequest {
-    // todo 필드  validate 추가 예정
     private final HttpMethod method;
     private final String path;
     private final String body;
 
+    public HttpRequest(HttpMethod method, String path, String body) {
+        this.method = method;
+        this.path = path;
+        this.body = body;
+    }
+
     public HttpRequest(HttpExchange exchange) {
-        method = HttpMethod.valueOf(exchange.getRequestMethod());
+        method = HttpMethod.of(exchange.getRequestMethod());
         path = exchange.getRequestURI().getPath();
         InputStream in = exchange.getRequestBody();
         body = new BufferedReader(new InputStreamReader(in))
@@ -24,15 +28,16 @@ public class HttpRequest {
     }
 
     public Long getLongFromPathParameter(int idx) {
-        // todo 아래의 경우 예외처리하기
-        // /tasks/1/ -> 1이 return
-        // /tasks/ -> 예외
-        // /tasks  -> 예외
+        // todo 정규표현식으로 변경 예정
         String[] splitPath = path.split("/");
         if (idx < splitPath.length) {
-            return Long.parseLong(splitPath[idx]);
+            try {
+                return Long.parseLong(splitPath[idx]);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("id가 숫자가 아닙니다.");
+            }
         }
-        return null;
+        throw new IllegalArgumentException("id가 존재하지 않습니다.");
     }
 
     public HttpMethod getMethod() {
