@@ -42,73 +42,94 @@ public class TaskHandler implements HttpHandler {
         String content = "";
 
         if (method.isGet() && "/tasks".equals(path)) {
-            List<Task> tasks = taskRepository.findAll();
-
-            content = JsonParser.objectToJson(tasks);
-            httpResponse.response(OK, content);
+            list(httpResponse);
             return;
 
         } else if (method.isGet() && path.startsWith("/tasks/")) {
-            Long id = httpRequest.getLongFromPathParameter(PLACE_OF_TASK_ID_FROM_PATH);
-            if (id == null) {
-                httpResponse.response(BAD_REQUEST, content);
-            }
-
-            Task task = taskRepository.findById(id);
-            if (task == null) {
-                status = NOT_FOUND;
-            } else {
-                content = JsonParser.objectToJson(task);
-            }
-            httpResponse.response(status, content);
+            retrieve(httpRequest, httpResponse, status, content);
             return;
 
         } else if (method.isPost()) {
-            Task task = JsonParser.requestBodyToObject(body, Task.class);
-            Task savedTask = taskRepository.save(task);
-
-            content = JsonParser.objectToJson(savedTask);
-            httpResponse.response(CREATED, content);
+            post(httpResponse, body);
             return;
 
         } else if (method.isPut()) {
-            Long id = httpRequest.getLongFromPathParameter(PLACE_OF_TASK_ID_FROM_PATH);
-            if (id == null) {
-                httpResponse.response(BAD_REQUEST, content);
-            }
-
-            if (taskRepository.findById(id) == null) {
-                status = NOT_FOUND;
-            } else {
-                Task task = JsonParser.requestBodyToObject(body, Task.class);
-                task.setId(id);
-
-                Task updateTask = taskRepository.update(task);
-
-                content = JsonParser.objectToJson(updateTask);
-
-            }
-            httpResponse.response(status, content);
+            put(httpRequest, httpResponse, body, status, content);
             return;
 
-
         } else if (method.isDelete()) {
-            Long id = httpRequest.getLongFromPathParameter(PLACE_OF_TASK_ID_FROM_PATH);
-            if (id == null) {
-                httpResponse.response(BAD_REQUEST, content);
-            }
-
-            if (taskRepository.findById(id) == null) {
-                status = NOT_FOUND;
-            } else {
-                taskRepository.delete(id);
-                status = NO_CONTENT;
-            }
-            httpResponse.response(status, content);
+            delete(httpRequest, httpResponse, content);
             return;
         }
 
-        // 404
         httpResponse.response(NOT_FOUND, content);
+    }
+
+    private void list(HttpResponse httpResponse) throws IOException {
+        String content;
+        List<Task> tasks = taskRepository.findAll();
+
+        content = JsonParser.objectToJson(tasks);
+        httpResponse.response(OK, content);
+    }
+
+    private void retrieve(HttpRequest httpRequest, HttpResponse httpResponse, HttpStatus status, String content) throws IOException {
+        Long id = httpRequest.getLongFromPathParameter(PLACE_OF_TASK_ID_FROM_PATH);
+        if (id == null) {
+            httpResponse.response(BAD_REQUEST, content);
+        }
+
+        Task task = taskRepository.findById(id);
+        if (task == null) {
+            status = NOT_FOUND;
+        } else {
+            content = JsonParser.objectToJson(task);
+        }
+        httpResponse.response(status, content);
+    }
+
+    private void post(HttpResponse httpResponse, String body) throws IOException {
+        String content;
+        Task task = JsonParser.requestBodyToObject(body, Task.class);
+        Task savedTask = taskRepository.save(task);
+
+        content = JsonParser.objectToJson(savedTask);
+        httpResponse.response(CREATED, content);
+    }
+
+    private void put(HttpRequest httpRequest, HttpResponse httpResponse, String body, HttpStatus status, String content) throws IOException {
+        Long id = httpRequest.getLongFromPathParameter(PLACE_OF_TASK_ID_FROM_PATH);
+        if (id == null) {
+            httpResponse.response(BAD_REQUEST, content);
+        }
+
+        if (taskRepository.findById(id) == null) {
+            status = NOT_FOUND;
+        } else {
+            Task task = JsonParser.requestBodyToObject(body, Task.class);
+            task.setId(id);
+
+            Task updateTask = taskRepository.update(task);
+
+            content = JsonParser.objectToJson(updateTask);
+
+        }
+        httpResponse.response(status, content);
+    }
+
+    private void delete(HttpRequest httpRequest, HttpResponse httpResponse, String content) throws IOException {
+        HttpStatus status;
+        Long id = httpRequest.getLongFromPathParameter(PLACE_OF_TASK_ID_FROM_PATH);
+        if (id == null) {
+            httpResponse.response(BAD_REQUEST, content);
+        }
+
+        if (taskRepository.findById(id) == null) {
+            status = NOT_FOUND;
+        } else {
+            taskRepository.delete(id);
+            status = NO_CONTENT;
+        }
+        httpResponse.response(status, content);
     }
 }
