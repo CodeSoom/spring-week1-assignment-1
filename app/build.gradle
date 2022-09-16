@@ -29,6 +29,10 @@ dependencies {
     // Jackson for JSON.
     implementation 'com.fasterxml.jackson.core:jackson-core:2.11.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.3'
+
+    // Test
+    testCompile("org.assertj:assertj-core:3.11.1")
+
 }
 
 application {
