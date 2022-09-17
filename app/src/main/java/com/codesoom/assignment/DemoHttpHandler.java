@@ -33,11 +33,11 @@ public class DemoHttpHandler implements HttpHandler {
 
 
         if(path.contains("/tasks")){
-           content = workToMethod(method, title, num);
+            content=workToMethod(method, title, num);
+
         }
 
-        exchange.sendResponseHeaders(200, content.getBytes().length);
-
+        exchange.sendResponseHeaders(returnRCode(method), content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
@@ -61,32 +61,32 @@ public class DemoHttpHandler implements HttpHandler {
                 return t;
             }
         }
-        return null;
+        return new Task(0L,"");
     }
 
-    private void setTitle(Task task,String body) throws JsonProcessingException {
+    private String setTitle(Task task,String body, String num) throws IOException {
         tasks.get(tasks.indexOf(task)).setTitle(toTask(body).getTitle());
+        return returnTaskOrTasks(num);
     }
 
-    private String checkNum(String num) throws IOException {
+    private String returnTaskOrTasks(String num) throws IOException {
        return num.isEmpty() ? tasksToJSON(tasks) : tasksToJSON(findTask(num));
     }
 
     private String workToMethod(String method, String title, String num) throws IOException {
         if (("GET").equals(method)){
-            return title.isBlank() ? checkNum(num) : "GET은 조회만 가능합니다";
+            return title.isBlank() ? returnTaskOrTasks(num) : "GET은 조회만 가능합니다";
         }
 
         if(("POST").equals(method)){
             Task task = toTask(title);
             task.setId(idCount++);
             tasks.add(task);
-            return checkNum(num);
+            return returnTaskOrTasks(num);
         }
 
-        if(("PUT").equals(method) ) {
-            setTitle(findTask(num), title);
-            return checkNum(num);
+        if(("PUT").equals(method)) {
+            return checkNum(num) ? setTitle(findTask(num), title, num) : "존재하지 않는 id입니다.";
         }
 
         if(("DELETE").equals(method)) {
@@ -97,5 +97,19 @@ public class DemoHttpHandler implements HttpHandler {
         return "";
     }
 
+    public boolean checkNum(String num) {
+        List<Long> TaskIds = tasks.stream().map(i -> i.getId()).collect(Collectors.toList());
+        for (Long id:TaskIds) {
+           return num.equals(String.valueOf(id));
+        }
+        return false;
+    }
+
+    public int returnRCode(String method) {
+        if("POST".equals(method)){
+            return 201;
+        }
+        return 200;
+    }
 
 }

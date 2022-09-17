@@ -26,4 +26,12 @@ public class Task {
     public String toString(){
         return "Task - title: "+ title;
     }
+
+    public Task(Long id, String title) {
+        this.id = id;
+        this.title = title;
+    }
+
+    public Task() {
+    }
 }
