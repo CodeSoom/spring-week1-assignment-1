@@ -1,5 +1,8 @@
 package com.codesoom.assignment.model;
 
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 public class Path {
 
     public static final String REQUEST_MAPPING_URL = "/tasks";
@@ -28,13 +31,20 @@ public class Path {
         return splitPaths[1];
     }
 
+//    private static boolean isNumeric(String value) {
+//        try {
+//            Long tempId = Long.parseLong(value);
+//            return true;
+//        } catch (NumberFormatException e) {
+//            e.printStackTrace();
+//            return false;
+//        }
+//    }
     private static boolean isNumeric(String value) {
-        try {
-            Long tempId = Long.parseLong(value);
-            return true;
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-            return false;
-        }
+        long count = value.chars()
+                .filter(asc -> !(asc >= 48 && asc <= 57))
+                .count();
+
+        return count == 0;
     }
 }
