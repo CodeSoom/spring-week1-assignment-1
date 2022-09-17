@@ -9,7 +9,9 @@ public enum HttpStatus {
 
     HTTP_BAD_REQUEST(400, "Unauthorized"),
 
-    HTTP_NOT_FOUND(404, "Method Not Allowed");
+    HTTP_NOT_FOUND(404, "Method Not Allowed"),
+
+    HTTP_BAD_METHOD(405, "Method Not Allowed");
 
     private final int statusCode;
     private final String description;

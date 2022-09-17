@@ -9,6 +9,10 @@ public class Path {
     }
 
     private static String extractPathVariable(String path) {
+        if (path == null) {
+            path = REQUEST_MAPPING_URL;
+        }
+
         String[] splitPaths = path.replace(REQUEST_MAPPING_URL, "").split("/");
 
         if (splitPaths.length == 1 && splitPaths[0].isBlank()) {

@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -60,12 +61,16 @@ public class TodoHttpHandler implements HttpHandler {
             String pathVariable = Path.getPathVariable(path);
 
             if (isExistRequestBody(requestBody)) {
-                task = convertToTask(requestBody);
+                task = valueOfTask(requestBody);
             }
 
             TodoService service = getService(method);
-            responseData = service.processRequest(exchange, task, pathVariable);
-            content = responseData.getContent();
+            if(service != null) {
+                responseData = service.processRequest(exchange, task, pathVariable);
+                content = responseData.getContent();
+            } else {
+                responseData = new ResponseData(HttpStatus.HTTP_BAD_METHOD, "");
+            }
         }
 
         exchange.sendResponseHeaders(responseData.getStatusCode(), content.getBytes().length);
@@ -78,7 +83,12 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private TodoService getService(String method) {
-        return methodMappingMap.get(RequestMethod.valueOf(method));
+        RequestMethod requestMethod = Arrays.stream(RequestMethod.values())
+                .filter(m -> method.equals(m.name()))
+                .findFirst()
+                .orElse(null);
+
+        return methodMappingMap.get(requestMethod);
     }
 
     private String getRequestBody(HttpExchange exchange) {
@@ -90,11 +100,7 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     /**
-     * 요청 URI가 /tasks가 맞는지 여부 확인
-     * ex)
-     * /tasks/1 (O)
-     * /abcd/3 (X)
-     * @param path URI 경로
+     * URI 경로 path가 문자열 Path.REQUEST_MAPPING_URL 상수값을 포함하지 않는다면 true 리턴
      */
     private boolean isIncorrectURL(String path) {
         return !path.contains(Path.REQUEST_MAPPING_URL);
@@ -104,7 +110,7 @@ public class TodoHttpHandler implements HttpHandler {
         return !requestBody.isBlank();
     }
 
-    private Task convertToTask(String content) throws JsonProcessingException {
+    private Task valueOfTask(String content) throws JsonProcessingException {
         return objectMapper.readValue(content, Task.class);
 
     }
