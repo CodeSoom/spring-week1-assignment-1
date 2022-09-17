@@ -25,8 +25,6 @@ public class DemoHttpHandler implements HttpHandler {
         String path = uri.getPath();
         String num = path.replaceAll("[^0-9]", "");
         String content = "";
-        int rCode = 200;
-
 
         InputStream inputStream = exchange.getRequestBody();
         String title= new BufferedReader(new InputStreamReader(inputStream))
@@ -34,29 +32,11 @@ public class DemoHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
 
-        if (("GET").equals(method) && path.contains("/tasks")){
-            content = title.isBlank() ? tasksToJSON(findById(num)) : "GET은 조회만 가능합니다";
+        if(path.contains("/tasks")){
+           content = workToMethod(method, title, num);
         }
 
-        if(("POST").equals(method) && path.contains("/tasks")){
-            Task task = toTask(title);
-            task.setId(idCount++);
-            tasks.add(task);
-            content = tasksToJSON(findById(num));
-            rCode=201;
-        }
-
-        if(("PUT").equals(method) && path.contains("/tasks")) {
-            setTitle(findTask(num), title);
-            content = tasksToJSON(findById(num));
-
-        }
-
-        if(("DELETE").equals(method) && path.contains("/tasks")) {
-            tasks.remove(findTask(num));
-        }
-
-        exchange.sendResponseHeaders(rCode, content.getBytes().length);
+        exchange.sendResponseHeaders(200, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
@@ -75,10 +55,6 @@ public class DemoHttpHandler implements HttpHandler {
         return outputStream.toString();
     }
 
-    private Object findById(String num) {
-       return num.isEmpty() ? tasks : findTask(num);
-    }
-
     private Task findTask(String num) {
         for (Task t : tasks) {
             if (t.getId() == Long.parseLong(num)) {
@@ -90,6 +66,35 @@ public class DemoHttpHandler implements HttpHandler {
 
     private void setTitle(Task task,String body) throws JsonProcessingException {
         tasks.get(tasks.indexOf(task)).setTitle(toTask(body).getTitle());
+    }
+
+    private String checkNum(String num) throws IOException {
+       return num.isEmpty() ? tasksToJSON(tasks) : tasksToJSON(findTask(num));
+    }
+
+    private String workToMethod(String method, String title, String num) throws IOException {
+        if (("GET").equals(method)){
+            return title.isBlank() ? checkNum(num) : "GET은 조회만 가능합니다";
+        }
+
+        if(("POST").equals(method)){
+            Task task = toTask(title);
+            task.setId(idCount++);
+            tasks.add(task);
+            return checkNum(num);
+        }
+
+        if(("PUT").equals(method) ) {
+            setTitle(findTask(num), title);
+            return checkNum(num);
+        }
+
+        if(("DELETE").equals(method)) {
+            tasks.remove(findTask(num));
+            return "";
+        }
+
+        return "";
     }
 
 
