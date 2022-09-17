@@ -31,15 +31,6 @@ public class Path {
         return splitPaths[1];
     }
 
-//    private static boolean isNumeric(String value) {
-//        try {
-//            Long tempId = Long.parseLong(value);
-//            return true;
-//        } catch (NumberFormatException e) {
-//            e.printStackTrace();
-//            return false;
-//        }
-//    }
     private static boolean isNumeric(String value) {
         long count = value.chars()
                 .filter(asc -> !(asc >= 48 && asc <= 57))

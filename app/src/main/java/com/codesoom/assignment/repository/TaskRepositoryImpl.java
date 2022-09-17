@@ -20,12 +20,6 @@ public class TaskRepositoryImpl implements TaskRepository {
     private TaskRepositoryImpl() {
     }
 
-//    @Override
-//    public Task save(Task task) {
-//        task.setId(seq++);
-//        database.put(task.getId(), task);
-//        return task;
-//    }
     @Override
     public Task save(Task task) {
         task.setId(seq.getAndIncrement());
