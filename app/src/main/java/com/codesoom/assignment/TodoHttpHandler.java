@@ -35,105 +35,92 @@ public class TodoHttpHandler implements HttpHandler {
             InputStream requestBody = exchange.getRequestBody();
             OutputStream responseBody = exchange.getResponseBody();
 
-            isContainsInvalidId(exchange, objectMapper, path, outputStream);
+            validateContainsInvalidId(exchange, objectMapper, path, outputStream);
 
             getTodos(exchange, objectMapper, requestMethod, path, outputStream, responseBody);
-            if (getTodo(exchange, objectMapper, requestMethod, path, outputStream, requestBody, responseBody)) {
-                return;
+            if (isGetTodo(requestMethod, path)) {
+                getTodo(exchange, objectMapper, requestMethod, path, outputStream, requestBody, responseBody);
             }
-            if (insert(exchange, objectMapper, requestMethod, path, requestBody, responseBody)) {
-                return;
+            if (isInsert(requestMethod, path)) {
+                insert(exchange, objectMapper, requestMethod, path, requestBody, responseBody);
             }
-            if (update(exchange, objectMapper, requestMethod, path, outputStream, requestBody, responseBody)) {
-                return;
+            if (isUpdate(requestMethod, path)) {
+                update(exchange, objectMapper, requestMethod, path, outputStream, requestBody, responseBody);
             }
-            if (delete(exchange, objectMapper, requestMethod, path, outputStream, requestBody, responseBody)) {
-                return;
+            if (isDelete(requestMethod, path)) {
+                delete(exchange, objectMapper, requestMethod, path, outputStream, requestBody, responseBody);
             }
 
             closeAll(outputStream, requestBody, responseBody);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
-    private boolean delete(HttpExchange exchange, ObjectMapper objectMapper, String requestMethod, String path, OutputStream outputStream, InputStream requestBody, OutputStream responseBody) throws IOException {
-        if (isDelete(requestMethod, path)) {
-            final String id = path.split("/")[1];
-            if (!todoHttpController.isExist(id)) {
-                objectMapper.writeValue(outputStream, Arrays.asList());
-                exchange.sendResponseHeaders(HttpStatus.NOTFOUND.code(), 0);
-                closeAll(outputStream, requestBody, responseBody);
-                return true;
-            }
-            todoHttpController.delete(id);
-            exchange.sendResponseHeaders(HttpStatus.NOCONTENT.code(), 0);
+    private void delete(HttpExchange exchange, ObjectMapper objectMapper, String requestMethod, String path, OutputStream outputStream, InputStream requestBody, OutputStream responseBody) throws IOException {
+        final String id = path.split("/")[1];
+        if (!todoHttpController.isExist(id)) {
+            objectMapper.writeValue(outputStream, Arrays.asList());
+            exchange.sendResponseHeaders(HttpStatus.NOTFOUND.code(), 0);
+            closeAll(outputStream, requestBody, responseBody);
+            return;
         }
-        return false;
+        todoHttpController.delete(id);
+        exchange.sendResponseHeaders(HttpStatus.NOCONTENT.code(), 0);
     }
 
-    private boolean update(HttpExchange exchange, ObjectMapper objectMapper, String requestMethod, String path, OutputStream outputStream, InputStream requestBody, OutputStream responseBody) throws IOException {
-        if (isUpdate(requestMethod, path)) {
-            final String id = path.split("/")[1];
+    private void update(HttpExchange exchange, ObjectMapper objectMapper, String requestMethod, String path, OutputStream outputStream, InputStream requestBody, OutputStream responseBody) throws IOException {
+        final String id = path.split("/")[1];
 
-            final String content = new BufferedReader(new InputStreamReader(requestBody))
-                    .lines()
-                    .collect(Collectors.joining("\n"));
-            if (content.isBlank()) {
-                return true;
-            }
-            Todo body = objectMapper.readValue(content, Todo.class);
-            body.setId(Integer.parseInt(id));
-
-            if (!todoHttpController.isExist(id)) {
-                objectMapper.writeValue(outputStream, Arrays.asList());
-                exchange.sendResponseHeaders(HttpStatus.NOTFOUND.code(), 0);
-
-                closeAll(outputStream, requestBody, responseBody);
-                return true;
-            }
-
-            Todo updated = todoHttpController.update(body);
-            exchange.sendResponseHeaders(HttpStatus.SUCCESS.code(), updated.toString().getBytes().length);
-            responseBody.write(updated.toString().getBytes());
+        final String content = new BufferedReader(new InputStreamReader(requestBody))
+                .lines()
+                .collect(Collectors.joining("\n"));
+        if (content.isBlank()) {
+            return;
         }
-        return false;
-    }
+        Todo body = objectMapper.readValue(content, Todo.class);
+        body.setId(Integer.parseInt(id));
 
-    private boolean insert(HttpExchange exchange, ObjectMapper objectMapper, String requestMethod, String path, InputStream requestBody, OutputStream responseBody) throws IOException {
-        if (isInsert(requestMethod, path)) {
-            String content = new BufferedReader(new InputStreamReader(requestBody))
-                    .lines()
-                    .collect(Collectors.joining("\n"));
-            if (content.isBlank()) {
-                return true;
-            }
-            Todo inserted = todoHttpController.insert(objectMapper.readValue(content, Todo.class));
-            exchange.sendResponseHeaders(HttpStatus.CREATED.code(), inserted.toString().getBytes().length);
-            responseBody.write(inserted.toString().getBytes());
+        if (!todoHttpController.isExist(id)) {
+            objectMapper.writeValue(outputStream, Arrays.asList());
+            exchange.sendResponseHeaders(HttpStatus.NOTFOUND.code(), 0);
+
+            closeAll(outputStream, requestBody, responseBody);
+            return;
         }
-        return false;
+
+        Todo updated = todoHttpController.update(body);
+        exchange.sendResponseHeaders(HttpStatus.SUCCESS.code(), updated.toString().getBytes().length);
+        responseBody.write(updated.toString().getBytes());
     }
 
-    private boolean getTodo(HttpExchange exchange, ObjectMapper objectMapper, String requestMethod, String path, OutputStream outputStream, InputStream requestBody, OutputStream responseBody) throws IOException {
-        if (isGetTodo(requestMethod, path)) {
-            final String id = path.split("/")[1];
+    private void insert(HttpExchange exchange, ObjectMapper objectMapper, String requestMethod, String path, InputStream requestBody, OutputStream responseBody) throws IOException {
+        String content = new BufferedReader(new InputStreamReader(requestBody))
+                .lines()
+                .collect(Collectors.joining("\n"));
+        if (content.isBlank()) {
+            return;
+        }
+        Todo inserted = todoHttpController.insert(objectMapper.readValue(content, Todo.class));
+        exchange.sendResponseHeaders(HttpStatus.CREATED.code(), inserted.toString().getBytes().length);
+        responseBody.write(inserted.toString().getBytes());
+    }
 
-            if (todoHttpController.isEmpty() || !todoHttpController.isExist(id)) {
-                objectMapper.writeValue(outputStream, Arrays.asList());
-                exchange.sendResponseHeaders(HttpStatus.NOTFOUND.code(), outputStream.toString().getBytes().length);
-                responseBody.write(outputStream.toString().getBytes());
+    private void getTodo(HttpExchange exchange, ObjectMapper objectMapper, String requestMethod, String path, OutputStream outputStream, InputStream requestBody, OutputStream responseBody) throws IOException {
+        final String id = path.split("/")[1];
 
-                closeAll(outputStream, requestBody, responseBody);
-                return true;
-            }
-
-            objectMapper.writeValue(outputStream,todoHttpController.getTodos(id));
-            exchange.sendResponseHeaders(HttpStatus.SUCCESS.code(), outputStream.toString().getBytes().length);
+        if (todoHttpController.isEmpty() || !todoHttpController.isExist(id)) {
+            objectMapper.writeValue(outputStream, Arrays.asList());
+            exchange.sendResponseHeaders(HttpStatus.NOTFOUND.code(), outputStream.toString().getBytes().length);
             responseBody.write(outputStream.toString().getBytes());
+
+            closeAll(outputStream, requestBody, responseBody);
+            return;
         }
-        return false;
+
+        objectMapper.writeValue(outputStream,todoHttpController.getTodos(id));
+        exchange.sendResponseHeaders(HttpStatus.SUCCESS.code(), outputStream.toString().getBytes().length);
+        responseBody.write(outputStream.toString().getBytes());
     }
 
     private void getTodos(HttpExchange exchange, ObjectMapper objectMapper, String requestMethod, String path, OutputStream outputStream, OutputStream responseBody) throws IOException {
@@ -144,9 +131,9 @@ public class TodoHttpHandler implements HttpHandler {
         }
     }
 
-    private void isContainsInvalidId(HttpExchange exchange, ObjectMapper objectMapper, String path, OutputStream outputStream) throws IOException {
+    private void validateContainsInvalidId(HttpExchange exchange, ObjectMapper objectMapper, String path, OutputStream outputStream) throws IOException {
         try {
-            todoValidator.isContainsInvalidId(path);
+            todoValidator.throwInvalidId(path);
         } catch (IllegalArgumentException e) {
             objectMapper.writeValue(outputStream, Arrays.asList());
             exchange.sendResponseHeaders(HttpStatus.NOTFOUND.code(), outputStream.toString().getBytes().length);

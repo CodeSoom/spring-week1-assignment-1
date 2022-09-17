@@ -16,12 +16,13 @@ public class TodoValidator {
         todoHttpController = new TodoHttpController();
     }
 
-    public void isContainsInvalidId(String path) {
-        if (path.split("/").length > 1) {
-            String id = path.split("/")[1];
-            if (id.equals("null") || id.equals("undefined")) {
-                throw new IllegalArgumentException();
-            }
+    public void throwInvalidId(String path) {
+        if (path.split("/").length <= 1) {
+            return;
+        }
+        String id = path.split("/")[1];
+        if (id.equals("null") || id.equals("undefined")) {
+            throw new IllegalArgumentException();
         }
     }
 }
