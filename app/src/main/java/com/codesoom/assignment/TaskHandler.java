@@ -1,7 +1,7 @@
 package com.codesoom.assignment;
 
-import com.codesoom.http.HttpMethod;
 import com.codesoom.exception.MethodNotExistException;
+import com.codesoom.http.HttpMethod;
 import com.codesoom.http.HttpRequest;
 import com.codesoom.http.HttpResponse;
 import com.sun.net.httpserver.HttpExchange;
@@ -48,15 +48,12 @@ public class TaskHandler implements HttpHandler {
         if (method.isGet() && "/tasks".equals(path)) {
             list(httpResponse);
             return;
-
         } else if (method.isGet() && path.startsWith("/tasks/")) {
             retrieve(httpRequest, httpResponse);
             return;
-
         } else if (method.isPost()) {
             post(httpRequest, httpResponse);
             return;
-
         } else if (method.isPut()) {
             put(httpRequest, httpResponse);
             return;
@@ -82,10 +79,10 @@ public class TaskHandler implements HttpHandler {
             Task task = taskRepository.findById(id);
             httpResponse.response(OK, JsonParser.objectToJson(task));
 
-        } else {
-            httpResponse.response(NOT_FOUND, "");
-
+            return;
         }
+        httpResponse.response(NOT_FOUND, "");
+
     }
 
     private void post(HttpRequest request, HttpResponse httpResponse) throws IOException {
@@ -110,9 +107,9 @@ public class TaskHandler implements HttpHandler {
             String content = JsonParser.objectToJson(updateTask);
             httpResponse.response(OK, content);
 
-        } else {
-            httpResponse.response(NOT_FOUND, "");
+            return;
         }
+        httpResponse.response(NOT_FOUND, "");
     }
 
     private void delete(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
@@ -122,8 +119,8 @@ public class TaskHandler implements HttpHandler {
             taskRepository.delete(id);
             httpResponse.response(NO_CONTENT, "");
 
-        } else {
-            httpResponse.response(NOT_FOUND, "");
+            return;
         }
+        httpResponse.response(NOT_FOUND, "");
     }
 }
