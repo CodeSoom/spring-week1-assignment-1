@@ -39,7 +39,7 @@ public class TodoHttpHandler implements HttpHandler {
             validateContainsInvalidId(exchange, objectMapper, path, outputStream);
 
             getTodos(exchange, objectMapper, requestMethod, path, outputStream, responseBody);
-            if (isGetTodo(requestMethod, path)) {
+            if (isGetTodo(requestMethod, path, path.split("/").length > 1)) {
                 getTodo(exchange, objectMapper, requestMethod, path, outputStream, requestBody, responseBody);
             }
             if (isInsert(requestMethod, path)) {
@@ -125,7 +125,7 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private void getTodos(HttpExchange exchange, ObjectMapper objectMapper, String requestMethod, String path, OutputStream outputStream, OutputStream responseBody) throws IOException {
-        if (isGetTodos(requestMethod, path)) {
+        if (isGetTodo(requestMethod, path, path.split("/").length == 1)) {
             objectMapper.writeValue(outputStream, todoHttpController.getTodos());
             exchange.sendResponseHeaders(HttpStatus.SUCCESS.code(), outputStream.toString().getBytes().length);
             responseBody.write(outputStream.toString().getBytes());
@@ -156,18 +156,11 @@ public class TodoHttpHandler implements HttpHandler {
         }
     }
 
-    private boolean isGetTodos(String requestMethod, String path) {
-        return "GET".equals(requestMethod) &&
-                path.equals("tasks") &&
-                path.split("/").length == 1;
-    }
-
-    private boolean isGetTodo(String requestMethod, String path) {
+    private boolean isGetTodo(String requestMethod, String path, boolean condition) {
         return "GET".equals(requestMethod) &&
                 path.contains("tasks") &&
-                path.split("/").length > 1;
+                condition;
     }
-
     private boolean isInsert(String requestMethod, String path) {
         return "POST".equals(requestMethod) && path.equals("tasks");
     }
