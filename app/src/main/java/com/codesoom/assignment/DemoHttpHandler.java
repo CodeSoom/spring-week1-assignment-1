@@ -17,8 +17,7 @@ import java.util.stream.Collectors;
 public class DemoHttpHandler implements HttpHandler {
     private ObjectMapper objectMapper = new ObjectMapper();
     private List<Task> tasks = new ArrayList<>();
-    private
-    Long idCount =1L;
+    private Long idCount =1L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -93,18 +92,18 @@ public class DemoHttpHandler implements HttpHandler {
        return num.isEmpty() ? tasksToJSON(tasks) : tasksToJSON(findTask(num));
     }
 
-    public String getMethod( String body, String num) throws IOException {
+    private String getMethod( String body, String num) throws IOException {
             return body.isEmpty()? returnTaskOrTasks(num) : "GET은 조회만 가능합니다";
     }
 
-    public String postMethod( String body, String num) throws IOException {
+    private String postMethod( String body, String num) throws IOException {
         Task task = toTask(body);
         task.setId(idCount++);
         tasks.add(task);
         return returnTaskOrTasks(num);
     }
 
-    public String putMethod(String body, String num) throws IOException {
+    private String putMethod(String body, String num) throws IOException {
         Task task = findTask(num);
         if(task==null){
             return "NOT FOUND";
@@ -114,7 +113,7 @@ public class DemoHttpHandler implements HttpHandler {
         }
     }
 
-    public String deleteMethod(String num) throws IOException {
+    private String deleteMethod(String num) throws IOException {
         if(findTask(num)==null){
             return "NOT FOUND";
         }else {
@@ -122,9 +121,5 @@ public class DemoHttpHandler implements HttpHandler {
             return "삭제 되었습니다.";
         }
     }
-
-
-
-
 
 }
