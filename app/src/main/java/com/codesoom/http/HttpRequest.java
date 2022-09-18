@@ -38,7 +38,6 @@ public class HttpRequest {
     }
 
     public Long getLongFromPathParameter(int idx) {
-        // todo 정규표현식으로 변경 예정
         String[] splitPath = path.split("/");
         if (idx < splitPath.length) {
             try {
