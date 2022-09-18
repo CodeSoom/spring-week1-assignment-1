@@ -20,15 +20,16 @@ import java.util.stream.Collectors;
 public class TodoHttpHandler implements HttpHandler {
     private final TodoHttpController todoHttpController;
     private final TodoValidator todoValidator;
+    private final ObjectMapper objectMapper;
     public TodoHttpHandler() {
         this.todoHttpController = new TodoHttpController();
         this.todoValidator = new TodoValidator();
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
     public void handle(HttpExchange exchange) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             String requestMethod = exchange.getRequestMethod();
             String path = exchange.getRequestURI().getPath().substring(1);
             OutputStream outputStream = new ByteArrayOutputStream();
