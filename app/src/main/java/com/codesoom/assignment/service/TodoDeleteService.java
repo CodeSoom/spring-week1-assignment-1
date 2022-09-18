@@ -19,10 +19,9 @@ public class TodoDeleteService implements TodoService {
                     new ResponseData(HttpStatus.HTTP_NO_CONTENT, "") :
                     new ResponseData(HttpStatus.HTTP_NOT_FOUND, "");
 
-        } else {
-            return new ResponseData(HttpStatus.HTTP_BAD_REQUEST, "");
-
         }
+
+        return new ResponseData(HttpStatus.HTTP_BAD_REQUEST, "");
     }
 
     private boolean isDeleteRequest(String pathVariable, Task taskParam) {

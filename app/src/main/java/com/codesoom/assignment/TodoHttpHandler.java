@@ -9,7 +9,7 @@ import com.codesoom.assignment.service.TodoPostService;
 import com.codesoom.assignment.service.TodoPutService;
 import com.codesoom.assignment.service.TodoDeleteService;
 import com.codesoom.assignment.util.HttpStatus;
-import com.codesoom.assignment.util.RequestMethod;
+import com.codesoom.assignment.util.HttpMethod;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TodoHttpHandler implements HttpHandler {
-    private final Map<RequestMethod, TodoService> methodMappingMap = new HashMap<>();
+    private final Map<HttpMethod, TodoService> methodMappingMap = new HashMap<>();
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -36,11 +36,11 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private void initMethodMapping() {
-        methodMappingMap.put(RequestMethod.GET, new TodoGetService());
-        methodMappingMap.put(RequestMethod.POST, new TodoPostService());
-        methodMappingMap.put(RequestMethod.PUT, new TodoPutService());
-        methodMappingMap.put(RequestMethod.PATCH, new TodoPutService());
-        methodMappingMap.put(RequestMethod.DELETE, new TodoDeleteService());
+        methodMappingMap.put(HttpMethod.GET, new TodoGetService());
+        methodMappingMap.put(HttpMethod.POST, new TodoPostService());
+        methodMappingMap.put(HttpMethod.PUT, new TodoPutService());
+        methodMappingMap.put(HttpMethod.PATCH, new TodoPutService());
+        methodMappingMap.put(HttpMethod.DELETE, new TodoDeleteService());
     }
 
     @Override
@@ -61,7 +61,7 @@ public class TodoHttpHandler implements HttpHandler {
             String pathVariable = Path.getPathVariable(path);
 
             if (isExistRequestBody(requestBody)) {
-                task = valueOfTask(requestBody);
+                task = Task.valueOf(requestBody);
             }
 
             TodoService service = getService(method);
@@ -83,12 +83,12 @@ public class TodoHttpHandler implements HttpHandler {
     }
 
     private TodoService getService(String method) {
-        RequestMethod requestMethod = Arrays.stream(RequestMethod.values())
+        HttpMethod httpMethod = Arrays.stream(HttpMethod.values())
                 .filter(m -> method.equals(m.name()))
                 .findFirst()
                 .orElse(null);
 
-        return methodMappingMap.get(requestMethod);
+        return methodMappingMap.get(httpMethod);
     }
 
     private String getRequestBody(HttpExchange exchange) {
@@ -108,10 +108,5 @@ public class TodoHttpHandler implements HttpHandler {
 
     private boolean isExistRequestBody(String requestBody) {
         return !requestBody.isBlank();
-    }
-
-    private Task valueOfTask(String content) throws JsonProcessingException {
-        return objectMapper.readValue(content, Task.class);
-
     }
 }

@@ -22,13 +22,12 @@ public class TodoGetService implements TodoService {
         } else if (isBadRequest(pathVariable)) {
             return new ResponseData(HttpStatus.HTTP_BAD_REQUEST, "");
 
-        } else {
-            Task task = taskRepository.findById(Long.parseLong(pathVariable));
-            return task != null ?
-                    new ResponseData(HttpStatus.HTTP_OK, convertToJSON(task)) :
-                    new ResponseData(HttpStatus.HTTP_NOT_FOUND, "");
-
         }
+
+        Task task = taskRepository.findById(Long.parseLong(pathVariable));
+        return task != null ?
+                new ResponseData(HttpStatus.HTTP_OK, convertToJSON(task)) :
+                new ResponseData(HttpStatus.HTTP_NOT_FOUND, "");
     }
 
     private boolean isBadRequest(String pathVariable) {

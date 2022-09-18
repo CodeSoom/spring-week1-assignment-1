@@ -1,5 +1,8 @@
 package com.codesoom.assignment.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class Task {
 
     private long id;
@@ -31,6 +34,13 @@ public class Task {
 
         this.title = title;
     }
+
+    public static Task valueOf(String content) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(content, Task.class);
+    }
+
+
 
     @Override
     public String toString() {

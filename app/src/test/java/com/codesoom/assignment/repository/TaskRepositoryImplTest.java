@@ -1,6 +1,7 @@
 package com.codesoom.assignment.repository;
 
 import com.codesoom.assignment.model.Task;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
@@ -14,6 +15,7 @@ class TaskRepositoryImplTest {
     private final TaskRepository taskRepository = TaskRepositoryImpl.getInstance();
 
     @Test
+    @DisplayName("멀티스레드환경 동시성 이슈 체크")
     public void 동시에_3만개_요청() throws InterruptedException {
         int threadCount = 30000;
         ExecutorService executorService = Executors.newFixedThreadPool(10);

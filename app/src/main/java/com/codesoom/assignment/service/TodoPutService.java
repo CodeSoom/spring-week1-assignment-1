@@ -20,10 +20,9 @@ public class TodoPutService implements TodoService {
                     new ResponseData(HttpStatus.HTTP_OK, convertToJSON(taskRepository.updateTask(taskParam))) :
                     new ResponseData(HttpStatus.HTTP_NOT_FOUND, "");
 
-        } else {
-            return new ResponseData(HttpStatus.HTTP_OK, "");
-
         }
+
+        return new ResponseData(HttpStatus.HTTP_OK, "");
     }
 
     private boolean isUpdateRequest(String pathVariable, Task taskParam) {
