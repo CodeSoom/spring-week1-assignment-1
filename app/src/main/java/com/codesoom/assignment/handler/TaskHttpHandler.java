@@ -34,10 +34,10 @@ public class TaskHttpHandler implements HttpHandler {
             ResponseUtils.sendError(exchange, HttpStatus.BAD_REQUEST);
         }
 
-        Long id = RequestUtils.getResourceId(requestURI).orElse(null);
+        final Long id = RequestUtils.getResourceId(requestURI).orElse(null);
         switch (requestMethod) {
             case GET:
-                listTodos(exchange, id);
+                getTodos(exchange, id);
                 break;
             case POST:
                 createTodo(exchange, requestBody);
@@ -54,17 +54,25 @@ public class TaskHttpHandler implements HttpHandler {
         }
     }
 
-    private void listTodos(HttpExchange exchange, Long id) throws IOException {
+    private void getTodos(HttpExchange exchange, Long id) throws IOException {
         if (id == null) {
-            List<Task> tasks = taskRepository.getTasks();
-            ResponseUtils.sendResponse(exchange, JsonParser.toJSON(tasks), HttpStatus.OK);
+            listTodos(exchange);
         } else {
-            try {
-                Task task = taskRepository.getTaskById(id);
-                ResponseUtils.sendResponse(exchange, JsonParser.toJSON(task), HttpStatus.OK);
-            } catch (IllegalArgumentException e) {
-                ResponseUtils.sendError(exchange, HttpStatus.NOT_FOUND);
-            }
+            detailTodo(exchange, id);
+        }
+    }
+
+    private void listTodos(HttpExchange exchange) throws IOException {
+        List<Task> tasks = taskRepository.getTasks();
+        ResponseUtils.sendResponse(exchange, JsonParser.toJSON(tasks), HttpStatus.OK);
+    }
+
+    private void detailTodo(HttpExchange exchange, Long id) throws IOException {
+        try {
+            Task task = taskRepository.getTaskById(id);
+            ResponseUtils.sendResponse(exchange, JsonParser.toJSON(task), HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            ResponseUtils.sendError(exchange, HttpStatus.NOT_FOUND);
         }
     }
 
