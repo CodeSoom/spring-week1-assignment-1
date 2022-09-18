@@ -1,5 +1,6 @@
 package com.codesoom.http;
 
+import com.codesoom.exception.MethodNotExistException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.BufferedReader;
@@ -25,6 +26,15 @@ public class HttpRequest {
         body = new BufferedReader(new InputStreamReader(in))
                 .lines()
                 .collect(Collectors.joining("\n"));
+    }
+
+    public static boolean isValidRequest(HttpExchange exchange) {
+        try {
+            HttpMethod.of(exchange.getRequestMethod());
+            return true;
+        } catch (MethodNotExistException e) {
+            return false;
+        }
     }
 
     public Long getLongFromPathParameter(int idx) {

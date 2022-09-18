@@ -1,6 +1,5 @@
 package com.codesoom.assignment;
 
-import com.codesoom.exception.MethodNotExistException;
 import com.codesoom.exception.TaskNotFoundException;
 import com.codesoom.http.HttpMethod;
 import com.codesoom.http.HttpRequest;
@@ -9,7 +8,6 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
-import java.util.List;
 
 import static com.codesoom.assignment.HttpStatus.BAD_REQUEST;
 import static com.codesoom.assignment.HttpStatus.CREATED;
@@ -34,13 +32,12 @@ public class TaskHandler implements HttpHandler {
 
     private void handleRequest(HttpExchange exchange) throws IOException {
         HttpResponse httpResponse = new HttpResponse(exchange);
-        HttpRequest httpRequest;
-        try {
-            httpRequest = new HttpRequest(exchange);
-        } catch (MethodNotExistException e) {
-            httpResponse.response(BAD_REQUEST, e.getMessage());
+
+        if (!HttpRequest.isValidRequest(exchange)) {
+            httpResponse.response(BAD_REQUEST, "유효하지 않은 Http 요청입니다.");
             return;
         }
+        HttpRequest httpRequest = new HttpRequest(exchange);
 
         serviceTask(httpRequest, httpResponse);
     }
@@ -53,7 +50,8 @@ public class TaskHandler implements HttpHandler {
             String content = taskService.getTasks();
             httpResponse.response(OK, content);
             return;
-        } else if (method.isGet() && path.startsWith("/tasks/")) {
+        }
+        if (method.isGet() && path.startsWith("/tasks/")) {
             try {
                 Long taskId = httpRequest.getLongFromPathParameter(PLACE_OF_TASK_ID_FROM_PATH);
                 String content = taskService.getTask(taskId);
@@ -63,11 +61,13 @@ public class TaskHandler implements HttpHandler {
                 httpResponse.response(NOT_FOUND, "");
                 return;
             }
-        } else if (method.isPost()) {
+        }
+        if (method.isPost()) {
             String content = taskService.createTask(httpRequest.getBody());
             httpResponse.response(CREATED, content);
             return;
-        } else if (method.isPut()) {
+        }
+        if (method.isPut()) {
             try {
                 Long taskId = httpRequest.getLongFromPathParameter(PLACE_OF_TASK_ID_FROM_PATH);
                 String content = taskService.updateTask(taskId, httpRequest.getBody());
@@ -77,7 +77,8 @@ public class TaskHandler implements HttpHandler {
                 httpResponse.response(NOT_FOUND, "");
                 return;
             }
-        } else if (method.isDelete()) {
+        }
+        if (method.isDelete()) {
             try {
                 Long taskId = httpRequest.getLongFromPathParameter(PLACE_OF_TASK_ID_FROM_PATH);
                 taskService.deleteTask(taskId);
