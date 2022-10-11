@@ -24,7 +24,7 @@ public class MyHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        final Method method = Method.valueOf(exchange.getRequestMethod());
+        final HttpMethod httpMethod = HttpMethod.valueOf(exchange.getRequestMethod());
         final URI uri = exchange.getRequestURI();
         final String path = uri.getPath();
 
@@ -36,13 +36,13 @@ public class MyHandler implements HttpHandler {
         if (pathArr.length == 3) {
             final Long id = Long.valueOf(pathArr[2]);
 
-            if (method.equals(Method.GET))
+            if (httpMethod.equals(HttpMethod.GET))
                 content = findTaskById(id, exchange);
 
-            if (method.equals(Method.PUT) || method.equals(Method.PATCH))
+            if (httpMethod.equals(HttpMethod.PUT) || httpMethod.equals(HttpMethod.PATCH))
                 content = editTaskById(id, exchange);
 
-            if (method.equals(Method.DELETE)) {
+            if (httpMethod.equals(HttpMethod.DELETE)) {
                 deleteTaskById(id, exchange);
                 content = "";
             }
@@ -51,11 +51,11 @@ public class MyHandler implements HttpHandler {
             return;
         }
 
-        if (method.equals(Method.GET)) {
+        if (httpMethod.equals(HttpMethod.GET)) {
             content = findAllTasks(exchange);
         }
 
-        if (method.equals(Method.POST)) {
+        if (httpMethod.equals(HttpMethod.POST)) {
             content = addTask(exchange);
         }
 
