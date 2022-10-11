@@ -101,6 +101,16 @@ public class AppHttpHandler implements HttpHandler {
                 break;
             case "DELETE":
 
+                Optional<Task> findTask2 = tasks.stream()
+                        .filter(t -> t.getId().equals(userId))
+                        .findFirst();
+
+                if (findTask2.isPresent()) {
+                    int indexOfOriginTask = tasks.indexOf(findTask2.get());
+                    tasks.remove(indexOfOriginTask);
+                }
+
+                content = "";
                 exchange.sendResponseHeaders(200, content.getBytes().length);
                 break;
             default:
