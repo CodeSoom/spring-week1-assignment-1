@@ -1,8 +1,6 @@
 package com.codesoom.assignment;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class App {
     public String getGreeting() {
