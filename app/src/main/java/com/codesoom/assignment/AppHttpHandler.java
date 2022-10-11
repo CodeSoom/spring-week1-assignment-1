@@ -2,8 +2,7 @@ package com.codesoom.assignment;
 
 import com.codesoom.assignment.enums.HttpMethodType;
 import com.codesoom.assignment.error.ClientError;
-import com.codesoom.assignment.models.Task;
-import com.codesoom.assignment.utils.JsonUtil;
+import com.codesoom.assignment.service.TaskService;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -11,18 +10,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.net.HttpURLConnection;
 import java.util.stream.Collectors;
 
 public class AppHttpHandler implements HttpHandler {
-    static Long id = 0L;
-    List<Task> tasks = new ArrayList<>();
+    TaskService taskService = new TaskService();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String content = "No Content";
         HttpMethodType method = HttpMethodType.valueOf(exchange.getRequestMethod());
         String[] pathArr = exchange.getRequestURI().getPath().split("/");
         String path = pathArr[1];
@@ -30,7 +25,6 @@ public class AppHttpHandler implements HttpHandler {
         String requestBody = new BufferedReader(new InputStreamReader(exchange.getRequestBody()))
                 .lines()
                 .collect(Collectors.joining("\n"));
-        OutputStream responseBody = exchange.getResponseBody();
 
         if (!path.equals("tasks")) {
             ClientError.notFound(exchange);
@@ -51,67 +45,38 @@ public class AppHttpHandler implements HttpHandler {
             }
         }
 
+        String data = "";
         switch (method) {
             case GET:
                 if (isEmptyUserId(userId)) {
-                    content = JsonUtil.writeValue(tasks);
+                    data = taskService.getTasks();
                 } else {
-                    Optional<Task> task = tasks.stream()
-                            .filter(t -> t.getId().equals(userId))
-                            .findFirst();
-
-                    if (task.isPresent()) {
-                        content = JsonUtil.writeValue(task.get());
-                    }
+                    data = taskService.getTaskByUserId(userId);
                 }
-
-                exchange.sendResponseHeaders(200, content.getBytes().length);
+                setResponse(exchange, HttpURLConnection.HTTP_OK, data);
                 break;
             case POST:
-                Task task = JsonUtil.readValue(requestBody, Task.class);
-                task.setId(++id);
-                tasks.add(task);
-
-                content = JsonUtil.writeValue(task);
-                exchange.sendResponseHeaders(201, content.getBytes().length);
+                data = taskService.createTask(requestBody);
+                setResponse(exchange, HttpURLConnection.HTTP_CREATED, data);
                 break;
             case PUT:
             case PATCH:
-                String newTitle = JsonUtil.readValue(requestBody, Task.class).getTitle();
-                Optional<Task> findTask = tasks.stream()
-                        .filter(t -> t.getId().equals(userId))
-                        .findFirst();
-
-                if (findTask.isPresent()) {
-                    int indexOfOriginTask = tasks.indexOf(findTask.get());
-                    Task originTask = tasks.get(indexOfOriginTask);
-                    originTask.setTitle(newTitle);
-                    content = JsonUtil.writeValue(originTask);
-                }
-
-                exchange.sendResponseHeaders(200, content.getBytes().length);
+                data = taskService.updateTask(userId, requestBody);
+                setResponse(exchange, HttpURLConnection.HTTP_OK, data);
                 break;
             case DELETE:
-                Optional<Task> findTask2 = tasks.stream()
-                        .filter(t -> t.getId().equals(userId))
-                        .findFirst();
-
-                if (findTask2.isPresent()) {
-                    int indexOfOriginTask = tasks.indexOf(findTask2.get());
-                    tasks.remove(indexOfOriginTask);
-                }
-
-                content = "";
-                exchange.sendResponseHeaders(200, content.getBytes().length);
+                taskService.deleteTask(userId);
+                setResponse(exchange, HttpURLConnection.HTTP_OK, data);
                 break;
             default:
-                exchange.sendResponseHeaders(400, 0);
-                responseBody.close();
-                return;
+                ClientError.notFound(exchange);
         }
+    }
 
-
-        responseBody.write(content.getBytes());
+    private void setResponse(HttpExchange exchange, int responseCode, String data) throws IOException {
+        exchange.sendResponseHeaders(responseCode, data.getBytes().length);
+        OutputStream responseBody = exchange.getResponseBody();
+        responseBody.write(data.getBytes());
         responseBody.flush();
         responseBody.close();
     }
