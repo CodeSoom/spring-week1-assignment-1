@@ -1,8 +1,9 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.enums.HttpMethodType;
+import com.codesoom.assignment.error.ClientError;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.utils.JsonUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -21,47 +22,37 @@ public class AppHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-
         String content = "No Content";
-        String method = exchange.getRequestMethod();
-        String path = exchange.getRequestURI().getPath();
-        Long userId;
-        OutputStream responseBody = exchange.getResponseBody();
-
+        HttpMethodType method = HttpMethodType.valueOf(exchange.getRequestMethod());
+        String[] pathArr = exchange.getRequestURI().getPath().split("/");
+        String path = pathArr[1];
+        Long userId = getUserId(pathArr);
         String requestBody = new BufferedReader(new InputStreamReader(exchange.getRequestBody()))
                 .lines()
                 .collect(Collectors.joining("\n"));
+        OutputStream responseBody = exchange.getResponseBody();
 
-        if (path.length() > 6) {
-            userId = Long.parseLong(path.substring(path.indexOf("/", 1) + 1));
-        } else {
-            userId = 0L;
-        }
-
-        if (!path.contains("/tasks")) {
-            exchange.sendResponseHeaders(404, 0);
-            responseBody.close();
+        if (!path.equals("tasks")) {
+            ClientError.notFound(exchange);
             return;
         }
 
-        if (method.equals("PUT") || method.equals("PATCH") || method.equals("DELETE")) {
+        if (isRequiredPathVariable(method)) {
             if (isEmptyUserId(userId)) {
-                exchange.sendResponseHeaders(400, 0);
-                responseBody.close();
+                ClientError.badRequest(exchange);
                 return;
             }
         }
 
-        if (method.equals("POST") || method.equals("PUT") || method.equals("PATCH")) {
+        if (isRequiredRequestBody(method)) {
             if (requestBody.isBlank()) {
-                exchange.sendResponseHeaders(400, 0);
-                responseBody.close();
+                ClientError.badRequest(exchange);
                 return;
             }
         }
 
         switch (method) {
-            case "GET":
+            case GET:
                 if (isEmptyUserId(userId)) {
                     content = JsonUtil.writeValue(tasks);
                 } else {
@@ -76,7 +67,7 @@ public class AppHttpHandler implements HttpHandler {
 
                 exchange.sendResponseHeaders(200, content.getBytes().length);
                 break;
-            case "POST":
+            case POST:
                 Task task = JsonUtil.readValue(requestBody, Task.class);
                 task.setId(++id);
                 tasks.add(task);
@@ -84,10 +75,9 @@ public class AppHttpHandler implements HttpHandler {
                 content = JsonUtil.writeValue(task);
                 exchange.sendResponseHeaders(201, content.getBytes().length);
                 break;
-            case "PUT":
-            case "PATCH":
+            case PUT:
+            case PATCH:
                 String newTitle = JsonUtil.readValue(requestBody, Task.class).getTitle();
-
                 Optional<Task> findTask = tasks.stream()
                         .filter(t -> t.getId().equals(userId))
                         .findFirst();
@@ -101,8 +91,7 @@ public class AppHttpHandler implements HttpHandler {
 
                 exchange.sendResponseHeaders(200, content.getBytes().length);
                 break;
-            case "DELETE":
-
+            case DELETE:
                 Optional<Task> findTask2 = tasks.stream()
                         .filter(t -> t.getId().equals(userId))
                         .findFirst();
@@ -125,6 +114,28 @@ public class AppHttpHandler implements HttpHandler {
         responseBody.write(content.getBytes());
         responseBody.flush();
         responseBody.close();
+    }
+
+    private boolean isRequiredRequestBody(HttpMethodType method) {
+        return method == HttpMethodType.POST
+                || method == HttpMethodType.PUT
+                || method == HttpMethodType.PATCH;
+    }
+
+    private boolean isRequiredPathVariable(HttpMethodType method) {
+        return method == HttpMethodType.PUT
+                || method == HttpMethodType.PATCH
+                || method == HttpMethodType.DELETE;
+    }
+
+    private Long getUserId(String[] pathArr) {
+        Long userId;
+        if (pathArr.length > 2) {
+            userId = Long.parseLong(pathArr[2]);
+        } else {
+            userId = 0L;
+        }
+        return userId;
     }
 
     private boolean isEmptyUserId(Long id) {
