@@ -1,21 +1,19 @@
 package com.codesoom.assignment.models;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public class Task {
 
-    private static Long sequence = 1L;
+    private static final AtomicLong atomicLong = new AtomicLong(1L);
     private Long id;
     private String title;
-
-    public Task() {
-
-    }
 
     public Long getId() {
         return id;
     }
 
     public void setId() {
-        this.id = sequence++;
+        this.id = atomicLong.getAndIncrement();
     }
 
     public String getTitle() {

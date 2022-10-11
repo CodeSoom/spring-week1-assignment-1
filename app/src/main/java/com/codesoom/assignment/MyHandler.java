@@ -3,128 +3,149 @@ package com.codesoom.assignment;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URI;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class MyHandler implements HttpHandler {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final Map<Long, Task> taskMap = new LinkedHashMap<>();
+    private final Map<Long, Task> taskMap = new ConcurrentHashMap<>();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
-        URI uri = exchange.getRequestURI();
-        String path = uri.getPath();
+        final Method method = Method.valueOf(exchange.getRequestMethod());
+        final URI uri = exchange.getRequestURI();
+        final String path = uri.getPath();
 
-        String[] pathArr = path.split("/");
+        final String[] pathArr = path.split("/");
 
         String content = null;
-        OutputStream outputStream = exchange.getResponseBody();
+        final OutputStream outputStream = exchange.getResponseBody();
 
-        if (pathArr.length == 3 && method.equals("GET")) {
-            Long id = Long.valueOf(pathArr[2]);
-            content = findTaskById(id, exchange);
-        }
-        if (pathArr.length == 3 && (method.equals("PUT") || method.equals("PATCH"))) {
-            Long id = Long.valueOf(pathArr[2]);
-            content = editTaskById(id, exchange);
+        if (pathArr.length == 3) {
+            final Long id = Long.valueOf(pathArr[2]);
+
+            if (method.equals(Method.GET))
+                content = findTaskById(id, exchange);
+
+            if (method.equals(Method.PUT) || method.equals(Method.PATCH))
+                content = editTaskById(id, exchange);
+
+            if (method.equals(Method.DELETE)) {
+                deleteTaskById(id, exchange);
+                content = "";
+            }
+
+            writeAndFlushAndClose(content, outputStream);
+            return;
         }
 
-        if (pathArr.length == 3 && method.equals("DELETE")) {
-            Long id = Long.valueOf(pathArr[2]);
-            content = deleteTaskById(id, exchange);
-        }
-
-        if (pathArr.length != 3 && method.equals("GET")) {
+        if (method.equals(Method.GET)) {
             content = findAllTasks(exchange);
         }
 
-        if (pathArr.length != 3 && method.equals("POST")) {
+        if (method.equals(Method.POST)) {
             content = addTask(exchange);
         }
 
+        writeAndFlushAndClose(content, outputStream);
+    }
+
+    private void writeAndFlushAndClose(String content, OutputStream outputStream) throws IOException {
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
     }
 
     private String editTaskById(Long id, HttpExchange exchange) throws IOException {
+        final Task originalTask = taskMap.get(id);
         String content;
 
-        Task originalTask = taskMap.get(id);
         if (originalTask == null) {
-            content = "Not Found!";
+            content = "";
             exchange.sendResponseHeaders(404, content.getBytes().length);
-        } else {
-            InputStream inputStream = exchange.getRequestBody();
-            String body = new BufferedReader(new InputStreamReader(inputStream))
-                    .lines()
-                    .collect(Collectors.joining("\n"));
-            Task newTask = toTask(body);
-            originalTask.setTitle(newTask.getTitle());
-
-            content = taskToJson(originalTask);
-            exchange.sendResponseHeaders(200, content.getBytes().length);
+            setResponseHeader(exchange, "Transfer-encoding", "chunked");
+            return content;
         }
+
+        final InputStream inputStream = exchange.getRequestBody();
+        final String body = new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
+        final Task newTask = toTask(body);
+        originalTask.setTitle(newTask.getTitle());
+
+        content = taskToJson(originalTask);
+        exchange.sendResponseHeaders(200, content.getBytes().length);
 
         return content;
     }
 
     private String addTask(HttpExchange exchange) throws IOException {
-        InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream))
+        final InputStream inputStream = exchange.getRequestBody();
+        final String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
-        Task task = toTask(body);
+        final Task task = toTask(body);
         task.setId();
         taskMap.put(task.getId(), task);
 
-        String content = taskToJson(task);
+        final String content = taskToJson(task);
         exchange.sendResponseHeaders(201, content.getBytes().length);
         return content;
     }
 
     private String findAllTasks(HttpExchange exchange) throws IOException {
-        String content = tasksToJson();
+        final String content = tasksToJson();
         exchange.sendResponseHeaders(200, content.getBytes().length);
         return content;
     }
 
-    private String deleteTaskById(Long id, HttpExchange exchange) throws IOException {
-        String content;
-        Task removedTask = taskMap.remove(id);
+    private void deleteTaskById(Long id, HttpExchange exchange) throws IOException {
+        setResponseHeader(exchange, "Transfer-encoding", "chunked");
+
+        final Task removedTask = taskMap.remove(id);
 
         if (removedTask == null) {
-            content = "Not Found!";
-            exchange.sendResponseHeaders(404, content.getBytes().length);
-        } else {
-            content = "Successfully Deleted!";
-            exchange.sendResponseHeaders(200, content.getBytes().length);
+            exchange.sendResponseHeaders(404, 0);
+            return;
         }
+
+        exchange.sendResponseHeaders(204, 0);
+    }
+
+    private String findTaskById(Long id, HttpExchange exchange) throws IOException {
+        final Task task = taskMap.get(id);
+        String content;
+
+        if (task == null) {
+            content = "";
+            exchange.sendResponseHeaders(404, content.getBytes().length);
+            setResponseHeader(exchange, "Transfer-encoding", "chunked");
+            return content;
+        }
+
+        content = taskToJson(task);
+        exchange.sendResponseHeaders(200, content.getBytes().length);
 
         return content;
     }
 
-    private String findTaskById(Long id, HttpExchange exchange) throws IOException {
-        String content;
-        Task task = taskMap.get(id);
-
-        if (task == null) {
-            content = "Not Found!";
-            exchange.sendResponseHeaders(404, content.getBytes().length);
-        } else {
-            content = taskToJson(task);
-            exchange.sendResponseHeaders(200, content.getBytes().length);
-        }
-
-        return content;
+    private void setResponseHeader(HttpExchange exchange, String key, String value) {
+        Headers headers = exchange.getResponseHeaders();
+        headers.add(key, value);
     }
 
     private Task toTask(String content) throws JsonProcessingException {
@@ -132,7 +153,7 @@ public class MyHandler implements HttpHandler {
     }
 
     private String tasksToJson() throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
+        final OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, taskMap.values());
 
         return outputStream.toString();
