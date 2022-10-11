@@ -43,7 +43,7 @@ public class AppHttpHandler implements HttpHandler {
         }
 
         if (method.equals("PUT") || method.equals("PATCH") || method.equals("DELETE")) {
-            if (userId.equals(0)) {
+            if (isEmptyUserId(userId)) {
                 exchange.sendResponseHeaders(400, 0);
                 responseBody.close();
                 return;
@@ -60,16 +60,16 @@ public class AppHttpHandler implements HttpHandler {
 
         switch (method) {
             case "GET":
-                if (hasUserId(userId)) {
+                if (isEmptyUserId(userId)) {
+                    content = tasksToJson(tasks);
+                } else {
                     Optional<Task> task = tasks.stream()
-                            .filter(s -> s.getId().equals(userId))
+                            .filter(t -> t.getId().equals(userId))
                             .findFirst();
 
                     if (task.isPresent()) {
                         content = taskToJson(task.get());
                     }
-                } else {
-                    content = tasksToJson(tasks);
                 }
 
                 exchange.sendResponseHeaders(200, content.getBytes().length);
@@ -83,10 +83,19 @@ public class AppHttpHandler implements HttpHandler {
                 exchange.sendResponseHeaders(201, content.getBytes().length);
                 break;
             case "PUT":
-
-                exchange.sendResponseHeaders(200, content.getBytes().length);
-                break;
             case "PATCH":
+                String newTitle = toTask(requestBody).getTitle();
+
+                Optional<Task> findTask = tasks.stream()
+                        .filter(t -> t.getId().equals(userId))
+                        .findFirst();
+
+                if (findTask.isPresent()) {
+                    int indexOfOriginTask = tasks.indexOf(findTask.get());
+                    Task originTask = tasks.get(indexOfOriginTask);
+                    originTask.setTitle(newTitle);
+                    content = taskToJson(originTask);
+                }
 
                 exchange.sendResponseHeaders(200, content.getBytes().length);
                 break;
@@ -110,8 +119,8 @@ public class AppHttpHandler implements HttpHandler {
         return objectMapper.readValue(requestBody, Task.class);
     }
 
-    private boolean hasUserId(Long id) {
-        return id != 0L;
+    private boolean isEmptyUserId(Long id) {
+        return id.equals(0L);
     }
 
     private String tasksToJson(List<Task> tasks) throws IOException {
