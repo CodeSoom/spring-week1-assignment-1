@@ -3,7 +3,6 @@ package com.codesoom.assignment;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -76,7 +75,6 @@ public class MyHandler implements HttpHandler {
         if (originalTask == null) {
             content = "";
             exchange.sendResponseHeaders(404, content.getBytes().length);
-            setResponseHeader(exchange, "Transfer-encoding", "chunked");
             return content;
         }
 
@@ -114,8 +112,6 @@ public class MyHandler implements HttpHandler {
     }
 
     private void deleteTaskById(Long id, HttpExchange exchange) throws IOException {
-        setResponseHeader(exchange, "Transfer-encoding", "chunked");
-
         final Task removedTask = taskMap.remove(id);
 
         if (removedTask == null) {
@@ -123,7 +119,7 @@ public class MyHandler implements HttpHandler {
             return;
         }
 
-        exchange.sendResponseHeaders(204, 0);
+        exchange.sendResponseHeaders(204, -1);
     }
 
     private String findTaskById(Long id, HttpExchange exchange) throws IOException {
@@ -133,7 +129,6 @@ public class MyHandler implements HttpHandler {
         if (task == null) {
             content = "";
             exchange.sendResponseHeaders(404, content.getBytes().length);
-            setResponseHeader(exchange, "Transfer-encoding", "chunked");
             return content;
         }
 
@@ -141,11 +136,6 @@ public class MyHandler implements HttpHandler {
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
         return content;
-    }
-
-    private void setResponseHeader(HttpExchange exchange, String key, String value) {
-        Headers headers = exchange.getResponseHeaders();
-        headers.add(key, value);
     }
 
     private Task toTask(String content) throws JsonProcessingException {
