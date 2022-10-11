@@ -9,7 +9,10 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-public class RootHandler implements HttpHandler {
+/**
+ * RootHandler: http 요청에 대한 응답 내용을 만든다
+ */
+public class ResponseHandler implements HttpHandler  {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -22,7 +25,6 @@ public class RootHandler implements HttpHandler {
             StringBuilder jsonResponse = new StringBuilder();
             jsonResponse.append("response data 한글"+ "\n");
             jsonResponse.append("method= " + exchange.getRequestMethod()+ "\n");
-
 
             // Encoding to UTF-8
             ByteBuffer byteData = Charset.forName("UTF-8").encode(jsonResponse.toString());

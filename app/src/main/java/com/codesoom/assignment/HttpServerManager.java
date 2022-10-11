@@ -5,7 +5,11 @@ import java.net.InetSocketAddress;
 
 import com.sun.net.httpserver.HttpServer;
 
+/**
+ * HttpServerManager: 서버의 생성과 동작을 관리한다
+ */
 public class HttpServerManager {
+
 
     private HttpServer restApiServer = null;
     private final int DEFAULT_BACKLOG = 0;
@@ -16,7 +20,7 @@ public class HttpServerManager {
 
     private void createServer(String host, int port) throws IOException {
         this.restApiServer = HttpServer.create(new InetSocketAddress(host, port), DEFAULT_BACKLOG);
-        restApiServer.createContext("/", new RootHandler());
+        restApiServer.createContext("/", new ResponseHandler());
     }
 
     public void start() {
