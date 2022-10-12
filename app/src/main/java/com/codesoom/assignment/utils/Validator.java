@@ -1,4 +1,6 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.utils;
+
+import com.codesoom.assignment.HttpMethod;
 
 public class Validator {
 

@@ -1,7 +1,7 @@
 package com.codesoom.assignment.services;
 
 import com.codesoom.assignment.HttpStatusCode;
-import com.codesoom.assignment.JsonConverter;
+import com.codesoom.assignment.utils.JsonConverter;
 import com.codesoom.assignment.repository.TaskRepository;
 import com.codesoom.assignment.models.Task;
 import com.sun.net.httpserver.HttpExchange;
