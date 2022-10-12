@@ -24,7 +24,7 @@ public class PostService {
         return instance;
     }
 
-    public String service(HttpExchange exchange) throws IOException {
+    public String service(Long id, HttpExchange exchange) throws IOException {
         String content;
 
         final String body = getRequestBody(exchange);
