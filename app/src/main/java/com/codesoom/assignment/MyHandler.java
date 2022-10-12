@@ -29,7 +29,7 @@ public class MyHandler implements HttpHandler {
         final String path = uri.getPath();
         final OutputStream outputStream = exchange.getResponseBody();
 
-        if (path == null) {
+        if (!Validator.isValid(path, httpMethod)) {
             exchange.sendResponseHeaders(400, 0);
             writeAndFlushAndClose("", outputStream);
             return;
