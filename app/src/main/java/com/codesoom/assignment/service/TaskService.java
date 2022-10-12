@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class TaskService {
-    final List<Task> tasks;
+    private final List<Task> tasks;
 
     public TaskService() {
          tasks = new ArrayList<>();

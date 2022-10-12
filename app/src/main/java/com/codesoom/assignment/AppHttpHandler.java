@@ -14,7 +14,7 @@ import java.net.HttpURLConnection;
 import java.util.stream.Collectors;
 
 public class AppHttpHandler implements HttpHandler {
-    TaskService taskService = new TaskService();
+    private final TaskService taskService = new TaskService();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
