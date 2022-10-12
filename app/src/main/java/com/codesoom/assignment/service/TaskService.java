@@ -22,16 +22,10 @@ public class TaskService {
         return data;
     }
 
-    public String getTaskByUserId(Long userId) throws IOException {
-        String data = "";
-        Optional<Task> task = tasks.stream()
+    public Optional<Task> getTaskByUserId(Long userId) {
+        return tasks.stream()
                 .filter(t -> t.getId().equals(userId))
                 .findFirst();
-
-        if (task.isPresent()) {
-            data = JsonUtil.writeValue(task.get());
-        }
-        return data;
     }
 
     public String createTask(String requestBody) throws IOException {

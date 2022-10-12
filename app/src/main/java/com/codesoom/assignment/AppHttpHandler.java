@@ -2,7 +2,9 @@ package com.codesoom.assignment;
 
 import com.codesoom.assignment.enums.HttpMethodType;
 import com.codesoom.assignment.error.ClientError;
+import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.service.TaskService;
+import com.codesoom.assignment.utils.JsonUtil;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -11,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class AppHttpHandler implements HttpHandler {
@@ -50,10 +53,17 @@ public class AppHttpHandler implements HttpHandler {
             case GET:
                 if (isEmptyUserId(userId)) {
                     data = taskService.getTasks();
+                    setResponse(exchange, HttpURLConnection.HTTP_OK, data);
                 } else {
-                    data = taskService.getTaskByUserId(userId);
+                    Optional<Task> taskByUserId = taskService.getTaskByUserId(userId);
+
+                    if (taskByUserId.isEmpty()) {
+                        ClientError.notFound(exchange);
+                        return;
+                    }
+
+                    setResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(taskByUserId.get()));
                 }
-                setResponse(exchange, HttpURLConnection.HTTP_OK, data);
                 break;
             case POST:
                 data = taskService.createTask(requestBody);
