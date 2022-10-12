@@ -7,7 +7,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 
-public class DeleteService {
+public class DeleteService implements HttpRequestService {
 
     private static final DeleteService instance = new DeleteService();
     private static final TaskRepository taskRepository = TaskRepository.getInstance();
@@ -19,7 +19,7 @@ public class DeleteService {
         return instance;
     }
 
-    public String service(Long id, HttpExchange exchange) throws IOException {
+    public String serviceRequest(Long id, HttpExchange exchange) throws IOException {
         final String content = "";
 
         final Task removedTask = taskRepository.deleteById(id);

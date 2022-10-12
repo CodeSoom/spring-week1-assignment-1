@@ -12,7 +12,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
-public class EditService {
+public class EditService implements HttpRequestService {
 
     private static final EditService instance = new EditService();
     private static final TaskRepository taskRepository = TaskRepository.getInstance();
@@ -24,7 +24,7 @@ public class EditService {
         return instance;
     }
 
-    public String service(Long id, HttpExchange exchange) throws IOException {
+    public String serviceRequest(Long id, HttpExchange exchange) throws IOException {
         String content;
         final Task originalTask = taskRepository.findById(id);
 

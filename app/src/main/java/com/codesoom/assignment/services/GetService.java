@@ -9,7 +9,7 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.util.Collection;
 
-public class GetService {
+public class GetService implements HttpRequestService {
 
     private static final GetService instance = new GetService();
     private static final TaskRepository taskRepository = TaskRepository.getInstance();
@@ -21,7 +21,7 @@ public class GetService {
         return instance;
     }
 
-    public String service(Long id, HttpExchange exchange) throws IOException {
+    public String serviceRequest(Long id, HttpExchange exchange) throws IOException {
         String content;
 
         if (id == null) {
