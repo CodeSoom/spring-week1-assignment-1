@@ -28,6 +28,15 @@ public class TaskRepository {
         taskMap.put(task.getId(), task);
     }
 
+    public Task editTaskById(Long id, Task newTask) {
+        final Task originalTask = taskMap.get(id);
+        if (originalTask == null)
+            return null;
+
+        originalTask.setTitle(newTask.getTitle());
+        return originalTask;
+    }
+
     public Task deleteById(Long id) {
         return taskMap.remove(id);
     }
