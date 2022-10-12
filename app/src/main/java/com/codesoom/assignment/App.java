@@ -1,7 +1,5 @@
 package com.codesoom.assignment;
 
-import java.io.IOException;
-
 public class App {
 
     public String getGreeting() {
@@ -10,6 +8,7 @@ public class App {
 
     public static void main(String[] args) {
 
+        System.out.println("main");
         RestApiApplication.run();
 
     }

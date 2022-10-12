@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
+import com.codesoom.assignment.methodController.util.UtfEncoder;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -19,20 +20,17 @@ public class GetController {
             jsonResponse.append("GET 요청을 처리한다");
 
             // Encoding to UTF-8
-            ByteBuffer byteData = Charset.forName("UTF-8").encode(jsonResponse.toString());
-            int contentLength = byteData.limit();
-            byte[] content = new byte[contentLength];
-            byteData.get(content, 0, contentLength);
+            UtfEncoder encoder = new UtfEncoder(jsonResponse);
 
             // Set Response Headers
             Headers headers = exchange.getResponseHeaders();
             headers.add("Content-Type", "text/html;charset=UTF-8");
-            headers.add("Content-Length", String.valueOf(contentLength));
+            headers.add("Content-Length", String.valueOf(encoder.getContentLength()));
 
             // Send Response Headers
-            exchange.sendResponseHeaders(200, contentLength);
+            exchange.sendResponseHeaders(200, encoder.getContentLength());
 
-            responseBody.write(content);
+            responseBody.write(encoder.getContent());
 
             responseBody.close();
 

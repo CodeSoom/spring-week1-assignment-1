@@ -9,9 +9,12 @@ public class RestApiApplication {
         HttpServerManager httpServerManager = null;
         ResponseHandler responseHandler = new ResponseHandler();
 
+        System.out.println("RestApiApplication.run");
+
         try {
             httpServerManager = new HttpServerManager("localhost", 8000, responseHandler); // 서버를 생성한다.
             httpServerManager.start(); // 서버를 시작한다
+            System.out.println("httpServerManager.start()");
 
             Runtime.getRuntime().addShutdownHook(new Thread() {
             });
