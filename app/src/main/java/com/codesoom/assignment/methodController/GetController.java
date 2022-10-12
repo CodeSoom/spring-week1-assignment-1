@@ -2,8 +2,6 @@ package com.codesoom.assignment.methodController;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 
 import com.codesoom.assignment.methodController.util.UtfEncoder;
 import com.sun.net.httpserver.Headers;
