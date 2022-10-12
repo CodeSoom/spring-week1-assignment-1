@@ -21,14 +21,14 @@ public class DeleteService implements HttpRequestService {
     }
 
     public HttpResponse serviceRequest(Long id, HttpExchange exchange) throws IOException {
-        final String content = "";
+        final String emptyString = "";
 
         final Task removedTask = taskRepository.deleteById(id);
 
         if (removedTask == null) {
-            return new HttpResponse(content, HttpStatusCode.NOT_FOUND);
+            return new HttpResponse(emptyString, HttpStatusCode.NOT_FOUND);
         }
 
-        return new HttpResponse(content, HttpStatusCode.NO_CONTENT);
+        return new HttpResponse(emptyString, HttpStatusCode.NO_CONTENT);
     }
 }
