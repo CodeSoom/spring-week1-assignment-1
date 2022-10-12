@@ -116,7 +116,7 @@ public class AppHttpHandler implements HttpHandler {
 
     private Long getUserId(String[] pathArr) {
         if (isEmptyPathVariable(pathArr)) {
-            return 0L;
+            return null;
         }
 
         return Long.parseLong(pathArr[2]);
@@ -127,6 +127,6 @@ public class AppHttpHandler implements HttpHandler {
     }
 
     private boolean isEmptyUserId(Long id) {
-        return id.equals(0L);
+        return id == null;
     }
 }
