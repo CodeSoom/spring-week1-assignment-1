@@ -105,7 +105,7 @@ public class MyHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
         final Task task = toTask(body);
-        task.setId();
+        task.allocateId();
         taskMap.put(task.getId(), task);
 
         final String content = taskToJson(task);
