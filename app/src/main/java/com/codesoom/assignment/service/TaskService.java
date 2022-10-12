@@ -1,6 +1,7 @@
 package com.codesoom.assignment.service;
 
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.models.TaskId;
 import com.codesoom.assignment.utils.JsonUtil;
 
 import java.io.IOException;
@@ -9,8 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 public class TaskService {
-
-    static Long id = 0L;
     final List<Task> tasks;
 
     public TaskService() {
@@ -37,8 +36,7 @@ public class TaskService {
 
     public String createTask(String requestBody) throws IOException {
         Task task = JsonUtil.readValue(requestBody, Task.class);
-        // TODO: id 증가 역할 분리
-        task.setId(++id);
+        task.setId(TaskId.getNewId());
         tasks.add(task);
         return JsonUtil.writeValue(task);
     }
