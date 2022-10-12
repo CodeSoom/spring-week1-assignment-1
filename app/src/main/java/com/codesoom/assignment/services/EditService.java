@@ -26,19 +26,18 @@ public class EditService implements HttpRequestService {
 
     public String serviceRequest(Long id, HttpExchange exchange) throws IOException {
         String content;
-        final Task originalTask = taskRepository.findById(id);
 
-        if (originalTask == null) {
+        final String body = getRequestBody(exchange);
+        final Task newTask = JsonConverter.toTask(body);
+
+        final Task editedTask = taskRepository.editTaskById(id, newTask);
+        if (editedTask == null) {
             content = "";
             exchange.sendResponseHeaders(HttpStatusCode.NOT_FOUND.code, content.getBytes().length);
             return content;
         }
 
-        final String body = getRequestBody(exchange);
-        final Task newTask = JsonConverter.toTask(body);
-        originalTask.setTitle(newTask.getTitle());
-
-        content = JsonConverter.taskToJson(originalTask);
+        content = JsonConverter.taskToJson(editedTask);
         exchange.sendResponseHeaders(HttpStatusCode.OK.code, content.getBytes().length);
         return content;
     }
