@@ -10,15 +10,15 @@ public final class JsonConverter {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private Task toTask(String content) throws JsonProcessingException {
+    private static Task toTask(String content) throws JsonProcessingException {
         return objectMapper.readValue(content, Task.class);
     }
 
-    private String tasksToJson(Collection<Task> taskCollection) throws JsonProcessingException {
+    private static String tasksToJson(Collection<Task> taskCollection) throws JsonProcessingException {
         return objectMapper.writeValueAsString(taskCollection);
     }
 
-    private String taskToJson(Task task) throws JsonProcessingException {
+    private static String taskToJson(Task task) throws JsonProcessingException {
         return objectMapper.writeValueAsString(task);
     }
 }
