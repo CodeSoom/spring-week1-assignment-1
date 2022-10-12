@@ -30,7 +30,7 @@ public class MyHandler implements HttpHandler {
         final OutputStream outputStream = exchange.getResponseBody();
 
         if (!Validator.isValid(path, httpMethod)) {
-            exchange.sendResponseHeaders(400, 0);
+            exchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.code, 0);
             writeAndFlushAndClose("", outputStream);
             return;
         }
@@ -82,7 +82,7 @@ public class MyHandler implements HttpHandler {
 
         if (originalTask == null) {
             content = "";
-            exchange.sendResponseHeaders(404, content.getBytes().length);
+            exchange.sendResponseHeaders(HttpStatusCode.NOT_FOUND.code, content.getBytes().length);
             return content;
         }
 
@@ -94,7 +94,7 @@ public class MyHandler implements HttpHandler {
         originalTask.setTitle(newTask.getTitle());
 
         content = taskToJson(originalTask);
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+        exchange.sendResponseHeaders(HttpStatusCode.OK.code, content.getBytes().length);
 
         return content;
     }
@@ -109,13 +109,13 @@ public class MyHandler implements HttpHandler {
         taskMap.put(task.getId(), task);
 
         final String content = taskToJson(task);
-        exchange.sendResponseHeaders(201, content.getBytes().length);
+        exchange.sendResponseHeaders(HttpStatusCode.CREATED.code, content.getBytes().length);
         return content;
     }
 
     private String findAllTasks(HttpExchange exchange) throws IOException {
         final String content = tasksToJson();
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+        exchange.sendResponseHeaders(HttpStatusCode.OK.code, content.getBytes().length);
         return content;
     }
 
@@ -123,11 +123,11 @@ public class MyHandler implements HttpHandler {
         final Task removedTask = taskMap.remove(id);
 
         if (removedTask == null) {
-            exchange.sendResponseHeaders(404, 0);
+            exchange.sendResponseHeaders(HttpStatusCode.NOT_FOUND.code, 0);
             return;
         }
 
-        exchange.sendResponseHeaders(204, -1);
+        exchange.sendResponseHeaders(HttpStatusCode.NO_CONTENT.code, -1);
     }
 
     private String findTaskById(Long id, HttpExchange exchange) throws IOException {
@@ -136,12 +136,12 @@ public class MyHandler implements HttpHandler {
 
         if (task == null) {
             content = "";
-            exchange.sendResponseHeaders(404, content.getBytes().length);
+            exchange.sendResponseHeaders(HttpStatusCode.NOT_FOUND.code, content.getBytes().length);
             return content;
         }
 
         content = taskToJson(task);
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+        exchange.sendResponseHeaders(HttpStatusCode.OK.code, content.getBytes().length);
 
         return content;
     }
