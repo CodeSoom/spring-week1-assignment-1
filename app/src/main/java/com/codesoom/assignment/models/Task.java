@@ -12,7 +12,7 @@ public class Task {
         return id;
     }
 
-    public void setId() {
+    public void allocateId() {
         this.id = atomicLong.getAndIncrement();
     }
 
