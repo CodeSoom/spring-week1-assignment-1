@@ -94,13 +94,15 @@ public class AppHttpHandler implements HttpHandler {
     }
 
     private Long getUserId(String[] pathArr) {
-        Long userId;
-        if (pathArr.length > 2) {
-            userId = Long.parseLong(pathArr[2]);
-        } else {
-            userId = 0L;
+        if (isEmptyPathVariable(pathArr)) {
+            return 0L;
         }
-        return userId;
+
+        return Long.parseLong(pathArr[2]);
+    }
+
+    private boolean isEmptyPathVariable(String[] pathArr) {
+        return pathArr.length <= 2;
     }
 
     private boolean isEmptyUserId(Long id) {
