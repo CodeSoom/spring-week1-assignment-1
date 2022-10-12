@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.models.HttpResponse;
 import com.codesoom.assignment.services.DeleteService;
 import com.codesoom.assignment.services.EditService;
 import com.codesoom.assignment.services.GetService;
@@ -35,8 +36,9 @@ public class MyHandler implements HttpHandler {
             id = Long.valueOf(pathArr[2]);
 
         final HttpRequestService requestService = resolveHttpRequestService(httpMethod);
-        final String content = requestService.serviceRequest(id, exchange);
-        writeAndFlushAndClose(content, outputStream);
+        final HttpResponse httpResponse = requestService.serviceRequest(id, exchange);
+        exchange.sendResponseHeaders(httpResponse.getHttpStatusCode().code, httpResponse.getContent().getBytes().length);
+        writeAndFlushAndClose(httpResponse.getContent(), outputStream);
     }
 
     private void writeAndFlushAndClose(String content, OutputStream outputStream) throws IOException {

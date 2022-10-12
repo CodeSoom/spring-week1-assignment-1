@@ -1,6 +1,7 @@
 package com.codesoom.assignment.services;
 
 import com.codesoom.assignment.HttpStatusCode;
+import com.codesoom.assignment.models.HttpResponse;
 import com.codesoom.assignment.utils.JsonConverter;
 import com.codesoom.assignment.repository.TaskRepository;
 import com.codesoom.assignment.models.Task;
@@ -24,7 +25,7 @@ public class EditService implements HttpRequestService {
         return instance;
     }
 
-    public String serviceRequest(Long id, HttpExchange exchange) throws IOException {
+    public HttpResponse serviceRequest(Long id, HttpExchange exchange) throws IOException {
         String content;
 
         final String body = getRequestBody(exchange);
@@ -33,13 +34,11 @@ public class EditService implements HttpRequestService {
         final Task editedTask = taskRepository.editTaskById(id, newTask);
         if (editedTask == null) {
             content = "";
-            exchange.sendResponseHeaders(HttpStatusCode.NOT_FOUND.code, content.getBytes().length);
-            return content;
+            return new HttpResponse(content, HttpStatusCode.NOT_FOUND);
         }
 
         content = JsonConverter.taskToJson(editedTask);
-        exchange.sendResponseHeaders(HttpStatusCode.OK.code, content.getBytes().length);
-        return content;
+        return new HttpResponse(content, HttpStatusCode.OK);
     }
 
     private String getRequestBody(HttpExchange exchange) {
