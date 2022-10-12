@@ -45,7 +45,7 @@ public class AppHttpHandler implements HttpHandler {
         if (method == HttpMethodType.GET) {
             if (isEmptyUserId(userId)) {
                 List<Task> tasks = taskService.getTasks();
-                setResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(tasks));
+                setSuccessResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(tasks));
             } else {
                 Optional<Task> taskByUserId = taskService.getTaskByUserId(userId);
 
@@ -53,14 +53,14 @@ public class AppHttpHandler implements HttpHandler {
                     ClientError.notFound(exchange);
                 }
 
-                setResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(taskByUserId.get()));
+                setSuccessResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(taskByUserId.get()));
             }
             return;
         }
 
         if (method == HttpMethodType.POST) {
             Task task = taskService.createTask(requestBody);
-            setResponse(exchange, HttpURLConnection.HTTP_CREATED, JsonUtil.writeValue(task));
+            setSuccessResponse(exchange, HttpURLConnection.HTTP_CREATED, JsonUtil.writeValue(task));
             return;
         }
 
@@ -72,7 +72,7 @@ public class AppHttpHandler implements HttpHandler {
             }
 
             Task task = taskService.updateTask(taskByUserId.get(), requestBody);
-            setResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(task));
+            setSuccessResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(task));
             return;
         }
 
@@ -84,12 +84,11 @@ public class AppHttpHandler implements HttpHandler {
             }
 
             taskService.deleteTask(taskByUserId.get());
-            setResponse(exchange, HttpURLConnection.HTTP_OK);
-            return;
+            setSuccessResponse(exchange, HttpURLConnection.HTTP_NO_CONTENT);
         }
     }
 
-    private void setResponse(HttpExchange exchange, int responseCode, String data) throws IOException {
+    private void setSuccessResponse(HttpExchange exchange, int responseCode, String data) throws IOException {
         exchange.sendResponseHeaders(responseCode, data.getBytes().length);
         OutputStream responseBody = exchange.getResponseBody();
         responseBody.write(data.getBytes());
@@ -97,7 +96,7 @@ public class AppHttpHandler implements HttpHandler {
         responseBody.close();
     }
 
-    private void setResponse(HttpExchange exchange, int responseCode) throws IOException {
+    private void setSuccessResponse(HttpExchange exchange, int responseCode) throws IOException {
         exchange.sendResponseHeaders(responseCode, 0);
         exchange.getResponseBody().close();
     }
