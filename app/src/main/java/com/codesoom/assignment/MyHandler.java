@@ -27,11 +27,17 @@ public class MyHandler implements HttpHandler {
         final HttpMethod httpMethod = HttpMethod.valueOf(exchange.getRequestMethod());
         final URI uri = exchange.getRequestURI();
         final String path = uri.getPath();
+        final OutputStream outputStream = exchange.getResponseBody();
+
+        if (path == null) {
+            exchange.sendResponseHeaders(400, 0);
+            writeAndFlushAndClose("", outputStream);
+            return;
+        }
 
         final String[] pathArr = path.split("/");
 
         String content = null;
-        final OutputStream outputStream = exchange.getResponseBody();
 
         if (pathArr.length == 3) {
             final Long id = Long.valueOf(pathArr[2]);
