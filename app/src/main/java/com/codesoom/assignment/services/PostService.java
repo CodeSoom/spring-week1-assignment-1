@@ -4,7 +4,6 @@ import com.codesoom.assignment.HttpStatusCode;
 import com.codesoom.assignment.JsonConverter;
 import com.codesoom.assignment.TaskRepository;
 import com.codesoom.assignment.models.Task;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.BufferedReader;
