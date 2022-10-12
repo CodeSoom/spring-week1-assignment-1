@@ -1,6 +1,7 @@
 package com.codesoom.assignment.repository;
 
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.utils.IdGenerator;
 
 import java.util.Collection;
 import java.util.Map;
@@ -9,10 +10,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TaskRepository {
 
     private static final TaskRepository instance = new TaskRepository();
+    private static final IdGenerator idGenerator = IdGenerator.getInstance();
     private static final Map<Long, Task> taskMap = new ConcurrentHashMap<>();
 
     private TaskRepository() {
-
     }
 
     public static TaskRepository getInstance() {
@@ -24,7 +25,7 @@ public class TaskRepository {
     }
 
     public void addNewTask(Task task) {
-        task.allocateId();
+        task.setId(idGenerator.allocateId());
         taskMap.put(task.getId(), task);
     }
 

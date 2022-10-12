@@ -1,10 +1,7 @@
 package com.codesoom.assignment.models;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 public class Task {
 
-    private static final AtomicLong atomicLong = new AtomicLong(1L);
     private Long id;
     private String title;
 
@@ -12,8 +9,8 @@ public class Task {
         return id;
     }
 
-    public void allocateId() {
-        this.id = atomicLong.getAndIncrement();
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getTitle() {
