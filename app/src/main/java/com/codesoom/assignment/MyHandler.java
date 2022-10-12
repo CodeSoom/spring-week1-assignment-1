@@ -36,13 +36,15 @@ public class MyHandler implements HttpHandler {
         if (pathArr.length == 3) {
             final Long id = Long.valueOf(pathArr[2]);
 
-            if (httpMethod.equals(HttpMethod.GET))
+            if (HttpMethod.GET.equals(httpMethod)) {
                 content = findTaskById(id, exchange);
+            }
 
-            if (httpMethod.equals(HttpMethod.PUT) || httpMethod.equals(HttpMethod.PATCH))
+            if (HttpMethod.PUT.equals(httpMethod) || HttpMethod.PATCH.equals(httpMethod)) {
                 content = editTaskById(id, exchange);
+            }
 
-            if (httpMethod.equals(HttpMethod.DELETE)) {
+            if (HttpMethod.DELETE.equals(httpMethod)) {
                 deleteTaskById(id, exchange);
                 content = "";
             }
@@ -51,11 +53,11 @@ public class MyHandler implements HttpHandler {
             return;
         }
 
-        if (httpMethod.equals(HttpMethod.GET)) {
+        if (HttpMethod.GET.equals(httpMethod)) {
             content = findAllTasks(exchange);
         }
 
-        if (httpMethod.equals(HttpMethod.POST)) {
+        if (HttpMethod.POST.equals(httpMethod)) {
             content = addTask(exchange);
         }
 
