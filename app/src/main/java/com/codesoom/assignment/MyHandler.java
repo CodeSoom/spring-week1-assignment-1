@@ -32,8 +32,9 @@ public class MyHandler implements HttpHandler {
         final String[] pathArr = path.split("/");
 
         Long id = null;
-        if (pathArr.length == 3)
+        if (pathArr.length == 3) {
             id = Long.valueOf(pathArr[2]);
+        }
 
         final HttpRequestService requestService = resolveHttpRequestService(httpMethod);
         final HttpResponse httpResponse = requestService.serviceRequest(id, exchange);
