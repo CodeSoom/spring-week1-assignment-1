@@ -1,4 +1,4 @@
-package com.codesoom.assignment;
+package com.codesoom.assignment.repository;
 
 import com.codesoom.assignment.models.Task;
 
