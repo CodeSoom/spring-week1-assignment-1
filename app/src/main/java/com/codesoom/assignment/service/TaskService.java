@@ -16,10 +16,8 @@ public class TaskService {
          tasks = new ArrayList<>();
     }
 
-    public String getTasks() throws IOException {
-        String data = JsonUtil.writeValue(tasks);
-
-        return data;
+    public List<Task> getTasks() {
+        return tasks;
     }
 
     public Optional<Task> getTaskByUserId(Long userId) {
@@ -28,35 +26,24 @@ public class TaskService {
                 .findFirst();
     }
 
-    public String createTask(String requestBody) throws IOException {
+    public Task createTask(String requestBody) throws IOException {
         Task task = JsonUtil.readValue(requestBody, Task.class);
         task.setId(TaskId.getNewId());
         tasks.add(task);
-        return JsonUtil.writeValue(task);
+
+        return task;
     }
 
-    public String updateTask(Long userId, String requestBody) throws IOException {
-        String data = "";
+    public Task updateTask(Task originTask, String requestBody) throws IOException {
         String newTitle = JsonUtil.readValue(requestBody, Task.class).getTitle();
-        Optional<Task> task = tasks.stream()
-                .filter(t -> t.getId().equals(userId))
-                .findFirst();
+        int indexOfOriginTask = tasks.indexOf(originTask);
+        Task task = tasks.get(indexOfOriginTask);
+        task.setTitle(newTitle);
 
-        if (task.isPresent()) {
-            int indexOfOriginTask = tasks.indexOf(task.get());
-            Task originTask = tasks.get(indexOfOriginTask);
-            originTask.setTitle(newTitle);
-            data = JsonUtil.writeValue(originTask);
-        }
-
-        return data;
+        return task;
     }
 
-    public void deleteTask(Long userId) {
-        Optional<Task> task = tasks.stream()
-                .filter(t -> t.getId().equals(userId))
-                .findFirst();
-
-        task.ifPresent(value -> tasks.remove(value));
+    public void deleteTask(Task task) {
+        tasks.remove(task);
     }
 }

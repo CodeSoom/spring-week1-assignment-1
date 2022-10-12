@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -31,55 +32,60 @@ public class AppHttpHandler implements HttpHandler {
 
         if (!path.equals("tasks")) {
             ClientError.notFound(exchange);
+        }
+
+        if (isRequiredPathVariable(method) && isEmptyUserId(userId)) {
+            ClientError.badRequest(exchange);
+        }
+
+        if (isRequiredRequestBody(method) && requestBody.isBlank()) {
+            ClientError.badRequest(exchange);
+        }
+
+        if (method == HttpMethodType.GET) {
+            if (isEmptyUserId(userId)) {
+                List<Task> tasks = taskService.getTasks();
+                setResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(tasks));
+            } else {
+                Optional<Task> taskByUserId = taskService.getTaskByUserId(userId);
+
+                if (taskByUserId.isEmpty()) {
+                    ClientError.notFound(exchange);
+                }
+
+                setResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(taskByUserId.get()));
+            }
             return;
         }
 
-        if (isRequiredPathVariable(method)) {
-            if (isEmptyUserId(userId)) {
-                ClientError.badRequest(exchange);
-                return;
-            }
+        if (method == HttpMethodType.POST) {
+            Task task = taskService.createTask(requestBody);
+            setResponse(exchange, HttpURLConnection.HTTP_CREATED, JsonUtil.writeValue(task));
+            return;
         }
 
-        if (isRequiredRequestBody(method)) {
-            if (requestBody.isBlank()) {
-                ClientError.badRequest(exchange);
-                return;
-            }
-        }
+        if (method == HttpMethodType.PUT || method == HttpMethodType.PATCH) {
+            Optional<Task> taskByUserId = taskService.getTaskByUserId(userId);
 
-        String data = "";
-        switch (method) {
-            case GET:
-                if (isEmptyUserId(userId)) {
-                    data = taskService.getTasks();
-                    setResponse(exchange, HttpURLConnection.HTTP_OK, data);
-                } else {
-                    Optional<Task> taskByUserId = taskService.getTaskByUserId(userId);
-
-                    if (taskByUserId.isEmpty()) {
-                        ClientError.notFound(exchange);
-                        return;
-                    }
-
-                    setResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(taskByUserId.get()));
-                }
-                break;
-            case POST:
-                data = taskService.createTask(requestBody);
-                setResponse(exchange, HttpURLConnection.HTTP_CREATED, data);
-                break;
-            case PUT:
-            case PATCH:
-                data = taskService.updateTask(userId, requestBody);
-                setResponse(exchange, HttpURLConnection.HTTP_OK, data);
-                break;
-            case DELETE:
-                taskService.deleteTask(userId);
-                setResponse(exchange, HttpURLConnection.HTTP_OK, data);
-                break;
-            default:
+            if (taskByUserId.isEmpty()) {
                 ClientError.notFound(exchange);
+            }
+
+            Task task = taskService.updateTask(taskByUserId.get(), requestBody);
+            setResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(task));
+            return;
+        }
+
+        if (method == HttpMethodType.DELETE) {
+            Optional<Task> taskByUserId = taskService.getTaskByUserId(userId);
+
+            if (taskByUserId.isEmpty()) {
+                ClientError.notFound(exchange);
+            }
+
+            taskService.deleteTask(taskByUserId.get());
+            setResponse(exchange, HttpURLConnection.HTTP_OK);
+            return;
         }
     }
 
@@ -89,6 +95,11 @@ public class AppHttpHandler implements HttpHandler {
         responseBody.write(data.getBytes());
         responseBody.flush();
         responseBody.close();
+    }
+
+    private void setResponse(HttpExchange exchange, int responseCode) throws IOException {
+        exchange.sendResponseHeaders(responseCode, 0);
+        exchange.getResponseBody().close();
     }
 
     private boolean isRequiredRequestBody(HttpMethodType method) {
