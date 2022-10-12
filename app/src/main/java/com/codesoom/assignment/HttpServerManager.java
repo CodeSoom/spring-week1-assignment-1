@@ -14,13 +14,13 @@ public class HttpServerManager {
     private HttpServer restApiServer = null;
     private final int DEFAULT_BACKLOG = 0;
 
-    public HttpServerManager(String host, int port) throws IOException {
-        createServer(host, port);
+    public HttpServerManager(String host, int port, ResponseHandler responseHandler) throws IOException {
+        createServer(host, port, responseHandler);
     }
 
-    private void createServer(String host, int port) throws IOException {
+    private void createServer(String host, int port, ResponseHandler responseHandler) throws IOException {
         this.restApiServer = HttpServer.create(new InetSocketAddress(host, port), DEFAULT_BACKLOG);
-        restApiServer.createContext("/", new ResponseHandler());
+        restApiServer.createContext("/", responseHandler);
     }
 
     public void start() {

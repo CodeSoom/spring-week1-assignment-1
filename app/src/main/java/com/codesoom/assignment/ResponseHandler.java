@@ -16,14 +16,13 @@ import com.sun.net.httpserver.HttpHandler;
  */
 public class ResponseHandler implements HttpHandler {
 
-    GetController getController = new GetController();
-    PostController postController = new PostController();
-    PatchController patchController = new PatchController();
-    PutController putController = new PutController();
-    DeleteController deleteController = new DeleteController();
+    private final GetController getController = new GetController();
+    private final PostController postController = new PostController();
+    private final PatchController patchController = new PatchController();
+    private final PutController putController = new PutController();
+    private final DeleteController deleteController = new DeleteController();
 
     @Override
-
     public void handle(HttpExchange exchange) throws IOException {
 
         // Initialize Response Body
@@ -31,6 +30,7 @@ public class ResponseHandler implements HttpHandler {
 
         // http method에 따라 controller를 분기한다
         switch (exchange.getRequestMethod()) {
+
             case "get":
                 getController.handler(exchange, responseBody);
                 break;
@@ -46,7 +46,6 @@ public class ResponseHandler implements HttpHandler {
             case "delete":
                 deleteController.handler(exchange, responseBody);
                 break;
-
         }
     }
 }
