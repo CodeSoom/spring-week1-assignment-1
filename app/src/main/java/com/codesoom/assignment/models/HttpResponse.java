@@ -10,4 +10,12 @@ public class HttpResponse {
         this.content = content;
         this.httpStatusCode = httpStatusCode;
     }
+
+    public String getContent() {
+        return content;
+    }
+
+    public HttpStatusCode getHttpStatusCode() {
+        return httpStatusCode;
+    }
 }
