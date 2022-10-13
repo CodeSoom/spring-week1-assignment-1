@@ -1,6 +1,7 @@
 package com.codesoom.assignment.models;
 
 import com.codesoom.assignment.exceptions.IllegalHttpRequestPathException;
+import com.codesoom.assignment.utils.StringValidator;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.net.URI;
@@ -21,7 +22,7 @@ public class Path {
     }
 
     private Long resolveId(String path) {
-        String[] pathArr = path.split("/");
+        final String[] pathArr = path.split("/");
         if (pathArr.length != 3) {
             return null;
         }
@@ -49,13 +50,7 @@ public class Path {
         }
 
         final String idPart = pathArr[2];
-        try {
-            Long.valueOf(idPart);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-
-        return true;
+        return StringValidator.isNumber(idPart);
     }
 
     public Long getId() {
