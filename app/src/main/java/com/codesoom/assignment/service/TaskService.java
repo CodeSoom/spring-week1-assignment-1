@@ -10,10 +10,15 @@ import java.util.List;
 import java.util.Optional;
 
 public class TaskService {
-    private final List<Task> tasks;
 
-    public TaskService() {
-         tasks = new ArrayList<>();
+    private static final TaskService taskService = new TaskService();
+    private static final List<Task> tasks = new ArrayList<>();
+
+    private TaskService() {
+    }
+
+    public static TaskService getInstance() {
+        return taskService;
     }
 
     public List<Task> getTasks() {
