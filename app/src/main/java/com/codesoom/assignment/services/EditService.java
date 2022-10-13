@@ -5,13 +5,8 @@ import com.codesoom.assignment.models.HttpResponse;
 import com.codesoom.assignment.utils.JsonConverter;
 import com.codesoom.assignment.repository.TaskRepository;
 import com.codesoom.assignment.models.Task;
-import com.sun.net.httpserver.HttpExchange;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.stream.Collectors;
 
 public class EditService implements HttpRequestService {
 
@@ -25,11 +20,10 @@ public class EditService implements HttpRequestService {
         return instance;
     }
 
-    public HttpResponse serviceRequest(Long id, HttpExchange exchange) throws IOException {
+    public HttpResponse serviceRequest(Long id, String requestBody) throws IOException {
         String content;
 
-        final String body = getRequestBody(exchange);
-        final Task newTask = JsonConverter.toTask(body);
+        final Task newTask = JsonConverter.toTask(requestBody);
 
         final Task editedTask = taskRepository.editTaskById(id, newTask);
         if (editedTask == null) {
@@ -41,10 +35,4 @@ public class EditService implements HttpRequestService {
         return new HttpResponse(content, HttpStatusCode.OK);
     }
 
-    private String getRequestBody(HttpExchange exchange) {
-        final InputStream inputStream = exchange.getRequestBody();
-        return new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
-    }
 }

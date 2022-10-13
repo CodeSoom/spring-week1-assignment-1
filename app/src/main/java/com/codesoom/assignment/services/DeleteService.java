@@ -4,9 +4,6 @@ import com.codesoom.assignment.HttpStatusCode;
 import com.codesoom.assignment.models.HttpResponse;
 import com.codesoom.assignment.repository.TaskRepository;
 import com.codesoom.assignment.models.Task;
-import com.sun.net.httpserver.HttpExchange;
-
-import java.io.IOException;
 
 public class DeleteService implements HttpRequestService {
 
@@ -20,7 +17,7 @@ public class DeleteService implements HttpRequestService {
         return instance;
     }
 
-    public HttpResponse serviceRequest(Long id, HttpExchange exchange) throws IOException {
+    public HttpResponse serviceRequest(Long id, String requestBody) {
         final String emptyString = "";
 
         final Task removedTask = taskRepository.deleteById(id);

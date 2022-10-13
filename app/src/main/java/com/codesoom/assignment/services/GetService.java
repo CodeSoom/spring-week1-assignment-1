@@ -5,7 +5,6 @@ import com.codesoom.assignment.models.HttpResponse;
 import com.codesoom.assignment.utils.JsonConverter;
 import com.codesoom.assignment.repository.TaskRepository;
 import com.codesoom.assignment.models.Task;
-import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -22,7 +21,7 @@ public class GetService implements HttpRequestService {
         return instance;
     }
 
-    public HttpResponse serviceRequest(Long id, HttpExchange exchange) throws IOException {
+    public HttpResponse serviceRequest(Long id, String requestBody) throws IOException {
         String content;
 
         if (id == null) {
