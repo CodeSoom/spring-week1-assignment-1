@@ -43,7 +43,7 @@ public class TaskService {
         return task;
     }
 
-    public void deleteTask(Task task) {
-        tasks.remove(task);
+    public boolean deleteTask(Task task) {
+        return tasks.remove(task);
     }
 }
