@@ -3,6 +3,7 @@ package com.codesoom.assignment;
 import com.codesoom.assignment.enums.HttpMethodType;
 import com.codesoom.assignment.error.ClientError;
 import com.codesoom.assignment.models.Path;
+import com.codesoom.assignment.models.RequestTaskDTO;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.service.TaskService;
 import com.codesoom.assignment.utils.JsonUtil;
@@ -46,11 +47,13 @@ public class TaskController {
                 }
                 break;
             case POST:
-                create(exchange, requestBody);
+                RequestTaskDTO.Create requestCreateDTO = JsonUtil.readValue(requestBody, RequestTaskDTO.Create.class);
+                create(exchange, requestCreateDTO);
                 break;
             case PUT:
             case PATCH:
-                update(exchange, path, requestBody);
+                RequestTaskDTO.Update reqeustUpdateDTO = JsonUtil.readValue(requestBody, RequestTaskDTO.Update.class);
+                update(exchange, path, reqeustUpdateDTO);
                 break;
             case DELETE:
                 delete(exchange, path);
@@ -61,7 +64,7 @@ public class TaskController {
     }
 
     private void delete(HttpExchange exchange, Path path) throws IOException {
-        long userId = Long.parseLong(path.getPathVariable());
+        long userId = getUserId(path);
         Optional<Task> taskByUserId = taskService.getTaskByUserId(userId);
 
         if (taskByUserId.isEmpty()) {
@@ -72,25 +75,25 @@ public class TaskController {
         setSuccessResponse(exchange, HttpURLConnection.HTTP_NO_CONTENT);
     }
 
-    private void update(HttpExchange exchange, Path path, String requestBody) throws IOException {
-        long userId = Long.parseLong(path.getPathVariable());
+    private void update(HttpExchange exchange, Path path, RequestTaskDTO.Update request) throws IOException {
+        long userId = getUserId(path);
         Optional<Task> taskByUserId = taskService.getTaskByUserId(userId);
 
         if (taskByUserId.isEmpty()) {
             ClientError.notFound(exchange);
         }
 
-        Task task = taskService.updateTask(taskByUserId.get(), requestBody);
+        Task task = taskService.updateTask(taskByUserId.get(), request);
         setSuccessResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(task));
     }
 
-    private void create(HttpExchange exchange, String requestBody) throws IOException {
-        Task task = taskService.createTask(requestBody);
+    private void create(HttpExchange exchange, RequestTaskDTO.Create request) throws IOException {
+        Task task = taskService.createTask(request);
         setSuccessResponse(exchange, HttpURLConnection.HTTP_CREATED, JsonUtil.writeValue(task));
     }
 
     private void get(HttpExchange exchange, Path path) throws IOException {
-        long userId = Long.parseLong(path.getPathVariable());
+        long userId = getUserId(path);
         Optional<Task> taskByUserId = taskService.getTaskByUserId(userId);
 
         if (taskByUserId.isEmpty()) {
@@ -98,6 +101,11 @@ public class TaskController {
         }
 
         setSuccessResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(taskByUserId.get()));
+    }
+
+    private long getUserId(Path path) {
+        long userId = Long.parseLong(path.getPathVariable());
+        return userId;
     }
 
     private void gets(HttpExchange exchange) throws IOException {
