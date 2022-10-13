@@ -23,14 +23,6 @@ public class Task {
     }
 
     @Override
-    public String toString() {
-        return "Task{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                '}';
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -45,5 +37,13 @@ public class Task {
     @Override
     public int hashCode() {
         return Objects.hash(id, title);
+    }
+
+    @Override
+    public String toString() {
+        return "Task{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                '}';
     }
 }
