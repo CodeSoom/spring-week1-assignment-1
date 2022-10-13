@@ -16,11 +16,11 @@ import java.io.OutputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MyHandler implements HttpHandler {
+public class ServiceDispatcher implements HttpHandler {
 
     private final Map<HttpMethod, HttpRequestService> serviceMap = new ConcurrentHashMap<>();
 
-    public MyHandler() {
+    public ServiceDispatcher() {
         serviceMap.put(HttpMethod.GET, GetService.getInstance());
         serviceMap.put(HttpMethod.POST, PostService.getInstance());
         serviceMap.put(HttpMethod.PUT, EditService.getInstance());

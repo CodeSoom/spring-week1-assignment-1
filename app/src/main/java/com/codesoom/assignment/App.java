@@ -14,7 +14,7 @@ public class App {
         try {
             InetSocketAddress address = new InetSocketAddress(8000);
             HttpServer httpServer = HttpServer.create(address, 0);
-            httpServer.createContext("/", new MyHandler());
+            httpServer.createContext("/", new ServiceDispatcher());
 
             httpServer.start();
         } catch (IOException e) {
