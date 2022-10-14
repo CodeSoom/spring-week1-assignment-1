@@ -21,6 +21,8 @@ public class HttpRequest {
         this.httpMethod = extractHttpMethod(exchange);
         this.path = extractPath(exchange);
         this.requestBody = extractRequestBody(exchange);
+
+        HttpRequestValidator.checksMissingPartExists(this);
     }
 
     private String extractRequestBody(HttpExchange exchange) {
@@ -36,9 +38,7 @@ public class HttpRequest {
 
     private HttpMethod extractHttpMethod(HttpExchange exchange) throws IllegalHttpRequestMethodException {
         String methodName = exchange.getRequestMethod();
-        if (!HttpRequestValidator.isMethodNameValid(methodName)) {
-            throw new IllegalHttpRequestMethodException("옳지 않은 Http Method 입니다. GET, POST, PUT, PATCH, DELETE 중에서 선택해 주세요.");
-        }
+        HttpRequestValidator.checksMethodNameValid(methodName);
 
         return HttpMethod.valueOf(methodName);
     }
