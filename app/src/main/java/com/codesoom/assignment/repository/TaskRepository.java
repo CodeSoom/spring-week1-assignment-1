@@ -31,8 +31,9 @@ public class TaskRepository {
 
     public Task editTaskById(Long id, Task newTask) {
         final Task originalTask = taskMap.get(id);
-        if (originalTask == null)
+        if (originalTask == null) {
             return null;
+        }
 
         originalTask.setTitle(newTask.getTitle());
         return originalTask;
