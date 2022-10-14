@@ -4,6 +4,7 @@ import com.codesoom.assignment.HttpMethod;
 import com.codesoom.assignment.exceptions.IllegalHttpRequestException;
 import com.codesoom.assignment.exceptions.IllegalHttpRequestMethodException;
 import com.codesoom.assignment.exceptions.IllegalHttpRequestPathException;
+import com.codesoom.assignment.utils.HttpRequestValidator;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.BufferedReader;
@@ -34,12 +35,12 @@ public class HttpRequest {
     }
 
     private HttpMethod extractHttpMethod(HttpExchange exchange) throws IllegalHttpRequestMethodException {
-        try {
-            String methodName = exchange.getRequestMethod();
-            return HttpMethod.valueOf(methodName);
-        } catch (IllegalArgumentException e) {
+        String methodName = exchange.getRequestMethod();
+        if (!HttpRequestValidator.isMethodNameValid(methodName)) {
             throw new IllegalHttpRequestMethodException("옳지 않은 Http Method 입니다. GET, POST, PUT, PATCH, DELETE 중에서 선택해 주세요.");
         }
+
+        return HttpMethod.valueOf(methodName);
     }
 
     public HttpMethod getHttpMethod() {
