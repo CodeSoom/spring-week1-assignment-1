@@ -17,7 +17,7 @@ public class FrontController implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         HttpMethodType method = HttpMethodType.getMethod(exchange.getRequestMethod());
-        Path path = createPath(exchange);
+        Path path = Path.createPath(exchange.getRequestURI().getPath());
         String requestBody = new BufferedReader(new InputStreamReader(exchange.getRequestBody()))
                 .lines()
                 .collect(Collectors.joining("\n"));
@@ -26,33 +26,10 @@ public class FrontController implements HttpHandler {
         switch (context) {
             case TASKS:
                 TaskController taskController = TaskController.getInstance();
-                taskController.execute(exchange, method, path, requestBody);
+                taskController.requestMapping(exchange, method, path, requestBody);
                 break;
             default:
                 ClientError.notFound(exchange);
         }
-    }
-
-    private Path createPath(HttpExchange exchange) {
-        Path path = new Path();
-        String[] pathArr = exchange.getRequestURI().getPath().split("/");
-
-        if (hasPath(pathArr)) {
-            path.setPath(pathArr[1]);
-        }
-
-        if (hasPathVariable(pathArr)) {
-            path.setPathVariable(pathArr[2]);
-        }
-
-        return path;
-    }
-
-    private boolean hasPathVariable(String[] pathArr) {
-        return pathArr.length > 2;
-    }
-
-    private boolean hasPath(String[] pathArr) {
-        return pathArr.length > 0;
     }
 }

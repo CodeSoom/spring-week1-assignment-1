@@ -24,16 +24,4 @@ public enum HttpMethodType {
                 .findFirst()
                 .orElse(HttpMethodType.NOT_SUPPORT);
     }
-
-    // 위와 아래중에 무엇이 더 나은지 궁금합니다!
-    public static HttpMethodType getMethod1(String method) {
-        return isSupportedMethod(method)
-                ? HttpMethodType.valueOf(method)
-                : HttpMethodType.NOT_SUPPORT;
-    }
-
-    public static boolean isSupportedMethod(String method) {
-        return Arrays.stream(HttpMethodType.values())
-                .anyMatch(methodType -> methodType.getMethodValue().equals(method));
-    }
 }
