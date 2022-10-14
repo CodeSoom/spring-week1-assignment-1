@@ -30,7 +30,7 @@ public final class HttpRequestValidator {
         }
 
         if (pathArr.length == 2) {
-            throw new IllegalHttpRequestPathException(INVALID_PATH_MESSAGE);
+            return;
         }
 
         final String idPart = pathArr[2];
