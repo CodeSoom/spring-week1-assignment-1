@@ -27,4 +27,14 @@ public final class JsonConverter {
     public static String taskToJson(Task task) throws JsonProcessingException {
         return objectMapper.writeValueAsString(task);
     }
+
+    public static boolean isJsonFormat(String content) {
+        try {
+            objectMapper.readTree(content);
+        } catch (JsonProcessingException e) {
+            return false;
+        }
+
+        return true;
+    }
 }

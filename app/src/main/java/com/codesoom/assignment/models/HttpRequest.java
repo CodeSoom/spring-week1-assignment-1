@@ -55,6 +55,7 @@ public class HttpRequest {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
+        HttpRequestValidator.checksJsonFormat(requestBody);
         HttpRequestValidator.checksRequestBodyMissed(getHttpMethod(), requestBody);
         return requestBody;
     }

@@ -10,7 +10,8 @@ public final class HttpRequestValidator {
     private static final String INVALID_PATH_MESSAGE = "잘못된 경로입니다.\n.../tasks/{Number} 형식으로 입력해주세요.";
     private static final String INVALID_METHOD_NAME_MESSAGE = "옳지 않은 Http Method 입니다.\nGET, POST, PUT, PATCH, DELETE 중에서 선택해 주세요.";
     private static final String MISSING_ID_MESSAGE = "Resource Id가 누락되었습니다.\n.../tasks/{Number} 형식으로 입력해주세요.";
-    private static final String MISSING_REQUEST_BODY_MESSAGE = "Request Body가 누락되었습니다.\nex) {\"title\":\"Lorem Ipsum\"}";
+    private static final String MISSING_REQUEST_BODY_MESSAGE = "Request Body가 누락되었습니다.\nex) {\"title\":\"exercise\"}";
+    private static final String NOT_JSON_FORMAT = "Json 형식이 아닙니다.\n {\"title\":\"exercise\"} 와 같은 형식으로 입력해주세요.";
 
     private HttpRequestValidator() {
     }
@@ -63,6 +64,12 @@ public final class HttpRequestValidator {
     public static void checksIdMissed(HttpMethod method, Long id) throws IllegalHttpRequestPathException {
         if ((HttpMethod.PUT.equals(method) || HttpMethod.DELETE.equals(method)) && id == null) {
             throw new IllegalHttpRequestPathException(MISSING_ID_MESSAGE);
+        }
+    }
+
+    public static void checksJsonFormat(String body) throws IllegalHttpRequestBodyException {
+        if (!JsonConverter.isJsonFormat(body)) {
+            throw new IllegalHttpRequestBodyException(NOT_JSON_FORMAT);
         }
     }
 }
