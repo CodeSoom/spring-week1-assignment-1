@@ -12,7 +12,7 @@ class HttpRequestValidatorTest {
     @DisplayName("URI 유효성 테스트 - invalid path")
     void checksPathInvalidTest() {
 
-        String[] invalidPathArr = {null, "tasks", "1111", "/1111", "/tasks/exercise", "tasks/", "tasks/1", "/tasks/exercises/1"};
+        final String[] invalidPathArr = {null, "tasks", "1111", "/1111", "/tasks/exercise", "tasks/", "tasks/1", "/tasks/exercises/1"};
 
         for (String invalidPath : invalidPathArr) {
             IllegalHttpRequestPathException exception = assertThrows(IllegalHttpRequestPathException.class
