@@ -10,13 +10,13 @@ import java.io.IOException;
 
 public class TaskEditService implements HttpRequestService {
 
-    private static final EditService instance = new EditService();
+    private static final TaskEditService instance = new TaskEditService();
     private static final TaskRepository taskRepository = TaskRepository.getInstance();
 
-    private EditService() {
+    private TaskEditService() {
     }
 
-    public static EditService getInstance() {
+    public static TaskEditService getInstance() {
         return instance;
     }
 

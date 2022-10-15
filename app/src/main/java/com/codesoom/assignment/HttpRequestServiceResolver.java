@@ -1,10 +1,10 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.services.DeleteService;
-import com.codesoom.assignment.services.EditService;
-import com.codesoom.assignment.services.GetService;
 import com.codesoom.assignment.services.HttpRequestService;
+import com.codesoom.assignment.services.GetService;
 import com.codesoom.assignment.services.PostService;
+import com.codesoom.assignment.services.TaskEditService;
+import com.codesoom.assignment.services.DeleteService;
 
 public final class HttpRequestServiceResolver {
 
@@ -19,7 +19,7 @@ public final class HttpRequestServiceResolver {
                 return PostService.getInstance();
             case PUT:
             case PATCH:
-                return EditService.getInstance();
+                return TaskEditService.getInstance();
             case DELETE:
                 return DeleteService.getInstance();
             default:
