@@ -49,7 +49,10 @@ public class ServiceDispatcher implements HttpHandler {
     }
 
     private void sendResponse(HttpExchange exchange, HttpResponse response) throws IOException {
-        exchange.sendResponseHeaders(response.getHttpStatusCode().getCode(), response.getContent().getBytes().length);
+        int httpStatusCode = response.getHttpStatusCode().getCode();
+        int contentLenAsBytes = response.getContent().getBytes().length;
+
+        exchange.sendResponseHeaders(httpStatusCode, httpStatusCode == 204 ? -1 : contentLenAsBytes);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(response.getContent().getBytes());
         outputStream.flush();

@@ -19,6 +19,7 @@ public class Task {
         this.id = id;
         this.title = title;
         this.regDate = regDate;
+        this.modDate = regDate;
     }
 
     public void changeTitle(String title) {
