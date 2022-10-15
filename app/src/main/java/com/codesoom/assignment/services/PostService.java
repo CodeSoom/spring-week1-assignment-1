@@ -23,8 +23,8 @@ public class PostService implements HttpRequestService {
     public HttpResponse serviceRequest(Long id, String requestBody) throws IOException {
         String content;
 
-        final Task newTask = JsonConverter.toTask(requestBody);
-        taskRepository.addNewTask(newTask);
+        final String title = JsonConverter.jsonToTitle(requestBody);
+        Task newTask = taskRepository.addNewTask(title);
 
         content = JsonConverter.taskToJson(newTask);
         return new HttpResponse(content, HttpStatusCode.CREATED);

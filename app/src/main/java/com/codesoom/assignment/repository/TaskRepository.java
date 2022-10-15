@@ -24,18 +24,21 @@ public class TaskRepository {
         return taskMap.get(id);
     }
 
-    public void addNewTask(Task task) {
-        task.setId(idGenerator.allocateId());
-        taskMap.put(task.getId(), task);
+    public Task addNewTask(String title) {
+        Long id = idGenerator.allocateId();
+        Task newTask = new Task(id, title);
+        taskMap.put(id, newTask);
+
+        return newTask;
     }
 
-    public Task editTaskById(Long id, Task newTask) {
+    public Task editTaskById(Long id, String newTitle) {
         final Task originalTask = taskMap.get(id);
         if (originalTask == null) {
             return null;
         }
 
-        originalTask.setTitle(newTask.getTitle());
+        originalTask.setTitle(newTitle);
         return originalTask;
     }
 

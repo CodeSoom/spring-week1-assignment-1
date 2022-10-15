@@ -23,9 +23,9 @@ public class EditService implements HttpRequestService {
     public HttpResponse serviceRequest(Long id, String requestBody) throws IOException {
         String content;
 
-        final Task newTask = JsonConverter.toTask(requestBody);
+        final String newTitle = JsonConverter.jsonToTitle(requestBody);
 
-        final Task editedTask = taskRepository.editTaskById(id, newTask);
+        final Task editedTask = taskRepository.editTaskById(id, newTitle);
         if (editedTask == null) {
             content = "";
             return new HttpResponse(content, HttpStatusCode.NOT_FOUND);
