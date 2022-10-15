@@ -10,6 +10,9 @@ public final class JsonConverter {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    private JsonConverter() {
+    }
+
     public static Task toTask(String content) throws JsonProcessingException {
         return objectMapper.readValue(content, Task.class);
     }

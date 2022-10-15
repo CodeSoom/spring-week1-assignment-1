@@ -14,6 +14,9 @@ public final class HttpRequestValidator {
     private static final String MISSING_ID_MESSAGE = "Resource Id가 누락되었습니다.\n.../tasks/{Number} 형식으로 입력해주세요.";
     private static final String MISSING_REQUEST_BODY_MESSAGE = "Request Body가 누락되었습니다.\nex) {\"title\":\"Lorem Ipsum\"}";
 
+    private HttpRequestValidator() {
+    }
+
     public static void checksPathValid(String path) throws IllegalHttpRequestPathException {
         if (path == null || !path.contains("/")) {
             throw new IllegalHttpRequestPathException(INVALID_PATH_MESSAGE);
@@ -61,14 +64,14 @@ public final class HttpRequestValidator {
         checksRequestBodyMissed(method, requestBody);
     }
 
-    private static void checksRequestBodyMissed(HttpMethod method, String requestBody) throws IllegalHttpRequestBodyException {
+    public static void checksRequestBodyMissed(HttpMethod method, String requestBody) throws IllegalHttpRequestBodyException {
         if ((HttpMethod.POST.equals(method) || HttpMethod.PUT.equals(method) || HttpMethod.PATCH.equals(method))
                 && requestBody.isEmpty()) {
             throw new IllegalHttpRequestBodyException(MISSING_REQUEST_BODY_MESSAGE);
         }
     }
 
-    private static void checksIdMissed(HttpMethod method, Long id) throws IllegalHttpRequestPathException {
+    public static void checksIdMissed(HttpMethod method, Long id) throws IllegalHttpRequestPathException {
         if ((HttpMethod.PUT.equals(method) || HttpMethod.DELETE.equals(method)) && id == null) {
             throw new IllegalHttpRequestPathException(MISSING_ID_MESSAGE);
         }
