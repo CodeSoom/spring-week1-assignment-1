@@ -23,7 +23,7 @@ class HttpRequestValidatorTest {
     @Test
     @DisplayName("URI 유효성 테스트 - valid path")
     void checksPathValidTest() {
-        String[] validPathArr = {"/tasks", "/tasks/1", "/tasks/31273612783", "/tasks/"};
+        final String[] validPathArr = {"/tasks", "/tasks/1", "/tasks/31273612783", "/tasks/"};
 
         for (String validPath : validPathArr) {
             assertDoesNotThrow(() -> HttpRequestValidator.checksPathValid(validPath));
