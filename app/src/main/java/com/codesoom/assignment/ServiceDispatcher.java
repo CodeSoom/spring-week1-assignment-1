@@ -28,8 +28,6 @@ public class ServiceDispatcher implements HttpHandler {
      */
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        final OutputStream outputStream = exchange.getResponseBody();
-
         final HttpRequest httpRequest;
         final Long id;
         final String requestBody;
@@ -42,19 +40,18 @@ public class ServiceDispatcher implements HttpHandler {
             requestBody = httpRequest.getRequestBody();
         } catch (IllegalHttpRequestException e) {
             String message = e.getMessage();
-            exchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.code, message.getBytes().length);
-            writeAndFlushAndClose(outputStream, message);
+            sendResponse(exchange, new HttpResponse(message, HttpStatusCode.BAD_REQUEST));
             return;
         }
 
         final HttpResponse httpResponse = requestService.serviceRequest(id, requestBody);
-
-        exchange.sendResponseHeaders(httpResponse.getHttpStatusCode().code, httpResponse.getContent().getBytes().length);
-        writeAndFlushAndClose(outputStream, httpResponse.getContent());
+        sendResponse(exchange, httpResponse);
     }
 
-    private void writeAndFlushAndClose(OutputStream outputStream, String content) throws IOException {
-        outputStream.write(content.getBytes());
+    private void sendResponse(HttpExchange exchange, HttpResponse response) throws IOException {
+        exchange.sendResponseHeaders(response.getHttpStatusCode().getCode(), response.getContent().getBytes().length);
+        OutputStream outputStream = exchange.getResponseBody();
+        outputStream.write(response.getContent().getBytes());
         outputStream.flush();
         outputStream.close();
     }
