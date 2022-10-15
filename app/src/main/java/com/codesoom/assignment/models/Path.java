@@ -1,5 +1,7 @@
 package com.codesoom.assignment.models;
 
+import com.codesoom.assignment.utils.StringUtil;
+
 public class Path {
     String path;
     String pathVariable;
@@ -42,8 +44,7 @@ public class Path {
         return path.getPath().substring(0, path.getPath().lastIndexOf("/"));
     }
 
-    public boolean isPathVariableNumeric() {
-        return this.pathVariable.chars()
-                .allMatch(Character::isDigit);
+    public boolean isInvalidPathVariable() {
+        return StringUtil.isNumeric(this.pathVariable);
     }
 }

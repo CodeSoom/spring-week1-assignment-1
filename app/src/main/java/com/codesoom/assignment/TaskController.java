@@ -7,7 +7,6 @@ import com.codesoom.assignment.models.RequestTaskDTO;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.service.TaskService;
 import com.codesoom.assignment.utils.JsonUtil;
-import com.codesoom.assignment.utils.StringUtil;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -48,7 +47,7 @@ public class TaskController {
                     return;
                 }
 
-                if (!path.isPathVariableNumeric()) {
+                if (!path.isInvalidPathVariable()) {
                     ClientError.methodArgumentTypeMismatch(exchange);
                     return;
                 }
@@ -62,7 +61,7 @@ public class TaskController {
                 return;
             case PUT:
             case PATCH:
-                if (!path.isPathVariableNumeric()) {
+                if (!path.isInvalidPathVariable()) {
                     ClientError.methodArgumentTypeMismatch(exchange);
                     return;
                 }
@@ -72,7 +71,7 @@ public class TaskController {
 
                 return;
             case DELETE:
-                if (!path.isPathVariableNumeric()) {
+                if (!path.isInvalidPathVariable()) {
                     ClientError.methodArgumentTypeMismatch(exchange);
                     return;
                 }
