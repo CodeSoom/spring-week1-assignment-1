@@ -2,6 +2,8 @@ package com.codesoom.assignment.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.time.LocalDateTime;
+
 public class Task {
 
     @JsonProperty("id")
@@ -10,12 +12,17 @@ public class Task {
     @JsonProperty("title")
     private String title;
 
-    public Task(Long id, String title) {
+    private final LocalDateTime regDate;
+    private LocalDateTime modDate;
+
+    public Task(Long id, String title, LocalDateTime regDate) {
         this.id = id;
         this.title = title;
+        this.regDate = regDate;
     }
 
-    public void setTitle(String title) {
+    public void changeTitle(String title) {
         this.title = title;
+        modDate = LocalDateTime.now();
     }
 }

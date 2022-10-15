@@ -3,6 +3,7 @@ package com.codesoom.assignment.repository;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.utils.IdGenerator;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,7 +27,7 @@ public class TaskRepository {
 
     public Task addNewTask(String title) {
         Long id = idGenerator.allocateId();
-        Task newTask = new Task(id, title);
+        Task newTask = new Task(id, title, LocalDateTime.now());
         taskMap.put(id, newTask);
 
         return newTask;
@@ -38,7 +39,7 @@ public class TaskRepository {
             return null;
         }
 
-        originalTask.setTitle(newTitle);
+        originalTask.changeTitle(newTitle);
         return originalTask;
     }
 
