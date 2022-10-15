@@ -1,7 +1,7 @@
 package com.codesoom.assignment.models;
 
 import com.codesoom.assignment.HttpMethod;
-import com.codesoom.assignment.exceptions.IllegalHttpRequestException;
+import com.codesoom.assignment.exceptions.IllegalHttpRequestBodyException;
 import com.codesoom.assignment.exceptions.IllegalHttpRequestMethodException;
 import com.codesoom.assignment.exceptions.IllegalHttpRequestPathException;
 import com.codesoom.assignment.utils.HttpRequestValidator;
@@ -13,45 +13,49 @@ import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
 public class HttpRequest {
-    private final HttpMethod httpMethod;
-    private final Path path;
-    private final String requestBody;
 
-    public HttpRequest(HttpExchange exchange) throws IllegalHttpRequestException {
-        this.httpMethod = extractHttpMethod(exchange);
-        this.path = extractPath(exchange);
-        this.requestBody = extractRequestBody(exchange);
+    private final HttpExchange exchange;
+    private HttpMethod httpMethod;
+    private Path path;
+    private String requestBody;
 
-        HttpRequestValidator.checksMissingPartExists(this);
+    public HttpRequest(HttpExchange exchange) {
+        this.exchange = exchange;
     }
 
-    private String extractRequestBody(HttpExchange exchange) {
-        final InputStream inputStream = exchange.getRequestBody();
-        return new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
-    }
+    public HttpMethod getHttpMethod() throws IllegalHttpRequestMethodException {
+        if (httpMethod != null) {
+            return httpMethod;
+        }
 
-    private Path extractPath(HttpExchange exchange) throws IllegalHttpRequestPathException {
-        return new Path(exchange);
-    }
-
-    private HttpMethod extractHttpMethod(HttpExchange exchange) throws IllegalHttpRequestMethodException {
-        String methodName = exchange.getRequestMethod();
+        final String methodName = exchange.getRequestMethod();
         HttpRequestValidator.checksMethodNameValid(methodName);
 
-        return HttpMethod.valueOf(methodName);
-    }
-
-    public HttpMethod getHttpMethod() {
+        httpMethod = HttpMethod.valueOf(methodName);
         return httpMethod;
     }
 
-    public Path getPath() {
+    public Path getPath() throws IllegalHttpRequestPathException, IllegalHttpRequestMethodException {
+        if (path != null) {
+            return path;
+        }
+
+        path = new Path(exchange);
+        HttpRequestValidator.checksIdMissed(getHttpMethod(), path.getId());
         return path;
     }
 
-    public String getRequestBody() {
+    public String getRequestBody() throws IllegalHttpRequestBodyException, IllegalHttpRequestMethodException {
+        if (requestBody != null) {
+            return requestBody;
+        }
+
+        final InputStream inputStream = exchange.getRequestBody();
+        requestBody = new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
+
+        HttpRequestValidator.checksRequestBodyMissed(getHttpMethod(), requestBody);
         return requestBody;
     }
 }

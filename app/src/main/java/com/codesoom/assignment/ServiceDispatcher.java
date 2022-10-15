@@ -32,9 +32,16 @@ public class ServiceDispatcher implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         final OutputStream outputStream = exchange.getResponseBody();
 
-        HttpRequest httpRequest;
+        final HttpRequest httpRequest;
+        final Long id;
+        final String requestBody;
+        final HttpRequestService requestService;
+
         try {
             httpRequest = new HttpRequest(exchange);
+            requestService = serviceMap.get(httpRequest.getHttpMethod());
+            id = httpRequest.getPath().getId();
+            requestBody = httpRequest.getRequestBody();
         } catch (IllegalHttpRequestException e) {
             String message = e.getMessage();
             exchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.code, message.getBytes().length);
@@ -42,9 +49,6 @@ public class ServiceDispatcher implements HttpHandler {
             return;
         }
 
-        final HttpRequestService requestService = serviceMap.get(httpRequest.getHttpMethod());
-        final Long id = httpRequest.getPath().getId();
-        final String requestBody = httpRequest.getRequestBody();
         final HttpResponse httpResponse = requestService.serviceRequest(id, requestBody);
 
         exchange.sendResponseHeaders(httpResponse.getHttpStatusCode().code, httpResponse.getContent().getBytes().length);
