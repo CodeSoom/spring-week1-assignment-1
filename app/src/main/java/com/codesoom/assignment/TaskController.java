@@ -31,7 +31,7 @@ public class TaskController {
                                HttpMethodType method,
                                Path path,
                                String requestBody) throws IOException {
-        if (isRequiredPathVariable(method) && path.getPathVariable() == null) {
+        if (isRequiredPathVariable(method) && isEmptyPathVariable(path)) {
             ClientError.badRequest(exchange);
             return;
         }
@@ -43,18 +43,17 @@ public class TaskController {
 
         switch (method) {
             case GET:
-                if (path.getPathVariable() == null) {
+                if (isEmptyPathVariable(path)) {
                     gets(exchange);
                     return;
                 }
 
-                if (!StringUtil.isNumeric(path.getPathVariable())) {
+                if (!path.isPathVariableNumeric()) {
                     ClientError.methodArgumentTypeMismatch(exchange);
                     return;
                 }
 
                 get(exchange, Long.parseLong(path.getPathVariable()));
-
                 return;
             case POST:
                 RequestTaskDTO.Create requestCreateDTO = JsonUtil.readValue(requestBody, RequestTaskDTO.Create.class);
@@ -63,7 +62,7 @@ public class TaskController {
                 return;
             case PUT:
             case PATCH:
-                if (!StringUtil.isNumeric(path.getPathVariable())) {
+                if (!path.isPathVariableNumeric()) {
                     ClientError.methodArgumentTypeMismatch(exchange);
                     return;
                 }
@@ -73,7 +72,7 @@ public class TaskController {
 
                 return;
             case DELETE:
-                if (!StringUtil.isNumeric(path.getPathVariable())) {
+                if (!path.isPathVariableNumeric()) {
                     ClientError.methodArgumentTypeMismatch(exchange);
                     return;
                 }
@@ -84,6 +83,10 @@ public class TaskController {
             default:
                 ClientError.methodNotAllowed(exchange);
         }
+    }
+
+    private boolean isEmptyPathVariable(Path path) {
+        return path.getPathVariable() == null;
     }
 
     private void delete(HttpExchange exchange, long userId) throws IOException {

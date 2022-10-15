@@ -41,4 +41,9 @@ public class Path {
     public static String getPathWithRemovedLastPath(Path path) {
         return path.getPath().substring(0, path.getPath().lastIndexOf("/"));
     }
+
+    public boolean isPathVariableNumeric() {
+        return this.pathVariable.chars()
+                .allMatch(Character::isDigit);
+    }
 }
