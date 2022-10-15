@@ -8,7 +8,7 @@ import com.codesoom.assignment.models.Task;
 
 import java.io.IOException;
 
-public class EditService implements HttpRequestService {
+public class TaskEditService implements HttpRequestService {
 
     private static final EditService instance = new EditService();
     private static final TaskRepository taskRepository = TaskRepository.getInstance();
