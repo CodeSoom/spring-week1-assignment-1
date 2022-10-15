@@ -7,11 +7,11 @@ import com.codesoom.assignment.exceptions.IllegalHttpRequestPathException;
 
 public final class HttpRequestValidator {
 
-    private static final String INVALID_PATH_MESSAGE = "잘못된 경로입니다.\n.../tasks/{Number} 형식으로 입력해주세요.";
+    private static final String INVALID_PATH_MESSAGE = "잘못된 경로입니다.\n올바른 URI 예시) .../tasks 또는 .../tasks/5";
     private static final String INVALID_METHOD_NAME_MESSAGE = "옳지 않은 Http Method 입니다.\nGET, POST, PUT, PATCH, DELETE 중에서 선택해 주세요.";
-    private static final String MISSING_ID_MESSAGE = "Resource Id가 누락되었습니다.\n.../tasks/{Number} 형식으로 입력해주세요.";
-    private static final String MISSING_REQUEST_BODY_MESSAGE = "Request Body가 누락되었습니다.\nex) {\"title\":\"exercise\"}";
-    private static final String NOT_JSON_FORMAT = "Json 형식이 아닙니다.\n {\"title\":\"exercise\"} 와 같은 형식으로 입력해주세요.";
+    private static final String MISSING_ID_MESSAGE = "Resource Id가 누락되었습니다.\n올바른 URI 예시) .../tasks/5";
+    private static final String MISSING_REQUEST_BODY_MESSAGE = "Request Body가 누락되었습니다.\n올바른 Request Body 예시) {\"title\":\"exercise\"}";
+    private static final String NOT_JSON_FORMAT = "Json 형식이 아닙니다.\n올바른 Request Body 예시) {\"title\":\"exercise\"} 와 같은 형식으로 입력해주세요.";
 
     private HttpRequestValidator() {
     }
