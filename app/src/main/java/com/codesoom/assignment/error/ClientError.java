@@ -26,4 +26,9 @@ public class ClientError {
         exchange.sendResponseHeaders(HttpURLConnection.HTTP_BAD_METHOD, 0);
         exchange.getResponseBody().close();
     }
+
+    public static final void conflict(HttpExchange exchange) throws IOException {
+        exchange.sendResponseHeaders(HttpURLConnection.HTTP_CONFLICT, 0);
+        exchange.getResponseBody().close();
+    }
 }

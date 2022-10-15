@@ -7,7 +7,6 @@ import com.codesoom.assignment.models.RequestTaskDTO;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.service.TaskService;
 import com.codesoom.assignment.utils.JsonUtil;
-import com.codesoom.assignment.utils.StringUtil;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -31,7 +30,7 @@ public class TaskController {
                                HttpMethodType method,
                                Path path,
                                String requestBody) throws IOException {
-        if (isRequiredPathVariable(method) && path.getPathVariable() == null) {
+        if (isRequiredPathVariable(method) && isEmptyPathVariable(path)) {
             ClientError.badRequest(exchange);
             return;
         }
@@ -43,78 +42,100 @@ public class TaskController {
 
         switch (method) {
             case GET:
-                if (path.getPathVariable() == null) {
-                    gets(exchange);
-                    return;
-                }
-
-                if (!StringUtil.isNumeric(path.getPathVariable())) {
-                    ClientError.methodArgumentTypeMismatch(exchange);
-                    return;
-                }
-
-                get(exchange, Long.parseLong(path.getPathVariable()));
-
+                responseTaskAdvice(exchange, path);
                 return;
             case POST:
-                RequestTaskDTO.Create requestCreateDTO = JsonUtil.readValue(requestBody, RequestTaskDTO.Create.class);
-                create(exchange, requestCreateDTO);
-
+                createTaskAdvice(exchange, requestBody);
                 return;
             case PUT:
             case PATCH:
-                if (!StringUtil.isNumeric(path.getPathVariable())) {
-                    ClientError.methodArgumentTypeMismatch(exchange);
-                    return;
-                }
-
-                RequestTaskDTO.Update reqeustUpdateDTO = JsonUtil.readValue(requestBody, RequestTaskDTO.Update.class);
-                update(exchange, Long.parseLong(path.getPathVariable()), reqeustUpdateDTO);
-
+                updateTaskAdvice(exchange, path, requestBody);
                 return;
             case DELETE:
-                if (!StringUtil.isNumeric(path.getPathVariable())) {
-                    ClientError.methodArgumentTypeMismatch(exchange);
-                    return;
-                }
-
-                delete(exchange, Long.parseLong(path.getPathVariable()));
-
+                deleteTaskAdvice(exchange, path);
                 return;
             default:
                 ClientError.methodNotAllowed(exchange);
         }
     }
 
-    private void delete(HttpExchange exchange, long userId) throws IOException {
-        Optional<Task> taskByUserId = taskService.getTaskByUserId(userId);
+    private void deleteTaskAdvice(HttpExchange exchange, Path path) throws IOException {
+        if (!path.isInvalidPathVariable()) {
+            ClientError.methodArgumentTypeMismatch(exchange);
+            return;
+        }
+
+        deleteTask(exchange, Long.parseLong(path.getPathVariable()));
+    }
+
+    private void updateTaskAdvice(HttpExchange exchange, Path path, String requestBody) throws IOException {
+        if (!path.isInvalidPathVariable()) {
+            ClientError.methodArgumentTypeMismatch(exchange);
+            return;
+        }
+
+        RequestTaskDTO.Update reqeustUpdateDTO = JsonUtil.readValue(requestBody, RequestTaskDTO.Update.class);
+        updateTask(exchange, Long.parseLong(path.getPathVariable()), reqeustUpdateDTO);
+    }
+
+    private void createTaskAdvice(HttpExchange exchange, String requestBody) throws IOException {
+        RequestTaskDTO.Create requestCreateDTO = JsonUtil.readValue(requestBody, RequestTaskDTO.Create.class);
+        createTask(exchange, requestCreateDTO);
+    }
+
+    private void responseTaskAdvice(HttpExchange exchange, Path path) throws IOException {
+        if (isEmptyPathVariable(path)) {
+            getTaskList(exchange);
+            return;
+        }
+
+        if (!path.isInvalidPathVariable()) {
+            ClientError.methodArgumentTypeMismatch(exchange);
+            return;
+        }
+
+        getTask(exchange, Long.parseLong(path.getPathVariable()));
+    }
+
+    private boolean isEmptyPathVariable(Path path) {
+        return path.getPathVariable() == null;
+    }
+
+    private void deleteTask(HttpExchange exchange, long userId) throws IOException {
+        Optional<Task> taskByUserId = taskService.getByUserId(userId);
 
         if (taskByUserId.isEmpty()) {
             ClientError.notFound(exchange);
         }
 
-        taskService.deleteTask(taskByUserId.get());
+        boolean deleteResult = taskService.delete(taskByUserId.get());
+
+        if (!deleteResult) {
+            ClientError.conflict(exchange);
+            return;
+        }
+
         setSuccessResponse(exchange, HttpURLConnection.HTTP_NO_CONTENT);
     }
 
-    private void update(HttpExchange exchange, long userId, RequestTaskDTO.Update request) throws IOException {
-        Optional<Task> taskByUserId = taskService.getTaskByUserId(userId);
+    private void updateTask(HttpExchange exchange, long userId, RequestTaskDTO.Update request) throws IOException {
+        Optional<Task> taskByUserId = taskService.getByUserId(userId);
 
         if (taskByUserId.isEmpty()) {
             ClientError.notFound(exchange);
         }
 
-        Task task = taskService.updateTask(taskByUserId.get(), request);
+        Task task = taskService.update(taskByUserId.get(), request);
         setSuccessResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(task));
     }
 
-    private void create(HttpExchange exchange, RequestTaskDTO.Create request) throws IOException {
-        Task task = taskService.createTask(request);
+    private void createTask(HttpExchange exchange, RequestTaskDTO.Create request) throws IOException {
+        Task task = taskService.create(request);
         setSuccessResponse(exchange, HttpURLConnection.HTTP_CREATED, JsonUtil.writeValue(task));
     }
 
-    private void get(HttpExchange exchange, long userId) throws IOException {
-        Optional<Task> taskByUserId = taskService.getTaskByUserId(userId);
+    private void getTask(HttpExchange exchange, long userId) throws IOException {
+        Optional<Task> taskByUserId = taskService.getByUserId(userId);
 
         if (taskByUserId.isEmpty()) {
             ClientError.notFound(exchange);
@@ -123,8 +144,8 @@ public class TaskController {
         setSuccessResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(taskByUserId.get()));
     }
 
-    private void gets(HttpExchange exchange) throws IOException {
-        List<Task> tasks = taskService.getTasks();
+    private void getTaskList(HttpExchange exchange) throws IOException {
+        List<Task> tasks = taskService.gets();
         setSuccessResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(tasks));
     }
 

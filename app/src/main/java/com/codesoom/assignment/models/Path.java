@@ -1,5 +1,7 @@
 package com.codesoom.assignment.models;
 
+import com.codesoom.assignment.utils.StringUtil;
+
 public class Path {
     String path;
     String pathVariable;
@@ -40,5 +42,9 @@ public class Path {
 
     public static String getPathWithRemovedLastPath(Path path) {
         return path.getPath().substring(0, path.getPath().lastIndexOf("/"));
+    }
+
+    public boolean isInvalidPathVariable() {
+        return StringUtil.isNumeric(this.pathVariable);
     }
 }
