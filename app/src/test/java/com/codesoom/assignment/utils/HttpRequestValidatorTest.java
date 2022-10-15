@@ -17,7 +17,6 @@ class HttpRequestValidatorTest {
         for (String invalidPath : invalidPathArr) {
             IllegalHttpRequestPathException exception = assertThrows(IllegalHttpRequestPathException.class
                     , () -> HttpRequestValidator.checksPathValid(invalidPath));
-            System.out.println(exception.getMessage());
         }
     }
 
