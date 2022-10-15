@@ -2,10 +2,8 @@ package com.codesoom.assignment.utils;
 
 import com.codesoom.assignment.HttpMethod;
 import com.codesoom.assignment.exceptions.IllegalHttpRequestBodyException;
-import com.codesoom.assignment.exceptions.IllegalHttpRequestException;
 import com.codesoom.assignment.exceptions.IllegalHttpRequestMethodException;
 import com.codesoom.assignment.exceptions.IllegalHttpRequestPathException;
-import com.codesoom.assignment.models.HttpRequest;
 
 public final class HttpRequestValidator {
 
@@ -53,15 +51,6 @@ public final class HttpRequestValidator {
             default:
                 throw new IllegalHttpRequestMethodException(INVALID_METHOD_NAME_MESSAGE);
         }
-    }
-
-    public static void checksMissingPartExists(HttpRequest httpRequest) throws IllegalHttpRequestException {
-        final HttpMethod method = httpRequest.getHttpMethod();
-        final Long id = httpRequest.getPath().getId();
-        final String requestBody = httpRequest.getRequestBody();
-
-        checksIdMissed(method, id);
-        checksRequestBodyMissed(method, requestBody);
     }
 
     public static void checksRequestBodyMissed(HttpMethod method, String requestBody) throws IllegalHttpRequestBodyException {
