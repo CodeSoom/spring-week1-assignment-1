@@ -36,7 +36,7 @@ public final class HttpRequestValidator {
         }
 
         final String idPart = pathArr[2];
-        if (!StringValidator.isNumberFormat(idPart)) {
+        if (!StringValidator.isNumberFormatValid(idPart)) {
             throw new IllegalHttpRequestPathException(INVALID_PATH_MESSAGE);
         }
     }
