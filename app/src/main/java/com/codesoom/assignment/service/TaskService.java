@@ -20,17 +20,17 @@ public class TaskService {
         return taskService;
     }
 
-    public List<Task> getTasks() {
+    public List<Task> gets() {
         return taskDataList;
     }
 
-    public Optional<Task> getTaskByUserId(Long userId) {
+    public Optional<Task> getByUserId(Long userId) {
         return taskDataList.stream()
                 .filter(t -> t.getId().equals(userId))
                 .findFirst();
     }
 
-    public Task createTask(RequestTaskDTO.Create request) {
+    public Task create(RequestTaskDTO.Create request) {
         Task task = request.toEntity();
         task.setId(TaskId.getNewId());
         taskDataList.add(task);
@@ -38,7 +38,7 @@ public class TaskService {
         return task;
     }
 
-    public Task updateTask(Task originTask, RequestTaskDTO.Update request) {
+    public Task update(Task originTask, RequestTaskDTO.Update request) {
         request.setId(originTask.getId());
         Task task = request.toEntity();
         int indexOfOriginTask = taskDataList.indexOf(originTask);
@@ -47,7 +47,7 @@ public class TaskService {
         return task;
     }
 
-    public boolean deleteTask(Task task) {
+    public boolean delete(Task task) {
         return taskDataList.remove(task);
     }
 }
