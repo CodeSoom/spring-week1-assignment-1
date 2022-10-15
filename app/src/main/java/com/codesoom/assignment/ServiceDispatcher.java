@@ -3,30 +3,20 @@ package com.codesoom.assignment;
 import com.codesoom.assignment.exceptions.IllegalHttpRequestException;
 import com.codesoom.assignment.models.HttpRequest;
 import com.codesoom.assignment.models.HttpResponse;
-import com.codesoom.assignment.services.DeleteService;
-import com.codesoom.assignment.services.EditService;
-import com.codesoom.assignment.services.GetService;
 import com.codesoom.assignment.services.HttpRequestService;
-import com.codesoom.assignment.services.PostService;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * This class communicates with clients and requests works for processing HTTP message to HttpRequestService.
+ * It overrides handle() which extracts data from HTTP message and send response back to the client who have requested.
+ *
+ * @author steve7867
+ */
 public class ServiceDispatcher implements HttpHandler {
-
-    private final Map<HttpMethod, HttpRequestService> serviceMap = new ConcurrentHashMap<>();
-
-    public ServiceDispatcher() {
-        serviceMap.put(HttpMethod.GET, GetService.getInstance());
-        serviceMap.put(HttpMethod.POST, PostService.getInstance());
-        serviceMap.put(HttpMethod.PUT, EditService.getInstance());
-        serviceMap.put(HttpMethod.PATCH, EditService.getInstance());
-        serviceMap.put(HttpMethod.DELETE, DeleteService.getInstance());
-    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -39,7 +29,7 @@ public class ServiceDispatcher implements HttpHandler {
 
         try {
             httpRequest = new HttpRequest(exchange);
-            requestService = serviceMap.get(httpRequest.getHttpMethod());
+            requestService = HttpRequestServiceResolver.resolve(httpRequest.getHttpMethod());
             id = httpRequest.getPath().getId();
             requestBody = httpRequest.getRequestBody();
         } catch (IllegalHttpRequestException e) {
