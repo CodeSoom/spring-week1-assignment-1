@@ -12,12 +12,20 @@ import java.io.OutputStream;
 
 /**
  * This class communicates with clients and requests works for processing HTTP message to HttpRequestService.
- * It overrides handle() which handles HTTP request and sends response back to the client who has requested.
+ * It overrides {@code handle()} which handles HTTP request and sends response back to the client who has requested.
  *
  * @author steve7867
  */
 public class ServiceDispatcher implements HttpHandler {
-
+    /**
+     * This method communicates with clients using HttpExchange.
+     *
+     * @param exchange the exchange containing the request from the
+     *      client and used to send the response
+     * @throws IOException  if Writing for OutputStream fails.
+     *                      if Flushing contents in OutputStream fails.
+     *                      if Closing OutputStream fails.
+     */
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         final OutputStream outputStream = exchange.getResponseBody();
