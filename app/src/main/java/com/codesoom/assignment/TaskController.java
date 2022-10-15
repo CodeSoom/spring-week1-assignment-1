@@ -108,7 +108,13 @@ public class TaskController {
             ClientError.notFound(exchange);
         }
 
-        taskService.delete(taskByUserId.get());
+        boolean deleteResult = taskService.delete(taskByUserId.get());
+
+        if (!deleteResult) {
+            ClientError.conflict(exchange);
+            return;
+        }
+
         setSuccessResponse(exchange, HttpURLConnection.HTTP_NO_CONTENT);
     }
 
