@@ -12,7 +12,7 @@ import java.io.OutputStream;
 
 /**
  * This class communicates with clients and requests works for processing HTTP message to HttpRequestService.
- * It overrides handle() which extracts data from HTTP message and send response back to the client who have requested.
+ * It overrides handle() which handles HTTP request and sends response back to the client who has requested.
  *
  * @author steve7867
  */
