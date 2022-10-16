@@ -7,6 +7,7 @@ import com.codesoom.assignment.models.Path;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,11 +18,12 @@ public class ControllerHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         HttpMethodType method = HttpMethodType.getMethod(exchange.getRequestMethod());
-        Path path = Path.createPath(exchange.getRequestURI().getPath());
+        String uriPath = exchange.getRequestURI().getPath();
         String requestBody = new BufferedReader(new InputStreamReader(exchange.getRequestBody()))
                 .lines()
                 .collect(Collectors.joining("\n"));
-        ContextContainer context = ContextContainer.getContext(path);
+        ContextContainer context = ContextContainer.getContext(uriPath);
+        Path path = new Path(context.getContextValue(), uriPath.substring(context.getContextValue().length()));
 
         switch (context) {
             case TASKS:
