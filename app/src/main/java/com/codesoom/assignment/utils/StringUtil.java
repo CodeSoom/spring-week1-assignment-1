@@ -3,7 +3,11 @@ package com.codesoom.assignment.utils;
 public class StringUtil {
 
     public static boolean isNumeric(String str) {
-        if (isNull(str)) {
+        if (str == null) {
+            return false;
+        }
+
+        if (!str.equals("0") && str.startsWith("0")) {
             return false;
         }
 

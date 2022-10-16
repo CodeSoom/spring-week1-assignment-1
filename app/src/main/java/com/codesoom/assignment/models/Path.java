@@ -26,6 +26,6 @@ public class Path {
     }
 
     public boolean isInvalidPathVariable() {
-        return StringUtil.isOverThanZero(this.pathVariable);
+        return StringUtil.isNumeric(this.pathVariable);
     }
 }
