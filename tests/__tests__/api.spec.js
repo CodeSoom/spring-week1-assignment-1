@@ -8,9 +8,7 @@ describe('tasks', () => {
   beforeEach(async () => {
     const res = await frisby.get('/tasks');
     const tasks = JSON.parse(res.body);
-    await Promise.all(
-      tasks.map(({ id }) => frisby.del(`/tasks/${id}`)),
-    );
+    await Promise.all(tasks.map(({ id }) => frisby.del(`/tasks/${id}`)));
   });
 
   describe('GET /tasks', () => {
