@@ -24,9 +24,9 @@ public class TaskService {
         return taskDataList;
     }
 
-    public Optional<Task> getByUserId(Long userId) {
+    public Optional<Task> getByTaskId(Long taskId) {
         return taskDataList.stream()
-                .filter(t -> t.getId().equals(userId))
+                .filter(t -> t.getId().equals(taskId))
                 .findFirst();
     }
 

@@ -14,7 +14,7 @@ public class App {
     public static void main(String[] args) throws IOException {
         InetSocketAddress address = new InetSocketAddress(8000);
         HttpServer httpServer = HttpServer.create(address, 0);
-        HttpHandler handler = new FrontController();
+        HttpHandler handler = new ControllerHandler();
         httpServer.createContext("/", handler);
         httpServer.start();
     }
