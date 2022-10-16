@@ -29,14 +29,14 @@ public class TaskController {
         setSuccessResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(tasks));
     }
 
-    public void get(HttpExchange exchange, long userId) throws IOException {
-        Optional<Task> taskByUserId = taskService.getByUserId(userId);
+    public void get(HttpExchange exchange, long taskId) throws IOException {
+        Optional<Task> taskById = taskService.getByTaskId(taskId);
 
-        if (taskByUserId.isEmpty()) {
+        if (taskById.isEmpty()) {
             ClientError.notFound(exchange);
         }
 
-        setSuccessResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(taskByUserId.get()));
+        setSuccessResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(taskById.get()));
     }
 
     public void create(HttpExchange exchange, RequestTaskDTO.Create request) throws IOException {
@@ -44,25 +44,25 @@ public class TaskController {
         setSuccessResponse(exchange, HttpURLConnection.HTTP_CREATED, JsonUtil.writeValue(task));
     }
 
-    public void update(HttpExchange exchange, long userId, RequestTaskDTO.Update request) throws IOException {
-        Optional<Task> taskByUserId = taskService.getByUserId(userId);
+    public void update(HttpExchange exchange, long taskId, RequestTaskDTO.Update request) throws IOException {
+        Optional<Task> taskById = taskService.getByTaskId(taskId);
 
-        if (taskByUserId.isEmpty()) {
+        if (taskById.isEmpty()) {
             ClientError.notFound(exchange);
         }
 
-        Task task = taskService.update(taskByUserId.get(), request);
+        Task task = taskService.update(taskById.get(), request);
         setSuccessResponse(exchange, HttpURLConnection.HTTP_OK, JsonUtil.writeValue(task));
     }
 
-    public void delete(HttpExchange exchange, long userId) throws IOException {
-        Optional<Task> taskByUserId = taskService.getByUserId(userId);
+    public void delete(HttpExchange exchange, long taskId) throws IOException {
+        Optional<Task> taskById = taskService.getByTaskId(taskId);
 
-        if (taskByUserId.isEmpty()) {
+        if (taskById.isEmpty()) {
             ClientError.notFound(exchange);
         }
 
-        boolean deleteResult = taskService.delete(taskByUserId.get());
+        boolean deleteResult = taskService.delete(taskById.get());
 
         if (!deleteResult) {
             ClientError.conflict(exchange);
