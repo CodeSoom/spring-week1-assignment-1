@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
-public class FrontController implements HttpHandler {
+public class ControllerHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -25,8 +25,8 @@ public class FrontController implements HttpHandler {
 
         switch (context) {
             case TASKS:
-                TaskController taskController = TaskController.getInstance();
-                taskController.requestMapping(exchange, method, path, requestBody);
+                TaskControllerAdvice taskControllerAdvice = TaskControllerAdvice.getInstance();
+                taskControllerAdvice.requestMapping(exchange, method, path, requestBody);
                 break;
             default:
                 ClientError.notFound(exchange);
