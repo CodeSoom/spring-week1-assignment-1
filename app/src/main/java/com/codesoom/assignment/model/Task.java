@@ -28,7 +28,15 @@ public class Task {
 
     public void setTitle(String title) {
         this.title = title;
+        //TODO 전후위 연산자 사용 없이 어떻게 값을 할당할 것인지?
         this.id = ++Task.num;
     }
 
+    @Override
+    public String toString() {
+        return "Task{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                '}';
+    }
 }
