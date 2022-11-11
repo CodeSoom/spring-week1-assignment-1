@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.codesoom.assignment.model.HTTPMethod.DELETE;
@@ -33,9 +34,9 @@ import static com.codesoom.assignment.model.HTTPMethod.PUT;
  */
 public class TaskHttpHandler implements HttpHandler {
 
-    private final ObjectMapper objectMapper = new JsonMapper();
-    private final OutputStream outputStream = new ByteArrayOutputStream();
-    private final List<Task> tasks = new ArrayList<>();
+    private ObjectMapper objectMapper = new JsonMapper();
+    private OutputStream outputStream = new ByteArrayOutputStream();
+    private List<Task> tasks = new ArrayList<>();
 
     private static final Integer SC_OK = 200;
     private static final Integer SC_CREATED = 201;
@@ -46,7 +47,6 @@ public class TaskHttpHandler implements HttpHandler {
         String content = "";
         String requestMethod = exchange.getRequestMethod(); //GET, POST, PUT/PATCH, DELETE...
         String uri = exchange.getRequestURI().getPath();
-        //TODO 어떻게 하면 /posts/{id} 에서 {id}부분만 가져올 수 있는지 찾기
         String[] path = uri.split("/");
         String resource = path[path.length - 1];
 
@@ -55,23 +55,31 @@ public class TaskHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        // GET /tasks
-        if (requestMethod.equals(GET.name())) {
-            content = tasksToJson();
+        // /tasks/
+        if (!isNumeric(resource)) {
+            if (requestMethod.equals(GET.name())) {
+                handleGet(exchange, tasksToJson());
+            }
+
+            if (requestMethod.equals(POST.name())) {
+                if(body.isBlank()) {
+                    content = "Please try it again.";
+                    handleError(exchange, content);
+                } else {
+                    handleCreate(exchange, body);
+                }
+            }
         }
 
-        // POST /tasks
-        if (requestMethod.equals(POST.name()) && !body.isBlank()) {
-            Task task = contentToTask(body);
-            tasks.add(task);
-            content = tasksToJson();
+        if (requestMethod.equals(GET.name())) {
+            System.out.println("TaskHttpHandler.handle");
         }
 
         // PUT/PATCH /tasks/{id}
         if (requestMethod.equals(PUT.name()) || requestMethod.equals(PATCH.name())) {
             if (!resource.isBlank() && !body.isBlank()) {
-//                Task task = tasks.get(Integer.parseInt(resource));
-//                task = contentToTask(body);
+                Task task = contentToTask(body);
+                handleUpdate(exchange, task, body);
             }
         }
 
@@ -79,28 +87,84 @@ public class TaskHttpHandler implements HttpHandler {
         if (requestMethod.equals(DELETE.name())) {
             if (!resource.isBlank()) {
                 tasks.remove(Integer.parseInt(resource)-1);
+                content = "Delete success.";
+                handleGet(exchange, content);
             }
         }
+    }
 
+    private void handleGet(HttpExchange exchange, String content) throws IOException {
         exchange.sendResponseHeaders(SC_OK, content.getBytes().length);
 
+        extracted(exchange, content);
+    }
+
+    private void handleCreate(HttpExchange exchange, String body) throws IOException {
+        Task task = contentToTask(body);
+        tasks.add(task);
+
+        String content = tasksToJson();
+
+        exchange.sendResponseHeaders(SC_CREATED, content.getBytes().length);
+
+        extracted(exchange, content);
+    }
+
+    private static void extracted(HttpExchange exchange, String content) throws IOException {
         OutputStream os = exchange.getResponseBody();
         os.write(content.getBytes());
         os.flush();
         os.close();
     }
 
+    private void handleUpdate(HttpExchange exchange, Task task, String body) throws IOException {
+        Task source = contentToTask(body);
+        source.setTitle(task.getTitle());
+
+        String content = tasksToJson();
+        exchange.sendResponseHeaders(SC_OK, content.getBytes().length);
+
+        extracted(exchange, content);
+    }
+
+    private void handleError(HttpExchange exchange, String content) throws IOException {
+        exchange.sendResponseHeaders(SC_BADREQUEST, content.getBytes().length);
+
+        extracted(exchange, content);
+    }
+
+    private Task findTask(String id) {
+        Task task = new Task();
+        task.setId(Integer.parseInt(id));
+        System.out.println("task.toString() = " + task.toString());
+        return task;
+    }
+
+    /**
+     * value값이 int형인지 확인
+     * @param value
+     * @return true || false
+     */
+    private boolean isNumeric(String value) {
+        return value != null && value.matches("[0-9.]+");
+    }
+
     /**
      * 넘어온 리소스 값으로 Task 필터링하여 반환
+     *
      * @param taskId
      * @return 필터링된 Task
      * @throws IOException
      */
-    private String getFilteredTask(String taskId) throws IOException {
+    private Optional<Task> getFilteredTask(String taskId) throws IOException {
+        System.out.println("TaskHttpHandler.getFilteredTask");
+        int id = Integer.parseInt(taskId);
+
         //TODO stream filter 찾아보기
-        objectMapper.writeValue(outputStream, tasks.stream()
-                                                    .filter(t -> Integer.parseInt(taskId) == t.getId()));
-        return outputStream.toString();
+        Optional<Task> task = tasks.stream()
+                                    .filter(t -> t.getId() == id)
+                                    .findFirst();
+       return task;
     }
 
     /**
@@ -119,8 +183,11 @@ public class TaskHttpHandler implements HttpHandler {
      * @throws IOException
      */
     private String tasksToJson() throws IOException {
-        objectMapper.writeValue(outputStream, tasks);
-        return outputStream.toString();
+        //        objectMapper.writeValue(outputStream, tasks);
+        // 새로 Outputstream을 만들어서 리턴해야한다. 이유는 모름 찾아봐야함.
+        OutputStream os = new ByteArrayOutputStream();
+        objectMapper.writeValue(os, tasks);
+        return os.toString();
     }
 
 }

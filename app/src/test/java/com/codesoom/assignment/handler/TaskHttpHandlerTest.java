@@ -40,4 +40,5 @@ class TaskHttpHandlerTest {
 
         Assertions.assertEquals(task.get().getTitle(), "task2");
     }
+
 }
