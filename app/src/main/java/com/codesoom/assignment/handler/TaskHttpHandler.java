@@ -18,7 +18,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.codesoom.assignment.model.HTTPMethod.DELETE;
@@ -39,12 +38,15 @@ public class TaskHttpHandler implements HttpHandler {
 
     private ObjectMapper objectMapper = new JsonMapper();
     private List<Task> tasks = new ArrayList<>();
+    private Long id = 0L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String content = "";
+        Long taskId = 0L;
         String requestMethod = exchange.getRequestMethod(); //GET, POST, PUT/PATCH, DELETE...
         String uri = exchange.getRequestURI().getPath();
+        //TODO 변수명 바꿀 것
         String[] path = uri.split("/");
         String resource = path[path.length - 1];
 
@@ -52,6 +54,10 @@ public class TaskHttpHandler implements HttpHandler {
         String body = new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
+
+        if (isNumeric(resource)) {
+            taskId = Long.parseLong(resource);
+        }
 
         // /tasks
         if (!isNumeric(resource)) {
@@ -66,18 +72,27 @@ public class TaskHttpHandler implements HttpHandler {
                     handleCreate(exchange, body);
                 }
             }
+
+            if (requestMethod.equals(PUT.name()) || requestMethod.equals(PATCH.name())) {
+                handleError(exchange, content);
+            }
         }
 
         // GET /tasks/{id}
         if (requestMethod.equals(GET.name())) {
-            System.out.println("TaskHttpHandler.handle");
+            Task filteredTask = getFilteredTask(taskId);
+            if (filteredTask != null) {
+                handleGetDetail(exchange, filteredTask);
+            } else {
+                handleError(exchange, content);
+            }
         }
 
         // PUT/PATCH /tasks/{id}
         if (requestMethod.equals(PUT.name()) || requestMethod.equals(PATCH.name())) {
-            if (!resource.isBlank() && !body.isBlank()) {
-                Task task = contentToTask(body);
-                handleUpdate(exchange, task, body);
+            if (!body.isBlank()) {
+                String newTitle = contentToTask(body).getTitle();
+                handleUpdate(exchange, taskId, newTitle);
             } else {
                 handleError(exchange, content);
             }
@@ -86,7 +101,7 @@ public class TaskHttpHandler implements HttpHandler {
         // DELETE /tasks/{id}
         if (requestMethod.equals(DELETE.name())) {
             if (!resource.isBlank()) {
-                tasks.remove(Integer.parseInt(resource)-1);
+                tasks.remove(getFilteredTask(taskId));
                 handleGet(exchange, content);
             }
         }
@@ -96,16 +111,25 @@ public class TaskHttpHandler implements HttpHandler {
         new ResponseSuccess(exchange).sendResponse(content);
     }
 
+    private void handleGetDetail(HttpExchange exchange, Task filteredTask) throws IOException {
+        new ResponseSuccess(exchange).sendResponse(filteredTask.toString());
+    }
+
     private void handleCreate(HttpExchange exchange, String body) throws IOException {
         Task task = contentToTask(body);
+        task.setId(generatedId());
         tasks.add(task);
 
         new ResponseCreated(exchange).sendResponse(tasksToJson());
     }
 
-    private void handleUpdate(HttpExchange exchange, Task task, String body) throws IOException {
-        Task source = contentToTask(body);
-        source.setTitle(task.getTitle());
+    private void handleUpdate(HttpExchange exchange, Long taskId, String newTitle) throws IOException {
+        Task filteredTask = getFilteredTask(taskId);
+        if (filteredTask == null) {
+            new ResponseNotFound(exchange);
+        }
+
+        filteredTask.setTitle(newTitle);
 
         new ResponseSuccess(exchange).sendResponse(tasksToJson());
     }
@@ -130,15 +154,12 @@ public class TaskHttpHandler implements HttpHandler {
      * @return 필터링된 Task
      * @throws IOException
      */
-    private Optional<Task> getFilteredTask(String taskId) throws IOException {
-        System.out.println("TaskHttpHandler.getFilteredTask");
-        int id = Integer.parseInt(taskId);
-
+    private Task getFilteredTask(Long taskId) {
         //TODO stream filter 찾아보기
-        Optional<Task> task = tasks.stream()
-                                    .filter(t -> t.getId() == id)
-                                    .findFirst();
-       return task;
+       return tasks.stream()
+               .filter(t -> t.getId().equals(taskId))
+               .findFirst()
+               .orElse(null);
     }
 
     /**
@@ -159,9 +180,17 @@ public class TaskHttpHandler implements HttpHandler {
     private String tasksToJson() throws IOException {
         //        objectMapper.writeValue(outputStream, tasks);
         // 새로 Outputstream을 만들어서 리턴해야한다. 이유는 모름 찾아봐야함.
-        OutputStream os = new ByteArrayOutputStream();
-        objectMapper.writeValue(os, tasks);
-        return os.toString();
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, tasks);
+
+        return outputStream.toString();
     }
 
+    /**
+     * Task의 id 자동 증가
+     * @return 1씩 증가된 id
+     */
+    private Long generatedId() {
+        return id += 1;
+    }
 }
