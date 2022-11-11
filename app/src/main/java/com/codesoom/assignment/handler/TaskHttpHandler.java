@@ -1,6 +1,9 @@
 package com.codesoom.assignment.handler;
 
 import com.codesoom.assignment.model.Task;
+import com.codesoom.assignment.response.ResponseCreated;
+import com.codesoom.assignment.response.ResponseNotFound;
+import com.codesoom.assignment.response.ResponseSuccess;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -35,12 +38,7 @@ import static com.codesoom.assignment.model.HTTPMethod.PUT;
 public class TaskHttpHandler implements HttpHandler {
 
     private ObjectMapper objectMapper = new JsonMapper();
-    private OutputStream outputStream = new ByteArrayOutputStream();
     private List<Task> tasks = new ArrayList<>();
-
-    private static final Integer SC_OK = 200;
-    private static final Integer SC_CREATED = 201;
-    private static final Integer SC_BADREQUEST = 400;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -55,7 +53,7 @@ public class TaskHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        // /tasks/
+        // /tasks
         if (!isNumeric(resource)) {
             if (requestMethod.equals(GET.name())) {
                 handleGet(exchange, tasksToJson());
@@ -63,7 +61,6 @@ public class TaskHttpHandler implements HttpHandler {
 
             if (requestMethod.equals(POST.name())) {
                 if(body.isBlank()) {
-                    content = "Please try it again.";
                     handleError(exchange, content);
                 } else {
                     handleCreate(exchange, body);
@@ -71,6 +68,7 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
+        // GET /tasks/{id}
         if (requestMethod.equals(GET.name())) {
             System.out.println("TaskHttpHandler.handle");
         }
@@ -80,6 +78,8 @@ public class TaskHttpHandler implements HttpHandler {
             if (!resource.isBlank() && !body.isBlank()) {
                 Task task = contentToTask(body);
                 handleUpdate(exchange, task, body);
+            } else {
+                handleError(exchange, content);
             }
         }
 
@@ -87,57 +87,31 @@ public class TaskHttpHandler implements HttpHandler {
         if (requestMethod.equals(DELETE.name())) {
             if (!resource.isBlank()) {
                 tasks.remove(Integer.parseInt(resource)-1);
-                content = "Delete success.";
                 handleGet(exchange, content);
             }
         }
     }
 
     private void handleGet(HttpExchange exchange, String content) throws IOException {
-        exchange.sendResponseHeaders(SC_OK, content.getBytes().length);
-
-        extracted(exchange, content);
+        new ResponseSuccess(exchange).sendResponse(content);
     }
 
     private void handleCreate(HttpExchange exchange, String body) throws IOException {
         Task task = contentToTask(body);
         tasks.add(task);
 
-        String content = tasksToJson();
-
-        exchange.sendResponseHeaders(SC_CREATED, content.getBytes().length);
-
-        extracted(exchange, content);
-    }
-
-    private static void extracted(HttpExchange exchange, String content) throws IOException {
-        OutputStream os = exchange.getResponseBody();
-        os.write(content.getBytes());
-        os.flush();
-        os.close();
+        new ResponseCreated(exchange).sendResponse(tasksToJson());
     }
 
     private void handleUpdate(HttpExchange exchange, Task task, String body) throws IOException {
         Task source = contentToTask(body);
         source.setTitle(task.getTitle());
 
-        String content = tasksToJson();
-        exchange.sendResponseHeaders(SC_OK, content.getBytes().length);
-
-        extracted(exchange, content);
+        new ResponseSuccess(exchange).sendResponse(tasksToJson());
     }
 
     private void handleError(HttpExchange exchange, String content) throws IOException {
-        exchange.sendResponseHeaders(SC_BADREQUEST, content.getBytes().length);
-
-        extracted(exchange, content);
-    }
-
-    private Task findTask(String id) {
-        Task task = new Task();
-        task.setId(Integer.parseInt(id));
-        System.out.println("task.toString() = " + task.toString());
-        return task;
+        new ResponseNotFound(exchange).sendResponse(content);
     }
 
     /**
