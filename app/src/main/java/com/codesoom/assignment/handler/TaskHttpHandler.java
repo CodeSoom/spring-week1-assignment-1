@@ -46,9 +46,9 @@ public class TaskHttpHandler implements HttpHandler {
         Long taskId = 0L;
         String requestMethod = exchange.getRequestMethod(); //GET, POST, PUT/PATCH, DELETE...
         String uri = exchange.getRequestURI().getPath();
-        //TODO 변수명 바꿀 것
-        String[] path = uri.split("/");
-        String resource = path[path.length - 1];
+        // A path consists of a sequence of path segments separated by a slash ("/") character.
+        String[] pathSegments = uri.split("/");
+        String resource = pathSegments[pathSegments.length - 1];
 
         InputStream inputStream = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(inputStream))
@@ -73,7 +73,7 @@ public class TaskHttpHandler implements HttpHandler {
                 }
             }
 
-            if (requestMethod.equals(PUT.name()) || requestMethod.equals(PATCH.name())) {
+            if (requestMethod.equals(PUT.name()) || requestMethod.equals(PATCH.name()) || requestMethod.equals(DELETE.name())) {
                 handleError(exchange, content);
             }
         }
@@ -103,6 +103,8 @@ public class TaskHttpHandler implements HttpHandler {
             if (!resource.isBlank()) {
                 tasks.remove(getFilteredTask(taskId));
                 handleGet(exchange, content);
+            } else {
+                handleError(exchange, content);
             }
         }
     }
