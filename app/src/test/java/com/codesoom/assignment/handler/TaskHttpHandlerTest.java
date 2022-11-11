@@ -4,6 +4,7 @@ import com.codesoom.assignment.model.Task;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,17 @@ class TaskHttpHandlerTest {
                 .findFirst();
 
         Assertions.assertEquals(task.get().getTitle(), "task2");
+    }
+
+    @Test
+    void removeTask() {
+        String taskId = "1";
+        tasks.remove(Integer.parseInt(taskId)-1);
+
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
+                () -> {
+            tasks.remove(Integer.parseInt("3")-1);
+                });
     }
 
 }
