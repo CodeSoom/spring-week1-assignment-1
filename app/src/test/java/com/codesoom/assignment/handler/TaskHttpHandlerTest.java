@@ -14,7 +14,7 @@ class TaskHttpHandlerTest {
 
     static final List<Task> tasks = new ArrayList<>();
 
-    @BeforeEach
+//    @BeforeEach
     void before() {
         Task task = new Task();
         task.setTitle("task1");
@@ -64,4 +64,5 @@ class TaskHttpHandlerTest {
     private boolean isNumeric(String lastSegment) {
         return lastSegment != null && lastSegment.matches("[0-9.]+");
     }
+
 }

@@ -52,6 +52,10 @@ public class TaskHttpHandler implements HttpHandler {
         String body = getBody(exchange);
 
         if (isNumeric(lastSegment)) {
+            if (lastSegment.startsWith("0") || getFilteredTask(Long.parseLong(lastSegment)) == null) {
+                handleError(exchange, content);
+                return;
+            }
             id = Long.parseLong(lastSegment);
         }
 
@@ -74,11 +78,10 @@ public class TaskHttpHandler implements HttpHandler {
             }
         }
 
+        // /tasks/{id}
         Task filteredTask = getFilteredTask(id);
         if (filteredTask == null) {
-//            new ResponseNotFound(exchange);
             handleError(exchange, content);
-            return;
         }
 
         // GET /tasks/{id}
@@ -92,7 +95,6 @@ public class TaskHttpHandler implements HttpHandler {
                 Task source = contentToTask(body);
                 filteredTask.setTitle(source.getTitle());
                 handleGetDetail(exchange, filteredTask);
-//                handleUpdate(exchange, filteredTask);
             } else {
                 handleError(exchange, content);
             }
@@ -121,14 +123,32 @@ public class TaskHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
     }
 
+    /**
+     * GET: Tasks의 목록 얻기
+     * @param exchange
+     * @param content
+     * @throws IOException
+     */
     private void handleGet(HttpExchange exchange, String content) throws IOException {
         new ResponseSuccess(exchange).sendResponse(content);
     }
 
+    /**
+     * GET: 해당 id에 해당하는 Task 얻기
+     * @param exchange
+     * @param filteredTask
+     * @throws IOException
+     */
     private void handleGetDetail(HttpExchange exchange, Task filteredTask) throws IOException {
         new ResponseSuccess(exchange).sendResponse(filteredTask.toString());
     }
 
+    /**
+     * POST: Task 만들기
+     * @param exchange
+     * @param body
+     * @throws IOException
+     */
     private void handleCreate(HttpExchange exchange, String body) throws IOException {
         Task task = contentToTask(body);
         task.setId(generateId());
@@ -137,18 +157,18 @@ public class TaskHttpHandler implements HttpHandler {
         new ResponseCreated(exchange).sendResponse(tasksToJson());
     }
 
-    private void handleUpdate(HttpExchange exchange, Task filteredTask) throws IOException {
-//        filteredTask.setTitle(newTitle);
-
-        new ResponseSuccess(exchange).sendResponse(tasksToJson());
-    }
-
+    /**
+     * 404에러 발생시키기
+     * @param exchange
+     * @param content
+     * @throws IOException
+     */
     private void handleError(HttpExchange exchange, String content) throws IOException {
         new ResponseNotFound(exchange).sendResponse(content);
     }
 
     /**
-     * lastSegment이 int형인지 확인
+     * lastSegment이 숫자인지 확인
      * @param lastSegment
      * @return true || false
      */
@@ -186,7 +206,6 @@ public class TaskHttpHandler implements HttpHandler {
      * @throws IOException
      */
     private String tasksToJson() throws IOException {
-        //        objectMapper.writeValue(outputStream, tasks);
         // 새로 Outputstream을 만들어서 리턴해야한다. 이유는 모름 찾아봐야함.
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, tasks);
