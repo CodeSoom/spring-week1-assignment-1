@@ -15,7 +15,7 @@ public class App {
     public static void main(String[] args) {
         try {
             HttpServer httpServer = HttpServer.create(new InetSocketAddress(PORT), BACKLOG);
-            httpServer.createContext("/tasks", new TaskHttpHandler());
+            httpServer.createContext("/", new TaskHttpHandler());
             httpServer.start();
         } catch (IOException e) {
             throw new RuntimeException(e);

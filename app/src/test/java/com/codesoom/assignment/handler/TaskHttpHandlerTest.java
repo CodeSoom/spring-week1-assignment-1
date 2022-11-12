@@ -52,5 +52,16 @@ class TaskHttpHandlerTest {
             tasks.remove(Integer.parseInt("3")-1);
                 });
     }
+    
+    @Test
+    void isNumeric(){
+        String[] pathSegments = new String[]{"1", "12xx"};
+        for (int i=0; i<pathSegments.length; i++) {
+            System.out.println("isNumeric(pathSegments[i]) = " + isNumeric(pathSegments[i]));
+        }
+    }
 
+    private boolean isNumeric(String lastSegment) {
+        return lastSegment != null && lastSegment.matches("[0-9.]+");
+    }
 }
