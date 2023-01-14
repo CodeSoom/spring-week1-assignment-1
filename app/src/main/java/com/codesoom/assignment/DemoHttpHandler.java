@@ -62,12 +62,18 @@ public class DemoHttpHandler implements HttpHandler {
             content = tasksToJSON();
         }
 
-
         if ((method.equals("PUT") || method.equals("PATCH")) && path.contains("/tasks") && !body.isBlank()){
             System.out.println("Update a task");
 
             updateTask(requestId, body);
+            content = tasksToJSON();
+        }
 
+        if (method.equals("DELETE") && path.contains("/tasks")){
+            System.out.println("Delete a task");
+
+            deleteTask(requestId);
+            content = tasksToJSON();
         }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
@@ -112,11 +118,17 @@ public class DemoHttpHandler implements HttpHandler {
     //요청 id에 대한 task를 확인하고 update 처리한다
     private void updateTask(Long id, String content) throws JsonProcessingException {
         Task task = tasks.stream().filter(t -> t.getId().equals(id)).findFirst().orElse(null);
-        System.out.println(task.getTitle());
+
         if(task != null){
             task.setTitle(toTask(content).getTitle());
-            System.out.println("in");
-            System.out.println(task.getTitle());
+        }
+    }
+
+    private void deleteTask(Long id){
+        Task task = tasks.stream().filter(t -> t.getId().equals(id)).findFirst().orElse(null);
+
+        if(task != null){
+            tasks.remove(task);
         }
     }
 }
