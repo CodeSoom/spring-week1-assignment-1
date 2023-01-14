@@ -49,31 +49,27 @@ public class DemoHttpHandler implements HttpHandler {
 
         String content = "Hello, world!";
 
-        if (method.equals("GET") && path.equals("/tasks")){
+        if (method.equals("GET") && path.contains("/tasks")){
             System.out.println("Get list.");
-            content = tasksToJSON();
+            content = getTask(requestId);
         }
 
         if (method.equals("POST") && path.contains("/tasks") && !body.isBlank()){
             System.out.println("Create a task");
 
             makeTask(body);
-
-            content = tasksToJSON();
         }
 
         if ((method.equals("PUT") || method.equals("PATCH")) && path.contains("/tasks") && !body.isBlank()){
             System.out.println("Update a task");
 
             updateTask(requestId, body);
-            content = tasksToJSON();
         }
 
         if (method.equals("DELETE") && path.contains("/tasks")){
             System.out.println("Delete a task");
 
             deleteTask(requestId);
-            content = tasksToJSON();
         }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
@@ -84,16 +80,26 @@ public class DemoHttpHandler implements HttpHandler {
         outputStream.close();
     }
 
+    //task 내용을 보여준다
+    private String getTask(Long id) throws IOException {
+        Task task = findTask(id);
+
+        if(task == null){
+            return tasksToJSON(tasks);
+        }else{
+            return tasksToJSON(task);
+        }
+    }
+
     //body의 내용을 task 객체에 넣어준다.
     private Task toTask(String content) throws JsonProcessingException {
         return objectMapper.readValue(content, Task.class);
     }
 
-
     //tasks를 json형태로 보여준다.
-    private String tasksToJSON() throws IOException {
+    private String tasksToJSON(Object object) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
+        objectMapper.writeValue(outputStream, object);
         
         return outputStream.toString();
     }
@@ -115,20 +121,25 @@ public class DemoHttpHandler implements HttpHandler {
         return null;
     }
 
-    //요청 id에 대한 task를 확인하고 update 처리한다
+    //요청 id에 대한 task를 update 한다.
     private void updateTask(Long id, String content) throws JsonProcessingException {
-        Task task = tasks.stream().filter(t -> t.getId().equals(id)).findFirst().orElse(null);
+        Task task = findTask(id);
 
         if(task != null){
             task.setTitle(toTask(content).getTitle());
         }
     }
 
+    //요청 id에 대한 task를 삭제한다.
     private void deleteTask(Long id){
-        Task task = tasks.stream().filter(t -> t.getId().equals(id)).findFirst().orElse(null);
+        Task task = findTask(id);
 
         if(task != null){
             tasks.remove(task);
         }
+    }
+
+    private Task findTask(Long id){
+        return tasks.stream().filter(t -> t.getId().equals(id)).findFirst().orElse(null);
     }
 }
