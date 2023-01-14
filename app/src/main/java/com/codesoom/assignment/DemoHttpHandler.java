@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.models.HttpStatus;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,9 +32,6 @@ public class DemoHttpHandler implements HttpHandler {
     private Long id = 1L;
     private final Pattern urlPattern = Pattern.compile("/tasks/(\\d)");
 
-    //todo staus 관리 코드로 따로 빼기!
-    private final int OK = 200;
-
     public DemoHttpHandler(){
 
     }
@@ -50,48 +48,37 @@ public class DemoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        String content = "Hello, world!";
-
         if (method.equals("GET") && path.contains("/tasks")){
             System.out.println("Get list.");
-            content = getTask(requestId);
-        }
 
-        if (method.equals("POST") && path.contains("/tasks") && !body.isBlank()){
+            getTask(exchange, id);
+        } else if (method.equals("POST") && path.contains("/tasks") && !body.isBlank()){
             System.out.println("Create a task");
 
-            makeTask(body);
-        }
-
-        if ((method.equals("PUT") || method.equals("PATCH")) && path.contains("/tasks") && !body.isBlank()){
+            makeTask(exchange, body);
+        } else if ((method.equals("PUT") || method.equals("PATCH")) && path.contains("/tasks") && !body.isBlank()){
             System.out.println("Update a task");
 
-            updateTask(requestId, body);
-        }
-
-        if (method.equals("DELETE") && path.contains("/tasks")){
+            updateTask(exchange, requestId, body);
+        } else if (method.equals("DELETE") && path.contains("/tasks")){
             System.out.println("Delete a task");
 
-            deleteTask(requestId);
+            deleteTask(exchange, requestId);
         }
-
-        exchange.sendResponseHeaders(OK, content.getBytes().length);
-
-        OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(content.getBytes());
-        outputStream.flush();
-        outputStream.close();
     }
 
     //task 내용을 보여준다
-    private String getTask(Long id) throws IOException {
+    private void getTask(HttpExchange exchange, Long id) throws IOException {
         Task task = findTask(id);
+        String content;
 
         if(task == null){
-            return tasksToJSON(tasks);
+            content =  tasksToJSON(tasks);
         }else{
-            return tasksToJSON(task);
+            content =  tasksToJSON(task);
         }
+
+        sendResponse(exchange, content, HttpStatus.OK);
     }
 
     //body의 내용을 task 객체에 넣어준다.
@@ -108,10 +95,12 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     //task를 등록한다.
-    private void makeTask(String content) throws JsonProcessingException {
+    private void makeTask(HttpExchange exchange, String content) throws IOException {
         Task task = toTask(content);
         task.setId(id++);
         tasks.add(task);
+
+        sendResponse(exchange, "Task is Created", HttpStatus.CREATED);
     }
 
     //요청 id를 가져온다.
@@ -125,24 +114,39 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     //요청 id에 대한 task를 update 한다.
-    private void updateTask(Long id, String content) throws JsonProcessingException {
+    private void updateTask(HttpExchange exchange, Long id, String content) throws IOException {
         Task task = findTask(id);
 
-        if(task != null){
+        if (task == null){
+            sendResponse(exchange, "Task is Not Found", HttpStatus.NOT_FOUND);
+        }else {
             task.setTitle(toTask(content).getTitle());
+            sendResponse(exchange, "Task is Updated", HttpStatus.CREATED);
         }
     }
 
     //요청 id에 대한 task를 삭제한다.
-    private void deleteTask(Long id){
+    private void deleteTask(HttpExchange exchange, Long id) throws IOException {
         Task task = findTask(id);
 
-        if(task != null){
+        if (task == null){
+            sendResponse(exchange, "Task is Not Found", HttpStatus.NOT_FOUND);
+        }else {
             tasks.remove(task);
+            sendResponse(exchange, "Task is Deleted", HttpStatus.NO_CONTENT);
         }
     }
 
     private Task findTask(Long id){
         return tasks.stream().filter(t -> t.getId().equals(id)).findFirst().orElse(null);
+    }
+
+    private void sendResponse(HttpExchange exchange, String content, HttpStatus status) throws IOException {
+        exchange.sendResponseHeaders(status.getStatusCode(), content.getBytes().length);
+
+        OutputStream outputStream = exchange.getResponseBody();
+        outputStream.write(content.getBytes());
+        outputStream.flush();
+        outputStream.close();
     }
 }
