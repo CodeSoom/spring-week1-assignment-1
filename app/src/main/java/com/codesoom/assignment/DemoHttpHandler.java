@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 public class DemoHttpHandler implements HttpHandler {
     private List<Task> tasks = new ArrayList<>();
     ObjectMapper objectMapper = new ObjectMapper();
+    private Long id = 1L;
+
     public DemoHttpHandler(){
 
     }
@@ -38,26 +40,21 @@ public class DemoHttpHandler implements HttpHandler {
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        if (!body.isBlank()){
-            Task task = toTask(body);
-            tasks.add(task);
-        }
-
         String content = "Hello, world!";
+
         if (method.equals("GET") && path.equals("/tasks")){
             System.out.println("Get list.");
             content = tasksToJSON();
         }
 
-        String[] pathArr = path.split("/");
+        if (method.equals("POST") && path.equals("/tasks") && !body.isBlank()){
+            System.out.println("Create a task");
 
-        //todo 2번째 path가 숫자가 아닌 문자로 들어올 시 예외처리
-        if(method.equals("GET") && pathArr.length == 3 &&
-                pathArr[1].equals("tasks")){
-            System.out.println("test");
-            Long id = Long.valueOf(pathArr[2]);
-            System.out.println(id);
+            makeTask(body);
+
+            content = tasksToJSON();
         }
+
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
 
@@ -76,5 +73,11 @@ public class DemoHttpHandler implements HttpHandler {
         objectMapper.writeValue(outputStream, tasks);
         
         return outputStream.toString();
+    }
+
+    private void makeTask(String content) throws JsonProcessingException {
+        Task task = toTask(content);
+        task.setId(id++);
+        tasks.add(task);
     }
 }
