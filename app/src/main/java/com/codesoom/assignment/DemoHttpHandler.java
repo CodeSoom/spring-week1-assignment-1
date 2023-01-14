@@ -31,6 +31,9 @@ public class DemoHttpHandler implements HttpHandler {
     private Long id = 1L;
     private final Pattern urlPattern = Pattern.compile("/tasks/(\\d)");
 
+    //todo staus 관리 코드로 따로 빼기!
+    private final int OK = 200;
+
     public DemoHttpHandler(){
 
     }
@@ -72,7 +75,7 @@ public class DemoHttpHandler implements HttpHandler {
             deleteTask(requestId);
         }
 
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+        exchange.sendResponseHeaders(OK, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
