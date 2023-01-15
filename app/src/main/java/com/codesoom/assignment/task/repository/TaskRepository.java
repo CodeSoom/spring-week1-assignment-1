@@ -10,9 +10,9 @@ public interface TaskRepository {
 
   Optional<Task> findById(Long id);
 
-  Optional<Task> findByTitle(String title);
-
   List<Task> findAll();
 
   void deleteById(Long id);
+
+  Task updateTitle(Long id, String title);
 }

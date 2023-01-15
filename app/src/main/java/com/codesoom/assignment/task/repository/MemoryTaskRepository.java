@@ -25,14 +25,6 @@ public class MemoryTaskRepository implements TaskRepository {
   }
 
   @Override
-  public Optional<Task> findByTitle(String title) {
-    return store.values()
-        .stream()
-        .filter(task -> task.getTitle().equals(title))
-        .findAny();
-  }
-
-  @Override
   public List<Task> findAll() {
     return new ArrayList<>(store.values());
   }
@@ -45,7 +37,14 @@ public class MemoryTaskRepository implements TaskRepository {
         });
   }
 
-  public void clear() {
-    store.clear();
+  @Override
+  public Task updateTitle(Long id, String title) {
+    if (!store.containsKey(id)) {
+      throw new IllegalArgumentException("Id: " + id + " does not exist in the repository");
+    }
+    Task task = store.get(id);
+    task.setTitle(title);
+    store.put(id, task);
+    return task;
   }
 }

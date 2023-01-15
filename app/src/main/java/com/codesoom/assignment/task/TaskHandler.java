@@ -4,6 +4,7 @@ import static com.codesoom.assignment.task.utils.Converter.toJson;
 import static com.codesoom.assignment.task.utils.Converter.toTask;
 import static com.codesoom.assignment.task.utils.HttpClient.sendResponse;
 import static com.codesoom.assignment.task.utils.Parser.extractId;
+import static com.codesoom.assignment.task.utils.Parser.parseRequestBody;
 import static java.net.HttpURLConnection.HTTP_CREATED;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_NO_CONTENT;
@@ -11,7 +12,6 @@ import static java.net.HttpURLConnection.HTTP_OK;
 
 import com.codesoom.assignment.task.domain.Task;
 import com.codesoom.assignment.task.repository.TaskRepository;
-import com.codesoom.assignment.task.utils.Parser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
@@ -45,7 +45,7 @@ public class TaskHandler implements HttpHandler {
       handleGetAllTasks(httpExchange);
       return;
     }
-    if (GET_METHOD.equals(method) && path.startsWith(TASKS_PATH)) {
+    if (GET_METHOD.equals(method) && path.length() > TASKS_PATH.length() + 1) {
       handleGetTaskById(httpExchange, path);
       return;
     }
@@ -53,11 +53,28 @@ public class TaskHandler implements HttpHandler {
       handleCreateTask(httpExchange);
       return;
     }
+    if ((PUT_METHOD.equals(method) || PATCH_METHOD.equals(method))
+        && path.length() > TASKS_PATH.length() + 1) {
+      handleUpdateTask(httpExchange, path);
+      return;
+    }
     if (DELETE_METHOD.equals(method) && path.startsWith(TASKS_PATH)) {
       handleDeleteTask(httpExchange, path);
       return;
     }
     handleNotFound(httpExchange);
+  }
+
+  private void handleUpdateTask(HttpExchange httpExchange, String path) throws IOException {
+    Long id = extractId(path, TASKS_PATH);
+    String body = parseRequestBody(httpExchange);
+    String title = toTask(body).getTitle();
+    try {
+      Task task = taskRepository.updateTitle(id, title);
+      sendResponse(httpExchange, toJson(task), HTTP_OK);
+    } catch (IllegalArgumentException e) {
+      handleNotFound(httpExchange);
+    }
   }
 
   private void handleDeleteTask(HttpExchange httpExchange, String path) throws IOException {
@@ -86,7 +103,7 @@ public class TaskHandler implements HttpHandler {
   }
 
   private void handleCreateTask(HttpExchange httpExchange) throws IOException {
-    String body = Parser.parseRequestBody(httpExchange);
+    String body = parseRequestBody(httpExchange);
     Task task = toTask(body);
     taskRepository.save(task);
     sendResponse(httpExchange, toJson(task), HTTP_CREATED);
