@@ -9,19 +9,22 @@ import java.util.List;
 
 public class Converter {
 
-  private final ObjectMapper objectMapper = new ObjectMapper();
+  private static final ObjectMapper objectMapper = new ObjectMapper();
 
-  public Task toTask(String content) throws JsonProcessingException {
+  private Converter() {
+  }
+
+  public static Task toTask(String content) throws JsonProcessingException {
     return objectMapper.readValue(content, Task.class);
   }
 
-  public String toJson(Task task) throws IOException {
+  public static String toJson(Task task) throws IOException {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     objectMapper.writeValue(outputStream, task);
     return outputStream.toString();
   }
 
-  public String toJson(List<Task> tasks) throws IOException {
+  public static String toJson(List<Task> tasks) throws IOException {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     objectMapper.writeValue(outputStream, tasks);
     return outputStream.toString();

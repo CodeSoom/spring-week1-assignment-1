@@ -1,27 +1,29 @@
 package com.codesoom.assignment.task;
 
+import static com.codesoom.assignment.task.utils.Converter.toJson;
+import static com.codesoom.assignment.task.utils.Converter.toTask;
+import static com.codesoom.assignment.task.utils.HttpClient.sendResponse;
+import static com.codesoom.assignment.task.utils.Parser.extractId;
 import static java.net.HttpURLConnection.HTTP_CREATED;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 import com.codesoom.assignment.task.domain.Task;
 import com.codesoom.assignment.task.repository.TaskRepository;
-import com.codesoom.assignment.task.utils.Converter;
+import com.codesoom.assignment.task.utils.Parser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 public class TaskHandler implements HttpHandler {
 
-  public static final String GET_METHOD_STRING = "GET";
-  public static final String POST_METHOD_STRING = "POST";
-  public static final String TASKS_PATH_STRING = "/tasks";
-  private final Converter converter = new Converter();
+  public static final String GET_METHOD = "GET";
+  public static final String POST_METHOD = "POST";
+  public static final String PUT_METHOD = "PUT";
+  public static final String PATCH_METHOD = "PATCH";
+  public static final String DELETE_METHOD = "DELETE";
+  public static final String TASKS_PATH = "/tasks";
   private final TaskRepository taskRepository;
 
   public TaskHandler(TaskRepository taskRepository) {
@@ -31,50 +33,50 @@ public class TaskHandler implements HttpHandler {
   @Override
   public void handle(HttpExchange httpExchange) throws IOException {
     String method = httpExchange.getRequestMethod();
-    String path = httpExchange.getRequestURI()
-        .getPath();
+    String path = httpExchange.getRequestURI().getPath();
 
-    // dispatcher
-    if (GET_METHOD_STRING.equals(method) && TASKS_PATH_STRING.equals(path)) {
+    if (path.isBlank() || !path.startsWith(TASKS_PATH)) {
+      handleNotFound(httpExchange);
+      return;
+    }
+    if (GET_METHOD.equals(method) && TASKS_PATH.equals(path)) {
       handleGetAllTasks(httpExchange);
       return;
     }
-    if (POST_METHOD_STRING.equals(method) && TASKS_PATH_STRING.equals(path)) {
+    if (GET_METHOD.equals(method) && path.startsWith(TASKS_PATH)) {
+      handleGetTaskById(httpExchange, path);
+      return;
+    }
+    if (POST_METHOD.equals(method) && TASKS_PATH.equals(path)) {
       handleCreateTask(httpExchange);
       return;
     }
     handleNotFound(httpExchange);
   }
 
+  private void handleGetTaskById(HttpExchange httpExchange, String path) throws IOException {
+    Long id = extractId(path, TASKS_PATH);
+    Optional<Task> optionalTask = taskRepository.findById(id);
+    if (optionalTask.isPresent()) {
+      sendResponse(httpExchange, toJson(optionalTask.get()), HTTP_OK);
+      return;
+    }
+    handleNotFound(httpExchange);
+  }
+
   private void handleGetAllTasks(HttpExchange httpExchange) throws IOException {
-    String content = converter.toJson(taskRepository.findAll());
+    String content = toJson(taskRepository.findAll());
     sendResponse(httpExchange, content, HTTP_OK);
   }
 
   private void handleCreateTask(HttpExchange httpExchange) throws IOException {
-    String bodyString = getBodyString(httpExchange);
-    Task task = converter.toTask(bodyString);
+    String body = Parser.parseRequestBody(httpExchange);
+    Task task = toTask(body);
     taskRepository.save(task);
-    sendResponse(httpExchange, converter.toJson(task), HTTP_CREATED);
+    sendResponse(httpExchange, toJson(task), HTTP_CREATED);
   }
 
   private void handleNotFound(HttpExchange httpExchange) throws IOException {
     sendResponse(httpExchange, "", HTTP_NOT_FOUND);
-  }
-
-  private static void sendResponse(HttpExchange httpExchange, String content, int statusCode)
-      throws IOException {
-    httpExchange.sendResponseHeaders(statusCode, content.getBytes().length);
-    OutputStream outputStream = httpExchange.getResponseBody();
-    outputStream.write(content.getBytes());
-    outputStream.flush();
-    outputStream.close();
-  }
-
-  private static String getBodyString(HttpExchange httpExchange) {
-    InputStream inputStream = httpExchange.getRequestBody();
-    return new BufferedReader(new InputStreamReader(inputStream))
-        .lines()
-        .collect(Collectors.joining());
   }
 }
