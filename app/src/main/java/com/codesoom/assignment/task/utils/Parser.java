@@ -8,17 +8,35 @@ import java.util.stream.Collectors;
 
 public class Parser {
 
-  private Parser() {
+  private final String method;
+  private final String path;
+  private final String body;
+
+  public Parser(HttpExchange httpExchange) {
+    this.method = httpExchange.getRequestMethod();
+    this.path = httpExchange.getRequestURI().getPath();
+    this.body = parseBody(httpExchange);
   }
 
-  public static String parseRequestBody(HttpExchange httpExchange) {
+  public String getMethod() {
+    return method;
+  }
+
+  public String getPath() {
+    return path;
+  }
+
+  public String getBody() {
+    return body;
+  }
+
+  private String parseBody(HttpExchange httpExchange) {
     InputStream inputStream = httpExchange.getRequestBody();
-    return new BufferedReader(new InputStreamReader(inputStream))
-        .lines()
+    return new BufferedReader(new InputStreamReader(inputStream)).lines()
         .collect(Collectors.joining());
   }
 
-  public static Long extractId(String path, String basePath) {
+  public long getId(String basePath) {
     return Long.parseLong(path.substring(basePath.length() + 1));
   }
 }

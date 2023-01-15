@@ -3,9 +3,9 @@ package com.codesoom.assignment.task;
 import com.codesoom.assignment.task.repository.MemoryTaskRepository;
 import com.codesoom.assignment.task.repository.TaskRepository;
 
-public class TaskFactoryBean {
+public class TaskFactory {
 
-  private TaskFactoryBean() {
+  private TaskFactory() {
   }
 
   public static TaskRepository taskRepository() {
