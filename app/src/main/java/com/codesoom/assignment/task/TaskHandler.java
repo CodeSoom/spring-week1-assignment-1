@@ -6,6 +6,7 @@ import static com.codesoom.assignment.task.utils.HttpClient.sendResponse;
 import static com.codesoom.assignment.task.utils.Parser.extractId;
 import static java.net.HttpURLConnection.HTTP_CREATED;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_NO_CONTENT;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 import com.codesoom.assignment.task.domain.Task;
@@ -39,6 +40,7 @@ public class TaskHandler implements HttpHandler {
       handleNotFound(httpExchange);
       return;
     }
+
     if (GET_METHOD.equals(method) && TASKS_PATH.equals(path)) {
       handleGetAllTasks(httpExchange);
       return;
@@ -51,7 +53,21 @@ public class TaskHandler implements HttpHandler {
       handleCreateTask(httpExchange);
       return;
     }
+    if (DELETE_METHOD.equals(method) && path.startsWith(TASKS_PATH)) {
+      handleDeleteTask(httpExchange, path);
+      return;
+    }
     handleNotFound(httpExchange);
+  }
+
+  private void handleDeleteTask(HttpExchange httpExchange, String path) throws IOException {
+    Long id = extractId(path, TASKS_PATH);
+    try {
+      taskRepository.deleteById(id);
+      sendResponse(httpExchange, "", HTTP_NO_CONTENT);
+    } catch (IllegalArgumentException e) {
+      handleNotFound(httpExchange);
+    }
   }
 
   private void handleGetTaskById(HttpExchange httpExchange, String path) throws IOException {
