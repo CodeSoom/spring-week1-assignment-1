@@ -4,7 +4,6 @@ import com.codesoom.assignment.models.HttpStatus;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Optional;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -12,6 +11,7 @@ import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -38,10 +38,10 @@ public class DemoHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
-        URI uri = exchange.getRequestURI();
-        String path = uri.getPath();
-        Long requestId = getId(path);
+        final String method = exchange.getRequestMethod();
+        final URI uri = exchange.getRequestURI();
+        final String path = uri.getPath();
+        final Optional<Long> requestId = getId(path);
 
         InputStream inputStream = exchange.getRequestBody();
         String body = new BufferedReader(new InputStreamReader(inputStream))
@@ -51,7 +51,7 @@ public class DemoHttpHandler implements HttpHandler {
         if (method.equals("GET") && path.contains("/tasks")){
             System.out.println("Get list.");
 
-            getTask(exchange, id);
+            getTask(exchange, requestId);
         } else if (method.equals("POST") && path.contains("/tasks") && !body.isBlank()){
             System.out.println("Create a task");
 
@@ -68,13 +68,13 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     //task 내용을 보여준다
-    private void getTask(HttpExchange exchange, Long id) throws IOException {
+    private void getTask(HttpExchange exchange, Optional<Long> id) throws IOException {
         Task task = findTask(id);
         String content;
 
-        if(task == null){
+        if (task == null){
             content =  tasksToJSON(tasks);
-        }else{
+        } else{
             content =  tasksToJSON(task);
         }
 
@@ -104,17 +104,17 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     //요청 id를 가져온다.
-    private Long getId(String url){
+    private Optional<Long> getId(String url){
         Matcher matcher = urlPattern.matcher(url);
         if(matcher.find()){
-            return Long.parseLong(matcher.group(1));
+            return Optional.of(Long.parseLong(matcher.group(1)));
         }
 
-        return null;
+        return Optional.empty();
     }
 
     //요청 id에 대한 task를 update 한다.
-    private void updateTask(HttpExchange exchange, Long id, String content) throws IOException {
+    private void updateTask(HttpExchange exchange, Optional<Long> id, String content) throws IOException {
         Task task = findTask(id);
 
         if (task == null){
@@ -126,7 +126,7 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     //요청 id에 대한 task를 삭제한다.
-    private void deleteTask(HttpExchange exchange, Long id) throws IOException {
+    private void deleteTask(HttpExchange exchange, Optional<Long> id) throws IOException {
         Task task = findTask(id);
 
         if (task == null){
@@ -137,8 +137,8 @@ public class DemoHttpHandler implements HttpHandler {
         }
     }
 
-    private Task findTask(Long id){
-        return tasks.stream().filter(t -> t.getId().equals(id)).findFirst().orElse(null);
+    private Task findTask(Optional<Long> id){
+        return tasks.stream().filter(t -> t.getId().equals(id.get())).findFirst().orElse(null);
     }
 
     private void sendResponse(HttpExchange exchange, String content, HttpStatus status) throws IOException {
