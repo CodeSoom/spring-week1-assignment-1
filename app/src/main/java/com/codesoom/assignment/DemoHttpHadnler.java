@@ -38,19 +38,18 @@ public class DemoHttpHadnler implements HttpHandler {
         }
 
         //디테일 검색
-        //문제 해결하고
         if (requestMethod.equals("GET") && path.equals("/tasks/")) {
-            Long getId = Long.parseLong(path.split("/")[2]);
+            Long getId = gerRequestId(path);
             tasks.forEach(c->{
                 if(c.getId().equals(getId)){
-                    System.out.println("성공");//??
+                    System.out.println("성공");//값을 비교하고 출력을 하려고 하는데??
                 }
             });
         }
 
         //일 생성
         if (requestMethod.equals("POST") && path.equals("/tasks")) {
-            CreateNewTask(body);
+            createNewTask(body);
             content = "Create a new task";
         }
 
@@ -62,7 +61,11 @@ public class DemoHttpHadnler implements HttpHandler {
         outputStream.close();
     }
 
-    private void CreateNewTask(String body) throws JsonProcessingException {
+    private static Long gerRequestId(String path) {
+        return Long.parseLong(path.split("/")[2]);
+    }
+
+    private void createNewTask(String body) throws JsonProcessingException {
         Task task = toTask(body);
         task.setId(default_id += 1L);
         tasks.add(task);
@@ -78,5 +81,7 @@ public class DemoHttpHadnler implements HttpHandler {
         objectMapper.writeValue(outputStream, tasks);
         return outputStream.toString();
     }
+
+
 
 }
