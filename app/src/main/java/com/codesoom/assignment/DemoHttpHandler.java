@@ -28,12 +28,12 @@ public class DemoHttpHandler implements HttpHandler {
         }
 
         // 요구사항 구현
-        if (httpMethod.equals("GET") && uri.equals("/")) {
+        if (httpMethod.equals("GET") && uri.equals("/tasks")) {
             System.out.println("ToDo 목록 얻기");
             result = true;
         }
 
-        if (httpMethod.equals("POST") && uri.equals("/")) {
+        if (httpMethod.equals("POST") && uri.equals("/tasks")) {
             System.out.println("ToDo 생성하기");
             result = true;
         }
