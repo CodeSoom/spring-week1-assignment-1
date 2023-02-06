@@ -32,7 +32,6 @@ public class DemoHttpHadnler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         System.out.println("method::" + requestMethod + "\npath:: " + path);
-        tasks.forEach(c -> System.out.println("===========================" + c.getId()));
         //단일 검색
         if (requestMethod.equals("GET") && path.equals("/tasks")) {
             content = tasksToJSON();
