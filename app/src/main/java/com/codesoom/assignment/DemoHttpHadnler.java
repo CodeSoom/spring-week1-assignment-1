@@ -12,6 +12,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DemoHttpHadnler implements HttpHandler {
@@ -31,6 +32,7 @@ public class DemoHttpHadnler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
 
         System.out.println("method::" + requestMethod + "\npath:: " + path);
+        tasks.forEach(c -> System.out.println("===========================" + c.getId()));
         //단일 검색
         if (requestMethod.equals("GET") && path.equals("/tasks")) {
             content = tasksToJSON();
@@ -40,10 +42,10 @@ public class DemoHttpHadnler implements HttpHandler {
         //문제 해결하고
         if (requestMethod.equals("GET") && path.equals("/tasks/")) {
             Long getId = Long.parseLong(path.split("/")[2]);
-            tasks.forEach(c -> {
-              if (c.getId().equals(getId)){
-                  System.out.println("확인용");
-              }
+            tasks.forEach(c->{
+                if(c.getId().equals(getId)){
+                    System.out.println("성공");//??
+                }
             });
         }
 
