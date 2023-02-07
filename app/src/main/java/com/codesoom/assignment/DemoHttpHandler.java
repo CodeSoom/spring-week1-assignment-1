@@ -30,50 +30,52 @@ public class DemoHttpHandler implements HttpHandler {
         //단일 검색
         if (requestMethod.equals("GET") && path.equals("/tasks")) {
             content = tasksToJSON();
+            exchange.sendResponseHeaders(200, 100);
         }
-
         //디테일 검색
         if (requestMethod.equals("GET") && path.startsWith("/tasks/")) {
-            Task task = new Task();
-            Long getId = gerRequestId(path);
-            task.setId(getId);
-
-//            tasks.forEach(c -> {
-//                if (c.getId().equals(getId)) {
-//                    try {
-//                        String toJSON = tasksToJSON(task);
-//                        content = toJSON;
-//                    } catch (IOException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                }
-//            });
-
             for (Task task1 : tasks) {
-                if(task1.getId().equals(getId)){
-                    content = tasksToJSON(task1);
-                }
+                content = compareConvert(path, content, task1);
             }
         }
-
         //일 생성
         if (requestMethod.equals("POST") && path.equals("/tasks")) {
             createNewTask(body);
             content = "Create a new task";
         }
-
-        if (requestMethod.equals("PATCH") && path.equals("/tasks")) {
-
+        //수정
+        if (requestMethod.equals("PATCH") || requestMethod.equals("PUT") && path.startsWith("/tasks/")) {
+            updateTask(path, body);
         }
-        if (requestMethod.equals("DELETE") && path.equals("/tasks")) {
-
+        //삭제
+        if (requestMethod.equals("DELETE") && path.startsWith("/tasks/")) {
+            tasks.remove(getRequestId(path).intValue() - 1);
         }
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
         outputStream(exchange, content);
     }
 
-    private  void outputStream(HttpExchange exchange, String content) throws IOException {
+    private String compareConvert(String path, String content, Task task1) throws IOException {
+        if (task1.getId().equals(getRequestId(path))) {
+            content = tasksToJSON(task1);
+        }
+        return content;
+    }
+
+    private void updateTask(String path, String body) throws JsonProcessingException {
+        Task task = toTask(body);
+        task.setId(getRequestId(path));
+        tasks.set(getRequestId(path).intValue() - 1, task);
+    }
+
+    private void createNewTask(String body) throws JsonProcessingException {
+        Task task = toTask(body);
+        task.setId(default_id += 1L);
+        tasks.add(task);
+    }
+
+    private void outputStream(HttpExchange exchange, String content) throws IOException {
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
@@ -86,16 +88,9 @@ public class DemoHttpHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
     }
 
-    private Long gerRequestId(String path) {
+    private Long getRequestId(String path) {
         return Long.parseLong(path.split("/")[2]);
     }
-
-    private void createNewTask(String body) throws JsonProcessingException {
-        Task task = toTask(body);
-        task.setId(default_id += 1L);
-        tasks.add(task);
-    }
-
 
     private Task toTask(String content) throws JsonProcessingException {
         return objectMapper.readValue(content, Task.class);
@@ -112,6 +107,5 @@ public class DemoHttpHandler implements HttpHandler {
         objectMapper.writeValue(outputStream, task);
         return outputStream.toString();
     }
-
 
 }
