@@ -13,7 +13,7 @@ public class DemoHttpHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         boolean result = false;
-        int rCode = 404;
+        int statusCode = 404;
 
         String httpMethod = exchange.getRequestMethod(); // http 메서드
         String uri = exchange.getRequestURI().getPath(); // URI
@@ -38,9 +38,9 @@ public class DemoHttpHandler implements HttpHandler {
             result = true;
         }
 
-        rCode = result ? 200 : 404;
+        statusCode = result ? 200 : 404;
 
-        exchange.sendResponseHeaders(rCode, content.getBytes().length);
+        exchange.sendResponseHeaders(statusCode, content.getBytes().length);
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
