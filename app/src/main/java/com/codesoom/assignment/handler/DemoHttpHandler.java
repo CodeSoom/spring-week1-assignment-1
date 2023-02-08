@@ -1,17 +1,14 @@
 package com.codesoom.assignment.handler;
 
-import com.codesoom.assignment.models.ReqInfo;
+import com.codesoom.assignment.models.RequestInfo;
 import com.codesoom.assignment.models.Task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import jdk.jshell.spi.ExecutionControlProvider;
 
 import java.io.*;
-import java.net.URI;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
 
@@ -24,120 +21,109 @@ public class DemoHttpHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
-        ReqInfo reqInfo = new ReqInfo(exchange);       // HttpExchange에 대한 요청 객체 생성
-        String method = reqInfo.getMethod();           // 메서드 추출
-        String path = reqInfo.extractPathValue(1);      // 첫번째 path 추출
-        String path2 = reqInfo.extractPathValue(2);     // 두번째 path 추출
-        String reqBody = reqInfo.getBody();            // 요청 바디 추출
-        String resBody = "";
-
-        // 목록얻기 - GET /tasks
-        if("GET".equals(method) && path.equals("tasks") && path2 == null){
-
-            resBody = tasksToJSON();                        // tasks를 Json String 으로 변환
-            returnResBody(exchange, resBody, 200);  // 응답처리
-            return;
-        }
-
-        // 상세 조회하기 - GET /tasks/{id}
-        if("GET".equals(method) && path.equals("tasks") && path2 != null){
-
-            Long id = Long.parseLong(path2);                // path2 값을 Long으로 변환 (id 추출)
-            Task task = tasks.get(id);
-            if(task == null){
-                returnResBody(exchange, "", 404);  // 응답처리
-                return;
-            }
-            resBody = taskToJSON(task);                     // task를 Json String 으로 변환
-            returnResBody(exchange, resBody, 200);  // 응답처리
-            return;
-        }
-
-        // 생성하기 - POST /tasks
-        if("POST".equals(method) && "tasks".equals(path)){
-
-            Task task = toTask(reqBody);                    // 요청 Json String 값을 Task 객체로 변환
-            task.setId(taskId);                           // task 객체 ID 값 셋팅
-            tasks.put(taskId,task);
-            taskId++;
-            returnResBody(exchange, "", 201);
-            return;
-        }
-
-        // 제목 수정하기 - PUT/PATCH /tasks/{id}
-        if(("PUT".equals(method) || "PATCH".equals(method)) && "tasks".equals(path) && path2 != null){
-
-            Long id = Long.parseLong(path2);                // path2 값을 Long으로 변환 (id 추출)
-            Task task = tasks.get(id);
-            if(task == null){
-                returnResBody(exchange, "", 404);  // 응답처리
-                return;
-            }
-            Task updateTask = toTask(reqBody);                    // 요청 Json String 값을 Task 객체로 변환
-            updateTask.setId(id);
-            tasks.put(id,updateTask);
-            resBody = taskToJSON(updateTask);
-            returnResBody(exchange, resBody, 200);
-            return;
-        }
-
-        // 삭제하기 - DELETE /tasks/{id}
-        if("DELETE".equals(method) && "tasks".equals(path) && path2 != null){
-
-            Long id = Long.parseLong(path2);                // path2 값을 Long으로 변환 (id 추출)
-            Task task = tasks.get(id);
-            if(task == null){
-                returnResBody(exchange, "", 404);  // 응답처리
-                return;
-            }
-            tasks.remove(id);
-            returnResBody(exchange, "", 200);
-            return;
-        }
-
-        returnResBody(exchange, "Bad Request !!",  400);
-    }
-
-    /**
-     *
-     * @param content
-     * @return Task
-     * @throws IOException
-     */
-    private Task toTask(String content) throws IOException {
         try{
-            return objectMapper.readValue(content, Task.class);
+            RequestInfo requestInfo = new RequestInfo(exchange);        // HttpExchange에 대한 요청 객체 생성
+            String method = requestInfo.getMethod();                    // 메서드 추출
+            String reqBody = requestInfo.getBody();                     // 요청 바디 추출
+            String path = requestInfo.extractFirstPathSegment();        // 첫번째 세그먼트 추출
+
+            // task 조회 - GET /tasks 또는 GET/tasks/{id}
+            if("GET".equals(method) && "tasks".equals(path)){
+
+                // 요청 값에 id 값이 있는지
+                if(!requestInfo.existId()){
+                    ResponseProcess(exchange, objectToJSON(tasks.values()), 200);  // tasks를 Json String 으로 변환 후 응답처리
+                    return;
+                }
+
+                Long id = requestInfo.extractId();
+
+                // tasks에 id에 해당하는 값이 있는지
+                if(!tasks.containsKey(id)){
+                    ResponseProcess(exchange, "", 404);
+                    return;
+                }
+
+                Task task = tasks.get(id);
+                ResponseProcess(exchange, objectToJSON(task), 200);
+                return;
+            }
+
+            // 생성하기 - POST /tasks
+            if("POST".equals(method) && "tasks".equals(path)){
+
+                Task task = toTask(reqBody);
+                task.setId(++taskId);
+                tasks.put(taskId,task);
+
+                ResponseProcess(exchange, objectToJSON(task), 201);
+                return;
+            }
+
+            // 제목 수정하기 - PUT/PATCH /tasks/{id}
+            if(("PUT".equals(method) || "PATCH".equals(method)) && "tasks".equals(path) && requestInfo.existId()){
+
+                Long id = requestInfo.extractId();
+
+                // tasks에 id에 해당하는 값이 있는지
+                if(!tasks.containsKey(id)){
+                    ResponseProcess(exchange, "",404);  // 응답처리
+                    return;
+                }
+
+                Task task = toTask(reqBody);
+                task.setId(id);
+                tasks.put(id,task); // 덮어쓰기
+                ResponseProcess(exchange, objectToJSON(task), 200);
+                return;
+            }
+
+            // 삭제하기 - DELETE /tasks/{id}
+            if("DELETE".equals(method) && "tasks".equals(path) && requestInfo.existId()){
+
+                Long id = requestInfo.extractId();
+
+                // tasks에 id에 해당하는 값이 있는지
+                if(!tasks.containsKey(id)){
+                    ResponseProcess(exchange,"",404);
+                    return;
+                }
+
+                tasks.remove(id); // 삭제
+                ResponseProcess(exchange, "",204);
+                return;
+            }
+
+            ResponseProcess(exchange,  "",400);
         }catch(Exception e){
-            e.printStackTrace();
-            throw new IOException(e);
+            ResponseProcess(exchange,  "",400);
         }
+
     }
 
     /**
-     * @throws IOException
-     * @Desc tasks의 Value 값을 JSON 문자열로 리턴한다.
+     * 문자열을 Task 객체로 변환
      */
-    private String tasksToJSON() throws IOException {
+    private Task toTask(String content) throws JsonProcessingException {
 
-        // tasks의 value 값들에 대한 Task Collection 추출
-        Collection<Task> tasksValues = tasks.values();
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasksValues);
-
-        return outputStream.toString();
+        return objectMapper.readValue(content, Task.class);
 
     }
 
-    private String taskToJSON(Task task) throws IOException {
 
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, task);
+    /**
+     * Object를 Json 문자열로 변환
+     */
+    private String objectToJSON(Object object) throws IOException {
 
-        return outputStream.toString();
+        return objectMapper.writeValueAsString(object);
 
     }
 
-    private void returnResBody(HttpExchange exchange, String resBody, int resCode) {
+    /**
+     * 응답 처리
+     */
+    private void ResponseProcess(HttpExchange exchange, String resBody, int resCode) {
         try {
             exchange.sendResponseHeaders(resCode, resBody.getBytes().length);
             OutputStream outputStream = exchange.getResponseBody();
@@ -149,5 +135,6 @@ public class DemoHttpHandler implements HttpHandler {
             throw new RuntimeException(e);
         }
     }
+
 }
 
