@@ -8,14 +8,14 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class App {
-    private static final int serverPort = 8899;
+    private static final int SERVER_PORT = 8000;
 
     public String getGreeting() {
         return "Hello World!";
     }
 
     public static void main(String[] args) {
-        InetSocketAddress address = new InetSocketAddress(serverPort);
+        InetSocketAddress address = new InetSocketAddress(SERVER_PORT);
         try {
             HttpServer httpServer = HttpServer.create(address, 0);
             HttpHandler handler = new DemoHttpHandler();
