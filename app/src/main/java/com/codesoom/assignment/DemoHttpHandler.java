@@ -7,6 +7,7 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DemoHttpHandler implements HttpHandler {
@@ -55,19 +56,31 @@ public class DemoHttpHandler implements HttpHandler {
 
             if (httpMethod.equals("GET")) {
                 System.out.println("ToDo 상세 조회하기");
-                Task task = this.demoService.readTaskById(param);
-                content = parser.toJSON(task);
-                result = true;
+                Optional<Task> task = this.demoService.readTaskById(param);
+                if (task.isPresent()) {
+                    content = parser.toJSON(task.get());
+                    result = true;
+                }
             }
 
             if (httpMethod.equals("PUT") || httpMethod.equals("PATCH")) {
                 System.out.println("ToDo 제목 수정하기");
-                result = true;
+                Optional<Task> task = this.demoService.readTaskById(param);
+                if (task.isPresent()) {
+                    Task updatedTask = this.demoService.updateTask(task.get(), body);
+                    content = parser.toJSON(updatedTask);
+                    result = true;
+                }
             }
 
             if (httpMethod.equals("DELETE")) {
                 System.out.println("ToDo 삭제하기");
-                result = true;
+                Optional<Task> task = this.demoService.readTaskById(param);
+                if (task.isPresent()) {
+                    this.demoService.deleteTask(task.get());
+                    content = "게시글이 삭제되었습니다";
+                    result = true;
+                }
             }
         }
 

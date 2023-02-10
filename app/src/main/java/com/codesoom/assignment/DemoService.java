@@ -5,6 +5,7 @@ import com.codesoom.assignment.parser.Parser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.util.List;
+import java.util.Optional;
 
 public class DemoService {
 
@@ -20,7 +21,16 @@ public class DemoService {
         return demoRepository.createTask(title);
     }
 
-    public Task readTaskById(Long param) {
+    public Optional<Task> readTaskById(Long param) {
         return demoRepository.readTaskById(param);
+    }
+
+    public Task updateTask(Task task, String body) throws JsonProcessingException {
+        String title = parser.toTask(body).getTitle();
+        return demoRepository.updateTask(task, title);
+    }
+
+    public void deleteTask(Task task) {
+        demoRepository.deleteTask(task);
     }
 }

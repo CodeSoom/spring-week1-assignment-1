@@ -4,6 +4,7 @@ import com.codesoom.assignment.models.Task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class DemoRepository {
 
@@ -25,13 +26,28 @@ public class DemoRepository {
         return task;
     }
 
-    public Task readTaskById(Long param) {
+    public Optional<Task> readTaskById(Long param) {
         Task task = null;
         for (Task x : tasks) {
             if (x.getId().equals(param)) {
                 task = x;
             }
         }
-        return task;
+        return Optional.ofNullable(task);
+    }
+
+    public Task updateTask(Task task, String title) {
+        Task targetTask = null;
+        for (Task x : tasks) {
+            if (x.equals(task)) {
+                x.setTitle(title);
+                targetTask = x;
+            }
+        }
+        return targetTask;
+    }
+
+    public void deleteTask(Task task) {
+        tasks.remove(task);
     }
 }
