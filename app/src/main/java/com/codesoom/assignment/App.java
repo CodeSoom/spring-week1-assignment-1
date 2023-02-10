@@ -1,6 +1,6 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.model.Task;
+import com.codesoom.assignment.handler.DemoHttpHandler;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
