@@ -7,14 +7,11 @@ import com.sun.net.httpserver.HttpServer;
 import java.net.InetSocketAddress;
 
 public class App {
-    public String getGreeting() {
-        return "Hello World!";
-    }
-
+    private static int PORT = 8000;
     public static void main(String[] args) {
 
         try{
-            InetSocketAddress address = new InetSocketAddress(8000);
+            InetSocketAddress address = new InetSocketAddress(PORT);
             HttpServer httpServer = HttpServer.create(address , 0);
             HttpHandler handler = new DemoHttpHandler();
             httpServer.createContext("/", handler);

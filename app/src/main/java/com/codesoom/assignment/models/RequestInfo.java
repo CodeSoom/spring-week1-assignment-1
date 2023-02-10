@@ -1,5 +1,7 @@
 package com.codesoom.assignment.models;
 
+import com.codesoom.assignment.enums.Command;
+import com.codesoom.assignment.exception.BadRequestException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
@@ -11,53 +13,71 @@ import java.util.stream.Collectors;
  */
 public class RequestInfo {
 
-    private String[] pathSegments;
-    private String method;
+    private Command command;
+
+    private Long id = null;
+
     private String body;
 
-    private static int MAX_PATH_SEGMENTS_LENGTH = 3;
+    private static int LOCATION_OF_ID = 2;
 
-    public RequestInfo(HttpExchange exchange) throws NumberFormatException{
-        resetPathSegments(exchange);
+    public RequestInfo(HttpExchange exchange){
         validationPathSegments(exchange);
-        resetMethod(exchange);
+        requestAnalysis(exchange);
         resetBody(exchange);
     }
 
-    /**
-     * @param exchange
-     * @Desc 요청 메서드 초기화
-     */
-    private void resetMethod(HttpExchange exchange) {
+    private void requestAnalysis(HttpExchange exchange) {
+        String      method = exchange.getRequestMethod();
+        String      path = exchange.getRequestURI().getPath();
+        String[]    pathSegments = path.split("/");
 
-        this.method = exchange.getRequestMethod();
-    }
-
-    /**
-     * @param exchange
-     * @Desc path 값 배열로 초기화
-     */
-    private void resetPathSegments(HttpExchange exchange){
-        String requestPath = exchange.getRequestURI().getPath();
-        this.pathSegments = requestPath.split("/");
+        this.id      = extractId(pathSegments);
+        this.command = resetCommand(method);
 
     }
 
-    /**
-     * @throws NumberFormatException
-     * @desc pathSegments에 대한 validation 체크
-     *  1. 두번째 세크먼트에 값(ID)이 숫자인가
-     */
-    private void validationPathSegments(HttpExchange exchange) throws NumberFormatException {
+    private Command resetCommand(String method){
 
-        if(existId()){
-            Long.parseLong(pathSegments[2]);
+        if("GET".equals(method)){
+            if(id != null){
+                return Command.GET_TASK_DETAIL;
+            }
+
+            return Command.GET_TASK_LIST;
+
+        }
+
+        if("POST".equals(method)){
+
+            return Command.CREATE_TASK;
+        }
+
+        // 제목 수정하기 - PUT/PATCH /tasks/{id}
+        if(("PUT".equals(method) || "PATCH".equals(method)) && id != null){
+
+            return Command.UPDATE_TASK;
+
+        }
+
+        // 삭제하기 - DELETE /tasks/{id}
+        if("DELETE".equals(method) && id != null){
+
+            return Command.DELETE_TASK;
+        }
+
+        throw new BadRequestException();
+    }
+
+    private void validationPathSegments(HttpExchange exchange){
+
+        String      path = exchange.getRequestURI().getPath();
+        String      firstSegment = path.split("/")[1];
+        if(!"tasks".equals(firstSegment)){
+            throw new BadRequestException();
         }
     }
-    /**
-     * @param exchange
-     * @Desc 요청 바디 초기화
-     */
+
     private void resetBody(HttpExchange exchange) {
         InputStream inputStream = exchange.getRequestBody(); //요청 값을 읽을 수 있는 Stream 반환.
         this.body = new BufferedReader(new InputStreamReader(inputStream)).lines()
@@ -65,41 +85,17 @@ public class RequestInfo {
     }
 
 
-    /**
-     * @Desc path segments 중 id 값에 해당하는 값이 존재하는지 체크한다.
-     */
-    public boolean existId(){
+    public Long extractId(String[] pathSegments){
 
-        if(pathSegments.length == MAX_PATH_SEGMENTS_LENGTH){
-            return true;
+        if(pathSegments.length == 3){
+            return Long.parseLong(pathSegments[LOCATION_OF_ID]);
         }
-        return false;
-    }
-
-    /**
-     * @Desc path segments 중 id에 해당하는 값을 추출한다.
-     */
-    public Long extractId(){
-
-        return Long.parseLong(pathSegments[2]);
-
-    }
-
-    /**
-     * @Desc path segments 중 id에 해당하는 값을 추출한다.
-     * @Feedback
-     *  1. 함수를 사용하는 입장에서는 이 함수가 null을 반환하거나, null 체크를 해야한다는 것을 알아차릴 수 없음.
-     */
-    public String extractFirstPathSegment(){
-
-        return pathSegments[1];
-
+        return null;
     }
 
     public String getBody(){ return body; }
+    public Command getCommand() {return command; }
 
-    public String getMethod(){
-        return method;
-    }
+    public Long getId() {return id;}
 
 }
