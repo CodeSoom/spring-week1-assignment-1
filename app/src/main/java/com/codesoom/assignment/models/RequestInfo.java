@@ -78,6 +78,39 @@ public class RequestInfo {
         }
     }
 
+    private boolean isGetTaskList(){
+        if(command == Command.GET_TASK_LIST){
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isGetTaskDetail(){
+        if(command == Command.GET_TASK_DETAIL){
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isCreateTask(){
+        if(command == Command.CREATE_TASK){
+            return true;
+        }
+        return false;
+    }
+    private boolean isUpdateTask(){
+        if(command == Command.UPDATE_TASK){
+            return true;
+        }
+        return false;
+    }
+    private boolean isDeleteTask(){
+        if(command == Command.DELETE_TASK){
+            return true;
+        }
+        return false;
+    }
+
     private void resetBody(HttpExchange exchange) {
         InputStream inputStream = exchange.getRequestBody(); //요청 값을 읽을 수 있는 Stream 반환.
         this.body = new BufferedReader(new InputStreamReader(inputStream)).lines()
