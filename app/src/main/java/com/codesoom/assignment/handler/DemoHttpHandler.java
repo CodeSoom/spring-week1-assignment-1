@@ -17,7 +17,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     private Map<Long,Task> tasks = new HashMap<>();
 
-    private Long TASKS_ID = 0L;
+    private Long taskId = 0L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -51,8 +51,8 @@ public class DemoHttpHandler implements HttpHandler {
 
                 Task task = toTask(requestInfo.getBody());
                 increaseTaskId();
-                task.setId(TASKS_ID);
-                tasks.put(TASKS_ID,task);
+                task.setId(taskId);
+                tasks.put(taskId,task);
                 ResponseProcess(exchange, objectToJSON(task), 201);
                 return;
             }
@@ -129,7 +129,7 @@ public class DemoHttpHandler implements HttpHandler {
      * TaskId 증가
      */
     private void increaseTaskId(){
-        TASKS_ID = TASKS_ID + 1;
+        taskId = taskId + 1;
     }
 
     /**
