@@ -28,11 +28,11 @@ public class RequestInfo {
     }
 
     private void requestAnalysis(HttpExchange exchange) {
-        String      method = exchange.getRequestMethod();
-        String      path = exchange.getRequestURI().getPath();
-        String[]    pathSegments = path.split("/");
+        String method = exchange.getRequestMethod();
+        String path = exchange.getRequestURI().getPath();
+        String[] pathSegments = path.split("/");
 
-        this.id      = extractId(pathSegments);
+        this.id = extractId(pathSegments);
         this.command = resetCommand(method);
 
     }
@@ -43,26 +43,21 @@ public class RequestInfo {
             if(id != null){
                 return Command.GET_TASK_DETAIL;
             }
-
             return Command.GET_TASK_LIST;
 
         }
 
         if("POST".equals(method)){
-
             return Command.CREATE_TASK;
         }
 
         // 제목 수정하기 - PUT/PATCH /tasks/{id}
         if(("PUT".equals(method) || "PATCH".equals(method)) && id != null){
-
             return Command.UPDATE_TASK;
-
         }
 
         // 삭제하기 - DELETE /tasks/{id}
         if("DELETE".equals(method) && id != null){
-
             return Command.DELETE_TASK;
         }
 
@@ -71,8 +66,8 @@ public class RequestInfo {
 
     private void validationPathSegments(HttpExchange exchange){
 
-        String      path = exchange.getRequestURI().getPath();
-        String      firstSegment = path.split("/")[1];
+        String path = exchange.getRequestURI().getPath();
+        String firstSegment = path.split("/")[1];
         if(!"tasks".equals(firstSegment)){
             throw new BadRequestException();
         }
