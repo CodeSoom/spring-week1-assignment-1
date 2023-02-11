@@ -24,18 +24,17 @@ public class DemoHttpHandler implements HttpHandler {
 
         try{
             RequestInfo requestInfo = new RequestInfo(exchange);        // HttpExchange에 대한 요청 객체 생성
-            Command command = requestInfo.getCommand();
             Long id = requestInfo.getId();
 
             // task 리스트 조회
-            if(command == Command.GET_TASK_LIST) {
+            if(requestInfo.isGetTaskList()) {
 
                 ResponseProcess(exchange, objectToJSON(tasks.values()), 200);
                 return;
             }
 
             // task 상세 조회
-            if(command == Command.GET_TASK_DETAIL){
+            if(requestInfo.isGetTaskDetail()){
 
                 if(!existIdInTasks(id)){
                     ResponseProcess(exchange, "", 404);
@@ -48,7 +47,7 @@ public class DemoHttpHandler implements HttpHandler {
             }
 
             // task 생성
-            if(command == Command.CREATE_TASK){
+            if(requestInfo.isCreateTask()){
 
                 Task task = toTask(requestInfo.getBody());
                 increaseTaskId();
@@ -59,7 +58,7 @@ public class DemoHttpHandler implements HttpHandler {
             }
 
             // task 수정
-            if(command == Command.UPDATE_TASK){
+            if(requestInfo.isUpdateTask()){
 
                 if(!existIdInTasks(id)){
                     ResponseProcess(exchange, "", 404);
@@ -74,7 +73,7 @@ public class DemoHttpHandler implements HttpHandler {
             }
 
             // task 삭제
-            if(command == Command.DELETE_TASK){
+            if(requestInfo.isDeleteTask()){
 
                 if(!existIdInTasks(id)){
                     ResponseProcess(exchange,"",404);
