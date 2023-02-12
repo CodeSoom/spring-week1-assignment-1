@@ -5,6 +5,8 @@ import com.codesoom.assignment.exception.BadRequestException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -19,8 +21,7 @@ public class RequestInfo {
 
     private String body;
 
-    private static int LOCATION_OF_ID = 2;
-
+    private static final String EXTRACT_ID_REGULAR_EXPRESSION = "/(?:.*)/(.*)";
     public RequestInfo(HttpExchange exchange){
         validationPathSegments(exchange);
         requestAnalysis(exchange);
@@ -30,9 +31,8 @@ public class RequestInfo {
     private void requestAnalysis(HttpExchange exchange) {
         String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().getPath();
-        String[] pathSegments = path.split("/");
 
-        this.id = extractId(pathSegments);
+        this.id = extractId(path);
         this.command = resetCommand(method);
 
     }
@@ -113,16 +113,18 @@ public class RequestInfo {
     }
 
 
-    public Long extractId(String[] pathSegments){
+    public Long extractId(String path){
 
-        if(pathSegments.length == 3){
-            return Long.parseLong(pathSegments[LOCATION_OF_ID]);
+        Pattern p = Pattern.compile(EXTRACT_ID_REGULAR_EXPRESSION);
+        Matcher m = p.matcher(path);
+
+        if(m.matches()){
+           return Long.parseLong(m.group(1));
         }
         return null;
     }
 
     public String getBody(){ return body; }
-    public Command getCommand() {return command; }
 
     public Long getId() {return id;}
 
