@@ -9,8 +9,6 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class DemoHandler implements HttpHandler {
@@ -91,8 +89,7 @@ public class DemoHandler implements HttpHandler {
 
 
     private Task toTask(String body) throws JsonProcessingException {
-        Task task = objectMapper.readValue(body, Task.class);
-        return task;
+        return objectMapper.readValue(body, Task.class);
     }
 
     private String taskToJson() throws IOException {

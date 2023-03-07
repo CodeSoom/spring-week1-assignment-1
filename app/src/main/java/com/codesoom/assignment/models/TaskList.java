@@ -19,6 +19,7 @@ public class TaskList {
     private void setTaskId(Task task, int listSize) {
         if (listSize == 0) {
             task.setId(1);
+            return;
         }
 
         Task laskTask = this.taskList.get(listSize - 1);
