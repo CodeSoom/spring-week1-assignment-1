@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.models.Task;
+import com.codesoom.assignment.models.TaskList;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 public class DemoHandler implements HttpHandler {
 
     ObjectMapper objectMapper = new ObjectMapper();
-    List<Task> tasks = new ArrayList<>();
+    TaskList taskList = new TaskList();
 
 
     @Override
@@ -24,56 +25,85 @@ public class DemoHandler implements HttpHandler {
         String content = "test";
 
         String requestMethod = exchange.getRequestMethod();
+        String[] pathArray = createPathArray(exchange);
 
-        URI requestURI = exchange.getRequestURI();
-        String path = requestURI.getPath();
-        String[] split = path.split("/");
+        String requestJsonTitle = createBody(exchange);
 
-        InputStream inputStream = exchange.getRequestBody();
-        String body = new BufferedReader(new InputStreamReader(inputStream))
-                .lines()
-                .collect(Collectors.joining("\n"));
-
-        if (split.length >= 2 && split[1].equals("tasks")) {
-            if (split.length == 2 && requestMethod.equals("GET")) {
-                if (tasks.size() == 0) {
+        if (pathArray.length >= 2 && pathArray[1].equals("tasks")) {
+            if (pathArray.length == 2 && requestMethod.equals("GET")) {
+                if (taskList.size() == 0) {
                     content = "[]";
                 } else {
-                    taskToJson();
+                    content = taskToJson();
                 }
 
             } else if (requestMethod.equals("POST")) {
-
-                if (!body.isBlank()) {
-                    Task task = toTask(body);
-                    tasks.add(task);
+                if (!requestJsonTitle.isBlank()) {
+                    taskList.add(toTask(requestJsonTitle));
                 }
                 content = taskToJson();
+
+            } else if (pathArray.length == 3 && requestMethod.equals("PUT")) {
+
+                String taskIdStr = pathArray[2];
+                int requestTaskId = Integer.parseInt(taskIdStr);
+                Task requestTask = toTask(requestJsonTitle);
+
+                for (int i = 0; i < taskList.size(); i++) {
+                    if (hasTaskThenUpdateTitle(requestTask.getTitle(), requestTaskId, i)) {
+                        content = taskToJson(taskList.get(i));
+                        break;
+                    }
+                }
             }
         }
 
 
         exchange.sendResponseHeaders(200, content.getBytes().length);
+
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
     }
 
+    private String[] createPathArray(HttpExchange exchange) {
+        URI requestURI = exchange.getRequestURI();
+        String path = requestURI.getPath();
+        return path.split("/");
+    }
+
+    private static String createBody(HttpExchange exchange) {
+        InputStream inputStream = exchange.getRequestBody();
+        return new BufferedReader(new InputStreamReader(inputStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
+    }
+
+    private boolean hasTaskThenUpdateTitle(String requestTitle, int requestTaskId, int i) {
+        Task task = taskList.get(i);
+        if (task.isTaskId(requestTaskId)) {
+            task.updateTitle(requestTitle);
+            return true;
+        }
+        return false;
+    }
+
+
     private Task toTask(String body) throws JsonProcessingException {
         Task task = objectMapper.readValue(body, Task.class);
-        if (tasks.size() == 0) {
-            task.setId(1);
-            return task;
-        }
-        Task laskTask = tasks.get(tasks.size() - 1);
-        task.setId(laskTask.getId() + 1);
         return task;
     }
 
     private String taskToJson() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, tasks);
+        objectMapper.writeValue(outputStream, taskList.getItems());
+        return outputStream.toString();
+    }
+
+    private String taskToJson(Task task) throws IOException {
+        OutputStream outputStream = new ByteArrayOutputStream();
+        objectMapper.writeValue(outputStream, task);
         return outputStream.toString();
     }
 }

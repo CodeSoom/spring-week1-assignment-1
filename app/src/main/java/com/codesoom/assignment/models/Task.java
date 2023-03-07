@@ -5,7 +5,7 @@ public class Task {
     private String title;
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public void setId(int id) {
@@ -13,18 +13,18 @@ public class Task {
     }
 
     public String getTitle() {
-        return title;
+        return this.title;
     }
 
     public void setTitle(String title) {
         this.title = title;
     }
 
-    @Override
-    public String toString() {
-        return "Task{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                '}';
+    public boolean isTaskId(int requestTaskId) {
+        return this.id == requestTaskId;
+    }
+
+    public void updateTitle(String requestTitle) {
+        this.title = requestTitle;
     }
 }
