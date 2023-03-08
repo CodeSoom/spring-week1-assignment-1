@@ -20,49 +20,76 @@ public class DemoHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
-        String content = "test";
-
+        String content = "";
+        int httpCode = 200;
         String requestMethod = exchange.getRequestMethod();
         String[] pathArray = createPathArray(exchange);
 
         String requestJsonTitle = createBody(exchange);
 
         if (pathArray.length >= 2 && pathArray[1].equals("tasks")) {
-            if (pathArray.length == 2 && requestMethod.equals("GET")) {
-                if (taskList.size() == 0) {
-                    content = "[]";
-                } else {
-                    content = taskToJson();
-                }
-
-            } else if (requestMethod.equals("POST")) {
-                if (!requestJsonTitle.isBlank()) {
-                    taskList.add(toTask(requestJsonTitle));
-                }
-                content = taskToJson();
-
-            } else if (pathArray.length == 3 && requestMethod.equals("PUT")) {
-
-                String taskIdStr = pathArray[2];
-                int requestTaskId = Integer.parseInt(taskIdStr);
-                Task requestTask = toTask(requestJsonTitle);
-
-                for (int i = 0; i < taskList.size(); i++) {
-                    if (hasTaskThenUpdateTitle(requestTask.getTitle(), requestTaskId, i)) {
-                        content = taskToJson(taskList.get(i));
-                        break;
+            if (requestMethod.equals("GET")) {
+                if (pathArray.length == 2) {
+                    content = createTasksListResponse();
+                } else if (pathArray.length == 3) {
+                    int requestTaskId = getRequestTaskId(pathArray);
+                    if (requestTaskId >= 1 && requestTaskId <= taskList.size()) {
+                        Task task = taskList.get(requestTaskId);
+                        if (task == null) {
+                            httpCode = 404;
+                        } else {
+                            content = taskToJson(task);
+                        }
+                    } else {
+                        httpCode = 404;
                     }
                 }
+            } else if (requestMethod.equals("POST")) {
+                if (!requestJsonTitle.isBlank()) {
+                    Task task = addTask(requestJsonTitle);
+                    httpCode = 201;
+                    content = taskToJson(task);
+                }
+            } else if (pathArray.length == 3 && requestMethod.equals("PUT")) {
+
+                int requestTaskId = getRequestTaskId(pathArray);
+                Task requestTask = toTask(requestJsonTitle);
+                Task task = taskList.updateTask(requestTaskId, requestTask);
+
+                if (task != null) {
+                    content = taskToJson(taskList.get(requestTaskId));
+                } else {
+                    httpCode = 404;
+                }
+
+            } else if (pathArray.length == 3 && requestMethod.equals("DELETE")) {
+                int requestTaskId = getRequestTaskId(pathArray);
+                httpCode = taskList.delete(requestTaskId);
             }
         }
 
-
-        exchange.sendResponseHeaders(200, content.getBytes().length);
+        exchange.sendResponseHeaders(httpCode, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
+    }
+
+    private String createTasksListResponse() throws IOException {
+        String content;
+        if (taskList.size() == 0) {
+            content = "[]";
+        } else {
+            content = taskToJson();
+        }
+        return content;
+    }
+
+
+    private int getRequestTaskId(String[] pathArray) {
+        String taskIdStr = pathArray[2];
+        return Integer.parseInt(taskIdStr);
     }
 
     private String[] createPathArray(HttpExchange exchange) {
@@ -78,16 +105,6 @@ public class DemoHandler implements HttpHandler {
                 .collect(Collectors.joining("\n"));
     }
 
-    private boolean hasTaskThenUpdateTitle(String requestTitle, int requestTaskId, int i) {
-        Task task = taskList.get(i);
-        if (task.isTaskId(requestTaskId)) {
-            task.updateTitle(requestTitle);
-            return true;
-        }
-        return false;
-    }
-
-
     private Task toTask(String body) throws JsonProcessingException {
         return objectMapper.readValue(body, Task.class);
     }
@@ -102,5 +119,11 @@ public class DemoHandler implements HttpHandler {
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream, task);
         return outputStream.toString();
+    }
+
+    private Task addTask(String requestJsonTitle) throws JsonProcessingException {
+        Task task = toTask(requestJsonTitle);
+        taskList.add(task);
+        return task;
     }
 }
