@@ -16,10 +16,6 @@ public class Task {
         return this.title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public boolean isTaskId(int requestTaskId) {
         return this.id == requestTaskId;
     }
