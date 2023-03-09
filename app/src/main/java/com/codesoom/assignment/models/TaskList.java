@@ -46,9 +46,8 @@ public class TaskList {
         return this.taskList.remove(get(requestTaskId));
     }
 
-    public Task updateTask(int requestTaskId, Task requestTask) {
+    public void updateTask(int requestTaskId, Task requestTask) {
         Task task = get(requestTaskId);
         task.updateTitle(requestTask.getTitle());
-        return task;
     }
 }
