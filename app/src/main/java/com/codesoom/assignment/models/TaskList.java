@@ -41,12 +41,12 @@ public class TaskList {
         return collect.get(0);
     }
 
-    public int delete(int requestTaskId) {
-        if (get(requestTaskId) == null) {
-            return 404;
+    public boolean delete(int requestTaskId) {
+        Task task = get(requestTaskId);
+        if (task == null) {
+            return false;
         }
-        this.taskList.remove(get(requestTaskId));
-        return 204;
+        return this.taskList.remove(task);
     }
 
     public Task updateTask(int requestTaskId, Task requestTask) {

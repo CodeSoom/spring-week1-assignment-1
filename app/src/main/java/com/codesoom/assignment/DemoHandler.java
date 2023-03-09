@@ -54,17 +54,17 @@ public class DemoHandler implements HttpHandler {
 
                 int requestTaskId = getRequestTaskId(pathArray);
                 Task requestTask = toTask(requestJsonTitle);
-                Task task = taskList.updateTask(requestTaskId, requestTask);
+                taskList.updateTask(requestTaskId, requestTask);
+                content = taskToJson(taskList.get(requestTaskId));
 
-                if (task != null) {
-                    content = taskToJson(taskList.get(requestTaskId));
-                } else {
-                    httpCode = 404;
-                }
 
             } else if (pathArray.length == 3 && requestMethod.equals("DELETE")) {
                 int requestTaskId = getRequestTaskId(pathArray);
-                httpCode = taskList.delete(requestTaskId);
+                if (taskList.delete(requestTaskId)) {
+                    httpCode = 200;
+                } else {
+                    httpCode = 404;
+                }
             }
         }
 
