@@ -16,11 +16,11 @@ public class Task {
         return this.title;
     }
 
-    public boolean isTaskId(int requestTaskId) {
-        return this.id == requestTaskId;
+    public boolean isTaskId(int id) {
+        return this.id == id;
     }
 
-    public void updateTitle(String requestTitle) {
-        this.title = requestTitle;
+    public void updateTitle(String title) {
+        this.title = title;
     }
 }
