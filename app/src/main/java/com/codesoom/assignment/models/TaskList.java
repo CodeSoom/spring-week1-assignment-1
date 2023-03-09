@@ -2,14 +2,13 @@ package com.codesoom.assignment.models;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 public class TaskList {
     private final List<Task> taskList = new ArrayList<>();
 
     public void add(Task task) {
-        int listSize = this.taskList.size();
-        setTaskId(task, listSize);
+        setTaskId(task);
         taskList.add(task);
     }
 
@@ -17,13 +16,13 @@ public class TaskList {
         return this.taskList;
     }
 
-    private void setTaskId(Task task, int listSize) {
-        if (listSize == 0) {
+    private void setTaskId(Task task) {
+        if (size() == 0) {
             task.setId(1);
             return;
         }
 
-        Task laskTask = this.taskList.get(listSize - 1);
+        Task laskTask = this.taskList.get(size() - 1);
         task.setId(laskTask.getId() + 1);
     }
 
@@ -31,29 +30,24 @@ public class TaskList {
         return this.taskList.size();
     }
 
-    public Task get(int i) {
-        List<Task> collect = taskList.stream()
-                .filter(task -> task.isTaskId(i))
-                .collect(Collectors.toList());
-        if (collect.size() == 0) {
-            return null;
+    public Task get(int idx) {
+        Optional<Task> taskOptional = taskList.stream()
+                .filter(task -> task.isTaskId(idx))
+                .findFirst();
+
+        if (taskOptional.isEmpty()) {
+            throw new NullPointerException();
         }
-        return collect.get(0);
+
+        return taskOptional.get();
     }
 
     public boolean delete(int requestTaskId) {
-        Task task = get(requestTaskId);
-        if (task == null) {
-            return false;
-        }
-        return this.taskList.remove(task);
+        return this.taskList.remove(get(requestTaskId));
     }
 
     public Task updateTask(int requestTaskId, Task requestTask) {
-        Task task = this.taskList.get(requestTaskId);
-        if (task == null) {
-            throw new NullPointerException();
-        }
+        Task task = get(requestTaskId);
         task.updateTitle(requestTask.getTitle());
         return task;
     }
