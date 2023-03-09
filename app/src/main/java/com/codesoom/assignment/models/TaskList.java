@@ -52,7 +52,7 @@ public class TaskList {
     public Task updateTask(int requestTaskId, Task requestTask) {
         Task task = this.taskList.get(requestTaskId);
         if (task == null) {
-            return  null;
+            throw new NullPointerException();
         }
         task.updateTitle(requestTask.getTitle());
         return task;

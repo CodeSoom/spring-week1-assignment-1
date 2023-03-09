@@ -12,7 +12,7 @@ public class App {
     }
 
     public static void main(String[] args) {
-        final int PORT = 8080;
+        final int PORT = 8000;
         try {
             InetSocketAddress address = new InetSocketAddress(PORT);
             HttpServer httpServer = HttpServer.create(address, 0);
