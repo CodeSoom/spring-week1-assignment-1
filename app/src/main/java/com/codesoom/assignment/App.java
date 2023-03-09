@@ -4,7 +4,6 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 public class App {
@@ -13,8 +12,9 @@ public class App {
     }
 
     public static void main(String[] args) {
+        final int PORT = 8080;
         try {
-            InetSocketAddress address = new InetSocketAddress(8000);
+            InetSocketAddress address = new InetSocketAddress(PORT);
             HttpServer httpServer = HttpServer.create(address, 0);
             HttpHandler httpHandler = new DemoHandler();
             httpServer.createContext("/", httpHandler);
