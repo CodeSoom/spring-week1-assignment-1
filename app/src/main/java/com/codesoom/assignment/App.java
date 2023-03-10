@@ -12,9 +12,9 @@ public class App {
     }
 
     public static void main(String[] args) {
-        final int PORT = 8000;
+        final int port = 8000;
         try {
-            InetSocketAddress address = new InetSocketAddress(PORT);
+            InetSocketAddress address = new InetSocketAddress(port);
             HttpServer httpServer = HttpServer.create(address, 0);
             HttpHandler httpHandler = new DemoHandler();
             httpServer.createContext("/", httpHandler);
