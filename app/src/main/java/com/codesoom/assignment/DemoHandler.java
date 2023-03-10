@@ -12,6 +12,7 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
+import java.security.InvalidParameterException;
 import java.util.stream.Collectors;
 
 public class DemoHandler implements HttpHandler {
@@ -39,9 +40,16 @@ public class DemoHandler implements HttpHandler {
         sendResponse(exchange, httpResponse);
     }
 
-    private int getRequestTaskId(String[] pathArray) {
-        String taskIdStr = pathArray[2];
-        return Integer.parseInt(taskIdStr);
+    private int getTaskPathVariable(String[] pathSegments) {
+        if (isNumeric(pathSegments[2])) {
+            String taskIdStr = pathSegments[2];
+            return Integer.parseInt(taskIdStr);
+        }
+        throw new InvalidParameterException();
+    }
+
+    private static boolean isNumeric(String str) {
+        return str != null && str.matches("[0-9.]+");
     }
 
     private String[] createPathSegments(HttpExchange exchange) {
@@ -51,27 +59,27 @@ public class DemoHandler implements HttpHandler {
     }
 
 
-    private boolean isTasksRequest(String[] pathArray) {
-        return pathArray.length >= 2 && pathArray[1].equals("tasks");
+    private boolean isTasksRequest(String[] pathSegments) {
+        return pathSegments.length >= 2 && pathSegments[1].equals("tasks");
     }
 
     private HttpResponse fetchHttpResponse(HttpExchange exchange) throws IOException, TaskNotFoundException, UnsupportedMethod {
         String requestMethod = exchange.getRequestMethod();
-        String[] pathArray = createPathSegments(exchange);
+        String[] pathSegments = createPathSegments(exchange);
 
         HttpResponse httpResponse;
         switch (requestMethod) {
             case "GET":
-                httpResponse = fetchTask(pathArray);
+                httpResponse = fetchTask(pathSegments);
                 break;
             case "POST":
                 httpResponse = insertTask(createBody(exchange));
                 break;
             case "PUT":
-                httpResponse = updateTask(pathArray, createBody(exchange));
+                httpResponse = updateTask(pathSegments, createBody(exchange));
                 break;
             case "DELETE":
-                httpResponse = deleteTask(pathArray);
+                httpResponse = deleteTask(pathSegments);
                 break;
             default:
                 throw new UnsupportedMethod("지원하지 않는 메서드 입니다. 메서드: " + requestMethod);
@@ -81,7 +89,7 @@ public class DemoHandler implements HttpHandler {
 
     private HttpResponse deleteTask(String[] pathArray) throws TaskNotFoundException {
         if (pathArray.length == 3) {
-            int requestTaskId = getRequestTaskId(pathArray);
+            int requestTaskId = getTaskPathVariable(pathArray);
             if (taskList.delete(requestTaskId)) {
                 return new HttpResponse("", 200);
             } else {
@@ -97,7 +105,7 @@ public class DemoHandler implements HttpHandler {
         if (pathArray.length == 2) {
             content = createTasksListResponse();
         } else if (pathArray.length == 3) {
-            int requestTaskId = getRequestTaskId(pathArray);
+            int requestTaskId = getTaskPathVariable(pathArray);
             if (requestTaskId >= 1 && requestTaskId <= taskList.size()) {
                 Task task = taskList.get(requestTaskId);
                 content = taskToJson(task);
@@ -118,7 +126,7 @@ public class DemoHandler implements HttpHandler {
 
     private HttpResponse updateTask(String[] pathArray, String title) throws IOException, TaskNotFoundException {
         if (pathArray.length == 3) {
-            int requestTaskId = getRequestTaskId(pathArray);
+            int requestTaskId = getTaskPathVariable(pathArray);
             Task requestTask = toTask(title);
             taskList.updateTask(requestTaskId, requestTask);
             return new HttpResponse(taskToJson(taskList.get(requestTaskId)), 200);
