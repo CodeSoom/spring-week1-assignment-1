@@ -1,5 +1,6 @@
 package com.codesoom.assignment;
 
+import com.codesoom.assignment.config.TaskNotFoundException;
 import com.codesoom.assignment.models.HttpResponse;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.models.TaskList;
@@ -27,15 +28,16 @@ public class DemoHandler implements HttpHandler {
         String[] pathArray = createPathArray(exchange);
 
         HttpResponse httpResponse = new HttpResponse("", 200);
-        try {
+        if (isTasksRequest(pathArray)) {
             if (isTasksRequest(pathArray)) {
-                httpResponse = fetchHttpResponse(exchange);
+                try {
+                    httpResponse = fetchHttpResponse(exchange);
+                } catch (TaskNotFoundException e) {
+                    sendResponse(exchange, new HttpResponse("", 404));
+                }
             }
-        } catch (NullPointerException e) {
-            httpResponse = new HttpResponse("", 404);
-        } finally {
-            sendResponse(exchange, httpResponse);
         }
+        sendResponse(exchange, httpResponse);
     }
 
     private int getRequestTaskId(String[] pathArray) {
@@ -54,7 +56,7 @@ public class DemoHandler implements HttpHandler {
         return pathArray.length >= 2 && pathArray[1].equals("tasks");
     }
 
-    private HttpResponse fetchHttpResponse(HttpExchange exchange) throws IOException {
+    private HttpResponse fetchHttpResponse(HttpExchange exchange) throws IOException, TaskNotFoundException {
         String requestMethod = exchange.getRequestMethod();
         String[] pathArray = createPathArray(exchange);
 
@@ -75,7 +77,7 @@ public class DemoHandler implements HttpHandler {
         return httpResponse;
     }
 
-    private HttpResponse deleteTask(String[] pathArray) {
+    private HttpResponse deleteTask(String[] pathArray) throws TaskNotFoundException {
         if (pathArray.length == 3) {
             int requestTaskId = getRequestTaskId(pathArray);
             if (taskList.delete(requestTaskId)) {
@@ -87,7 +89,7 @@ public class DemoHandler implements HttpHandler {
         return HttpResponse.failResponse();
     }
 
-    private HttpResponse fetchTask(String[] pathArray) throws IOException {
+    private HttpResponse fetchTask(String[] pathArray) throws IOException, TaskNotFoundException {
         String content = "";
         int httpCode = 200;
         if (pathArray.length == 2) {
@@ -112,7 +114,7 @@ public class DemoHandler implements HttpHandler {
         return new HttpResponse("", 404);
     }
 
-    private HttpResponse updateTask(String[] pathArray, String title) throws IOException {
+    private HttpResponse updateTask(String[] pathArray, String title) throws IOException, TaskNotFoundException {
         if (pathArray.length == 3) {
             int requestTaskId = getRequestTaskId(pathArray);
             Task requestTask = toTask(title);

@@ -1,5 +1,7 @@
 package com.codesoom.assignment.models;
 
+import com.codesoom.assignment.config.TaskNotFoundException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,23 +32,23 @@ public class TaskList {
         return this.taskList.size();
     }
 
-    public Task get(int idx) {
+    public Task get(int idx) throws TaskNotFoundException {
         Optional<Task> taskOptional = taskList.stream()
                 .filter(task -> task.isTaskId(idx))
                 .findFirst();
 
         if (taskOptional.isEmpty()) {
-            throw new NullPointerException();
+            throw new TaskNotFoundException("taskEmpty");
         }
 
         return taskOptional.get();
     }
 
-    public boolean delete(int requestTaskId) {
+    public boolean delete(int requestTaskId) throws TaskNotFoundException {
         return this.taskList.remove(get(requestTaskId));
     }
 
-    public void updateTask(int requestTaskId, Task requestTask) {
+    public void updateTask(int requestTaskId, Task requestTask) throws TaskNotFoundException {
         Task task = get(requestTaskId);
         task.updateTitle(requestTask.getTitle());
     }
