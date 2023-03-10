@@ -1,6 +1,7 @@
 package com.codesoom.assignment;
 
 import com.codesoom.assignment.config.TaskNotFoundException;
+import com.codesoom.assignment.config.UnsupportedMethod;
 import com.codesoom.assignment.models.HttpResponse;
 import com.codesoom.assignment.models.Task;
 import com.codesoom.assignment.models.TaskList;
@@ -19,7 +20,6 @@ public class DemoHandler implements HttpHandler {
     TaskList taskList = new TaskList();
 
     public static final String slash = "/";
-    public static final String GET = "GET";
 
 
     @Override
@@ -33,6 +33,8 @@ public class DemoHandler implements HttpHandler {
                 try {
                     httpResponse = fetchHttpResponse(exchange);
                 } catch (TaskNotFoundException e) {
+                    sendResponse(exchange, new HttpResponse("", 404));
+                } catch (UnsupportedMethod e) {
                     sendResponse(exchange, new HttpResponse("", 404));
                 }
             }
@@ -56,7 +58,7 @@ public class DemoHandler implements HttpHandler {
         return pathArray.length >= 2 && pathArray[1].equals("tasks");
     }
 
-    private HttpResponse fetchHttpResponse(HttpExchange exchange) throws IOException, TaskNotFoundException {
+    private HttpResponse fetchHttpResponse(HttpExchange exchange) throws IOException, TaskNotFoundException, UnsupportedMethod {
         String requestMethod = exchange.getRequestMethod();
         String[] pathArray = createPathArray(exchange);
 
@@ -71,8 +73,11 @@ public class DemoHandler implements HttpHandler {
             case "PUT":
                 httpResponse = updateTask(pathArray, createBody(exchange));
                 break;
-            default:
+            case "DELETE":
                 httpResponse = deleteTask(pathArray);
+                break;
+            default:
+                throw new UnsupportedMethod("지원하지 않는 메서드 입니다. 메서드: " + requestMethod);
         }
         return httpResponse;
     }
