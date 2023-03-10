@@ -19,17 +19,14 @@ public class DemoHandler implements HttpHandler {
     ObjectMapper objectMapper = new ObjectMapper();
     TaskList taskList = new TaskList();
 
-    public static final String slash = "/";
-
-
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
-        String[] pathArray = createPathArray(exchange);
+        String[] pathSegments = createPathSegments(exchange);
 
         HttpResponse httpResponse = new HttpResponse("", 200);
-        if (isTasksRequest(pathArray)) {
-            if (isTasksRequest(pathArray)) {
+        if (isTasksRequest(pathSegments)) {
+            if (isTasksRequest(pathSegments)) {
                 try {
                     httpResponse = fetchHttpResponse(exchange);
                 } catch (TaskNotFoundException e) {
@@ -47,10 +44,10 @@ public class DemoHandler implements HttpHandler {
         return Integer.parseInt(taskIdStr);
     }
 
-    private String[] createPathArray(HttpExchange exchange) {
+    private String[] createPathSegments(HttpExchange exchange) {
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
-        return path.split(slash);
+        return path.split("/");
     }
 
 
@@ -60,7 +57,7 @@ public class DemoHandler implements HttpHandler {
 
     private HttpResponse fetchHttpResponse(HttpExchange exchange) throws IOException, TaskNotFoundException, UnsupportedMethod {
         String requestMethod = exchange.getRequestMethod();
-        String[] pathArray = createPathArray(exchange);
+        String[] pathArray = createPathSegments(exchange);
 
         HttpResponse httpResponse;
         switch (requestMethod) {
