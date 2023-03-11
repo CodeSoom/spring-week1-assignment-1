@@ -15,6 +15,14 @@ import java.net.URI;
 import java.security.InvalidParameterException;
 import java.util.stream.Collectors;
 
+/**
+ * 1. Read - collection => 완료
+ * 2. Read - item/element
+ * 3. create => 완료
+ * 4. Update
+ * 5. Delete
+ */
+
 public class DemoHandler implements HttpHandler {
 
     ObjectMapper objectMapper = new ObjectMapper();
@@ -27,14 +35,10 @@ public class DemoHandler implements HttpHandler {
 
         HttpResponse httpResponse = new HttpResponse("", 200);
         if (isTasksRequest(pathSegments)) {
-            if (isTasksRequest(pathSegments)) {
-                try {
-                    httpResponse = fetchHttpResponse(exchange);
-                } catch (TaskNotFoundException e) {
-                    sendResponse(exchange, new HttpResponse("", 404));
-                } catch (UnsupportedMethod e) {
-                    sendResponse(exchange, new HttpResponse("", 404));
-                }
+            try {
+                httpResponse = fetchHttpResponse(exchange);
+            } catch (TaskNotFoundException | UnsupportedMethod e) {
+                sendResponse(exchange, new HttpResponse("", 404));
             }
         }
         sendResponse(exchange, httpResponse);
