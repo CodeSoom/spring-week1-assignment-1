@@ -1,10 +1,6 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.config.TaskNotFoundException;
-import com.codesoom.assignment.config.UnsupportedMethod;
-import com.codesoom.assignment.models.HttpResponse;
 import com.codesoom.assignment.models.Task;
-import com.codesoom.assignment.models.TaskList;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -12,177 +8,133 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 import java.net.URI;
-import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * 1. Read - collection => 완료
- * 2. Read - item/element
- * 3. create => 완료
- * 4. Update
- * 5. Delete
- */
-
+// Shift Command (변수,메소드) 내리기
 public class DemoHandler implements HttpHandler {
-
-    ObjectMapper objectMapper = new ObjectMapper();
-    TaskList taskList = new TaskList();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final List<Task> tasks = new ArrayList<>();
+    private int newId = 0;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-
-        String[] pathSegments = createPathSegments(exchange);
-
-        HttpResponse httpResponse = new HttpResponse("", 200);
-        if (isTasksRequest(pathSegments)) {
-            try {
-                httpResponse = fetchHttpResponse(exchange);
-            } catch (TaskNotFoundException | UnsupportedMethod e) {
-                sendResponse(exchange, new HttpResponse("", 404));
-            }
-        }
-        sendResponse(exchange, httpResponse);
-    }
-
-    private int getTaskPathVariable(String[] pathSegments) {
-        if (isNumeric(pathSegments[2])) {
-            String taskIdStr = pathSegments[2];
-            return Integer.parseInt(taskIdStr);
-        }
-        throw new InvalidParameterException();
-    }
-
-    private static boolean isNumeric(String str) {
-        return str != null && str.matches("[0-9.]+");
-    }
-
-    private String[] createPathSegments(HttpExchange exchange) {
+        String method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
         String path = uri.getPath();
-        return path.split("/");
-    }
 
+        System.out.println(method + " " + path);
 
-    private boolean isTasksRequest(String[] pathSegments) {
-        return pathSegments.length >= 2 && pathSegments[1].equals("tasks");
-    }
-
-    private HttpResponse fetchHttpResponse(HttpExchange exchange) throws IOException, TaskNotFoundException, UnsupportedMethod {
-        String requestMethod = exchange.getRequestMethod();
-        String[] pathSegments = createPathSegments(exchange);
-
-        HttpResponse httpResponse;
-        switch (requestMethod) {
-            case "GET":
-                httpResponse = fetchTask(pathSegments);
-                break;
-            case "POST":
-                httpResponse = insertTask(createBody(exchange));
-                break;
-            case "PUT":
-                httpResponse = updateTask(pathSegments, createBody(exchange));
-                break;
-            case "DELETE":
-                httpResponse = deleteTask(pathSegments);
-                break;
-            default:
-                throw new UnsupportedMethod("지원하지 않는 메서드 입니다. 메서드: " + requestMethod);
+        if (path.equals("/tasks")) {
+            handleCollection(exchange, method);
+            return;
         }
-        return httpResponse;
-    }
 
-    private HttpResponse deleteTask(String[] pathArray) throws TaskNotFoundException {
-        if (pathArray.length == 3) {
-            int requestTaskId = getTaskPathVariable(pathArray);
-            if (taskList.delete(requestTaskId)) {
-                return new HttpResponse("", 200);
-            } else {
-                return HttpResponse.failResponse();
-            }
+        if (path.startsWith("/tasks/")) {
+            int id = Integer.parseInt(path.substring("/tasks".length()));
+            handleItem(exchange, method, id);
         }
-        return HttpResponse.failResponse();
     }
 
-    private HttpResponse fetchTask(String[] pathArray) throws IOException, TaskNotFoundException {
-        String content = "";
-        int httpCode = 200;
-        if (pathArray.length == 2) {
-            content = createTasksListResponse();
-        } else if (pathArray.length == 3) {
-            int requestTaskId = getTaskPathVariable(pathArray);
-            if (requestTaskId >= 1 && requestTaskId <= taskList.size()) {
-                Task task = taskList.get(requestTaskId);
-                content = taskToJson(task);
-            } else {
-                httpCode = 404;
-            }
+
+    private void handleCollection(HttpExchange exchange, String method) throws IOException {
+        if (method.equals("GET")) {
+            handleList(exchange);
         }
-        return new HttpResponse(content, httpCode);
-    }
 
-    private HttpResponse insertTask(String title) throws IOException {
-        if (!title.isBlank()) {
-            Task task = addTask(title);
-            return new HttpResponse(taskToJson(task), 201);
+        if (method.equals("POST")) {
+            handleCreate(exchange);
         }
-        return new HttpResponse("", 404);
     }
 
-    private HttpResponse updateTask(String[] pathArray, String title) throws IOException, TaskNotFoundException {
-        if (pathArray.length == 3) {
-            int requestTaskId = getTaskPathVariable(pathArray);
-            Task requestTask = toTask(title);
-            taskList.updateTask(requestTaskId, requestTask);
-            return new HttpResponse(taskToJson(taskList.get(requestTaskId)), 200);
-        }
-        return new HttpResponse("", 404);
+    private void handleList(HttpExchange exchange) throws IOException {
+        send(exchange, 200, toJSON(tasks));
     }
 
+    private void handleCreate(HttpExchange exchange) throws IOException {
+        String body = getBody(exchange);
 
-    private String createTasksListResponse() throws IOException {
-        String content;
-        if (taskList.size() == 0) {
-            content = "[]";
-        } else {
-            content = taskToJson();
-        }
-        return content;
+        Task task = toTask(body);
+        task.setId(generatedId());
+        tasks.add(task);
+
+        send(exchange, 201, toJSON(task));
     }
 
-    private static String createBody(HttpExchange exchange) {
+    private String getBody(HttpExchange exchange) {
         InputStream inputStream = exchange.getRequestBody();
         return new BufferedReader(new InputStreamReader(inputStream))
                 .lines()
                 .collect(Collectors.joining("\n"));
     }
 
-    private Task toTask(String body) throws JsonProcessingException {
-        return objectMapper.readValue(body, Task.class);
+    private void handleItem(HttpExchange exchange, String method, int id) throws IOException {
+        Task task = findTask(id);
+
+        if (task == null) {
+            send(exchange, 404, "");
+            return;
+        }
+
+        if (method.equals("GET")) {
+            handleDetail(exchange, task);
+        }
+
+        if (method.equals("PUT") || method.equals("PATCH")) {
+            handleUpdate(exchange, task);
+        }
+
+        if (method.equals("DELETE")) {
+            handleDelete(exchange, task);
+        }
+
     }
 
-    private String taskToJson() throws IOException {
+    private void handleDelete(HttpExchange exchange, Task task) throws IOException {
+        tasks.remove(task);
+        send(exchange, 200 , toJSON(task));
+    }
+
+    private void handleDetail(HttpExchange exchange, Task task) throws IOException {
+        send(exchange, 200, toJSON(task));
+    }
+
+    private void handleUpdate(HttpExchange exchange, Task task) throws IOException {
+        String body = getBody(exchange);
+        Task source = toTask(body);
+
+        task.updateTitle(source.getTitle());
+        send(exchange, 200 ,toJSON(task));
+    }
+
+    private Task findTask(int id) {
+        return tasks.stream()
+                .filter(task -> task.isTaskId(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private Task toTask(String content) throws JsonProcessingException {
+        return objectMapper.readValue(content, Task.class);
+    }
+
+    private String toJSON(Object object) throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, taskList.getItems());
+        objectMapper.writeValue(outputStream, object);
         return outputStream.toString();
     }
 
-    private String taskToJson(Task task) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream, task);
-        return outputStream.toString();
+    private int generatedId() {
+        newId += 1;
+        return newId;
     }
 
-    private Task addTask(String title) throws JsonProcessingException {
-        Task task = toTask(title);
-        taskList.add(task);
-        return task;
-    }
-
-    private static void sendResponse(HttpExchange exchange, HttpResponse httpResponse) throws IOException {
-        exchange.sendResponseHeaders(httpResponse.getHttpCode(), httpResponse.getContent().getBytes().length);
+    private void send(HttpExchange exchange, int httpCode, String content) throws IOException {
+        exchange.sendResponseHeaders(httpCode, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
-        outputStream.write(httpResponse.getContent().getBytes());
+        outputStream.write(content.getBytes());
         outputStream.flush();
         outputStream.close();
     }
