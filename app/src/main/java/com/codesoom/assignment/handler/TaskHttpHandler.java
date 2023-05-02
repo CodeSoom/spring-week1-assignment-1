@@ -18,8 +18,8 @@ public class TaskHttpHandler implements HttpRequestHandler {
 
     @Override
     public void handle(final HttpExchange exchange) throws IOException {
-        TaskApiRoute endpoint = matchRoute(getRequestMethod(exchange), getRequestPath(exchange));
-        ApiRouteHandler apiRouteHandler = endpoint.getHandlerMethod();
+        ApiRouteHandler apiRouteHandler =
+                matchRoute(getRequestMethod(exchange), getRequestPath(exchange)).getHandlerMethod();
         apiRouteHandler.handle(exchange);
     }
 
@@ -48,6 +48,7 @@ public class TaskHttpHandler implements HttpRequestHandler {
                 .append(getRequestMethod(exchange))
                 .append("' does not exist.")
                 .toString();
+
         sendHttpResponse(exchange, NOT_FOUND.getCode(), errorMessage);
     }
 
