@@ -1,11 +1,10 @@
 package com.codesoom.assignment.handler;
 
 import com.codesoom.assignment.domain.task.model.Task;
+import com.codesoom.assignment.domain.task.model.Tasks;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.codesoom.assignment.handler.HttpStatus.*;
 import static com.codesoom.assignment.handler.TaskApiRoute.*;
@@ -14,7 +13,7 @@ import static com.codesoom.assignment.util.JsonUtil.*;
 
 public class TaskHttpHandler implements HttpRequestHandler {
 
-    private static final List<Task> tasks = new ArrayList<>();
+    private static final Tasks tasks = new Tasks();
 
     @Override
     public void handle(final HttpExchange exchange) throws IOException {
@@ -23,21 +22,31 @@ public class TaskHttpHandler implements HttpRequestHandler {
         apiRouteHandler.handle(exchange);
     }
 
-    protected static void handleGetMethod(final HttpExchange exchange) throws IOException {
-        sendHttpResponse(exchange, OK.getCode(), objectToJsonString(tasks));
+    protected static void handleGetOneMethod(final HttpExchange exchange) throws IOException {
+        long id = parseIdFromPath(getRequestPath(exchange));
+        sendHttpResponse(exchange, OK.getCode(), objectToJsonString(tasks.findById(id)));
+    }
+
+    protected static void handleGetAllMethod(final HttpExchange exchange) throws IOException {
+        sendHttpResponse(exchange, OK.getCode(), objectToJsonString(tasks.getAll()));
     }
 
     protected static void handlePostMethod(final HttpExchange exchange) throws IOException {
         tasks.add(jsonToObject(extractRequestBody(exchange), Task.class));
-        sendHttpResponse(exchange, CREATED.getCode(), objectToJsonString(tasks));
+        sendHttpResponse(exchange, CREATED.getCode(), objectToJsonString(tasks.getAll()));
     }
 
     protected static void handlePutMethod(final HttpExchange exchange) throws IOException  {
-
+        Task task = tasks.update(
+                parseIdFromPath(getRequestPath(exchange)),
+                jsonToObject(extractRequestBody(exchange), Task.class).getTitle()
+        );
+        sendHttpResponse(exchange, OK.getCode(), objectToJsonString(task));
     }
 
     protected static void handleDeleteMethod(final HttpExchange exchange) throws IOException {
-
+        tasks.delete(parseIdFromPath(getRequestPath(exchange)));
+        sendHttpResponse(exchange, OK.getCode(), "");
     }
 
     protected static void handlePathNotFound(final HttpExchange exchange) throws IOException {

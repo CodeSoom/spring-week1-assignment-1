@@ -3,10 +3,11 @@ package com.codesoom.assignment.handler;
 import java.util.Arrays;
 
 public enum TaskApiRoute {
-    GET("GET", "/tasks", TaskHttpHandler::handleGetMethod),
+    GET_ONE("GET", "/tasks/", TaskHttpHandler::handleGetOneMethod),
+    GET_ALL("GET", "/tasks", TaskHttpHandler::handleGetAllMethod),
     POST("POST", "/tasks", TaskHttpHandler::handlePostMethod),
-    PUT("PUT", "/tasks", TaskHttpHandler::handlePutMethod),
-    DELETE("DELETE", "/tasks", TaskHttpHandler::handleDeleteMethod),
+    PUT("PUT", "/tasks/", TaskHttpHandler::handlePutMethod),
+    DELETE("DELETE", "/tasks/", TaskHttpHandler::handleDeleteMethod),
     PATH_NOT_FOUND("", "", TaskHttpHandler::handlePathNotFound);
 
     private final String method;
@@ -25,9 +26,16 @@ public enum TaskApiRoute {
 
     public static TaskApiRoute matchRoute(final String method, final String path) {
         return Arrays.stream(TaskApiRoute.values())
-                .filter(apiEndpoint -> (apiEndpoint.method.equals(method)) && (apiEndpoint.path.equals(path)))
+                .filter(endpoint -> (endpoint.method.equals(method)) && (path.matches(endpoint.getPathPattern())))
                 .findFirst()
                 .orElse(PATH_NOT_FOUND);
+    }
+
+    private String getPathPattern() {
+        if ((this == GET_ONE) || (this == PUT) || (this == DELETE)) {
+            return path + "\\d+";
+        }
+        return path;
     }
 
 }

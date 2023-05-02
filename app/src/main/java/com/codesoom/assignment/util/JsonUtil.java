@@ -23,4 +23,13 @@ public class JsonUtil {
         return outputStream.toString();
     }
 
+    public static long parseIdFromPath(final String path) {
+        String[] pathElements = path.split("/");
+        try {
+            return Long.parseLong(pathElements[pathElements.length - 1]);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(String.format("Invalid Task ID format in the path: %s", path), e);
+        }
+    }
+
 }
