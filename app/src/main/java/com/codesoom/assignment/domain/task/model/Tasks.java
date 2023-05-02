@@ -32,22 +32,14 @@ public class Tasks {
     }
 
     public Task update(final long id, final String title) {
-        Task task = findByIdOrThrowException(id);
+        Task task = findById(id);
         task.setTitle(title);
         return task;
     }
 
     public void delete(final long id) {
-        Task task = findByIdOrThrowException(id);
-        tasks.remove(task);
-    }
-
-    private Task findByIdOrThrowException(final long id) {
         Task task = findById(id);
-        if (task == null) {
-            throw new IllegalArgumentException(TASK_NOT_FOUND_MESSAGE);
-        }
-        return task;
+        tasks.remove(task);
     }
 
 }
