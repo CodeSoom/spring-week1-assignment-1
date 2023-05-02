@@ -14,7 +14,6 @@ import static com.codesoom.assignment.util.JsonUtil.*;
 
 public class TaskHttpHandler implements HttpRequestHandler {
 
-    private static final String EMPTY_STRING = "";
     private static final List<Task> tasks = new ArrayList<>();
 
     @Override
@@ -42,7 +41,14 @@ public class TaskHttpHandler implements HttpRequestHandler {
     }
 
     protected static void handlePathNotFound(final HttpExchange exchange) throws IOException {
-        sendHttpResponse(exchange, NOT_FOUND.getCode(), EMPTY_STRING);
+        String errorMessage = new StringBuilder()
+                .append("404 Not Found: The requested path '")
+                .append(getRequestPath(exchange))
+                .append("' with method '")
+                .append(getRequestMethod(exchange))
+                .append("' does not exist.")
+                .toString();
+        sendHttpResponse(exchange, NOT_FOUND.getCode(), errorMessage);
     }
 
 }
