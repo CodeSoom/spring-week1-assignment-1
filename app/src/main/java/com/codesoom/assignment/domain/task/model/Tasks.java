@@ -28,7 +28,7 @@ public class Tasks {
         return tasks.stream()
                 .filter(task -> task.getId() == id)
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new IllegalArgumentException(TASK_NOT_FOUND_MESSAGE));
     }
 
     public Task update(final long id, final String title) {
