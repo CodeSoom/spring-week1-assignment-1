@@ -23,7 +23,7 @@ public enum TaskApiRoute {
         return handlerMethod;
     }
 
-    public static TaskApiRoute from(final String method, final String path) {
+    public static TaskApiRoute matchRoute(final String method, final String path) {
         return Arrays.stream(TaskApiRoute.values())
                 .filter(apiEndpoint -> (apiEndpoint.method.equals(method)) && (apiEndpoint.path.equals(path)))
                 .findFirst()

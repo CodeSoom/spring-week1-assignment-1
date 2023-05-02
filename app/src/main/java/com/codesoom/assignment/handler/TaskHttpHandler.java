@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.codesoom.assignment.handler.HttpStatus.*;
+import static com.codesoom.assignment.handler.TaskApiRoute.*;
 import static com.codesoom.assignment.util.HttpExchangeUtil.*;
 import static com.codesoom.assignment.util.JsonUtil.*;
 
@@ -18,7 +19,7 @@ public class TaskHttpHandler implements HttpRequestHandler {
 
     @Override
     public void handle(final HttpExchange exchange) throws IOException {
-        TaskApiRoute endpoint = TaskApiRoute.from(getRequestMethod(exchange), getRequestPath(exchange));
+        TaskApiRoute endpoint = matchRoute(getRequestMethod(exchange), getRequestPath(exchange));
         ApiRouteHandler apiRouteHandler = endpoint.getHandlerMethod();
         apiRouteHandler.handle(exchange);
     }
