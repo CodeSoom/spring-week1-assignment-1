@@ -1,5 +1,6 @@
 package com.codesoom.assignment.util;
 
+import com.codesoom.assignment.exception.InvalidValueException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -25,10 +26,13 @@ public class JsonUtil {
 
     public static long parseIdFromPath(final String path) {
         String[] pathElements = path.split("/");
+        if (pathElements[pathElements.length - 1].equals("/")) {
+
+        }
         try {
             return Long.parseLong(pathElements[pathElements.length - 1]);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(String.format("Invalid Task ID format in the path: %s", path), e);
+        } catch (InvalidValueException e) {
+            throw new InvalidValueException(String.format("Invalid Task ID format in the path: %s", path));
         }
     }
 

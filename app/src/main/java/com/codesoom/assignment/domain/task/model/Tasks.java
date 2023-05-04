@@ -1,22 +1,21 @@
 package com.codesoom.assignment.domain.task.model;
 
+import com.codesoom.assignment.exception.TaskNotFoundException;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Tasks {
-
-    private static final String TASK_NOT_FOUND_MESSAGE = "Task not found";
 
     private final List<Task> tasks;
     private long currentId;
 
     public Tasks() {
         this.tasks = new ArrayList<>();
-        this.currentId = 1;
     }
 
     public void add(final Task task) {
-        task.setId(currentId++);
+        task.setId(increaseId());
         tasks.add(task);
     }
 
@@ -28,7 +27,7 @@ public class Tasks {
         return tasks.stream()
                 .filter(task -> task.getId() == id)
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(TASK_NOT_FOUND_MESSAGE));
+                .orElseThrow(() -> new TaskNotFoundException(id));
     }
 
     public Task update(final long id, final String title) {
@@ -40,6 +39,10 @@ public class Tasks {
     public void delete(final long id) {
         Task task = findById(id);
         tasks.remove(task);
+    }
+
+    private long increaseId() {
+        return currentId += 1;
     }
 
 }

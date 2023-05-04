@@ -1,5 +1,7 @@
 package com.codesoom.assignment.domain.task.model;
 
+import com.codesoom.assignment.exception.InvalidValueException;
+
 public class Task {
 
     private long id;
@@ -18,16 +20,15 @@ public class Task {
     }
 
     public void setTitle(final String title) {
+        if (title == null || title.trim().isEmpty()) {
+            throw new InvalidValueException("Title cannot be null or empty");
+        }
         this.title = title;
     }
 
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append("id = ").append(id)
-                .append('\'')
-                .append("title = ").append(title)
-                .toString();
+        return String.format("id = %s, title = %s", id, title);
     }
 
 }
