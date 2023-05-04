@@ -1,0 +1,34 @@
+package com.codesoom.assignment.handler;
+
+import com.codesoom.assignment.domain.task.model.Task;
+import com.codesoom.assignment.domain.task.model.Tasks;
+import com.sun.net.httpserver.HttpExchange;
+
+import java.io.IOException;
+
+import static com.codesoom.assignment.handler.HttpStatus.*;
+import static com.codesoom.assignment.util.HttpExchangeUtil.extractRequestBody;
+import static com.codesoom.assignment.util.HttpExchangeUtil.sendHttpResponse;
+import static com.codesoom.assignment.util.JsonUtil.jsonToObject;
+import static com.codesoom.assignment.util.JsonUtil.objectToJsonString;
+
+public class PostHandler implements TaskRouteHandler {
+
+    private final Tasks tasks;
+
+    public PostHandler(final Tasks tasks) {
+        this.tasks = tasks;
+    }
+
+    @Override
+    public boolean isSelect(final String method, final String path) {
+        return method.equals("POST") && path.equals("/tasks");
+    }
+
+    @Override
+    public void execute(final HttpExchange exchange) throws IOException {
+        tasks.add(jsonToObject(extractRequestBody(exchange), Task.class));
+        sendHttpResponse(exchange, CREATED.getCode(), objectToJsonString(tasks.getAll()));
+    }
+
+}
