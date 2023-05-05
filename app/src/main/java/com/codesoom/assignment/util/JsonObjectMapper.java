@@ -22,8 +22,7 @@ public class JsonObjectMapper {
 		return objectMapper.writeValueAsString(object);
 	}
 
-	public static Task toTask(String jsonString) throws JsonProcessingException {
-		return objectMapper.readValue(jsonString, Task.class);
+	public static <T> T toObject(String jsonString, Class<T> valueType) throws JsonProcessingException {
+		return objectMapper.readValue(jsonString, valueType);
 	}
-
 }
