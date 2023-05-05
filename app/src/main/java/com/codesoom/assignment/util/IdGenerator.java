@@ -1,10 +1,10 @@
-package com.codesoom.assignment.httphandler;
+package com.codesoom.assignment.util;
 
 import java.util.HashMap;
 
 public class IdGenerator {
 
-	static HashMap<IdType, Integer> idMap = new HashMap<>();
+	public static HashMap<IdType, Integer> idMap = new HashMap<>();
 
 	public static int genId(IdType idType) {
 		idMap.put(idType, idMap.computeIfAbsent(idType, key -> 0) + 1);
@@ -14,7 +14,7 @@ public class IdGenerator {
 	public static int getMaxId(IdType idType) {
 		return idMap.get(idType);
 	}
-	enum IdType {
+	public enum IdType {
 		TASK
 	}
 
