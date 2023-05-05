@@ -41,9 +41,9 @@ public class TaskHttpHandler implements HttpHandler {
 			Task task = findTask(taskId);
 			tasks.remove(task);
 
-			sendResponse(httpExchange, 200, null);
+			sendResponse(httpExchange, 204, null);
 		} catch (TaskNotFoundException e) {
-			sendResponse(httpExchange, 400, e.getMessage());
+			sendResponse(httpExchange, 404, e.getMessage());
 		}
 	}
 
@@ -59,7 +59,7 @@ public class TaskHttpHandler implements HttpHandler {
 
 			sendResponse(httpExchange, 200, JsonObjectMapper.toJson(task));
 		} catch (TaskNotFoundException e) {
-			sendResponse(httpExchange, 400, e.getMessage());
+			sendResponse(httpExchange, 404, e.getMessage());
 			throw new RuntimeException(e);
 		}
 	}
@@ -72,7 +72,7 @@ public class TaskHttpHandler implements HttpHandler {
 
 			sendResponse(httpExchange, 200, JsonObjectMapper.toJson(task));
 		} catch (TaskNotFoundException e) {
-			sendResponse(httpExchange, 400, e.getMessage());
+			sendResponse(httpExchange, 404, e.getMessage());
 		}
 	}
 

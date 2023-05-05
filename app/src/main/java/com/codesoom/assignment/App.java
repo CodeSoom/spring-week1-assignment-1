@@ -10,7 +10,7 @@ import java.net.InetSocketAddress;
 public class App {
 
     private final static String HOST = "localhost";
-    private final static int PORT = 8080;
+    private final static int PORT = 8000;
 
     public static String getGreeting() {
         return "Hello World!";
