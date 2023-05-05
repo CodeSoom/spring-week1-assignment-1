@@ -114,6 +114,7 @@ public class TaskHttpHandler implements HttpHandler {
 			httpExchange.getResponseBody().close();
 		} else {
 			httpExchange.sendResponseHeaders(httpCode, 0);
+			httpExchange.close();
 		}
 	}
 }
