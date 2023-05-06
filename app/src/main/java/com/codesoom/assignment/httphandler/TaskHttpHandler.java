@@ -1,121 +1,95 @@
 package com.codesoom.assignment.httphandler;
 
 import com.codesoom.assignment.exception.TaskNotFoundException;
+import com.codesoom.assignment.http.*;
 import com.codesoom.assignment.model.Task;
 import com.codesoom.assignment.util.IdGenerator;
 import com.codesoom.assignment.util.JsonObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class TaskHttpHandler implements HttpHandler {
 	private static final List<Task> tasks = new ArrayList<>();
 
 	@Override
 	public void handle(HttpExchange httpExchange) throws IOException {
-		String requestMethod = httpExchange.getRequestMethod();
-		String path = httpExchange.getRequestURI().getPath();
+		HttpTaskRequest httpRequest = new HttpTaskRequest(httpExchange);
+
+		String requestMethod = httpRequest.getMethod();
+		String path = httpRequest.getPath();
 
 		if ("GET".equals(requestMethod) && "/tasks".equals(path)) {
-			getAllTasks(httpExchange);
+			getAllTasks(httpRequest);
 		} else if ("GET".equals(requestMethod) && path.startsWith("/tasks/")) {
-			getTask(httpExchange);
+			getTask(httpRequest);
 		} else if ("POST".equals(requestMethod)) {
-			createTask(httpExchange);
+			createTask(httpRequest);
 		} else if ("PUT".equals(requestMethod)) {
-			putTask(httpExchange);
+			putTask(httpRequest);
 		} else if ("DELETE".equals(requestMethod)) {
-			deleteTask(httpExchange);
+			deleteTask(httpRequest);
 		}
 	}
 
-	private void deleteTask(HttpExchange httpExchange) throws IOException {
-		String path = httpExchange.getRequestURI().getPath();
-		int taskId = extractTaskIdFromPath(path);
+	private void deleteTask(HttpTaskRequest httpRequest) throws IOException {
+		int taskId = httpRequest.taskId();
 		try {
 			Task task = findTask(taskId);
 			tasks.remove(task);
 
-			sendResponse(httpExchange, 204, null);
+			new HttpNoContentResponse(httpRequest.getHttpExchange()).send();
 		} catch (TaskNotFoundException e) {
-			sendResponse(httpExchange, 404, e.getMessage());
+			new HttpNotFoundResponse(httpRequest.getHttpExchange()).send(e.getMessage());
 		}
 	}
 
-	private void putTask(HttpExchange httpExchange) throws IOException {
-		String path = httpExchange.getRequestURI().getPath();
-		int taskId = extractTaskIdFromPath(path);
+	private void putTask(HttpTaskRequest httpRequest) throws IOException {
+		int taskId = httpRequest.taskId();
 
 		try {
 			Task task = findTask(taskId);
-			String requestBody = parseRequestBody(httpExchange);
+			String requestBody = httpRequest.getBody();
 			Task request = JsonObjectMapper.toObject(requestBody, Task.class);
 			task.update(request);
 
-			sendResponse(httpExchange, 200, JsonObjectMapper.toJson(task));
+			new HttpSuccessResponse(httpRequest.getHttpExchange()).send(JsonObjectMapper.toJson(task));
 		} catch (TaskNotFoundException e) {
-			sendResponse(httpExchange, 404, e.getMessage());
-			throw new RuntimeException(e);
+			new HttpNotFoundResponse(httpRequest.getHttpExchange()).send(e.getMessage());
 		}
 	}
 
-	private void getTask(HttpExchange httpExchange) throws IOException {
-		String path = httpExchange.getRequestURI().getPath();
-		int taskId = extractTaskIdFromPath(path);
+	private void getTask(HttpTaskRequest httpRequest) throws IOException {
+		int taskId = httpRequest.taskId();
 		try {
 			Task task = findTask(taskId);
 
-			sendResponse(httpExchange, 200, JsonObjectMapper.toJson(task));
+			new HttpSuccessResponse(httpRequest.getHttpExchange()).send(JsonObjectMapper.toJson(task));
 		} catch (TaskNotFoundException e) {
-			sendResponse(httpExchange, 404, e.getMessage());
+			new HttpNotFoundResponse(httpRequest.getHttpExchange()).send(e.getMessage());
 		}
 	}
 
-	public void getAllTasks(HttpExchange httpExchange) throws IOException {
-		sendResponse(httpExchange, 200, JsonObjectMapper.toJsonArray(tasks));
+	public void getAllTasks(HttpTaskRequest httpRequest) throws IOException {
+		new HttpSuccessResponse(httpRequest.getHttpExchange()).send(JsonObjectMapper.toJsonArray(tasks));
 	}
 
-	public void createTask(HttpExchange httpExchange) throws IOException {
-		String requestBody = parseRequestBody(httpExchange);
+	public void createTask(HttpTaskRequest httpRequest) throws IOException {
+		String requestBody = httpRequest.getBody();
 
 		Task task = JsonObjectMapper.toObject(requestBody, Task.class);
 		task.setId(IdGenerator.genId(IdGenerator.IdType.TASK));
 		tasks.add(task);
 
-		sendResponse(httpExchange, 201, JsonObjectMapper.toJson(task));
+		new HttpCreatedResponse(httpRequest.getHttpExchange()).send(JsonObjectMapper.toJson(task));
 	}
-
-	private int extractTaskIdFromPath(String path) {
-		String[] pathSegments = path.split("/");
-
-		return Integer.parseInt(pathSegments[pathSegments.length - 1]);
-	}
-
 	private Task findTask(int taskId) throws TaskNotFoundException {
 		return tasks.stream()
 				.filter(task -> task.getId() == taskId)
 				.findFirst().orElseThrow(() -> new TaskNotFoundException(taskId));
 	}
 
-	public String parseRequestBody(HttpExchange httpExchange) {
-		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody()));
-		return bufferedReader.lines().collect(Collectors.joining("\n"));
-	}
-
-	private void sendResponse(HttpExchange httpExchange, int httpCode, String response) throws IOException {
-		if (response != null) {
-			httpExchange.sendResponseHeaders(httpCode, response.getBytes().length);
-			httpExchange.getResponseBody().write(response.getBytes());
-			httpExchange.getResponseBody().close();
-		} else {
-			httpExchange.sendResponseHeaders(httpCode, 0);
-			httpExchange.close();
-		}
-	}
 }
