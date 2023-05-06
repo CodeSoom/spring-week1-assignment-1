@@ -1,14 +1,11 @@
 package com.codesoom.assignment.handler;
 
 import com.codesoom.assignment.domain.task.model.Tasks;
-import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 
-import static com.codesoom.assignment.handler.HttpStatus.*;
-import static com.codesoom.assignment.util.HttpExchangeUtil.getRequestPath;
-import static com.codesoom.assignment.util.HttpExchangeUtil.sendHttpResponse;
-import static com.codesoom.assignment.util.JsonUtil.parseIdFromPath;
+import static com.codesoom.assignment.handler.HttpStatus.OK;
+import static com.codesoom.assignment.util.TaskRoutePattern.TASK_ID_PATH_PATTERN;
 
 public class DeleteHandler implements TaskRouteHandler {
 
@@ -20,13 +17,13 @@ public class DeleteHandler implements TaskRouteHandler {
 
     @Override
     public boolean isSelect(final String method, final String path) {
-        return method.equals("DELETE") && path.matches("/tasks/\\d+");
+        return method.equals("DELETE") && path.matches(TASK_ID_PATH_PATTERN);
     }
 
     @Override
-    public void execute(final HttpExchange exchange) throws IOException {
-        tasks.delete(parseIdFromPath(getRequestPath(exchange)));
-        sendHttpResponse(exchange, OK.getCode(), "");
+    public void execute(final HttpRequest request, final HttpResponse response) throws IOException {
+        tasks.delete(request.parseIdFromPath());
+        response.send(OK.getCode(), "");
     }
 
 }

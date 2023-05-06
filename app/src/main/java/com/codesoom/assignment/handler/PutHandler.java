@@ -2,13 +2,13 @@ package com.codesoom.assignment.handler;
 
 import com.codesoom.assignment.domain.task.model.Task;
 import com.codesoom.assignment.domain.task.model.Tasks;
-import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 
-import static com.codesoom.assignment.handler.HttpStatus.*;
-import static com.codesoom.assignment.util.HttpExchangeUtil.*;
-import static com.codesoom.assignment.util.JsonUtil.*;
+import static com.codesoom.assignment.handler.HttpStatus.OK;
+import static com.codesoom.assignment.util.JsonUtil.jsonToObject;
+import static com.codesoom.assignment.util.JsonUtil.objectToJsonString;
+import static com.codesoom.assignment.util.TaskRoutePattern.TASK_ID_PATH_PATTERN;
 
 public class PutHandler implements TaskRouteHandler {
 
@@ -20,16 +20,16 @@ public class PutHandler implements TaskRouteHandler {
 
     @Override
     public boolean isSelect(final String method, final String path) {
-        return method.equals("PUT") && path.matches("/tasks/\\d+");
+        return method.equals("PUT") && path.matches(TASK_ID_PATH_PATTERN);
     }
 
     @Override
-    public void execute(final HttpExchange exchange) throws IOException {
+    public void execute(final HttpRequest request, final HttpResponse response) throws IOException {
         Task task = tasks.update(
-                parseIdFromPath(getRequestPath(exchange)),
-                jsonToObject(extractRequestBody(exchange), Task.class).getTitle()
+                request.parseIdFromPath(),
+                jsonToObject(request.getBody(), Task.class).getTitle()
         );
-        sendHttpResponse(exchange, OK.getCode(), objectToJsonString(task));
+        response.send(OK.getCode(), objectToJsonString(task));
     }
 
 }

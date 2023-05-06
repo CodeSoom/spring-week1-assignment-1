@@ -7,9 +7,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.codesoom.assignment.util.HttpExchangeUtil.getRequestMethod;
-import static com.codesoom.assignment.util.HttpExchangeUtil.getRequestPath;
-
 public class TaskHttpHandler implements HttpRequestHandler {
 
     private final List<TaskRouteHandler> taskRouteHandlers;
@@ -28,11 +25,15 @@ public class TaskHttpHandler implements HttpRequestHandler {
 
     @Override
     public void handle(final HttpExchange exchange) throws IOException {
+        HttpRequest request = new HttpRequest(exchange);
+        HttpResponse response = new HttpResponse(exchange);
+
         TaskRouteHandler taskRouteHandler = taskRouteHandlers.stream()
-                .filter(handler -> handler.isSelect(getRequestMethod(exchange), getRequestPath(exchange)))
+                .filter(handler -> handler.isSelect(request.getMethod(), request.getPath()))
                 .findFirst()
                 .orElse(taskRouteHandlers.get(taskRouteHandlers.size() - 1));
-        taskRouteHandler.execute(exchange);
+
+        taskRouteHandler.execute(request, response);
     }
 
 }

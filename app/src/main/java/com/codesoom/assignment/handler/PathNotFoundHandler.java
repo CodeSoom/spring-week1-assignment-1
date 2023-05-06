@@ -1,11 +1,8 @@
 package com.codesoom.assignment.handler;
 
-import com.sun.net.httpserver.HttpExchange;
-
 import java.io.IOException;
 
 import static com.codesoom.assignment.handler.HttpStatus.NOT_FOUND;
-import static com.codesoom.assignment.util.HttpExchangeUtil.*;
 
 public class PathNotFoundHandler implements TaskRouteHandler {
 
@@ -15,13 +12,13 @@ public class PathNotFoundHandler implements TaskRouteHandler {
     }
 
     @Override
-    public void execute(final HttpExchange exchange) throws IOException {
+    public void execute(final HttpRequest request, final HttpResponse response) throws IOException {
         String errorMessage = String.format(
                 "404 Not Found: The requested path '%s' with method '%s' does not exist.",
-                getRequestPath(exchange),
-                getRequestMethod(exchange)
+                request.getPath(),
+                request.getMethod()
         );
-        sendHttpResponse(exchange, NOT_FOUND.getCode(), errorMessage);
+        response.send(NOT_FOUND.getCode(), errorMessage);
     }
 
 }

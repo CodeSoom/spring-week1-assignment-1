@@ -1,12 +1,10 @@
 package com.codesoom.assignment.handler;
 
 import com.codesoom.assignment.domain.task.model.Tasks;
-import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 
-import static com.codesoom.assignment.handler.HttpStatus.*;
-import static com.codesoom.assignment.util.HttpExchangeUtil.sendHttpResponse;
+import static com.codesoom.assignment.handler.HttpStatus.OK;
 import static com.codesoom.assignment.util.JsonUtil.objectToJsonString;
 
 public class GetAllHandler implements TaskRouteHandler {
@@ -23,8 +21,8 @@ public class GetAllHandler implements TaskRouteHandler {
     }
 
     @Override
-    public void execute(final HttpExchange exchange) throws IOException {
-        sendHttpResponse(exchange, OK.getCode(), objectToJsonString(tasks.getAll()));
+    public void execute(final HttpRequest request, final HttpResponse response) throws IOException {
+        response.send(OK.getCode(), objectToJsonString(tasks.getAll()));
     }
 
 }
