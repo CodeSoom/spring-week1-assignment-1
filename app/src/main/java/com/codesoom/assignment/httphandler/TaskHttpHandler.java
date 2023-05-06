@@ -3,17 +3,16 @@ package com.codesoom.assignment.httphandler;
 import com.codesoom.assignment.exception.TaskNotFoundException;
 import com.codesoom.assignment.http.*;
 import com.codesoom.assignment.model.Task;
-import com.codesoom.assignment.util.IdGenerator;
+import com.codesoom.assignment.task.TaskService;
 import com.codesoom.assignment.util.JsonObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class TaskHttpHandler implements HttpHandler {
-	private static final List<Task> tasks = new ArrayList<>();
+	private TaskService taskService = new TaskService();
 
 	@Override
 	public void handle(HttpExchange httpExchange) throws IOException {
@@ -38,8 +37,7 @@ public class TaskHttpHandler implements HttpHandler {
 	private void deleteTask(HttpTaskRequest httpRequest) throws IOException {
 		int taskId = httpRequest.taskId();
 		try {
-			Task task = findTask(taskId);
-			tasks.remove(task);
+			taskService.deleteTask(taskId);
 
 			new HttpNoContentResponse(httpRequest.getHttpExchange()).send();
 		} catch (TaskNotFoundException e) {
@@ -51,11 +49,7 @@ public class TaskHttpHandler implements HttpHandler {
 		int taskId = httpRequest.taskId();
 
 		try {
-			Task task = findTask(taskId);
-			String requestBody = httpRequest.getBody();
-			Task request = JsonObjectMapper.toObject(requestBody, Task.class);
-			task.update(request);
-
+			Task task = taskService.putTask(taskId, JsonObjectMapper.toObject(httpRequest.getBody(), Task.class));
 			new HttpSuccessResponse(httpRequest.getHttpExchange()).send(JsonObjectMapper.toJson(task));
 		} catch (TaskNotFoundException e) {
 			new HttpNotFoundResponse(httpRequest.getHttpExchange()).send(e.getMessage());
@@ -65,7 +59,7 @@ public class TaskHttpHandler implements HttpHandler {
 	private void getTask(HttpTaskRequest httpRequest) throws IOException {
 		int taskId = httpRequest.taskId();
 		try {
-			Task task = findTask(taskId);
+			Task task = taskService.findTask(taskId);
 
 			new HttpSuccessResponse(httpRequest.getHttpExchange()).send(JsonObjectMapper.toJson(task));
 		} catch (TaskNotFoundException e) {
@@ -74,22 +68,18 @@ public class TaskHttpHandler implements HttpHandler {
 	}
 
 	public void getAllTasks(HttpTaskRequest httpRequest) throws IOException {
-		new HttpSuccessResponse(httpRequest.getHttpExchange()).send(JsonObjectMapper.toJsonArray(tasks));
+		List<Task> allTasks = taskService.getAllTasks();
+		new HttpSuccessResponse(httpRequest.getHttpExchange()).send(JsonObjectMapper.toJsonArray(allTasks));
 	}
 
 	public void createTask(HttpTaskRequest httpRequest) throws IOException {
-		String requestBody = httpRequest.getBody();
+		try {
+			Task task = taskService.create(httpRequest.bodyToTask());
 
-		Task task = JsonObjectMapper.toObject(requestBody, Task.class);
-		task.setId(IdGenerator.genId(IdGenerator.IdType.TASK));
-		tasks.add(task);
-
-		new HttpCreatedResponse(httpRequest.getHttpExchange()).send(JsonObjectMapper.toJson(task));
-	}
-	private Task findTask(int taskId) throws TaskNotFoundException {
-		return tasks.stream()
-				.filter(task -> task.getId() == taskId)
-				.findFirst().orElseThrow(() -> new TaskNotFoundException(taskId));
+			new HttpCreatedResponse(httpRequest.getHttpExchange()).send(JsonObjectMapper.toJson(task));
+		} catch (TaskNotFoundException e) {
+			new HttpNotFoundResponse(httpRequest.getHttpExchange()).send(e.getMessage());
+		}
 	}
 
 }
