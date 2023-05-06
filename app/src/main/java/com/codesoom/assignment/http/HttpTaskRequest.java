@@ -2,6 +2,7 @@ package com.codesoom.assignment.http;
 
 import com.codesoom.assignment.model.Task;
 import com.codesoom.assignment.util.JsonObjectMapper;
+import com.codesoom.assignment.util.URIPatternMatcher;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -12,9 +13,9 @@ public class HttpTaskRequest extends HttpRequest {
 	}
 
 	public int taskId() {
-		String[] pathSegments = getPath().split("/");
+		String taskId = URIPatternMatcher.getBasicResourceId(getPath());
 
-		return Integer.parseInt(pathSegments[pathSegments.length - 1]);
+		return Integer.parseInt(taskId);
 	}
 
 	public Task bodyToTask() throws JsonProcessingException {
