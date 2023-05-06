@@ -1,4 +1,4 @@
-package com.codesoom.assignment.util;
+package com.codesoom.assignment.task.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

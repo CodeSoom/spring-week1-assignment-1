@@ -1,4 +1,4 @@
-package com.codesoom.assignment.util;
+package com.codesoom.assignment.task.util;
 
 public class TaskRoutePattern {
 

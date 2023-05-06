@@ -1,8 +1,8 @@
 package com.codesoom.assignment;
 
-import com.codesoom.assignment.handler.HttpRequestHandler;
-import com.codesoom.assignment.handler.TaskHttpHandler;
-import com.codesoom.assignment.server.SimpleHttpServer;
+import com.codesoom.assignment.task.handler.HttpRequestHandler;
+import com.codesoom.assignment.task.handler.TaskHttpHandler;
+import com.codesoom.assignment.task.server.SimpleHttpServer;
 
 public class App {
 

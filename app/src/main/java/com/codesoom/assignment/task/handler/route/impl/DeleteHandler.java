@@ -1,11 +1,14 @@
-package com.codesoom.assignment.handler;
+package com.codesoom.assignment.task.handler.route.impl;
 
-import com.codesoom.assignment.domain.task.model.Tasks;
+import com.codesoom.assignment.task.handler.request.HttpRequest;
+import com.codesoom.assignment.task.handler.response.HttpResponse;
+import com.codesoom.assignment.task.handler.route.TaskRouteHandler;
+import com.codesoom.assignment.task.repository.Tasks;
 
 import java.io.IOException;
 
-import static com.codesoom.assignment.handler.HttpStatus.OK;
-import static com.codesoom.assignment.util.TaskRoutePattern.TASK_ID_PATH_PATTERN;
+import static com.codesoom.assignment.common.HttpStatus.OK;
+import static com.codesoom.assignment.task.util.TaskRoutePattern.TASK_ID_PATH_PATTERN;
 
 public class DeleteHandler implements TaskRouteHandler {
 

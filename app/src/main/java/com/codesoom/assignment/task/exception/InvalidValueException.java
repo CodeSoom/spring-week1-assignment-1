@@ -1,4 +1,4 @@
-package com.codesoom.assignment.exception;
+package com.codesoom.assignment.task.exception;
 
 public class InvalidValueException extends IllegalArgumentException {
 

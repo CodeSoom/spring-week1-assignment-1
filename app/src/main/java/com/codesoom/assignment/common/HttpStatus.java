@@ -1,4 +1,4 @@
-package com.codesoom.assignment.handler;
+package com.codesoom.assignment.common;
 
 public enum HttpStatus {
     OK(200),

@@ -1,6 +1,7 @@
-package com.codesoom.assignment.domain.task.model;
+package com.codesoom.assignment.task.repository;
 
-import com.codesoom.assignment.exception.TaskNotFoundException;
+import com.codesoom.assignment.task.exception.TaskNotFoundException;
+import com.codesoom.assignment.task.model.Task;
 
 import java.util.ArrayList;
 import java.util.List;

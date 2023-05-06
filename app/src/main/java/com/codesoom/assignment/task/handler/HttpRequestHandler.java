@@ -1,4 +1,4 @@
-package com.codesoom.assignment.handler;
+package com.codesoom.assignment.task.handler;
 
 import com.sun.net.httpserver.HttpHandler;
 

@@ -1,6 +1,6 @@
-package com.codesoom.assignment.domain.task.model;
+package com.codesoom.assignment.task.model;
 
-import com.codesoom.assignment.exception.InvalidValueException;
+import com.codesoom.assignment.task.exception.InvalidValueException;
 
 public class Task {
 

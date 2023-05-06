@@ -1,8 +1,12 @@
-package com.codesoom.assignment.handler;
+package com.codesoom.assignment.task.handler.route.impl;
+
+import com.codesoom.assignment.task.handler.request.HttpRequest;
+import com.codesoom.assignment.task.handler.response.HttpResponse;
+import com.codesoom.assignment.task.handler.route.TaskRouteHandler;
 
 import java.io.IOException;
 
-import static com.codesoom.assignment.handler.HttpStatus.NOT_FOUND;
+import static com.codesoom.assignment.common.HttpStatus.NOT_FOUND;
 
 public class PathNotFoundHandler implements TaskRouteHandler {
 
