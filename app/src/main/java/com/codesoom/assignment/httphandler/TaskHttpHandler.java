@@ -5,6 +5,7 @@ import com.codesoom.assignment.http.*;
 import com.codesoom.assignment.model.Task;
 import com.codesoom.assignment.task.TaskService;
 import com.codesoom.assignment.util.JsonObjectMapper;
+import com.codesoom.assignment.util.URIPatternMatcher;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -17,14 +18,14 @@ public class TaskHttpHandler implements HttpHandler {
 	@Override
 	public void handle(HttpExchange httpExchange) throws IOException {
 		HttpTaskRequest httpRequest = new HttpTaskRequest(httpExchange);
-
 		String requestMethod = httpRequest.getMethod();
-		String path = httpRequest.getPath();
 
-		if ("GET".equals(requestMethod) && "/tasks".equals(path)) {
-			getAllTasks(httpRequest);
-		} else if ("GET".equals(requestMethod) && path.startsWith("/tasks/")) {
-			getTask(httpRequest);
+		if ("GET".equals(requestMethod)) {
+			if (httpRequest.isRequestRoot()) {
+				getAllTasks(httpRequest);
+			} else {
+				getTask(httpRequest);
+			}
 		} else if ("POST".equals(requestMethod)) {
 			createTask(httpRequest);
 		} else if ("PUT".equals(requestMethod)) {

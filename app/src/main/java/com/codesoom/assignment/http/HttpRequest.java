@@ -1,5 +1,6 @@
 package com.codesoom.assignment.http;
 
+import com.codesoom.assignment.util.URIPatternMatcher;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.BufferedReader;
@@ -29,5 +30,9 @@ public class HttpRequest {
 	public String getBody() {
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody()));
 		return bufferedReader.lines().collect(Collectors.joining("\n"));
+	}
+
+	public boolean isRequestRoot() {
+		return URIPatternMatcher.requestRoot(getPath());
 	}
 }
