@@ -25,7 +25,7 @@ public class Task {
 	}
 
 	public Task update(Task target) {
-		this.title = target.getTitle();
+		setTitle(target.getTitle());
 		return this;
 	}
 

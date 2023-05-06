@@ -8,8 +8,7 @@ import java.util.stream.Collectors;
 
 public class HttpRequest {
 
-	private HttpExchange httpExchange;
-	private String path;
+	private final HttpExchange httpExchange;
 
 	public HttpRequest(HttpExchange httpExchange) {
 		this.httpExchange = httpExchange;

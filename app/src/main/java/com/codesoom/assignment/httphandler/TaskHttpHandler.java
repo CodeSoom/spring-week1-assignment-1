@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class TaskHttpHandler implements HttpHandler {
-	private TaskService taskService = new TaskService();
+	private final TaskService taskService = new TaskService();
 
 	@Override
 	public void handle(HttpExchange httpExchange) throws IOException {
@@ -50,6 +50,7 @@ public class TaskHttpHandler implements HttpHandler {
 
 		try {
 			Task task = taskService.putTask(taskId, JsonObjectMapper.toObject(httpRequest.getBody(), Task.class));
+
 			new HttpSuccessResponse(httpRequest.getHttpExchange()).send(JsonObjectMapper.toJson(task));
 		} catch (TaskNotFoundException e) {
 			new HttpNotFoundResponse(httpRequest.getHttpExchange()).send(e.getMessage());
@@ -69,6 +70,7 @@ public class TaskHttpHandler implements HttpHandler {
 
 	public void getAllTasks(HttpTaskRequest httpRequest) throws IOException {
 		List<Task> allTasks = taskService.getAllTasks();
+
 		new HttpSuccessResponse(httpRequest.getHttpExchange()).send(JsonObjectMapper.toJsonArray(allTasks));
 	}
 
