@@ -22,8 +22,7 @@ public class TaskHttpHandler implements HttpRequestHandler {
                 new GetAllHandler(tasks),
                 new PostHandler(tasks),
                 new PutHandler(tasks),
-                new DeleteHandler(tasks),
-                new PathNotFoundHandler()
+                new DeleteHandler(tasks)
         );
     }
 
@@ -35,7 +34,7 @@ public class TaskHttpHandler implements HttpRequestHandler {
         TaskRouteHandler taskRouteHandler = taskRouteHandlers.stream()
                 .filter(handler -> handler.isSelect(request.getMethod(), request.getPath()))
                 .findFirst()
-                .orElse(taskRouteHandlers.get(taskRouteHandlers.size() - 1));
+                .orElse(new PathNotFoundHandler());
 
         taskRouteHandler.execute(request, response);
     }

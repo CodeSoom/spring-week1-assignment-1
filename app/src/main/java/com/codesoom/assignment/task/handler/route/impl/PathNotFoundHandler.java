@@ -1,12 +1,12 @@
 package com.codesoom.assignment.task.handler.route.impl;
 
+import com.codesoom.assignment.common.NotFoundStatus;
 import com.codesoom.assignment.task.handler.request.HttpRequest;
 import com.codesoom.assignment.task.handler.response.HttpResponse;
 import com.codesoom.assignment.task.handler.route.TaskRouteHandler;
 
 import java.io.IOException;
 
-import static com.codesoom.assignment.common.HttpStatus.NOT_FOUND;
 
 public class PathNotFoundHandler implements TaskRouteHandler {
 
@@ -22,7 +22,7 @@ public class PathNotFoundHandler implements TaskRouteHandler {
                 request.getPath(),
                 request.getMethod()
         );
-        response.send(NOT_FOUND.getCode(), errorMessage);
+        response.send(new NotFoundStatus().getCode(), errorMessage);
     }
 
 }

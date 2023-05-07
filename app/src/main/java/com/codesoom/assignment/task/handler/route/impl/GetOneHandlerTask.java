@@ -1,5 +1,6 @@
 package com.codesoom.assignment.task.handler.route.impl;
 
+import com.codesoom.assignment.common.OkStatus;
 import com.codesoom.assignment.task.handler.request.HttpRequest;
 import com.codesoom.assignment.task.handler.response.HttpResponse;
 import com.codesoom.assignment.task.handler.route.TaskRouteHandler;
@@ -7,7 +8,6 @@ import com.codesoom.assignment.task.repository.Tasks;
 
 import java.io.IOException;
 
-import static com.codesoom.assignment.common.HttpStatus.OK;
 import static com.codesoom.assignment.task.util.JsonUtil.objectToJsonString;
 import static com.codesoom.assignment.task.util.TaskRoutePattern.TASK_ID_PATH_PATTERN;
 
@@ -27,7 +27,7 @@ public class GetOneHandlerTask implements TaskRouteHandler {
     @Override
     public void execute(final HttpRequest request, final HttpResponse response) throws IOException {
         long id = request.parseIdFromPath();
-        response.send(OK.getCode(), objectToJsonString(tasks.findById(id)));
+        response.send(new OkStatus().getCode(), objectToJsonString(tasks.findById(id)));
     }
 
 }

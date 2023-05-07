@@ -1,5 +1,6 @@
 package com.codesoom.assignment.task.handler.route.impl;
 
+import com.codesoom.assignment.common.OkStatus;
 import com.codesoom.assignment.task.handler.request.HttpRequest;
 import com.codesoom.assignment.task.handler.response.HttpResponse;
 import com.codesoom.assignment.task.handler.route.TaskRouteHandler;
@@ -8,7 +9,6 @@ import com.codesoom.assignment.task.repository.Tasks;
 
 import java.io.IOException;
 
-import static com.codesoom.assignment.common.HttpStatus.OK;
 import static com.codesoom.assignment.task.util.JsonUtil.jsonToObject;
 import static com.codesoom.assignment.task.util.JsonUtil.objectToJsonString;
 import static com.codesoom.assignment.task.util.TaskRoutePattern.TASK_ID_PATH_PATTERN;
@@ -32,7 +32,7 @@ public class PutHandler implements TaskRouteHandler {
                 request.parseIdFromPath(),
                 jsonToObject(request.getBody(), Task.class).getTitle()
         );
-        response.send(OK.getCode(), objectToJsonString(task));
+        response.send(new OkStatus().getCode(), objectToJsonString(task));
     }
 
 }

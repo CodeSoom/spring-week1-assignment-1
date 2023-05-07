@@ -43,7 +43,8 @@ public class Tasks {
     }
 
     private long increaseId() {
-        return currentId += 1;
+        currentId += 1;
+        return currentId;
     }
 
 }

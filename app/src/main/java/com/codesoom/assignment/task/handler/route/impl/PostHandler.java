@@ -1,5 +1,6 @@
 package com.codesoom.assignment.task.handler.route.impl;
 
+import com.codesoom.assignment.common.CreatedStatus;
 import com.codesoom.assignment.task.handler.request.HttpRequest;
 import com.codesoom.assignment.task.handler.response.HttpResponse;
 import com.codesoom.assignment.task.handler.route.TaskRouteHandler;
@@ -8,7 +9,6 @@ import com.codesoom.assignment.task.repository.Tasks;
 
 import java.io.IOException;
 
-import static com.codesoom.assignment.common.HttpStatus.CREATED;
 import static com.codesoom.assignment.task.util.JsonUtil.jsonToObject;
 import static com.codesoom.assignment.task.util.JsonUtil.objectToJsonString;
 
@@ -28,7 +28,7 @@ public class PostHandler implements TaskRouteHandler {
     @Override
     public void execute(final HttpRequest request, final HttpResponse response) throws IOException {
         tasks.add(jsonToObject(request.getBody(), Task.class));
-        response.send(CREATED.getCode(), objectToJsonString(tasks.getAll()));
+        response.send(new CreatedStatus().getCode(), objectToJsonString(tasks.getAll()));
     }
 
 }
