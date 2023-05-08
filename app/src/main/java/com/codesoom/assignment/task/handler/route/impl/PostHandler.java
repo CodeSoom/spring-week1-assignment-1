@@ -1,6 +1,6 @@
 package com.codesoom.assignment.task.handler.route.impl;
 
-import com.codesoom.assignment.common.CreatedStatus;
+import com.codesoom.assignment.common.HttpCreated;
 import com.codesoom.assignment.task.handler.request.HttpRequest;
 import com.codesoom.assignment.task.handler.response.HttpResponse;
 import com.codesoom.assignment.task.handler.route.TaskRouteHandler;
@@ -28,7 +28,8 @@ public class PostHandler implements TaskRouteHandler {
     @Override
     public void execute(final HttpRequest request, final HttpResponse response) throws IOException {
         tasks.add(jsonToObject(request.getBody(), Task.class));
-        response.send(new CreatedStatus().getCode(), objectToJsonString(tasks.getAll()));
+        HttpCreated httpCreated = new HttpCreated(objectToJsonString(tasks.getAll()));
+        response.send(httpCreated);
     }
 
 }

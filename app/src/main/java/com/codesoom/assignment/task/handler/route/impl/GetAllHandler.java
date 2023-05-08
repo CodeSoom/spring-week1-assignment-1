@@ -1,6 +1,6 @@
 package com.codesoom.assignment.task.handler.route.impl;
 
-import com.codesoom.assignment.common.OkStatus;
+import com.codesoom.assignment.common.HttpOk;
 import com.codesoom.assignment.task.handler.request.HttpRequest;
 import com.codesoom.assignment.task.handler.response.HttpResponse;
 import com.codesoom.assignment.task.handler.route.TaskRouteHandler;
@@ -25,7 +25,8 @@ public class GetAllHandler implements TaskRouteHandler {
 
     @Override
     public void execute(final HttpRequest request, final HttpResponse response) throws IOException {
-        response.send(new OkStatus().getCode(), objectToJsonString(tasks.getAll()));
+        HttpOk httpOk = new HttpOk(objectToJsonString(tasks.getAll()));
+        response.send(httpOk);
     }
 
 }

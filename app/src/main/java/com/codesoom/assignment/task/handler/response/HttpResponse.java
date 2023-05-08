@@ -1,5 +1,6 @@
 package com.codesoom.assignment.task.handler.response;
 
+import com.codesoom.assignment.common.HttpStatus;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -13,11 +14,10 @@ public class HttpResponse {
         this.httpExchange = httpExchange;
     }
 
-    public void send(final int statusCode,
-                     final String content) throws IOException {
-        httpExchange.sendResponseHeaders(statusCode, content.getBytes().length);
+    public void send(final HttpStatus httpStatus) throws IOException {
+        httpExchange.sendResponseHeaders(httpStatus.getCode(), httpStatus.getContent().getBytes().length);
         OutputStream outputStream = httpExchange.getResponseBody();
-        outputStream.write(content.getBytes());
+        outputStream.write(httpStatus.getContent().getBytes());
         outputStream.flush();
         outputStream.close();
     }

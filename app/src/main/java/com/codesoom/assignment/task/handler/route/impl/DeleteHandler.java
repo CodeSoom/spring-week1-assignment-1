@@ -1,6 +1,6 @@
 package com.codesoom.assignment.task.handler.route.impl;
 
-import com.codesoom.assignment.common.OkStatus;
+import com.codesoom.assignment.common.HttpOk;
 import com.codesoom.assignment.task.handler.request.HttpRequest;
 import com.codesoom.assignment.task.handler.response.HttpResponse;
 import com.codesoom.assignment.task.handler.route.TaskRouteHandler;
@@ -26,7 +26,8 @@ public class DeleteHandler implements TaskRouteHandler {
     @Override
     public void execute(final HttpRequest request, final HttpResponse response) throws IOException {
         tasks.delete(request.parseIdFromPath());
-        response.send(new OkStatus().getCode(), "");
+        HttpOk httpOk = new HttpOk("");
+        response.send(httpOk);
     }
 
 }

@@ -1,6 +1,6 @@
 package com.codesoom.assignment.task.handler.route.impl;
 
-import com.codesoom.assignment.common.NotFoundStatus;
+import com.codesoom.assignment.common.HttpNotFound;
 import com.codesoom.assignment.task.handler.request.HttpRequest;
 import com.codesoom.assignment.task.handler.response.HttpResponse;
 import com.codesoom.assignment.task.handler.route.TaskRouteHandler;
@@ -22,7 +22,8 @@ public class PathNotFoundHandler implements TaskRouteHandler {
                 request.getPath(),
                 request.getMethod()
         );
-        response.send(new NotFoundStatus().getCode(), errorMessage);
+        HttpNotFound httpNotFound = new HttpNotFound(errorMessage);
+        response.send(httpNotFound);
     }
 
 }

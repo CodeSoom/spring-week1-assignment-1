@@ -1,6 +1,6 @@
 package com.codesoom.assignment.task.handler.route.impl;
 
-import com.codesoom.assignment.common.OkStatus;
+import com.codesoom.assignment.common.HttpOk;
 import com.codesoom.assignment.task.handler.request.HttpRequest;
 import com.codesoom.assignment.task.handler.response.HttpResponse;
 import com.codesoom.assignment.task.handler.route.TaskRouteHandler;
@@ -32,7 +32,8 @@ public class PutHandler implements TaskRouteHandler {
                 request.parseIdFromPath(),
                 jsonToObject(request.getBody(), Task.class).getTitle()
         );
-        response.send(new OkStatus().getCode(), objectToJsonString(task));
+        HttpOk httpOk = new HttpOk(objectToJsonString(task));
+        response.send(httpOk);
     }
 
 }
