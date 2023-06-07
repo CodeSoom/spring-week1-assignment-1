@@ -43,7 +43,11 @@ public class DemoHttpHandler implements HttpHandler {
             if(pathSegments.length > 0 && pathSegments[0].equals("tasks")) {
 
                 if(method.equals("GET")){
-                     readTODO(pathSegments);
+                     if(pathSegments.length==1){  //리스트 조회하기 - GET /tasks
+                         readTODOList();
+                     }else{   //상세 조회하기 - GET /tasks/{id}
+                         readTODO(pathSegments);
+                     }
                 }else if(method.equals("POST")){
                     createTODO(body);
                 }else if(method.equals("PUT") || method.equals("PATCH")){
@@ -66,26 +70,24 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     //read
-    private void readTODO(String[] path) throws IOException {
+    private void readTODO(String[] pathSegments) throws IOException {
 
-        if(path.length == 1){         //리스트 조회하기 - GET /tasks
-            content = taskMapToJSON();
+        Task task = getTask(getTaskId(pathSegments));
+
+        if(task != null){
+            content = taskToJSON(task);
             statusCode = 200;
-
-        }else{                        //상세 조회하기 - GET /tasks/{id}
-            Task task = getTask(getPathVariable(path));
-
-            if(task != null){
-                content = taskToJSON(task);
-                statusCode = 200;
-            }else{
-                statusCode = 404;
-            }
-
+        }else {
+            statusCode = 404;
         }
 
     }
 
+
+    private void readTODOList() throws IOException {
+        content = taskMapToJSON();
+        statusCode = 200;
+    }
 
     //create
     private void createTODO(String body) throws IOException {
@@ -107,9 +109,9 @@ public class DemoHttpHandler implements HttpHandler {
 
 
     //update
-    private void updateTODO(String[] path, String body) throws IOException {
+    private void updateTODO(String[] pathSegments, String body) throws IOException {
 
-        Task task = getTask(getPathVariable(path));
+        Task task = getTask(getTaskId(pathSegments));
 
         if(task != null) {
 
@@ -127,9 +129,9 @@ public class DemoHttpHandler implements HttpHandler {
 
 
     //delete
-    private void deleteTODO(String[] path) throws IOException {
+    private void deleteTODO(String[] pathSegments) throws IOException {
 
-        Task task = getTask(getPathVariable(path));
+        Task task = getTask(getTaskId(pathSegments));
 
         if (task != null) {
             taskMap.remove(task.getId());
@@ -157,15 +159,15 @@ public class DemoHttpHandler implements HttpHandler {
 
 
     //get path variable id
-    private String getPathVariable(String[] path){
+    private String getTaskId(String[] pathSegments){
 
-        String pathVariable = null;
+        String taskId = null;
 
-        if (path[1].matches("^[0-9]+$")) {
-            pathVariable = path[1];
+        if (pathSegments[1].matches("^[0-9]+$")) {
+            taskId = pathSegments[1];
         }
 
-        return pathVariable;
+        return taskId;
     }
 
 
