@@ -30,7 +30,7 @@ public class DemoHttpHandler implements HttpHandler {
             //read request
             String method = exchange.getRequestMethod();
             URI requestURI = exchange.getRequestURI();
-            String[] path = requestURI.getPath().substring(1).split("/");
+            String[] pathSegments = requestURI.getPath().substring(1).split("/");
             String body = new BufferedReader(new InputStreamReader(exchange.getRequestBody()))
                     .lines()
                     .collect(Collectors.joining("\n"));
@@ -40,16 +40,16 @@ public class DemoHttpHandler implements HttpHandler {
             //handle request
             content = " ";
 
-            if(path.length > 0 && path[0].equals("tasks")) {
+            if(pathSegments.length > 0 && pathSegments[0].equals("tasks")) {
 
                 if(method.equals("GET")){
-                     readTODO(path);
+                     readTODO(pathSegments);
                 }else if(method.equals("POST")){
                     createTODO(body);
                 }else if(method.equals("PUT") || method.equals("PATCH")){
-                    updateTODO(path,body);
+                    updateTODO(pathSegments,body);
                 }else if(method.equals("DELETE")){
-                    deleteTODO(path);
+                    deleteTODO(pathSegments);
                 }else{
                     statusCode = 400;
                 }
