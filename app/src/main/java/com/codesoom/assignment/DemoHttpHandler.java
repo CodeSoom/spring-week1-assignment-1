@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import jdk.nashorn.internal.runtime.options.Option;
+
 import java.io.*;
 import java.net.URI;
 import java.util.*;
@@ -54,7 +56,7 @@ public class DemoHttpHandler implements HttpHandler {
                     updateTODO(pathSegments,body);
                 }else if(method.equals("DELETE")){
                     deleteTODO(pathSegments);
-                }else{
+               }else{
                     statusCode = 400;
                 }
 
@@ -70,113 +72,132 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
     //read
-    private void readTODO(String[] pathSegments) throws IOException {
+    private void readTODO(String[] pathSegments){
 
-        Task task = getTask(getTaskId(pathSegments));
-
-        if(task != null){
+        try{
+            Task task = getTask(getTaskId(pathSegments));
             content = toJSON(task);
             statusCode = 200;
-        }else {
+        }catch(IllegalArgumentException exception){
+            statusCode = 400;
+        }catch(NoSuchElementException exception){
             statusCode = 404;
+        }catch(IOException exception){
+            statusCode = 500;
         }
 
     }
 
 
-    private void readTODOList() throws IOException {
-        content = toJSON(taskMap.values());
-        statusCode = 200;
+    private void readTODOList() {
+
+        try{
+            content = toJSON(taskMap.values());
+            statusCode = 200;
+        }catch(IOException exception){
+            statusCode = 500;
+        }
     }
 
     //create
-    private void createTODO(String body) throws IOException {
+    private void createTODO(String body){
 
-        if(!body.isEmpty()){
-            Task task = toTask(body);
-            task.setId(taskId++);
-            taskMap.put(task.getId(), task);
+        try{
+            if(!body.isEmpty()){
+                Task task = toTask(body);
+                task.setId(taskId++);
+                taskMap.put(task.getId(), task);
 
-            content = toJSON(task);
-            statusCode = 201;
+                content = toJSON(task);
+                statusCode = 201;
 
-        }else{
-            statusCode = 400;
+            }else{
+                statusCode = 400;
+            }
+
+        }catch(IOException exception){
+            statusCode = 500;
         }
-
 
     }
 
 
     //update
-    private void updateTODO(String[] pathSegments, String body) throws IOException {
+    private void updateTODO(String[] pathSegments, String body) {
 
-        Task task = getTask(getTaskId(pathSegments));
-
-        if(task != null) {
-
+        try{
+            Task task = getTask(getTaskId(pathSegments));
             if (!body.isEmpty()) {
                 task.setTitle(toTask(body).getTitle());
             }
 
             content = toJSON(task);
             statusCode = 200;
-        }else{
+
+        }catch(IllegalArgumentException exception){
+            statusCode = 400;
+        }catch(NoSuchElementException exception){
             statusCode = 404;
+        }catch(IOException exception){
+            statusCode = 500;
         }
 
     }
 
-
     //delete
-    private void deleteTODO(String[] pathSegments) throws IOException {
+    private void deleteTODO(String[] pathSegments) {
 
-        Task task = getTask(getTaskId(pathSegments));
-
-        if (task != null) {
+        try{
+            Task task = getTask(getTaskId(pathSegments));
             taskMap.remove(task.getId());
             statusCode = 204;
-        }else{
+
+        }catch(IllegalArgumentException exception){
+            statusCode = 400;
+        }catch(NoSuchElementException exception){
             statusCode = 404;
         }
+
+
     }
 
 
     //get task by id
-    private Task getTask(String pathVariable){
+    private Task getTask(Long taskId){
+        return getOptionalTask(taskId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 task id 입니다."));
+    }
 
-        Task task = null;
+    private Optional<Task> getOptionalTask(Long taskId){
+        Optional<Task> task = Optional.empty();
 
-        if(pathVariable != null){
-            Long id = Long.parseLong(pathVariable);
-            if(taskMap.containsKey(id)){
-                task = taskMap.get(id);
-            }
+        if(taskMap.containsKey(taskId)){
+            task = Optional.of(taskMap.get(taskId));
         }
 
         return task;
     }
 
 
-    //get path variable id
-    private String getTaskId(String[] pathSegments){
+    private Long getTaskId(String[] pathSegments){
+        return getOptionalTaskId(pathSegments).orElseThrow(() -> new IllegalArgumentException("잘못된 형식의 path 입니다."));
+    }
 
-        String taskId = null;
+    private Optional<Long> getOptionalTaskId(String[] pathSegments){
+        Optional<Long> taskId = Optional.empty();
 
-        if (pathSegments[1].matches("^[0-9]+$")) {
-            taskId = pathSegments[1];
+        if (pathSegments.length > 1 && pathSegments[1].matches("^[0-9]+$")) {
+            taskId = Optional.of(Long.parseLong(pathSegments[1]));
         }
 
         return taskId;
     }
 
 
-    //string -> task
     private Task toTask(String content) throws JsonProcessingException {
         return objectMapper.readValue(content, Task.class);
     }
 
-    
+
     private String toJSON(Object object) throws IOException{
         OutputStream outputStream = new ByteArrayOutputStream();
         objectMapper.writeValue(outputStream,object);
