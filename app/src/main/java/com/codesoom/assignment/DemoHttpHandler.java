@@ -75,7 +75,7 @@ public class DemoHttpHandler implements HttpHandler {
         Task task = getTask(getTaskId(pathSegments));
 
         if(task != null){
-            content = taskToJSON(task);
+            content = toJSON(task);
             statusCode = 200;
         }else {
             statusCode = 404;
@@ -85,7 +85,7 @@ public class DemoHttpHandler implements HttpHandler {
 
 
     private void readTODOList() throws IOException {
-        content = taskMapToJSON();
+        content = toJSON(taskMap.values());
         statusCode = 200;
     }
 
@@ -97,7 +97,7 @@ public class DemoHttpHandler implements HttpHandler {
             task.setId(taskId++);
             taskMap.put(task.getId(), task);
 
-            content = taskToJSON(task);
+            content = toJSON(task);
             statusCode = 201;
 
         }else{
@@ -119,7 +119,7 @@ public class DemoHttpHandler implements HttpHandler {
                 task.setTitle(toTask(body).getTitle());
             }
 
-            content = taskToJSON(task);
+            content = toJSON(task);
             statusCode = 200;
         }else{
             statusCode = 404;
@@ -176,19 +176,10 @@ public class DemoHttpHandler implements HttpHandler {
         return objectMapper.readValue(content, Task.class);
     }
 
-
-    //tasks -> JSON
-    private String taskMapToJSON() throws IOException {
+    
+    private String toJSON(Object object) throws IOException{
         OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream,new ArrayList<>(taskMap.values()));
-        return outputStream.toString();
-    }
-
-
-    //task -> JSON
-    private String taskToJSON(Task task) throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
-        objectMapper.writeValue(outputStream,task);
+        objectMapper.writeValue(outputStream,object);
         return outputStream.toString();
     }
 
