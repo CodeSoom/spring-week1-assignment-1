@@ -170,7 +170,6 @@ public class DemoHttpHandler implements HttpHandler {
     public List<Task> getTaskListSortedByTaskId(){
 
         List<Long> keySet = new ArrayList<>(taskMap.keySet());
-
         Collections.sort(keySet);
         //Collections.reverse(keySet);
 
@@ -202,7 +201,7 @@ public class DemoHttpHandler implements HttpHandler {
 
 
 
-    public List<Long> getSortedTaskKeyList  (Comparator comparator){
+    public List<Long> getSortedTaskKeyList  (Comparator<Long> comparator){
         List<Long> keySet = new ArrayList<>(taskMap.keySet());
         keySet.sort(comparator);
         return keySet;
