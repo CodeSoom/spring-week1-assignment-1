@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import jdk.nashorn.internal.runtime.options.Option;
 
 import java.io.*;
 import java.net.URI;
@@ -92,7 +91,10 @@ public class DemoHttpHandler implements HttpHandler {
     private void readTODOList() {
 
         try{
-            content = toJSON(taskMap.values());
+            //content = toJSON(taskMap.values());
+            //content = toJSON(getTaskListSortedByTaskTitle());
+            content = toJSON(getTaskListSortedByTaskId());
+
             statusCode = 200;
         }catch(IOException exception){
             statusCode = 500;
@@ -160,6 +162,53 @@ public class DemoHttpHandler implements HttpHandler {
 
 
     }
+
+
+
+
+
+    public List<Task> getTaskListSortedByTaskId(){
+
+        List<Long> keySet = new ArrayList<>(taskMap.keySet());
+
+        Collections.sort(keySet);
+        //Collections.reverse(keySet);
+
+        List<Task> taskList = new ArrayList<>();
+
+        for(Long key : keySet){
+            taskList.add(taskMap.get(key));
+        }
+
+        return taskList;
+    }
+
+
+
+    public List<Task> getTaskListSortedByTaskTitle(){
+
+        List<Long> keySet = getSortedTaskKeyList(
+             (k1,k2) -> taskMap.get(k1).getTitle().compareTo(taskMap.get(k2).getTitle())
+        );
+
+        List<Task> taskList = new ArrayList<>();
+
+        for(Long key : keySet){
+            taskList.add(taskMap.get(key));
+        }
+
+        return taskList;
+    }
+
+
+
+    public List<Long> getSortedTaskKeyList  (Comparator comparator){
+        List<Long> keySet = new ArrayList<>(taskMap.keySet());
+        keySet.sort(comparator);
+        return keySet;
+    }
+
+
 
 
     //get task by id
