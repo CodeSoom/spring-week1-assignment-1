@@ -213,28 +213,22 @@ public class DemoHttpHandler implements HttpHandler {
 
     //get task by id
     private Task getTask(Long taskId){
-        return getOptionalTask(taskId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 task id 입니다."));
+        return findTask(taskId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 task id 입니다."));
     }
 
-    private Optional<Task> getOptionalTask(Long taskId){
-        Optional<Task> task = Optional.empty();
-
-        if(taskMap.containsKey(taskId)){
-            task = Optional.of(taskMap.get(taskId));
-        }
-
-        return task;
+    private Optional<Task> findTask(Long taskId){
+        return Optional.ofNullable(taskMap.get(taskId));
     }
 
 
     private Long getTaskId(String pathSegment){
-        return getOptionalTask(pathSegment).orElseThrow(() -> new IllegalArgumentException("잘못된 형식의 path 입니다."));
+        return findTaskId(pathSegment).orElseThrow(() -> new IllegalArgumentException("잘못된 형식의 path 입니다."));
     }
 
-    private Optional<Long> getOptionalTask(String pathSegment){
+    private Optional<Long> findTaskId(String pathSegment){
         Optional<Long> taskId = Optional.empty();
 
-        if (pathSegment.matches("^/[0-9]+$")) {
+        if (pathSegment.matches("^[0-9]+$")) {
             taskId = Optional.of(Long.parseLong(pathSegment));
         }
 
