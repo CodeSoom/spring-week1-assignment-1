@@ -37,7 +37,6 @@ public class DemoHttpHandler implements HttpHandler {
                     .collect(Collectors.joining("\n"));
 
 
-
             //handle request
             content = "";
             statusCode = 404;
@@ -50,19 +49,21 @@ public class DemoHttpHandler implements HttpHandler {
                     createTODO(body);
                 }
 
-            }else if(path.startsWith("/tasks")) {
+            }else if(path.matches("^/tasks/[0-9]+$")) {   //else if(path.startsWith("/tasks"))
 
                 String pathSegment = path.substring("/tasks/".length());
+                Long id = Long.parseLong(pathSegment);
 
                 if(method.equals("GET")){
-                    readTODO(pathSegment);
+                    readTODO(id);
                 }else if(method.equals("PUT") || method.equals("PATH")){
-                    updateTODO(pathSegment,body);
+                    updateTODO(id,body);
                 }else if(method.equals("DELETE")){
-                    deleteTODO(pathSegment);
+                    deleteTODO(id);
                 }
-                
+
             }
+
 
 
 
@@ -77,11 +78,10 @@ public class DemoHttpHandler implements HttpHandler {
 
 
     //read
-    private void readTODO(String pathSegment){
-
+    private void readTODO(Long id){
 
         try{
-            Task task = getTask(getTaskId(pathSegment));
+            Task task = getTask(id);
             content = toJSON(task);
             statusCode = 200;
         }catch(IllegalArgumentException exception){
@@ -131,10 +131,10 @@ public class DemoHttpHandler implements HttpHandler {
 
 
     //update
-    private void updateTODO(String pathSegment, String body) {
+    private void updateTODO(Long id, String body) {
 
         try{
-            Task task = getTask(getTaskId(pathSegment));
+            Task task = getTask(id);
 
             if (!body.isEmpty()) {
                 task.setTitle(toTask(body).getTitle());
@@ -155,10 +155,10 @@ public class DemoHttpHandler implements HttpHandler {
 
 
 
-    private void deleteTODO(String pathSegment) {
+    private void deleteTODO(Long id) {
 
         try{
-            Task task = getTask(getTaskId(pathSegment));
+            Task task = getTask(id);
             taskMap.remove(task.getId());
             statusCode = 204;
 
