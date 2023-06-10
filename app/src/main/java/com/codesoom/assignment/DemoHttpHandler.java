@@ -37,6 +37,7 @@ public class DemoHttpHandler implements HttpHandler {
                     .collect(Collectors.joining("\n"));
 
 
+
             //handle request
             content = "";
             statusCode = 404;
@@ -49,7 +50,7 @@ public class DemoHttpHandler implements HttpHandler {
                     createTODO(body);
                 }
 
-            }else if(path.matches("^/tasks/[0-9]+$")) {   //else if(path.startsWith("/tasks"))
+            }else if(path.matches("^/tasks/[0-9]+$")) {
 
                 String pathSegment = path.substring("/tasks/".length());
                 Long id = Long.parseLong(pathSegment);
@@ -84,8 +85,6 @@ public class DemoHttpHandler implements HttpHandler {
             Task task = getTask(id);
             content = toJSON(task);
             statusCode = 200;
-        }catch(IllegalArgumentException exception){
-            statusCode = 400;
         }catch(NoSuchElementException exception){
             statusCode = 404;
         }catch(IOException exception){
@@ -143,8 +142,6 @@ public class DemoHttpHandler implements HttpHandler {
             content = toJSON(task);
             statusCode = 200;
 
-        }catch(IllegalArgumentException exception){
-            statusCode = 400;
         }catch(NoSuchElementException exception){
             statusCode = 404;
         }catch(IOException exception){
@@ -154,7 +151,6 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
 
-
     private void deleteTODO(Long id) {
 
         try{
@@ -162,8 +158,6 @@ public class DemoHttpHandler implements HttpHandler {
             taskMap.remove(task.getId());
             statusCode = 204;
 
-        }catch(IllegalArgumentException exception){
-            statusCode = 400;
         }catch(NoSuchElementException exception){
             statusCode = 404;
         }
@@ -218,21 +212,6 @@ public class DemoHttpHandler implements HttpHandler {
 
     private Optional<Task> findTask(Long taskId){
         return Optional.ofNullable(taskMap.get(taskId));
-    }
-
-
-    private Long getTaskId(String pathSegment){
-        return findTaskId(pathSegment).orElseThrow(() -> new IllegalArgumentException("잘못된 형식의 path 입니다."));
-    }
-
-    private Optional<Long> findTaskId(String pathSegment){
-        Optional<Long> taskId = Optional.empty();
-
-        if (pathSegment.matches("^[0-9]+$")) {
-            taskId = Optional.of(Long.parseLong(pathSegment));
-        }
-
-        return taskId;
     }
 
 
