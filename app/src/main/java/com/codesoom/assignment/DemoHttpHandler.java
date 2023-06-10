@@ -31,7 +31,7 @@ public class DemoHttpHandler implements HttpHandler {
             //read request
             String method = exchange.getRequestMethod();
             URI requestURI = exchange.getRequestURI();
-            String[] pathSegments = requestURI.getPath().substring(1).split("/");
+            String path = requestURI.getPath();
             String body = new BufferedReader(new InputStreamReader(exchange.getRequestBody()))
                     .lines()
                     .collect(Collectors.joining("\n"));
@@ -39,42 +39,49 @@ public class DemoHttpHandler implements HttpHandler {
 
 
             //handle request
-            content = " ";
+            content = "";
+            statusCode = 404;
 
-            if(pathSegments.length > 0 && pathSegments[0].equals("tasks")) {
+            if(path.equals("/tasks")) {
 
                 if(method.equals("GET")){
-                     if(pathSegments.length==1){  //리스트 조회하기 - GET /tasks
-                         readTODOList();
-                     }else{   //상세 조회하기 - GET /tasks/{id}
-                         readTODO(pathSegments);
-                     }
+                    readTODOList();
                 }else if(method.equals("POST")){
                     createTODO(body);
-                }else if(method.equals("PUT") || method.equals("PATCH")){
-                    updateTODO(pathSegments,body);
-                }else if(method.equals("DELETE")){
-                    deleteTODO(pathSegments);
-               }else{
-                    statusCode = 400;
                 }
 
-            }else{
-                statusCode = 404;
+            }else if(path.startsWith("/tasks")) {
+
+                String pathSegment = path.substring("/tasks/".length());
+
+                if(method.equals("GET")){
+                    readTODO(pathSegment);
+                }else if(method.equals("PUT") || method.equals("PATH")){
+                    updateTODO(pathSegment,body);
+                }else if(method.equals("DELETE")){
+                    deleteTODO(pathSegment);
+                }
+                
             }
+
+
 
             //write response
             exchange.sendResponseHeaders(statusCode, content.getBytes().length);
             OutputStream outputStream = exchange.getResponseBody();
             outputStream.write(content.getBytes());
+            outputStream.flush();
+            outputStream.close();
 
     }
 
+
     //read
-    private void readTODO(String[] pathSegments){
+    private void readTODO(String pathSegment){
+
 
         try{
-            Task task = getTask(getTaskId(pathSegments));
+            Task task = getTask(getTaskId(pathSegment));
             content = toJSON(task);
             statusCode = 200;
         }catch(IllegalArgumentException exception){
@@ -89,17 +96,16 @@ public class DemoHttpHandler implements HttpHandler {
 
 
     private void readTODOList() {
-
         try{
             //content = toJSON(taskMap.values());
             //content = toJSON(getTaskListSortedByTaskTitle());
             content = toJSON(getTaskListSortedByTaskId());
-
             statusCode = 200;
         }catch(IOException exception){
             statusCode = 500;
         }
     }
+
 
     //create
     private void createTODO(String body){
@@ -125,10 +131,11 @@ public class DemoHttpHandler implements HttpHandler {
 
 
     //update
-    private void updateTODO(String[] pathSegments, String body) {
+    private void updateTODO(String pathSegment, String body) {
 
         try{
-            Task task = getTask(getTaskId(pathSegments));
+            Task task = getTask(getTaskId(pathSegment));
+
             if (!body.isEmpty()) {
                 task.setTitle(toTask(body).getTitle());
             }
@@ -146,11 +153,12 @@ public class DemoHttpHandler implements HttpHandler {
 
     }
 
-    //delete
-    private void deleteTODO(String[] pathSegments) {
+
+
+    private void deleteTODO(String pathSegment) {
 
         try{
-            Task task = getTask(getTaskId(pathSegments));
+            Task task = getTask(getTaskId(pathSegment));
             taskMap.remove(task.getId());
             statusCode = 204;
 
@@ -162,9 +170,6 @@ public class DemoHttpHandler implements HttpHandler {
 
 
     }
-
-
-
 
 
     public List<Task> getTaskListSortedByTaskId(){
@@ -183,7 +188,6 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
 
-
     public List<Task> getTaskListSortedByTaskTitle(){
 
         List<Long> keySet = getSortedTaskKeyList(
@@ -200,14 +204,11 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
 
-
     public List<Long> getSortedTaskKeyList  (Comparator<Long> comparator){
         List<Long> keySet = new ArrayList<>(taskMap.keySet());
         keySet.sort(comparator);
         return keySet;
     }
-
-
 
 
     //get task by id
@@ -226,15 +227,15 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
 
-    private Long getTaskId(String[] pathSegments){
-        return getOptionalTaskId(pathSegments).orElseThrow(() -> new IllegalArgumentException("잘못된 형식의 path 입니다."));
+    private Long getTaskId(String pathSegment){
+        return getOptionalTask(pathSegment).orElseThrow(() -> new IllegalArgumentException("잘못된 형식의 path 입니다."));
     }
 
-    private Optional<Long> getOptionalTaskId(String[] pathSegments){
+    private Optional<Long> getOptionalTask(String pathSegment){
         Optional<Long> taskId = Optional.empty();
 
-        if (pathSegments.length > 1 && pathSegments[1].matches("^[0-9]+$")) {
-            taskId = Optional.of(Long.parseLong(pathSegments[1]));
+        if (pathSegment.matches("^/[0-9]+$")) {
+            taskId = Optional.of(Long.parseLong(pathSegment));
         }
 
         return taskId;
