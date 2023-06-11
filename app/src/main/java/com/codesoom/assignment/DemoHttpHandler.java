@@ -21,8 +21,7 @@ public class DemoHttpHandler implements HttpHandler {
 
     private String content;
 
-    private Long taskId = 1L;
-
+    private long newId = 0L;
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -78,6 +77,11 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
 
+    private Long generateId() {
+        newId += 1;
+        return newId;
+    }
+
     //read
     private void readTODO(Long id){
 
@@ -112,7 +116,7 @@ public class DemoHttpHandler implements HttpHandler {
         try{
             if(!body.isEmpty()){
                 Task task = toTask(body);
-                task.setId(taskId++);
+                task.setId(generateId());
                 taskMap.put(task.getId(), task);
 
                 content = toJSON(task);
@@ -151,6 +155,7 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
 
+    //delete
     private void deleteTODO(Long id) {
 
         try{
@@ -205,7 +210,6 @@ public class DemoHttpHandler implements HttpHandler {
     }
 
 
-    //get task by id
     private Task getTask(Long taskId){
         return findTask(taskId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 task id 입니다."));
     }
