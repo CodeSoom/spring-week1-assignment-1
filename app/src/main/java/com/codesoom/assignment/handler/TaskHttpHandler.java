@@ -36,7 +36,7 @@ public class TaskHttpHandler implements HttpHandler {
         } else if (isGetListRequest()) {
             getTasksProcess(exchange);
         } else if (isGetRequest()) {
-            findByIdTask(exchange, path);
+            getTask(exchange, path);
         } else if (isUpdateRequest()) {
             updateTaskProcess(exchange, path, body);
         } else if (isDeleteRequest()) {
@@ -136,12 +136,11 @@ public class TaskHttpHandler implements HttpHandler {
     }
 
     /**
-     * 아이디에 해당하는 할일을 찾는다.
+     * 아이디에 해당하는 할일을 응답한다.
      */
-    private void findByIdTask(HttpExchange exchange, String path) throws IOException {
+    private void getTask(HttpExchange exchange, String path) throws IOException {
         try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(exchange.getResponseBody())) {
-            Long id = parsePathToTaskId(path);
-            Task task = searchTask(id);
+            Task task = findByIdTask(path);
             String findTask = objectMapper.writeValueAsString(task);
 
             bufferedOutputStream.write(findTask.getBytes(StandardCharsets.UTF_8));
@@ -154,6 +153,15 @@ public class TaskHttpHandler implements HttpHandler {
             e.printStackTrace();
             throw e;
         }
+    }
+
+    /**
+     * 아이디에 해당하는 할일을 찾는다.
+     */
+    private Task findByIdTask(String path) {
+        Long id = parsePathToTaskId(path);
+        Task task = searchTask(id);
+        return task;
     }
 
     /**
