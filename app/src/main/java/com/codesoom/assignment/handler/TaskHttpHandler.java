@@ -33,17 +33,13 @@ public class TaskHttpHandler implements HttpHandler {
 
         if (isCreateRequest()) {
             createTasksProcess(exchange, body);
-        }
-        if (isGetListRequest()) {
+        } else if (isGetListRequest()) {
             getTasksProcess(exchange);
-        }
-        if (isGetRequest()) {
+        } else if (isGetRequest()) {
             findByIdTask(exchange, path);
-        }
-        if (isUpdateRequest()) {
+        } else if (isUpdateRequest()) {
             updateTaskProcess(exchange, path, body);
-        }
-        if (isDeleteRequest()) {
+        } else if (isDeleteRequest()) {
             deleteTask(exchange, path);
         }
 
@@ -203,11 +199,11 @@ public class TaskHttpHandler implements HttpHandler {
             String task = createTask(body);
             bufferedOutputStream.write(task.getBytes(StandardCharsets.UTF_8));
             exchange.sendResponseHeaders(HttpStatus.CREATED.getCode(), task.getBytes().length);
-        }catch (JsonProcessingException e){
+        } catch (JsonProcessingException e) {
             e.printStackTrace();
             exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getCode(), 0);
             exchange.close();
-        }catch (IOException e) {
+        } catch (IOException e) {
             exchange.close();
             e.printStackTrace();
             throw e;
