@@ -86,10 +86,10 @@ public class TaskHttpHandler implements HttpHandler {
             Task findTask = searchTask(id);
             taskList.remove(findTask);
             exchange.sendResponseHeaders(HttpStatus.NO_CONTENT.getCode(), 0);
+            exchange.close();
         } catch (NoSuchElementException e) {
             e.printStackTrace();
             exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
-        } finally {
             exchange.close();
         }
     }
