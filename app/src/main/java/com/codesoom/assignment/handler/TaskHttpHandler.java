@@ -2,6 +2,7 @@ package com.codesoom.assignment.handler;
 
 
 import com.codesoom.assignment.model.Task;
+import com.codesoom.assignment.response.ResponseSuccess;
 import com.codesoom.assignment.vo.HttpMethod;
 import com.codesoom.assignment.vo.HttpStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -107,8 +108,7 @@ public class TaskHttpHandler implements HttpHandler {
             String jsonUpdatedTask = objectMapper.writeValueAsString(updatedTask);
 
             bufferedOutputStream.write(jsonUpdatedTask.getBytes(StandardCharsets.UTF_8));
-            exchange.sendResponseHeaders(HttpStatus.OK.getCode(), jsonUpdatedTask.getBytes().length);
-
+            new ResponseSuccess(exchange).send(jsonUpdatedTask);
         } catch (NoSuchElementException e) {
             e.getStackTrace();
             exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
@@ -144,7 +144,7 @@ public class TaskHttpHandler implements HttpHandler {
             String findTask = objectMapper.writeValueAsString(task);
 
             bufferedOutputStream.write(findTask.getBytes(StandardCharsets.UTF_8));
-            exchange.sendResponseHeaders(HttpStatus.OK.getCode(), findTask.getBytes().length);
+            new ResponseSuccess(exchange).send(findTask);
         } catch (NoSuchElementException e) {
             e.getStackTrace();
             exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
@@ -192,7 +192,7 @@ public class TaskHttpHandler implements HttpHandler {
         try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(exchange.getResponseBody())) {
             String jsonTaskList = objectMapper.writeValueAsString(taskList);
             bufferedOutputStream.write(jsonTaskList.getBytes(StandardCharsets.UTF_8));
-            exchange.sendResponseHeaders(HttpStatus.OK.getCode(), jsonTaskList.getBytes().length);
+            new ResponseSuccess(exchange).send(jsonTaskList);
         } catch (IOException e) {
             exchange.close();
             throw e;
@@ -206,7 +206,7 @@ public class TaskHttpHandler implements HttpHandler {
         try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(exchange.getResponseBody())) {
             String task = createTask(body);
             bufferedOutputStream.write(task.getBytes(StandardCharsets.UTF_8));
-            exchange.sendResponseHeaders(HttpStatus.CREATED.getCode(), task.getBytes().length);
+            new ResponseSuccess(exchange).send(task);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getCode(), 0);
