@@ -120,20 +120,36 @@ public class TaskHttpHandler implements HttpHandler {
 
     }
 
+    private int findTaskElement(Task task) {
+        int index = taskList.indexOf(task);
+        validateTaskIndex(index);
+        return index;
+    }
+
+    private void validateTaskIndex(int index) {
+        if (index == -1) {
+            throw new NoSuchElementException("해당 할일이 존재하지 않습니다.");
+        }
+    }
+
+    private void updateTaskInList(int index, Task task) {
+        taskList.set(index, task);
+    }
+
+    private void changeTask(Task findTask, String title, int findTaskIndex) {
+        findTask.setTitle(title);
+        updateTaskInList(findTaskIndex, findTask);
+    }
+
     /**
      * 기존 할일 내용을 요청받은 할일 내용으로 업데이트한다.
      */
     private Task updateTask(Task findTask, String title) throws NoSuchElementException {
-        int findTaskIndex = taskList.indexOf(findTask);
-        if (findTaskIndex == -1) {
-            throw new NoSuchElementException("해당 할일이 존자하지 않습니다.");
-        }
-
-        findTask.setTitle(title);
-        taskList.set(findTaskIndex, findTask);
-
+        int findTaskIndex = findTaskElement(findTask);
+        changeTask(findTask, title, findTaskIndex);
         return findTask;
     }
+
 
     /**
      * 아이디에 해당하는 할일을 응답한다.
