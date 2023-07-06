@@ -14,12 +14,16 @@ public class ResponseSuccess {
         this.exchange = exchange;
     }
 
-    public void send(String content) throws IOException {
-        exchange.sendResponseHeaders(HttpStatus.OK.getCode(), content.getBytes().length);
+    public void send(String content, int httpStatus) throws IOException {
+        exchange.sendResponseHeaders(httpStatus, content.getBytes().length);
 
         OutputStream outputStream = exchange.getResponseBody();
 
         outputStream.write(content.getBytes());
         outputStream.close();
+    }
+
+    public void send(String content) throws IOException {
+        send(content, HttpStatus.OK.getCode());
     }
 }

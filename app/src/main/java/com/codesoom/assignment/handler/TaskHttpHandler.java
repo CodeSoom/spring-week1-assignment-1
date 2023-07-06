@@ -2,7 +2,7 @@ package com.codesoom.assignment.handler;
 
 
 import com.codesoom.assignment.model.Task;
-import com.codesoom.assignment.model.TaskBody;
+import com.codesoom.assignment.model.RequestBody;
 import com.codesoom.assignment.response.ResponseSuccess;
 import com.codesoom.assignment.vo.HttpMethod;
 import com.codesoom.assignment.vo.HttpStatus;
@@ -16,7 +16,6 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class TaskHttpHandler implements HttpHandler {
     private ArrayList<Task> taskList = new ArrayList<>();
@@ -26,10 +25,9 @@ public class TaskHttpHandler implements HttpHandler {
     private final Pattern pathPatternRegex = Pattern.compile("^/tasks/\\d+$");
     String method = "";
     String path = "";
-    String body = "";
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
+    public void handle(HttpExchange exchange) throws IOException, NoSuchElementException {
 
         settingRequestMessage(exchange);
 
@@ -40,7 +38,7 @@ public class TaskHttpHandler implements HttpHandler {
         } else if (isGetRequest()) {
             getTask(exchange, path);
         } else if (isUpdateRequest()) {
-            updateTaskProcess(exchange, path, body);
+            updateTaskProcess(exchange, path);
         } else if (isDeleteRequest()) {
             deleteTask(exchange, path);
         }
@@ -74,9 +72,6 @@ public class TaskHttpHandler implements HttpHandler {
         method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
         path = uri.getPath();
-        body = new BufferedReader(new InputStreamReader(exchange.getRequestBody()))
-                .lines()
-                .collect(Collectors.joining("\n"));
     }
 
     /**
@@ -99,11 +94,12 @@ public class TaskHttpHandler implements HttpHandler {
     /**
      * 할일을 업데이트한다.
      */
-    private void updateTaskProcess(HttpExchange exchange, String path, String body) throws IOException {
+    private void updateTaskProcess(HttpExchange exchange, String path) throws IOException {
         try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(exchange.getResponseBody())) {
             Long id = parsePathToTaskId(path);
             Task task = searchTask(id);
-            Task updateTask = objectMapper.readValue(body, Task.class);
+            RequestBody requestBody = new RequestBody(exchange);
+            Task updateTask = requestBody.read(Task.class);
             Task updatedTask = updateTask(task, updateTask.getTitle());
 
             String jsonUpdatedTask = objectMapper.writeValueAsString(updatedTask);
@@ -220,10 +216,10 @@ public class TaskHttpHandler implements HttpHandler {
      * 요청 받은 할일을 저장 및 저장된 내용을 응답한다.
      */
     private void createTasksProcess(HttpExchange exchange) throws IOException {
-        TaskBody taskBody = new TaskBody(exchange);
-        Task createTask = taskBody.read();
+        RequestBody requestBody = new RequestBody(exchange);
+        Task createTask = requestBody.read(Task.class);
         String createdTaskJson = createTask(createTask);
-        new ResponseSuccess(exchange).send(createdTaskJson);
+        new ResponseSuccess(exchange).send(createdTaskJson, HttpStatus.CREATED.getCode());
     }
 
     /**

@@ -8,20 +8,20 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
-public class TaskBody {
+public class RequestBody {
     private HttpExchange exchange;
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    private TaskBody() {
+    private RequestBody() {
     }
 
-    public TaskBody(HttpExchange exchange) {
+    public RequestBody(HttpExchange exchange) {
         this.exchange = exchange;
     }
 
-    public Task read() throws JsonProcessingException {
+    public <T> T read(Class<T> type) throws JsonProcessingException {
         String body = parseBody();
-        return objectMapper.readValue(body, Task.class);
+        return objectMapper.readValue(body, type);
     }
 
     private String parseBody() {
