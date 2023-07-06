@@ -2,6 +2,7 @@ package com.codesoom.assignment.handler;
 
 
 import com.codesoom.assignment.model.Task;
+import com.codesoom.assignment.model.TaskBody;
 import com.codesoom.assignment.response.ResponseSuccess;
 import com.codesoom.assignment.vo.HttpMethod;
 import com.codesoom.assignment.vo.HttpStatus;
@@ -33,7 +34,7 @@ public class TaskHttpHandler implements HttpHandler {
         settingRequestMessage(exchange);
 
         if (isCreateRequest()) {
-            createTasksProcess(exchange, body);
+            createTasksProcess(exchange);
         } else if (isGetListRequest()) {
             getTasksProcess(exchange);
         } else if (isGetRequest()) {
@@ -218,29 +219,19 @@ public class TaskHttpHandler implements HttpHandler {
     /**
      * 요청 받은 할일을 저장 및 저장된 내용을 응답한다.
      */
-    private void createTasksProcess(HttpExchange exchange, String body) throws IOException {
-        try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(exchange.getResponseBody())) {
-            String task = createTask(body);
-            bufferedOutputStream.write(task.getBytes(StandardCharsets.UTF_8));
-            new ResponseSuccess(exchange).send(task);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            exchange.sendResponseHeaders(HttpStatus.BAD_REQUEST.getCode(), 0);
-            exchange.close();
-        } catch (IOException e) {
-            exchange.close();
-            e.printStackTrace();
-            throw e;
-        }
+    private void createTasksProcess(HttpExchange exchange) throws IOException {
+        TaskBody taskBody = new TaskBody(exchange);
+        Task createTask = taskBody.read();
+        String createdTaskJson = createTask(createTask);
+        new ResponseSuccess(exchange).send(createdTaskJson);
     }
 
     /**
      * 할일을 생성한다.
      */
-    private String createTask(String body) throws JsonProcessingException {
+    private String createTask(Task task) throws JsonProcessingException {
         String content = "";
         try {
-            Task task = objectMapper.readValue(body, Task.class);
             task.setId(taskId);
             taskList.add(task);
             taskId++;
