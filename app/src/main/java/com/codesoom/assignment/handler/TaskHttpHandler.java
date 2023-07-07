@@ -102,7 +102,7 @@ public class TaskHttpHandler implements HttpHandler {
             Task updateTask = requestBody.read(Task.class);
             Task updatedTask = updateTask(task, updateTask.getTitle());
 
-            String jsonUpdatedTask = objectMapper.writeValueAsString(updatedTask);
+            String jsonUpdatedTask = parseTaskToJsonString(updatedTask);
 
             bufferedOutputStream.write(jsonUpdatedTask.getBytes(StandardCharsets.UTF_8));
             new ResponseSuccess(exchange).send(jsonUpdatedTask);
@@ -153,7 +153,7 @@ public class TaskHttpHandler implements HttpHandler {
     private void getTask(HttpExchange exchange, String path) throws IOException {
         try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(exchange.getResponseBody())) {
             Task task = findByIdTask(path);
-            String findTask = objectMapper.writeValueAsString(task);
+            String findTask = parseTaskToJsonString(task);
 
             bufferedOutputStream.write(findTask.getBytes(StandardCharsets.UTF_8));
             new ResponseSuccess(exchange).send(findTask);
@@ -201,7 +201,7 @@ public class TaskHttpHandler implements HttpHandler {
      */
     private void getTasksProcess(HttpExchange exchange) throws IOException {
         try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(exchange.getResponseBody())) {
-            String jsonTaskList = objectMapper.writeValueAsString(taskList);
+            String jsonTaskList = parseTaskListToJsonString(taskList);
             bufferedOutputStream.write(jsonTaskList.getBytes(StandardCharsets.UTF_8));
             new ResponseSuccess(exchange).send(jsonTaskList);
         } catch (IOException e) {
@@ -216,24 +216,32 @@ public class TaskHttpHandler implements HttpHandler {
     private void createTasksProcess(HttpExchange exchange) throws IOException {
         RequestBody requestBody = new RequestBody(exchange);
         Task createTask = requestBody.read(Task.class);
-        String createdTaskJson = createTask(createTask);
+        createTask(createTask);
+        String createdTaskJson = parseTaskToJsonString(createTask);
         new ResponseSuccess(exchange).send(createdTaskJson, HttpStatus.CREATED.getCode());
     }
 
     /**
      * 할일을 생성한다.
      */
-    private String createTask(Task task) throws JsonProcessingException {
-        String content = "";
-        try {
-            task.setId(taskId);
-            taskList.add(task);
-            taskId++;
-            content = objectMapper.writeValueAsString(task);
-        } catch (JsonProcessingException e) {
-            throw e;
-        }
-        return content;
+    private void createTask(Task task) throws JsonProcessingException {
+        task.setId(taskId);
+        taskList.add(task);
+        taskId++;
+    }
+
+    /**
+     * 할일을 json 형태로 파싱한다.
+     */
+    private String parseTaskToJsonString(Task task) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(task);
+    }
+
+    /**
+     * 할일 목록을 json 형태로 파싱한다.
+     */
+    private String parseTaskListToJsonString(List<Task> taskList) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(taskList);
     }
 
 }
