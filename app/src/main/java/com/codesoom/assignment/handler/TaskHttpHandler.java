@@ -80,7 +80,7 @@ public class TaskHttpHandler implements HttpHandler {
     private void deleteTask(HttpExchange exchange, String path) throws IOException {
         try {
             Long id = parsePathToTaskId(path);
-            Task findTask = searchTask(id);
+            Task findTask = findByTaskId(id);
             taskList.remove(findTask);
             exchange.sendResponseHeaders(HttpStatus.NO_CONTENT.getCode(), 0);
             exchange.close();
@@ -97,7 +97,7 @@ public class TaskHttpHandler implements HttpHandler {
     private void updateTaskProcess(HttpExchange exchange, String path) throws IOException {
         try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(exchange.getResponseBody())) {
             Long id = parsePathToTaskId(path);
-            Task task = searchTask(id);
+            Task task = findByTaskId(id);
             RequestBody requestBody = new RequestBody(exchange);
             Task updateTask = requestBody.read(Task.class);
             Task updatedTask = updateTask(task, updateTask.getTitle());
@@ -152,7 +152,8 @@ public class TaskHttpHandler implements HttpHandler {
      */
     private void getTask(HttpExchange exchange, String path) throws IOException {
         try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(exchange.getResponseBody())) {
-            Task task = findByIdTask(path);
+            Long id = parsePathToTaskId(path);
+            Task task = findByTaskId(id);
             String findTask = parseTaskToJsonString(task);
 
             bufferedOutputStream.write(findTask.getBytes(StandardCharsets.UTF_8));
@@ -169,16 +170,7 @@ public class TaskHttpHandler implements HttpHandler {
     /**
      * 아이디에 해당하는 할일을 찾는다.
      */
-    private Task findByIdTask(String path) {
-        Long id = parsePathToTaskId(path);
-        Task task = searchTask(id);
-        return task;
-    }
-
-    /**
-     * 아이디에 해당하는 할일을 검색한다.
-     */
-    private Task searchTask(Long id) throws NoSuchElementException {
+    private Task findByTaskId(Long id) {
         Task findTask = taskList.stream()
                 .filter(t -> t.getId().equals(id))
                 .findFirst()
@@ -186,6 +178,7 @@ public class TaskHttpHandler implements HttpHandler {
 
         return findTask;
     }
+
 
     /**
      * path로 부터 taskId를 파싱한다.
