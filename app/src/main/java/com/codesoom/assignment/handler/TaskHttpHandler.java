@@ -116,13 +116,13 @@ public class TaskHttpHandler implements HttpHandler {
 
     }
 
-    private int findTaskElement(Task task) {
+    private int findTaskElement(Task task) throws NoSuchElementException {
         int index = taskList.indexOf(task);
-        validateTaskIndex(index);
+        checkIfTaskExists(index);
         return index;
     }
 
-    private void validateTaskIndex(int index) {
+    private void checkIfTaskExists(int index) throws NoSuchElementException {
         if (index == -1) {
             throw new NoSuchElementException("해당 할일이 존재하지 않습니다.");
         }
@@ -132,9 +132,9 @@ public class TaskHttpHandler implements HttpHandler {
         taskList.set(index, task);
     }
 
-    private void changeTask(Task findTask, String title, int findTaskIndex) {
-        findTask.setTitle(title);
-        updateTaskInList(findTaskIndex, findTask);
+    private void changeTask(Task task, String title, int findTaskIndex) {
+        task.setTitle(title);
+        updateTaskInList(findTaskIndex, task);
     }
 
     /**
