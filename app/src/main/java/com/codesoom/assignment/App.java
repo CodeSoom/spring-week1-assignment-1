@@ -19,7 +19,6 @@ public class App {
             httpServer.createContext(ROOT_PATH, handler);
             httpServer.start();
         } catch (IOException e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }

@@ -85,9 +85,9 @@ public class TaskHttpHandler implements HttpHandler {
             exchange.sendResponseHeaders(HttpStatus.NO_CONTENT.getCode(), 0);
             exchange.close();
         } catch (NoSuchElementException e) {
-            e.printStackTrace();
             exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
             exchange.close();
+            throw e;
         }
     }
 
@@ -111,7 +111,6 @@ public class TaskHttpHandler implements HttpHandler {
             exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
             exchange.close();
         } catch (IOException e) {
-            e.printStackTrace();
             throw e;
         }
 
@@ -163,7 +162,6 @@ public class TaskHttpHandler implements HttpHandler {
             exchange.sendResponseHeaders(HttpStatus.NOT_FOUND.getCode(), 0);
             exchange.close();
         } catch (IOException e) {
-            e.printStackTrace();
             throw e;
         }
     }
@@ -233,7 +231,6 @@ public class TaskHttpHandler implements HttpHandler {
             taskId++;
             content = objectMapper.writeValueAsString(task);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
             throw e;
         }
         return content;
