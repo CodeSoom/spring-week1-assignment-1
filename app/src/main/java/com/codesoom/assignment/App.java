@@ -18,7 +18,7 @@ public class App {
             HttpHandler handler = new TaskHttpHandler();
             httpServer.createContext(ROOT_PATH, handler);
             httpServer.start();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
