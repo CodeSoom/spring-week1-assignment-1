@@ -2,47 +2,38 @@ package com.codesoom.assignment.handler;
 
 
 import com.codesoom.assignment.handler.impl.*;
-import com.codesoom.assignment.model.Task;
-import com.codesoom.assignment.model.RequestBody;
-import com.codesoom.assignment.response.ResponseSuccess;
-import com.codesoom.assignment.vo.HttpMethod;
-import com.codesoom.assignment.vo.HttpStatus;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 
 public class TaskHttpHandler implements HttpHandler {
-    CreateTaskHandler createTaskHandler;
-    GetTaskHandler getTaskHandler;
-    GetListTaskHandler getListTaskHandler;
-    UpdateTaskHandler updateTaskHandler;
-    DeleteTaskHandler deleteTaskHandler;
+    Map<String, TaskHandler> handlerMap;
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        createTaskHandler = new CreateTaskHandler(exchange);
-        getListTaskHandler = new GetListTaskHandler(exchange);
-        getTaskHandler = new GetTaskHandler(exchange);
-        updateTaskHandler = new UpdateTaskHandler(exchange);
-        deleteTaskHandler = new DeleteTaskHandler(exchange);
+    public void handle(HttpExchange exchange) throws RuntimeException {
+        initHandler(exchange);
 
-        if (createTaskHandler.isRequest()) {
-            createTaskHandler.handle();
-        } else if (getListTaskHandler.isRequest()) {
-            getListTaskHandler.handle();
-        } else if (getTaskHandler.isRequest()) {
-            getTaskHandler.handle();
-        } else if (updateTaskHandler.isRequest()) {
-            updateTaskHandler.handle();
-        } else if (deleteTaskHandler.isRequest()) {
-            deleteTaskHandler.handle();
-        }
+        handlerMap.entrySet().stream()
+                .filter(entry -> entry.getValue().isRequest())
+                .findFirst()
+                .ifPresent(entry -> {
+                    try {
+                        entry.getValue().handle();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+    }
+
+    private void initHandler(HttpExchange exchange) {
+        handlerMap = new HashMap<>();
+        handlerMap.put("CREATE", new CreateTaskHandler(exchange));
+        handlerMap.put("GET_LIST", new GetListTaskHandler(exchange));
+        handlerMap.put("GET", new GetTaskHandler(exchange));
+        handlerMap.put("UPDATE", new UpdateTaskHandler(exchange));
+        handlerMap.put("DELETE", new DeleteTaskHandler(exchange));
     }
 }

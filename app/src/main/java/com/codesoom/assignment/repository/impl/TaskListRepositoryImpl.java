@@ -40,7 +40,7 @@ public class TaskListRepositoryImpl implements TaskRepository {
                 .filter(t -> t.getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("해당 아이디의 할일이 없습니다."));
-        
+
         return findTask;
     }
 
@@ -50,30 +50,15 @@ public class TaskListRepositoryImpl implements TaskRepository {
     }
 
     @Override
-    public Task update(Task task, Task updateTask) {
-        int findTaskIndex = findTaskElement(task);
-        changeTask(task, updateTask.getTitle(), findTaskIndex);
-        return updateTask;
+    public Task update(Task task) {
+        Task findedTask = findById(task.getId());
+        changeTask(findedTask, task.getTitle());
+        return findedTask;
     }
-
-    private int findTaskElement(Task task) throws NoSuchElementException {
-        int index = taskList.indexOf(task);
-        checkIfTaskExists(index);
-        return index;
-    }
-
-    private void changeTask(Task task, String title, int findTaskIndex) {
+    
+    private void changeTask(Task task, String title) {
         task.setTitle(title);
-        updateTaskInList(findTaskIndex, task);
     }
 
-    private void checkIfTaskExists(int index) throws NoSuchElementException {
-        if (index == -1) {
-            throw new NoSuchElementException("해당 할일이 존재하지 않습니다.");
-        }
-    }
 
-    private void updateTaskInList(int index, Task task) {
-        taskList.set(index, task);
-    }
 }

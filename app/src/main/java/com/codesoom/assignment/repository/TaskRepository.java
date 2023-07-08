@@ -15,7 +15,7 @@ public interface TaskRepository {
 
     void delete(Task task);
 
-    Task update(Task task, Task updateTask);
+    Task update(Task task);
 
 
 }

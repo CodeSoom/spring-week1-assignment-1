@@ -7,8 +7,6 @@ import com.codesoom.assignment.vo.HttpMethod;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
-import java.net.URI;
-import java.util.NoSuchElementException;
 
 public abstract class TaskHandler {
     protected String method;
