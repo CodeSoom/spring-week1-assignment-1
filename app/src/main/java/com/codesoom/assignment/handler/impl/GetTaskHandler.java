@@ -27,6 +27,7 @@ public class GetTaskHandler extends TaskHandler {
     public void handle() throws IOException {
         try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(exchange.getResponseBody())) {
             Long id = parsePathToTaskId(exchange.getRequestURI().getPath());
+
             Task task = taskRepository.findById(id);
             String findTask = parseTaskToJsonString(task);
             bufferedOutputStream.write(findTask.getBytes(StandardCharsets.UTF_8));

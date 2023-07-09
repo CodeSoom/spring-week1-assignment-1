@@ -13,19 +13,14 @@ public class TaskHttpHandler implements HttpHandler {
     Map<String, TaskHandler> handlerMap;
 
     @Override
-    public void handle(HttpExchange exchange) throws RuntimeException {
+    public void handle(HttpExchange exchange) throws IOException {
         initHandler(exchange);
-
-        handlerMap.entrySet().stream()
-                .filter(entry -> entry.getValue().isRequest())
-                .findFirst()
-                .ifPresent(entry -> {
-                    try {
-                        entry.getValue().handle();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+        var entry = handlerMap.entrySet().stream()
+                .filter(e -> e.getValue().isRequest())
+                .findFirst();
+        if (entry.isPresent()) {
+            entry.get().getValue().handle();
+        }
     }
 
     private void initHandler(HttpExchange exchange) {
